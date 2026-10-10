@@ -1,8 +1,0 @@
-D:/Projects/MindAttic/GridGameGaiden/.utmp/Debug/3y4i4h1f/arm64-v8a/CMakeFiles/edit_cache.dir
-D:/Projects/MindAttic/GridGameGaiden/.utmp/Debug/3y4i4h1f/arm64-v8a/CMakeFiles/rebuild_cache.dir
-D:/Projects/MindAttic/GridGameGaiden/.utmp/Debug/3y4i4h1f/arm64-v8a/GameActivity/CMakeFiles/game.dir
-D:/Projects/MindAttic/GridGameGaiden/.utmp/Debug/3y4i4h1f/arm64-v8a/GameActivity/CMakeFiles/edit_cache.dir
-D:/Projects/MindAttic/GridGameGaiden/.utmp/Debug/3y4i4h1f/arm64-v8a/GameActivity/CMakeFiles/rebuild_cache.dir
-D:/Projects/MindAttic/GridGameGaiden/.utmp/Debug/3y4i4h1f/arm64-v8a/FramePacing/CMakeFiles/swappywrapper.dir
-D:/Projects/MindAttic/GridGameGaiden/.utmp/Debug/3y4i4h1f/arm64-v8a/FramePacing/CMakeFiles/edit_cache.dir
-D:/Projects/MindAttic/GridGameGaiden/.utmp/Debug/3y4i4h1f/arm64-v8a/FramePacing/CMakeFiles/rebuild_cache.dir
