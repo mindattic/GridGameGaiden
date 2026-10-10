@@ -1,0 +1,97 @@
+[
+  {
+    "Id": "mana_casks",
+    "Name": "Mana Casks",
+    "Icon": "mat_essence_spark",
+    "Description": "Every battle starts with extra mana orbs.",
+    "Levels": [
+      {
+        "Cost": 400,
+        "Value": 1,
+        "Text": "+1 orb each battle"
+      },
+      {
+        "Cost": 900,
+        "Value": 2,
+        "Text": "+2 orbs each battle"
+      },
+      {
+        "Cost": 1800,
+        "Value": 3,
+        "Text": "+3 orbs each battle"
+      }
+    ]
+  },
+  {
+    "Id": "medic_wagon",
+    "Name": "Medic Wagon",
+    "Icon": "healing_potion_basic",
+    "Description": "The inn opens on the road, mid-expedition, at a premium.",
+    "Levels": [
+      {
+        "Cost": 600,
+        "Value": 2.0,
+        "Text": "Inn on the road at ×2 price"
+      },
+      {
+        "Cost": 1400,
+        "Value": 1.5,
+        "Text": "Inn on the road at ×1.5 price"
+      }
+    ]
+  },
+  {
+    "Id": "armory",
+    "Name": "Armory Wagon",
+    "Icon": "eq_hammer_war",
+    "Description": "A travelling forge: repairs cost less.",
+    "Levels": [
+      {
+        "Cost": 350,
+        "Value": 0.2,
+        "Text": "Repairs −20%"
+      },
+      {
+        "Cost": 800,
+        "Value": 0.35,
+        "Text": "Repairs −35%"
+      },
+      {
+        "Cost": 1500,
+        "Value": 0.5,
+        "Text": "Repairs −50%"
+      }
+    ]
+  },
+  {
+    "Id": "strongbox",
+    "Name": "Strongbox",
+    "Icon": "eq_ring_gold",
+    "Description": "A bigger cut of the spoils when an expedition is completed.",
+    "Levels": [
+      {
+        "Cost": 500,
+        "Value": 0.25,
+        "Text": "Expedition bonus +25%"
+      },
+      {
+        "Cost": 1200,
+        "Value": 0.5,
+        "Text": "Expedition bonus +50%"
+      }
+    ]
+  },
+  {
+    "Id": "scouts",
+    "Name": "Scouts",
+    "Icon": "eq_bow_hunter",
+    "Description": "Outriders report what each battle holds.",
+    "Levels": [
+      {
+        "Cost": 300,
+        "Value": 1,
+        "Text": "Adventure shows each battle's foes"
+      }
+    ]
+  }
+]

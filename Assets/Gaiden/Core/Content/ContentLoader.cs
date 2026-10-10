@@ -44,6 +44,7 @@ namespace Gaiden.Core.Content
             AddAll(db.Enchants, ReadList<EnchantDef>(readText, "enchants"), c => c.Id);
             db.Campaign = ReadOne<CampaignDef>(readText, "campaign") ?? new CampaignDef();
             db.Summon = ReadOne<SummonDef>(readText, "summon") ?? new SummonDef();
+            AddAll(db.Caravan, ReadList<CaravanUpgradeDef>(readText, "caravan"), x => x.Id);
             return db;
         }
 

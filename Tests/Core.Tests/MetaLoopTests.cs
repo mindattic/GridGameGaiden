@@ -249,5 +249,40 @@ namespace Gaiden.Tests
             Assert.DoesNotContain(BattleEngine.Create(c, again, new List<BattleEvent>()).Units, u => u.IsGuest);
             Assert.DoesNotContain(Summon.Pool(c, s), d => d.Id == "drifter");
         }
+
+        // ── Caravan upgrades (§25.12) ──
+
+        [Fact]
+        public void Caravan_upgrades_cost_gold_and_change_how_expeditions_play()
+        {
+            var c = Real; var s = Progression.NewGame(c, "Car");
+            Assert.True(c.Caravan.Count >= 5);
+            s.Gold = 10000;
+            var stage0 = c.Campaign.Themes[0].Stages[0];
+            int orbsBefore = BattleFactory.Build(c, s, stage0, 1).StartOrbs;
+            Assert.True(CaravanUpgrades.Buy(c, s, "mana_casks").Ok);
+            Assert.Equal(orbsBefore + 1, BattleFactory.Build(c, s, stage0, 1).StartOrbs);
+            Assert.True(10000 - c.Caravan["mana_casks"].Levels[0].Cost == s.Gold);
+
+            // Armory: cheaper repairs.
+            var sword = c.Items.Values.First(i => i.Durability > 2 && i.Slot == EquipmentSlot.Weapon);
+            int full = Repair.Cost(c, s, sword, 0, 0);
+            CaravanUpgrades.Buy(c, s, "armory");
+            Assert.True(Repair.Cost(c, s, sword, 0, 0) < full);
+
+            // Medic wagon: the inn opens on the road, at a premium.
+            BattleFactory.Commit(c, s, Fight(c, s, stage0, true));
+            Assert.NotNull(s.Expedition);
+            s.Roster[0].Hp = 1;
+            Assert.False(Inn.Rest(c, s).Ok);
+            CaravanUpgrades.Buy(c, s, "medic_wagon");
+            int premium = Inn.Cost(c, s);
+            Assert.True(Inn.Rest(c, s).Ok, "the Medic Wagon opens the inn on the road");
+            Assert.True(premium > 0);
+
+            // Maxing out.
+            while (CaravanUpgrades.NextLevel(c, s, "scouts") != null) Assert.True(CaravanUpgrades.Buy(c, s, "scouts").Ok);
+            Assert.False(CaravanUpgrades.Buy(c, s, "scouts").Ok);
+        }
     }
 }

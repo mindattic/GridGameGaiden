@@ -61,7 +61,7 @@ def main():
     st = h.call("state")
     check("new game lands at camp", st["screen"] == "hub", st["screen"])
     check("camp music", h.call("music")["track"] == "MinstrelGuild")
-    for item in ["Adventure", "Items", "Status", "Equip", "Abilities", "Party", "Merchant", "Blacksmith", "Alchemist", "Inn", "Summon Circle", "Bounties", "Bestiary", "Settings"]:
+    for item in ["Adventure", "Items", "Status", "Equip", "Abilities", "Party", "Merchant", "Blacksmith", "Alchemist", "Inn", "Caravan", "Summon Circle", "Bounties", "Bestiary", "Settings"]:
         if not has_text(item):
             check(f"camp menu has {item}", False)
             break

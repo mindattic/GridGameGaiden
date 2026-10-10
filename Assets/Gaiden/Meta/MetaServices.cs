@@ -149,7 +149,8 @@ namespace Gaiden.Meta
 
         public static ThemeDef Theme(ContentDb c, string themeId) => c.Campaign.Themes.Find(t => t.Id == themeId);
 
-        public static bool InnOpen(SaveData s) => s.Expedition == null;
+        /// <summary>The inn is open between expeditions — or on the road once the caravan has a Medic Wagon.</summary>
+        public static bool InnOpen(SaveData s) => s.Expedition == null || CaravanUpgrades.Level(s, "medic_wagon") > 0;
 
         /// <summary>A battle can start if it is the next one of the active expedition, or the first battle of a theme when none is active.</summary>
         public static bool CanLaunch(ContentDb c, SaveData s, string stageId, out string why)
@@ -210,7 +211,7 @@ namespace Gaiden.Meta
             if (s.Expedition.Next >= theme.Stages.Count)
             {
                 rep.ExpeditionComplete = true;
-                rep.ExpeditionBonus = (int)Math.Round(s.Expedition.Coins * CompletionBonus);
+                rep.ExpeditionBonus = (int)Math.Round(s.Expedition.Coins * (CompletionBonus + CaravanUpgrades.Value(c, s, "strongbox")));
                 s.Gold += rep.ExpeditionBonus;
                 rep.Gold += rep.ExpeditionBonus;
                 foreach (var id in s.Party) { var h = s.Hero(id); if (h != null) h.Hp = 0; } // the caravan makes camp: everyone rests
@@ -218,6 +219,37 @@ namespace Gaiden.Meta
                 rep.CarriedOrbs = 0;
             }
             else rep.NextStageId = theme.Stages[s.Expedition.Next];
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // Caravan upgrades (§25.12): the long-run gold sink that changes how expeditions play
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    public static class CaravanUpgrades
+    {
+        public static int Level(SaveData s, string id) => s.Caravan.TryGetValue(id, out var n) ? n : 0;
+
+        /// <summary>The current level's value, or <paramref name="none"/> when not bought.</summary>
+        public static float Value(ContentDb c, SaveData s, string id, float none = 0f)
+        {
+            int lv = Level(s, id);
+            if (lv <= 0 || !c.Caravan.TryGetValue(id, out var def) || def.Levels.Count == 0) return none;
+            return def.Levels[Math.Min(lv, def.Levels.Count) - 1].Value;
+        }
+
+        public static CaravanLevel NextLevel(ContentDb c, SaveData s, string id) =>
+            c.Caravan.TryGetValue(id, out var def) && Level(s, id) < def.Levels.Count ? def.Levels[Level(s, id)] : null;
+
+        public static Result Buy(ContentDb c, SaveData s, string id)
+        {
+            if (!c.Caravan.TryGetValue(id, out var def)) return Result.Fail("Unknown upgrade");
+            var next = NextLevel(c, s, id);
+            if (next == null) return Result.Fail("Fully upgraded");
+            if (s.Gold < next.Cost) return Result.Fail("Not enough gold");
+            s.Gold -= next.Cost;
+            s.Caravan[id] = Level(s, id) + 1;
+            return Result.Success($"{def.Name}: {next.Text}");
         }
     }
 
@@ -244,7 +276,7 @@ namespace Gaiden.Meta
                 UnlockedSlots = Progression.UnlockedSlots(s),
                 RecommendedLevel = index >= 0 ? Progression.RecommendedLevel(index) : 1,
                 NewGamePlus = s.NewGamePlus,
-                StartOrbs = Expeditions.StartOrbs(c, s, stageId),
+                StartOrbs = Expeditions.StartOrbs(c, s, stageId) + (int)CaravanUpgrades.Value(c, s, "mana_casks"),
             };
             foreach (var h in s.Roster) setup.ExcludedGuests.Add(h.ClassId);
             foreach (var g in s.LostGuests) setup.ExcludedGuests.Add(g);
@@ -512,6 +544,14 @@ namespace Gaiden.Meta
     {
         public static int EffectiveMax(ItemDef item, int repairs) => Math.Max(1, item.Durability - repairs);
 
+        /// <summary>Repair price after the caravan's Armory Wagon discount.</summary>
+        public static int Cost(ContentDb c, SaveData s, ItemDef item, int current, int repairs)
+        {
+            int baseCost = Cost(item, current, repairs);
+            if (baseCost <= 0) return 0;
+            return Math.Max(1, (int)Math.Ceiling(baseCost * (1f - CaravanUpgrades.Value(c, s, "armory"))));
+        }
+
         public static int Cost(ItemDef item, int current, int repairs)
         {
             if (item == null || item.Durability <= 0) return 0;
@@ -528,7 +568,7 @@ namespace Gaiden.Meta
         {
             var item = c.TryItem(h.WeaponId);
             if (item == null || item.Durability <= 0) return Result.Fail("Nothing to repair");
-            int cost = Cost(item, h.WeaponDurability, h.WeaponRepairs);
+            int cost = Cost(c, s, item, h.WeaponDurability, h.WeaponRepairs);
             if (cost == 0) return Result.Fail("Already in top shape");
             if (s.Gold < cost) return Result.Fail("Not enough gold");
             s.Gold -= cost;
@@ -541,7 +581,7 @@ namespace Gaiden.Meta
         {
             var item = c.TryItem(h.ArmorId);
             if (item == null || item.Durability <= 0) return Result.Fail("Nothing to repair");
-            int cost = Cost(item, h.ArmorDurability, h.ArmorRepairs);
+            int cost = Cost(c, s, item, h.ArmorDurability, h.ArmorRepairs);
             if (cost == 0) return Result.Fail("Already in top shape");
             if (s.Gold < cost) return Result.Fail("Not enough gold");
             s.Gold -= cost;
@@ -570,7 +610,8 @@ namespace Gaiden.Meta
         {
             int missing = 0;
             foreach (var h in s.Roster) missing += MissingHp(c, s, h);
-            return (int)Math.Ceiling(missing * GoldPerHp);
+            float premium = s.Expedition != null ? CaravanUpgrades.Value(c, s, "medic_wagon", 1f) : 1f; // on the road: the Medic Wagon's price
+            return (int)Math.Ceiling(missing * GoldPerHp * premium);
         }
 
         public static Result Rest(ContentDb c, SaveData s)

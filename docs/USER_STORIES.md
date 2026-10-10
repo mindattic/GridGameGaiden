@@ -331,9 +331,9 @@ test for every rule. 4. A harness step for anything visible. 5. Glyph check gree
 | US-345 | Every enemy family gets its own kit (behaviour, spells, traps — slime trail, poison cloud …) matched to how it looks | §14 | ✅ | 39 families kitted (bible §14.4); `Every_enemy_charge_telegraphs_and_resolves` (incl. Howl/Rally/Mend/Poison Cloud); bot soak on every stage; `tools/uicheck.py` (enemy card describes its kit) |
 | US-346 | Physical blocks on the grid: no unit may enter, land, be displaced or spawn on a block | §1.1 | ✅ | `A_hero_cannot_step_onto_a_block`, `A_block_in_the_line_breaks_the_pincer`, `Nobody_spawns_or_walks_onto_blocks`, `Real_stages_carry_their_blocks`; bot soak on 7 blocked stages; `tools/uicheck.py` (blocks draw) |
 | US-347 | Expeditions: a set of X battles, each of Y waves, with no full heal between — survival pressure on consumables and mana | §22 | ✅ | `An_expedition_runs_its_battles_in_order_carrying_mana_with_the_inn_closed`, `Finishing_an_expedition_pays_a_bonus_and_rests_the_party_while_defeat_restarts_it`; `tools/uicheck.py` (adventure groups battles into expeditions) |
-| US-348 | Caravan story: the party travels with a merchant caravan through dangerous lands (why shops are always open between battles); story beats per expedition | §27 | ⬜ | owner direction 2026-10-10 |
+| US-348 | Caravan story: the party travels with a merchant caravan through dangerous lands (why shops are always open between battles); story beats per expedition | §27 | 🟡 | framing built (caravan = the shops between battles; Camp → Caravan; expeditions); story text is lorem ipsum by owner request (2026-10-10) |
 | US-349 | Guest allies met in battle: rescue them and they join the roster; if they die in that fight they are lost forever | §25 | ✅ | `A_guest_who_survives_a_victory_joins_the_roster`, `A_guest_who_falls_is_lost_forever`; 4 stages carry a guest |
-| US-350 | Upgrades and long-run progression (gear tiers, ability ranks, caravan upgrades) with a meaningful power curve | §21 | ⬜ | owner direction 2026-10-10 |
+| US-350 | Upgrades and long-run progression (gear tiers, ability ranks, caravan upgrades) with a meaningful power curve | §21 | ✅ | caravan upgrades (bible §25.12) on top of gear tiers/enchants/levels/slot unlocks; `Caravan_upgrades_cost_gold_and_change_how_expeditions_play`; `tools/uicheck.py` (camp menu has Caravan) |
 
 ## Tally
 
@@ -350,7 +350,7 @@ test for every rule. 4. A harness step for anything visible. 5. Glyph check gree
 | UI screens (35) | 35 | 0 | 0 |
 | Audio & VFX (19) | 18 | 0 | 1 |
 | Platform & ship (13) | 12 | 0 | 1 |
-| Production roadmap (owner direction, 2026-10-10) (9) | 7 | 0 | 2 |
-| **Total (243)** | **239** | **0** | **4** |
+| Production roadmap (owner direction, 2026-10-10) (9) | 8 | 1 | 0 |
+| **Total (243)** | **240** | **1** | **2** |
 
 Open design questions that gate future stories live in [BIBLE §29](BIBLE.md#29-open-design-questions).

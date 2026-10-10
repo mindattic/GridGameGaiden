@@ -41,6 +41,8 @@ namespace Gaiden.Meta
         public List<string> Party = new List<string>();
         public Dictionary<string, int> Inventory = new Dictionary<string, int>();
         public int Recruits;
+        /// <summary>Caravan upgrade id → level bought (§25.12).</summary>
+        public Dictionary<string, int> Caravan = new Dictionary<string, int>();
         /// <summary>Guest allies who died in the battle they were met in — gone for good (§25.11).</summary>
         public HashSet<string> LostGuests = new HashSet<string>();
         /// <summary>Spare equipment that has been used: item id → its worn copies (per-instance durability, US-246).</summary>

@@ -19,6 +19,7 @@ namespace Gaiden.Core.Content
         public readonly List<StageDef> StageOrder = new List<StageDef>();
         public CampaignDef Campaign = new CampaignDef();
         public SummonDef Summon = new SummonDef();
+        public readonly Dictionary<string, CaravanUpgradeDef> Caravan = new Dictionary<string, CaravanUpgradeDef>(StringComparer.OrdinalIgnoreCase);
 
         public ClassDef Class(string id) => Get(Classes, id, "class");
         public AbilityDef Ability(string id) => Get(Abilities, id, "ability");

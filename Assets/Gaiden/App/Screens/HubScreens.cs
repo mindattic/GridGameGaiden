@@ -545,7 +545,7 @@ namespace Gaiden.App
                 if (w != null && w.Durability > 0)
                 {
                     any = true;
-                    int cost = Repair.Cost(w, h.WeaponDurability, h.WeaponRepairs);
+                    int cost = Repair.Cost(C, S, w, h.WeaponDurability, h.WeaponRepairs);
                     var row = Ui.MenuRow($"{C.Class(h.ClassId).Name} — {w.Name}  {h.WeaponDurability}/{Repair.EffectiveMax(w, h.WeaponRepairs)}", cost > 0 ? Ui.Gold(cost) : "OK",
                         () => Done(Repair.RepairWeapon(C, S, hero)), list, null, cost > 0);
                     if (cost > 0 && Repair.IsUneconomical(w, h.WeaponDurability, h.WeaponRepairs)) row.Q<Label>("value").AddToClassList("warn");
@@ -554,7 +554,7 @@ namespace Gaiden.App
                 if (a != null && a.Durability > 0)
                 {
                     any = true;
-                    int cost = Repair.Cost(a, h.ArmorDurability, h.ArmorRepairs);
+                    int cost = Repair.Cost(C, S, a, h.ArmorDurability, h.ArmorRepairs);
                     Ui.MenuRow($"{C.Class(h.ClassId).Name} — {a.Name}  {h.ArmorDurability}/{Repair.EffectiveMax(a, h.ArmorRepairs)}", cost > 0 ? Ui.Gold(cost) : "OK",
                         () => Done(Repair.RepairArmor(C, S, hero)), list, null, cost > 0);
                 }
@@ -593,6 +593,45 @@ namespace Gaiden.App
                 }
                 var b = Ui.Button(cost > 0 ? $"Heal party — {Ui.Gold(cost)}" : "Party healthy", () => Done(Inn.Rest(C, S)), "btn--primary", detail);
                 Ui.SetEnabled(b, cost > 0 && S.Gold >= cost);
+            }
+        }
+    }
+
+    // ── Caravan upgrades (§25.12) ────────────────────────────────────────────────
+
+    public sealed class CaravanScreen : HubPage
+    {
+        public override string Id => "caravan";
+        protected override string Title => "Caravan";
+        protected override string Backdrop => "desert";
+
+        protected override void BuildBody(VisualElement body)
+        {
+            var head = Ui.Window(null, body);
+            Ui.Text("The caravan travels with the party — its wagons are the shops between battles. Upgrade it for the long road.", "small", head).style.whiteSpace = WhiteSpace.Normal;
+            var w = Ui.Window(null, body);
+            w.style.flexGrow = 1;
+            var list = Ui.List(w).contentContainer;
+            foreach (var def in C.Caravan.Values)
+            {
+                var d = def;
+                int lv = CaravanUpgrades.Level(S, d.Id);
+                var next = CaravanUpgrades.NextLevel(C, S, d.Id);
+                var card = Ui.El("card", list);
+                card.name = "caravan-" + d.Id;
+                var ic = Ui.El("thumb", card);
+                ic.style.width = ic.style.height = 120;
+                ic.style.backgroundImage = new StyleBackground(Art.ItemIcon(d.Icon) ?? Art.Orb);
+                ic.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Contain);
+                var col = Ui.El("col grow", card);
+                var top = Ui.El("row", col);
+                Ui.Text(d.Name, "h2 grow", top);
+                Ui.Text($"Lv {lv}/{d.Levels.Count}", "small gold", top);
+                Ui.Text(d.Description, "tiny dim", col).style.whiteSpace = WhiteSpace.Normal;
+                if (lv > 0) Ui.Text("Now: " + d.Levels[lv - 1].Text, "tiny good", col);
+                if (next != null) Ui.Text("Next: " + next.Text, "tiny", col);
+                var b = Ui.Button(next == null ? "Maxed" : Ui.Gold(next.Cost), () => Confirm.Show($"Buy {d.Name} ({next.Text}) for {Ui.Gold(next.Cost)}?", "Buy", () => Done(CaravanUpgrades.Buy(C, S, d.Id))), "btn--small", card);
+                Ui.SetEnabled(b, next != null && S.Gold >= next.Cost);
             }
         }
     }

@@ -342,6 +342,23 @@ namespace Gaiden.Core.Content
         public List<WaveDef> Waves = new List<WaveDef>();
     }
 
+    /// <summary>A caravan upgrade (§25.12): bought with gold, one value per level.</summary>
+    public sealed class CaravanUpgradeDef
+    {
+        public string Id;
+        public string Name;
+        public string Description;
+        public string Icon;
+        public List<CaravanLevel> Levels = new List<CaravanLevel>();
+    }
+
+    public sealed class CaravanLevel
+    {
+        public int Cost;
+        public float Value;
+        public string Text;
+    }
+
     public sealed class ThemeDef
     {
         public string Id;

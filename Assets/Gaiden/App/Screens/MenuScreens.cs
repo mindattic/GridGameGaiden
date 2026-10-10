@@ -244,8 +244,10 @@ namespace Gaiden.App
             Item("Merchant", () => new ShopScreen());
             Item("Blacksmith", () => new BlacksmithScreen());
             Item("Alchemist", () => new AlchemistScreen());
-            if (Expeditions.InnOpen(s)) Ui.MenuRow("Inn", Inn.Cost(c, s) > 0 ? Ui.Gold(Inn.Cost(c, s)) : "Rested", Rest, list.contentContainer);
+            if (Expeditions.InnOpen(s)) Ui.MenuRow(s.Expedition != null ? "Inn (Medic Wagon)" : "Inn", Inn.Cost(c, s) > 0 ? Ui.Gold(Inn.Cost(c, s)) : "Rested", Rest, list.contentContainer);
             else Ui.MenuRow("Inn", "On the road", null, list.contentContainer, null, false);
+            int caravanLevels = c.Caravan.Keys.Sum(k => CaravanUpgrades.Level(s, k));
+            Item("Caravan", () => new CaravanScreen(), caravanLevels > 0 ? $"{caravanLevels} upgrades" : "");
             Item("Summon Circle", () => new SummonScreen());
             Item("Bounties", () => new BountyScreen(), Bounties.Active(c, s) != null ? $"{s.Bounty.Progress}/{Bounties.Active(c, s).Kills}" : "");
             Item("Bestiary", () => new BestiaryScreen());
@@ -345,6 +347,12 @@ namespace Gaiden.App
                     string label = (cleared ? "★ " : can ? "☆ " : "◇ ") + st.Name;
                     var row = Ui.MenuRow(label, can ? $"Lv {Progression.RecommendedLevel(index)} · {st.Waves.Count} waves" : (why ?? "Locked"), () => Launch(st, index), list.contentContainer, null, can);
                     row.style.marginLeft = 40;
+                    if (CaravanUpgrades.Level(S, "scouts") > 0)
+                    {
+                        var foes = st.Waves.SelectMany(wv => wv.Enemies).Select(e => C.TryClass(e.Class)?.Name).Where(n => n != null).Distinct().Take(5);
+                        var sc = Ui.Text("scouts: " + string.Join(", ", foes), "tiny warn", list.contentContainer);
+                        sc.style.marginLeft = 110;
+                    }
                     var drops = DropsHint(st);
                     if (can && drops.Length > 0)
                     {

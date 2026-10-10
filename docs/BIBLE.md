@@ -1726,6 +1726,20 @@ Owner: "guest characters that you meet in battle that act as allies — you resc
 - Guests already recruited (or lost) are skipped (`BattleSetup.ExcludedGuests`). A guest still standing keeps the battle going if the party falls.
 - Content: Dervish (Sandsea Reaches II), Drifter (Mireholt Fens II), Lancer (Frostmaw Caverns II), Machinist (first city ruin).
 - *(Tests: `A_guest_who_survives_a_victory_joins_the_roster`, `A_guest_who_falls_is_lost_forever`.)*
+
+### 25.12 Caravan upgrades (added 2026-10-10, owner direction: "upgrades … a sense of progression")
+
+The caravan is the party's moving base — its wagons are the shops between battles (US-348 framing; story text is lorem ipsum for now). `caravan.json` defines upgrades bought with gold at **Camp → Caravan** (`CaravanUpgrades.Buy`, levels in `SaveData.Caravan`):
+
+| Upgrade | Levels | Effect |
+|---|---|---|
+| Mana Casks | 400 / 900 / 1800 | every battle starts with +1 / +2 / +3 orbs (`BattleSetup.StartOrbs`) |
+| Medic Wagon | 600 / 1400 | the inn opens **on the road** mid-expedition at ×2 / ×1.5 price |
+| Armory Wagon | 350 / 800 / 1500 | repairs −20 / −35 / −50 % (`Repair.Cost(c, s, …)`) |
+| Strongbox | 500 / 1200 | expedition completion bonus +25 / +50 % |
+| Scouts | 300 | Adventure lists each battle's foes |
+
+*(Test: `Caravan_upgrades_cost_gold_and_change_how_expeditions_play`.)*
 ## 26. Responsive Design & Aspect Ratio
 
 ### 26.1 Reference resolution
