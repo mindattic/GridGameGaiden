@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Collections.Generic;
 using Gaiden.Core.Content;
 using UnityEngine;
@@ -6,7 +7,7 @@ namespace Gaiden.App
 {
     /// <summary>
     /// Every texture the game draws: imported art by key (Resources) plus procedurally generated UI
-    /// pieces (window gradient, cursor, orbs, tile). Missing art never throws — it falls back to a
+    /// pieces (window gradient, cursor, orbs). Missing art never throws — it falls back to a
     /// generated placeholder and logs once, so a gap is visible instead of fatal.
     /// </summary>
     public static class Art
@@ -31,6 +32,23 @@ namespace Gaiden.App
         public static bool Exists(string path) => Resources.Load<Texture2D>(path) != null;
 
         public static Texture2D Thumb(string classId) => Load("Thumbs/" + classId);
+        private static readonly Dictionary<string, int> spellIndex = new Dictionary<string, int>(System.StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>Called once content loads: every ability gets an ordinal, so every spell gets its own colour.</summary>
+        public static void IndexSpells(IEnumerable<string> ids)
+        {
+            spellIndex.Clear();
+            foreach (var id in ids.OrderBy(x => x, System.StringComparer.OrdinalIgnoreCase)) spellIndex[id] = spellIndex.Count;
+        }
+
+        /// <summary>Each spell's own colour (golden-ratio hue walk over the ability list) — its countdown ring and timeline frame.</summary>
+        public static Color SpellColor(string abilityId)
+        {
+            int i = abilityId != null && spellIndex.TryGetValue(abilityId, out var k) ? k : 0;
+            float hue = (0.03f + i * 0.61803398f) % 1f;
+            return Color.HSVToRGB(hue, 0.72f, 1f);
+        }
+
         /// <summary>Pixel-art full-body sprite (tools/make_pixel_icons.py; enemies only) — null when the class has none.</summary>
         public static Texture2D Pixel(string classId)
         {
@@ -40,6 +58,7 @@ namespace Gaiden.App
             return cache[path] = Resources.Load<Texture2D>(path);
         }
         public static Texture2D Portrait(string classId) => Load("Portraits/" + classId);
+        public static Texture2D BoardTile => Load("Tiles/tile");
         public static Texture2D Icon(string key) => string.IsNullOrEmpty(key) ? null : Load("Icons/" + key);
 
         public static Texture2D Background(string theme, int index = 0)
@@ -51,7 +70,7 @@ namespace Gaiden.App
 
         // ── Generated pieces ────────────────────────────────────────────────────────
 
-        private static Texture2D placeholder, window, windowDark, cursor, tileLight, tileDark, glow, orb;
+        private static Texture2D placeholder, window, windowDark, cursor, glow, orb;
 
         public static Texture2D Placeholder => placeholder ??= Solid(new Color(0.35f, 0.2f, 0.45f), "placeholder");
 
@@ -60,8 +79,6 @@ namespace Gaiden.App
         public static Texture2D WindowDark => windowDark ??= Gradient(new Color32(30, 36, 80, 255), new Color32(6, 8, 30, 255), "window-dark");
 
         public static Texture2D Cursor => cursor ??= MakeCursor();
-        public static Texture2D TileLight => tileLight ??= MakeTile(new Color32(70, 82, 120, 150), new Color32(140, 160, 220, 120));
-        public static Texture2D TileDark => tileDark ??= MakeTile(new Color32(50, 60, 96, 150), new Color32(120, 140, 200, 110));
         public static Texture2D Glow => glow ??= MakeGlow();
         public static Texture2D Orb => orb ??= MakeOrb();
 
@@ -122,22 +139,6 @@ namespace Gaiden.App
                     }
                     var shade = Mathf.Lerp(1f, 0.78f, fy);
                     t.SetPixel(x, y, inside ? new Color(shade, shade, 1f, 1f) : edge ? new Color(0.05f, 0.05f, 0.15f, 1f) : clear);
-                }
-            t.Apply();
-            return t;
-        }
-
-        private static Texture2D MakeTile(Color32 fill, Color32 edge)
-        {
-            const int s = 64;
-            var t = NewTex(s, s, "tile");
-            for (int y = 0; y < s; y++)
-                for (int x = 0; x < s; x++)
-                {
-                    int d = Mathf.Min(Mathf.Min(x, y), Mathf.Min(s - 1 - x, s - 1 - y));
-                    Color32 c = d < 2 ? edge : fill;
-                    if (d >= 2 && d < 5) c = Color32.Lerp(edge, fill, (d - 2) / 3f);
-                    t.SetPixel(x, y, c);
                 }
             t.Apply();
             return t;

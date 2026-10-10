@@ -8,6 +8,7 @@ Produces (under Assets/Gaiden/Resources/):
   Portraits/<classId>.png    full-body art, max 640 px tall (status / party / bestiary screens)
   Backgrounds/<theme>_<n>.jpg 720x1440 biome backdrops (stage themes mapped to biome folders)
   Icons/<Key>.png            ability icons (64x64)
+  Tiles/tile.png             the original board tile (checkerboard tint applied in BoardView)
   Audio/Sfx/*.ogg|wav, Audio/Music/*.mp3
 
 Face crops are computed from the alpha mask: the head is found as the alpha-weighted centroid of
@@ -186,6 +187,9 @@ def main():
         import_icons(args.src, abilities)
     if not only or "audio" in only:
         import_audio(args.src)
+    if not only or "tiles" in only:
+        # The original board tile (GridGame2026 SpriteLibrary "Tile" = Sprites/Tiles/tile3); BoardView tints it into a checkerboard.
+        shutil.copyfile(os.path.join(args.src, "Sprites", "Tiles", "tile3.png"), os.path.join(ensure(os.path.join(RES, "Tiles")), "tile.png"))
 
 
 if __name__ == "__main__":

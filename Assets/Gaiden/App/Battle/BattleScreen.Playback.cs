@@ -488,35 +488,34 @@ namespace Gaiden.App
             float seconds = Mathf.Clamp(ta.Ticks / 40f, 0.18f, 0.45f);
             yield return Tween.Run(seconds, k =>
             {
-                foreach (var kv in ta.U)
-                {
-                    if (!timelineIconViews.TryGetValue(kv.Key, out var icon)) continue;
-                    float s = starts.TryGetValue(kv.Key, out var v) ? v : kv.Value;
-                    var entry = State.Timeline.FirstOrDefault(x => x.Id == kv.Key);
-                    PlaceIcon(icon, entry?.Kind ?? TimelineKind.Turn, Mathf.Lerp(s, kv.Value, k));
-                }
+                var at = new Dictionary<int, float>();
+                foreach (var kv in ta.U) at[kv.Key] = Mathf.Lerp(starts.TryGetValue(kv.Key, out var v) ? v : kv.Value, kv.Value, k);
+                SyncTimeline(at); // lanes, overtakes, badges and cast rings follow the glide
             }, Tween.EaseInOut);
-            StaggerIcons();
-            foreach (var u in State.Units)
-                if (!u.IsHero && u.Alive && board.Units.TryGetValue(u.Id, out var uv)) uv.SetCountdown(BattleEngine.ActionsUntilTurn(State, u.Id));
+            SyncTimeline(ta.U);
+        }
+
+        /// <summary>Glide one icon between two u positions while everything else holds still.</summary>
+        private IEnumerator GlideOne(int entryId, float fromU, float toU, float seconds)
+        {
+            var hold = new Dictionary<int, float>();
+            foreach (var e in State.Timeline) hold[e.Id] = lastAt != null && lastAt.TryGetValue(e.Id, out var u) ? u : e.U;
+            yield return Tween.Run(seconds, k => { hold[entryId] = Mathf.Lerp(fromU, toU, Tween.EaseOut(k)); SyncTimeline(hold); });
         }
 
         private IEnumerator PushAnim(PushedBackEvent pb)
         {
             var entry = State.TurnEntryOf(pb.UnitId);
             App.Audio.Sfx("slide", 0.8f, 0.8f);
-            if (entry != null && timelineIconViews.TryGetValue(entry.Id, out var icon))
-                App.StartCoroutine(Tween.Run(0.3f, k => PlaceIcon(icon, TimelineKind.Turn, Mathf.Lerp(pb.FromU, pb.ToU, Tween.EaseOut(k)))));
+            if (entry != null && timelineIconViews.ContainsKey(entry.Id))
+                App.StartCoroutine(GlideOne(entry.Id, pb.FromU, pb.ToU, 0.3f));
             yield return FloatText(pb.UnitId, "Pushback!", new Color(0.5f, 0.85f, 1f), 0.12f, 46);
         }
 
         private IEnumerator HastenAnim(HastenedEvent h)
         {
-            if (timelineIconViews.TryGetValue(h.EntryId, out var icon))
-            {
-                var entry = State.Timeline.FirstOrDefault(x => x.Id == h.EntryId);
-                App.StartCoroutine(Tween.Run(0.3f, k => PlaceIcon(icon, entry?.Kind ?? TimelineKind.Turn, Mathf.Lerp(h.FromU, h.ToU, Tween.EaseOut(k)))));
-            }
+            if (timelineIconViews.ContainsKey(h.EntryId))
+                App.StartCoroutine(GlideOne(h.EntryId, h.FromU, h.ToU, 0.3f));
             yield return FloatText(h.UnitId, "Haste!", new Color(1f, 0.9f, 0.4f), 0.2f, 50);
         }
 
@@ -529,7 +528,10 @@ namespace Gaiden.App
             if (entry != null && timelineIconViews.TryGetValue(entry.Id, out var icon))
             {
                 App.StartCoroutine(Tween.Pop(icon, 1.35f, 0.25f));
-                PlaceIcon(icon, TimelineKind.Turn, 0f);
+                var reset = new Dictionary<int, float>();
+                foreach (var e in State.Timeline) reset[e.Id] = lastAt != null && lastAt.TryGetValue(e.Id, out var lu) ? lu : e.U;
+                reset[entry.Id] = 0f;
+                SyncTimeline(reset);
             }
             if (u != null && board.Units.TryGetValue(u.Id, out var v))
             {
@@ -547,7 +549,11 @@ namespace Gaiden.App
             var caster = State.UnitById(cq.CasterId);
             if (cq.LineTiles != null) foreach (var t in cq.LineTiles) board.Mark(t, new Color(1f, 0.2f, 0.15f), 0.4f);
             string what = App.Content.TryAbility(cq.AbilityId)?.Name ?? "spell";
-            ShowBanner(cq.IsCharge ? $"{caster?.Name} is charging {what}!" : $"{caster?.Name} begins {what}");
+            var entry = State.Timeline.FirstOrDefault(x => x.Id == cq.EntryId);
+            var target = entry == null ? null : State.UnitById(entry.TargetUnitId) ?? State.UnitAt(entry.TargetTile);
+            string on = target != null ? $" on {target.Name}" : cq.LineTiles != null ? " down a line" : "";
+            float secs = cq.Ticks / (float)BattleConfig.TicksPerSecond;
+            ShowBanner($"{caster?.Name} {(cq.IsCharge ? "charges" : "casts")} {what}{on} — lands in {secs:0.#}s");
             yield return FloatText(cq.CasterId, cq.IsCharge ? "Charging…" : "Casting…", new Color(0.6f, 0.85f, 1f), 0.3f, 50);
         }
 
@@ -566,7 +572,9 @@ namespace Gaiden.App
         {
             var a = App.Content.TryAbility(ar.AbilityId);
             var caster = State.UnitById(ar.CasterId);
-            ShowBanner(a?.Name ?? "");
+            var hit = ar.Targets.Select(State.UnitById).Where(u => u != null).Select(u => u.Name).Distinct().ToList();
+            string who = hit.Count == 0 ? "" : hit.Count <= 2 ? " → " + string.Join(" & ", hit) : $" → {hit.Count} targets";
+            ShowBanner(a == null ? "" : caster != null ? $"{caster.Name}: {a.Name}{who}" : a.Name + who);
             board.ClearMarks();
             Color c = a == null ? Color.white : a.BaseHeal > 0 ? new Color(0.4f, 1f, 0.55f) : ColorFor(a.DamageType);
             foreach (var t in ar.Tiles) board.Mark(t, c, 0.45f);
@@ -835,7 +843,7 @@ namespace Gaiden.App
         private void RefreshUnit(int id)
         {
             var u = State.UnitById(id);
-            if (u != null && board.Units.TryGetValue(id, out var v)) { v.SetBuffs(u, Colorblind); v.SetHp(u.Hp, u.MaxHp); }
+            if (u != null && board.Units.TryGetValue(id, out var v)) { v.SetBuffs(u, Colorblind, State.TurnEntryOf(u.Id)?.StunTicks > 0); v.SetHp(u.Hp, u.MaxHp); }
         }
 
         private IEnumerator FloatText(int unitId, string text, Color c, float hold, float size = 60)

@@ -150,7 +150,7 @@ namespace Gaiden.App
 
         private void Start(int slot)
         {
-            App.Save = Progression.NewGame(App.Content, "Lightbearer");
+            App.Save = Progression.NewGame(App.Content, "Player");
             App.Slot = slot;
             App.ApplySettings();
             App.Persist();

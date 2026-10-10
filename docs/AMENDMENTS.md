@@ -231,3 +231,23 @@ updated: 2026-10-09
   Turn icons now show the whole enemy as a 36 px, 16-colour sprite with a sticker outline; the next
   attacker's icon gets a gold ring and a slight lift.
 
+## 2026-10-10 — timeline readability, enemy personalities, cast countdowns (owner requests)
+
+- "The enemies don't need turn numbers on them because the timeline is there" → board countdown badges removed.
+- "a very fast enemy [can] move past a slow enemy on the windup" / "set up the fast enemies to bypass enemies on
+  the line" → enemy speed tiers 8 / 11 / 15 / 18 and an overtake lane on the timeline.
+- "smarter enemies will attack the weakest enemy, dumb enemies will attack the closest" → targeting
+  personalities (Closest / Weakest / Threat / Squishy / Erratic), per family in classes.json. Replaces the old
+  blended score (distance + HP fraction − INT × threat). Bot balance moved slightly easier mid-campaign.
+- Timeline icons centred on a thinner line, opaque, masked to the circle; debuff badges on circles + tiles.
+- "casting spells requires a casting period which should also be on the timeline" → casts travel 0 → 1 over
+  their own cast time on the same line (was: constant reference pace below the line).
+- "use the enemy border as a radial countdown … each spell has a different color … cycle" → `CastRing`.
+- Enemy icon method recorded in docs/PIXEL_ICONS.md (owner: "save and record the method").
+
+## 2026-10-10 — story text removed (owner)
+
+- **Owner:** "get rid of all this story about the missing sun and the UNDEARTH, its terrible, just put in lorem
+  ipsum for now." All five theme crawls are lorem ipsum; the default profile name is "Player". The replacement
+  story is the caravan premise (US-348).
+

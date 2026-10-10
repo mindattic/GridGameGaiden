@@ -16,23 +16,77 @@ namespace Gaiden.Core.Rules
     /// <summary>Enemy decision-making (bible §14). Pure: reads state, never commits.</summary>
     public static class EnemyPlanner
     {
-        private const float ThreatIntScale = 0.8f;
-
-        public static Unit PickTarget(BattleState s, Unit enemy)
+        /// <summary>The enemy's personality; Auto → Weakest for clever foes (INT ≥ 14), Threat for other humanoids, else Closest.</summary>
+        public static Targeting TargetingOf(Unit enemy)
         {
-            var heroes = s.LivingList(Team.Hero);
-            if (heroes.Count == 0) return null;
-            int maxThreat = 0;
-            foreach (var h in heroes) maxThreat = Math.Max(maxThreat, h.DamageDealt);
-            float intFactor = enemy.Effective.Intelligence * ThreatIntScale;
-            Unit best = null; float bestScore = float.MaxValue;
-            foreach (var h in heroes)
+            var t = enemy.Def.Targeting;
+            if (t != Targeting.Auto) return t;
+            if (enemy.Def.BaseStats.Intelligence >= 14) return Targeting.Weakest;
+            return enemy.IsHumanoid ? Targeting.Threat : Targeting.Closest;
+        }
+
+        public static string Describe(Targeting t)
+        {
+            switch (t)
             {
-                float threat = maxThreat > 0 ? (float)h.DamageDealt / maxThreat * intFactor : 0f;
-                float score = enemy.DistanceTo(h) + h.HpFraction * 8f - threat;
-                if (score < bestScore) { bestScore = score; best = h; }
+                case Targeting.Weakest: return "Hunts the weakest hero";
+                case Targeting.Threat: return "Goes after your hardest hitter";
+                case Targeting.Squishy: return "Targets the most fragile hero";
+                case Targeting.Erratic: return "Attacks at random";
+                default: return "Attacks whoever is closest";
             }
+        }
+
+        /// <summary>The hero this enemy wants, among all living heroes.</summary>
+        public static Unit PickTarget(BattleState s, Unit enemy) => PickFrom(s, enemy, s.LivingList(Team.Hero));
+
+        /// <summary>
+        /// The hero this enemy wants among <paramref name="heroes"/>, by its personality. Ties fall back to
+        /// distance, then lower HP, then id, so every choice is deterministic. Erratic picks a hero that
+        /// stays fixed for the whole turn (hash of clock and id) without consuming the battle RNG.
+        /// </summary>
+        public static Unit PickFrom(BattleState s, Unit enemy, List<Unit> heroes)
+        {
+            if (heroes == null || heroes.Count == 0) return null;
+            var mode = TargetingOf(enemy);
+            if (mode == Targeting.Erratic)
+            {
+                var sorted = new List<Unit>(heroes);
+                sorted.Sort((x, y) => x.Id.CompareTo(y.Id));
+                int h = (int)((s.Clock * 31 + enemy.Id * 17) & 0x7fffffff);
+                return sorted[h % sorted.Count];
+            }
+            if (mode == Targeting.Threat)
+            {
+                bool anyDamage = false;
+                foreach (var hero in heroes) if (hero.DamageDealt > 0) anyDamage = true;
+                if (!anyDamage) mode = Targeting.Closest; // nobody has hurt it yet
+            }
+            Unit best = null;
+            foreach (var hero in heroes)
+                if (best == null || Better(enemy, mode, hero, best)) best = hero;
             return best;
+        }
+
+        private static bool Better(Unit enemy, Targeting mode, Unit a, Unit b)
+        {
+            float ka = Key(enemy, mode, a), kb = Key(enemy, mode, b);
+            if (ka != kb) return ka < kb;
+            int da = enemy.DistanceTo(a), db = enemy.DistanceTo(b);
+            if (da != db) return da < db;
+            if (a.Hp != b.Hp) return a.Hp < b.Hp;
+            return a.Id < b.Id;
+        }
+
+        private static float Key(Unit enemy, Targeting mode, Unit h)
+        {
+            switch (mode)
+            {
+                case Targeting.Weakest: return h.Hp;
+                case Targeting.Threat: return -h.DamageDealt;
+                case Targeting.Squishy: return h.Effective.Vitality * 1000f + h.MaxHp;
+                default: return enemy.DistanceTo(h);
+            }
         }
 
         /// <summary>The single best next tile for this enemy (its anchor for a multi-tile actor).</summary>
@@ -95,12 +149,7 @@ namespace Gaiden.Core.Rules
             if (!ignoreMeleeRange)
                 foreach (var h in heroes) if (enemy.IsAdjacentTo(h)) return null;
 
-            Unit target = null; int bestD = int.MaxValue;
-            foreach (var h in heroes)
-            {
-                int d = enemy.DistanceTo(h);
-                if (d < bestD) { bestD = d; target = h; }
-            }
+            var target = PickFrom(s, enemy, heroes);
             var plan = new ChargePlan { Target = target, Ability = ability, Shape = enemy.Def.ChargeShape };
             if (plan.Shape == ChargeShape.Line)
             {
@@ -125,10 +174,10 @@ namespace Gaiden.Core.Rules
             return list;
         }
 
-        /// <summary>The lowest-HP hero in a straight row/column line within reach with nothing in between, or null.</summary>
+        /// <summary>The hero it wants (by personality) among those in a clear straight row/column line within reach, or null.</summary>
         public static Unit RangedTarget(BattleState s, Unit enemy)
         {
-            Unit best = null;
+            var inSight = new List<Unit>();
             foreach (var d in Coord.Cardinals)
             {
                 var c = enemy.Pos + d;
@@ -136,11 +185,11 @@ namespace Gaiden.Core.Rules
                 {
                     var occ = s.UnitAt(c);
                     if (occ == null) continue;
-                    if (occ.IsHero && (best == null || occ.Hp < best.Hp)) best = occ;
+                    if (occ.IsHero) inSight.Add(occ);
                     break; // line of sight stops at the first unit
                 }
             }
-            return best;
+            return PickFrom(s, enemy, inSight);
         }
 
         public static bool FootprintStepLegal(BattleState s, Unit enemy, Coord newAnchor)

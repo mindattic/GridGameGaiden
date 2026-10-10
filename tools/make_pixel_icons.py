@@ -8,7 +8,8 @@ plus a .meta with point filtering and no compression, so the pixels stay crisp i
 
 Recipe: knock out a solid backdrop (flood fill from the corners) -> trim the figure to its silhouette -> median-smooth (kills painterly noise) -> shrink to 32 px ->
 hard alpha edge -> brighter, more saturated, more contrast -> 16-colour palette without dithering ->
-1 px dark outline + 1 px cream outer rim (a "sticker" that reads on dark and light backgrounds alike).
+1 px dark outline + 1 px cream outer rim (a "sticker" that reads on dark and light backgrounds alike) ->
+re-ink the eyes from tools/eyes.json (they are the detail shrinking loses).
 """
 import argparse
 import json
@@ -23,6 +24,8 @@ RES = os.path.join(ROOT, "Assets", "Gaiden", "Resources")
 SRC = os.path.join(RES, "Portraits")
 OUT = os.path.join(RES, "Pixel")
 TEMPLATE = os.path.join(RES, "Thumbs", "slime00.png.meta")
+# classId -> [[x, y], ...] eye pixels in the 36x36 sprite, hand-placed from the full-res portraits
+EYES = json.load(open(os.path.join(ROOT, "tools", "eyes.json"), encoding="utf-8"))
 
 
 def opaque_corners(src):
@@ -51,6 +54,49 @@ def magick_args(src, dst):
         "-compose", "DstOver", "-composite",
         "-filter", "point", "-resize", "400%", "-strip", "PNG32:" + dst,
     ]
+
+
+OUTLINE, RIM, EYE, GLINT = (0x14, 0x0C, 0x1C), (0xFF, 0xF4, 0xDC), (7, 4, 12, 255), (255, 244, 200, 255)
+SCALE = 4  # output px per sprite px
+
+
+def ink_eyes(png, eyes):
+    """
+    "Enhance" the eyes - the detail shrinking loses - by re-inking each as one solid dark sprite pixel.
+    Hand-placed points (tools/eyes.json) can land a pixel off, on the outline or outside the figure, so
+    each snaps to the nearest interior pixel (opaque, not outline/rim), keeping two eyes on two pixels.
+    """
+    if not eyes:
+        return
+    from PIL import Image
+    im = Image.open(png).convert("RGBA")
+    n = im.width // SCALE
+    px = lambda x, y: im.getpixel((x * SCALE + 1, y * SCALE + 1))
+    def interior(x, y):
+        if not (0 <= x < n and 0 <= y < n):
+            return False
+        r, g, b, a = px(x, y)
+        return a == 255 and (r, g, b) not in (OUTLINE, RIM)
+    used = set()
+    for ex, ey in eyes:
+        best = None
+        for rad in range(0, 3):
+            cands = [(ex + dx, ey + dy) for dy in range(-rad, rad + 1) for dx in range(-rad, rad + 1)
+                     if max(abs(dx), abs(dy)) == rad and interior(ex + dx, ey + dy) and (ex + dx, ey + dy) not in used]
+            if cands:
+                best = min(cands, key=lambda c: ((c[0] - ex) ** 2 + (c[1] - ey) ** 2, c[1], c[0]))
+                break
+        if best is None:
+            continue
+        used.add(best)
+        # On a dark face a black dot disappears; there the eye becomes a pale glint instead.
+        around = [px(best[0] + dx, best[1] + dy) for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)) if interior(best[0] + dx, best[1] + dy)]
+        luma = sum(0.3 * r + 0.59 * g + 0.11 * b for r, g, b, _ in around) / max(1, len(around))
+        ink = GLINT if luma < 70 else EYE
+        for dy in range(SCALE):
+            for dx in range(SCALE):
+                im.putpixel((best[0] * SCALE + dx, best[1] * SCALE + dy), ink)
+    im.save(png)
 
 
 def write_meta(png):
@@ -85,6 +131,7 @@ def main():
             continue
         dst = os.path.join(OUT, i + ".png")
         subprocess.run(magick_args(src, dst), check=True)
+        ink_eyes(dst, EYES.get(i, ()))
         write_meta(dst)
     print(f"pixel sprites: {len(ids) - len(missing)} written to {OUT}")
     if missing:

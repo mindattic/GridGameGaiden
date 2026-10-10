@@ -705,7 +705,11 @@ namespace Gaiden.App
             Ui.Text($"Defeated {e.Defeated}", "small gold", top);
             var lore = Ui.Text(d.Lore ?? d.Description ?? "", "small dim", w);
             lore.style.whiteSpace = WhiteSpace.Normal;
-            if (e.Scanned) Ui.Text(Ui.StatLine(d.BaseStats), "small", w);
+            if (e.Scanned)
+            {
+                Ui.Text(Ui.StatLine(d.BaseStats), "small", w);
+                Ui.Text(Gaiden.Core.Rules.EnemyPlanner.Describe(d.Targeting != Targeting.Auto ? d.Targeting : d.BaseStats.Intelligence >= 14 ? Targeting.Weakest : d.Tags.Contains("Humanoid") ? Targeting.Threat : Targeting.Closest), "small warn", w);
+            }
             else Ui.Text("Scan it in battle to reveal its stats.", "tiny dim", w);
         }
     }

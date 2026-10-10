@@ -731,7 +731,7 @@ namespace Gaiden.Tests
         public void Smart_enemies_hunt_whoever_hurt_them_most()
         {
             var db = Mini();
-            db.Classes["wolf"].BaseStats.Intelligence = 100;
+            db.Classes["wolf"].Targeting = Targeting.Threat;
             var (s, _) = Battle(db, Stage(("wolf", 2, 2)), ("knight", 2, 4), ("cleric", 2, 0));
             var wolf = Enemy(s, "wolf");
             Assert.Same(EnemyPlanner.PickTarget(s, wolf), EnemyPlanner.PickTarget(s, wolf));

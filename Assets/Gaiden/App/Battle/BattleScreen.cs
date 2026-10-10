@@ -26,6 +26,8 @@ namespace Gaiden.App
         // Layout (design pixels)
         private const float BoardLeft = 45f, BoardTop = 450f;
         private const float TimelineLeft = 40f, TimelineWidth = 940f, TimelineY = 250f;
+        /// <summary>The track line's y inside the timeline frame; turn icons centre on it, cast icons hang below.</summary>
+        private const float TrackY = 100f;
 
         public BattleState State { get; private set; }
         public bool Busy => playing || dragging;
@@ -213,10 +215,11 @@ namespace Gaiden.App
             frame.style.position = Position.Absolute;
             frame.style.left = TimelineLeft; frame.style.top = TimelineY - 100; frame.style.width = TimelineWidth; frame.style.height = 200;
             timelineBar = Ui.El("", frame);
+            timelineBar.name = "timeline-track";
             timelineBar.style.position = Position.Absolute;
-            timelineBar.style.left = 0; timelineBar.style.right = 0; timelineBar.style.top = 92; timelineBar.style.height = 16;
+            timelineBar.style.left = 0; timelineBar.style.right = 0; timelineBar.style.top = TrackY - 3; timelineBar.style.height = 6;
             timelineBar.style.backgroundColor = new Color(0.9f, 0.92f, 1f, 0.85f);
-            timelineBar.style.borderTopLeftRadius = timelineBar.style.borderTopRightRadius = timelineBar.style.borderBottomLeftRadius = timelineBar.style.borderBottomRightRadius = 8;
+            timelineBar.style.borderTopLeftRadius = timelineBar.style.borderTopRightRadius = timelineBar.style.borderBottomLeftRadius = timelineBar.style.borderBottomRightRadius = 3;
             zone = Ui.El("", frame);
             zone.style.position = Position.Absolute;
             zone.style.left = Length.Percent((1f - BattleConfig.ZoneU) * 100f); zone.style.right = 0;
@@ -228,6 +231,7 @@ namespace Gaiden.App
             timelineIcons = Ui.El("", frame);
             timelineIcons.style.position = Position.Absolute;
             timelineIcons.style.left = timelineIcons.style.top = timelineIcons.style.right = timelineIcons.style.bottom = 0;
+            timelineIcons.schedule.Execute(CycleCastRings).Every(1200);
 
             var shield = Ui.Button("GUARD", () => { if (CanCommand()) Commit(new ShieldCommand()); }, "btn--icon", root);
             shield.name = "shield";
@@ -312,8 +316,7 @@ namespace Gaiden.App
                 board.Place(v, u.Pos);
                 v.Root.style.opacity = 1; v.Root.style.scale = new Scale(Vector2.one); v.Root.style.translate = new Translate(0, 0);
                 v.SetHp(u.Hp, u.MaxHp);
-                v.SetBuffs(u, Colorblind);
-                v.SetCountdown(u.IsHero ? -1 : BattleEngine.ActionsUntilTurn(State, u.Id));
+                v.SetBuffs(u, Colorblind, State.TurnEntryOf(u.Id)?.StunTicks > 0);
                 bool sel = u.Id == SelectedHeroId;
                 var aura = AuraFor(u);
                 if (sel) v.SetGlow(new Color(1f, 0.9f, 0.5f), 0.65f);
@@ -348,6 +351,7 @@ namespace Gaiden.App
         private void SyncTimeline(Dictionary<int, float> uOverride)
         {
             var live = new HashSet<int>();
+            var at = new Dictionary<int, float>();
             foreach (var e in State.Timeline)
             {
                 live.Add(e.Id);
@@ -357,14 +361,18 @@ namespace Gaiden.App
                     timelineIconViews[e.Id] = icon;
                     timelineIcons.Add(icon);
                 }
-                float u = uOverride != null && uOverride.TryGetValue(e.Id, out var ou) ? ou : e.U;
-                PlaceIcon(icon, e.Kind, u);
+                at[e.Id] = Mathf.Clamp01(uOverride != null && uOverride.TryGetValue(e.Id, out var ou) ? ou : e.U);
             }
-            StaggerIcons();
+            lastAt = at;
+            LayoutIcons(at);
             MarkNextAttacker();
+            SyncTimelineStatus();
+            SyncCastRings(at);
             foreach (var kv in timelineIconViews.ToList())
                 if (!live.Contains(kv.Key)) { kv.Value.RemoveFromHierarchy(); timelineIconViews.Remove(kv.Key); }
         }
+
+        private const float TurnIcon = 84f, CastIcon = 60f;
 
         private VisualElement MakeTimelineIcon(TimelineEntry e)
         {
@@ -374,40 +382,30 @@ namespace Gaiden.App
             icon.style.flexShrink = 0;
             if (e.Kind == TimelineKind.Turn)
             {
-                icon.style.width = icon.style.height = 84;
-                icon.style.top = 2;
-                SetBorder(icon, 40, 4, TurnRing(owner));
-                // The whole enemy as a pixel-art sprite standing on a dark disc, so the next attacker reads at a glance.
+                icon.style.width = icon.style.height = TurnIcon;
+                icon.style.top = TrackY - TurnIcon / 2f; // centred on the line
+                SetBorder(icon, TurnIcon / 2f - 2f, 4, TurnRing(owner));
+                // Opaque disc so the track never shows through; overflow:hidden masks the sprite to the circle.
+                icon.style.backgroundColor = new Color(0.06f, 0.07f, 0.17f, 1f);
+                icon.style.overflow = Overflow.Hidden;
                 var px = Art.Pixel(owner?.Def.Id);
-                if (px != null)
-                {
-                    var disc = new VisualElement { name = "disc", pickingMode = PickingMode.Ignore };
-                    disc.style.position = Position.Absolute;
-                    disc.style.left = disc.style.top = disc.style.right = disc.style.bottom = 0;
-                    disc.style.borderTopLeftRadius = disc.style.borderTopRightRadius = disc.style.borderBottomLeftRadius = disc.style.borderBottomRightRadius = 38;
-                    disc.style.backgroundColor = new Color(0.05f, 0.06f, 0.16f, 0.92f);
-                    icon.Add(disc);
-                    var sprite = new VisualElement { name = "px", pickingMode = PickingMode.Ignore };
-                    sprite.style.position = Position.Absolute;
-                    sprite.style.left = sprite.style.top = sprite.style.right = sprite.style.bottom = 2; // inside the ring
-                    sprite.style.backgroundImage = new StyleBackground(px);
-                    sprite.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Contain);
-                    icon.Add(sprite);
-                }
-                else
-                {
-                    icon.style.backgroundImage = new StyleBackground(Art.Thumb(owner?.Def.Id));
-                    icon.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Cover);
-                }
+                var sprite = new VisualElement { name = px != null ? "px" : "thumb", pickingMode = PickingMode.Ignore };
+                sprite.style.position = Position.Absolute;
+                sprite.style.left = sprite.style.top = sprite.style.right = sprite.style.bottom = 3;
+                sprite.style.backgroundImage = new StyleBackground(px != null ? px : Art.Thumb(owner?.Def.Id));
+                sprite.style.backgroundSize = new BackgroundSize(px != null ? BackgroundSizeType.Contain : BackgroundSizeType.Cover);
+                icon.Add(sprite);
             }
             else
             {
+                // A cast rides the same line, from 0 (cast start) to 1 (lands) over its own cast time, so a quick
+                // spell visibly overtakes turn icons that started earlier.
                 var a = App.Content.TryAbility(e.AbilityId);
-                icon.style.width = icon.style.height = 56;
-                icon.style.top = 126;
-                var c = e.CasterTeam == Team.Hero ? new Color(0.5f, 0.85f, 1f) : new Color(1f, 0.45f, 0.35f);
-                SetBorder(icon, 28, 4, c);
-                icon.style.backgroundColor = new Color(0.08f, 0.1f, 0.3f);
+                icon.style.width = icon.style.height = CastIcon;
+                icon.style.top = TrackY - CastIcon / 2f;
+                SetBorder(icon, 14, 5, Art.SpellColor(e.AbilityId));
+                icon.style.backgroundColor = e.CasterTeam == Team.Hero ? new Color(0.08f, 0.14f, 0.36f, 1f) : new Color(0.3f, 0.06f, 0.1f, 1f);
+                icon.style.overflow = Overflow.Hidden;
                 var tex = Art.Icon(a?.Icon);
                 if (tex != null) { icon.style.backgroundImage = new StyleBackground(tex); icon.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Contain); }
             }
@@ -428,35 +426,133 @@ namespace Gaiden.App
             {
                 if (e.Kind != TimelineKind.Turn || !timelineIconViews.TryGetValue(e.Id, out var icon)) continue;
                 bool isNext = next != null && e.Id == next.Id;
-                SetBorder(icon, 40, 4, isNext ? NextRing : TurnRing(State.UnitById(e.OwnerId)));
+                SetBorder(icon, TurnIcon / 2f - 2f, 4, isNext ? NextRing : TurnRing(State.UnitById(e.OwnerId)));
                 icon.style.scale = new Scale(isNext ? new Vector2(1.18f, 1.18f) : Vector2.one);
                 icon.EnableInClassList("tl-next", isNext);
-                if (isNext) icon.BringToFront();
             }
         }
 
-        private void PlaceIcon(VisualElement icon, TimelineKind kind, float u)
+        /// <summary>
+        /// Lays every icon on the line. Where icons overlap, the faster one (higher u per tick) rides one lane up
+        /// and in front, so an overtake reads as the quick icon hopping over the slow one (bible §2.6).
+        /// </summary>
+        private void LayoutIcons(Dictionary<int, float> at)
         {
-            float w = kind == TimelineKind.Turn ? 84 : 56;
-            icon.style.left = Mathf.Clamp01(u) * TimelineWidth - w / 2f;
-        }
-
-        /// <summary>Icons that would overlap step upward (turns) / downward (casts) so every one stays readable.</summary>
-        private void StaggerIcons()
-        {
-            var placed = new List<(float x, int lane, TimelineKind kind)>();
-            foreach (var e in State.Timeline.OrderBy(x => x.U))
+            var entries = State.Timeline.Where(e => timelineIconViews.ContainsKey(e.Id)).ToList();
+            var pace = entries.ToDictionary(e => e.Id, e => BattleEngine.UPerTick(State, e));
+            foreach (var e in entries)
             {
-                if (!timelineIconViews.TryGetValue(e.Id, out var icon)) continue;
-                float x = e.U * TimelineWidth;
-                int lane = 0;
-                while (placed.Any(p => p.kind == e.Kind && p.lane == lane && Mathf.Abs(p.x - x) < (e.Kind == TimelineKind.Turn ? 70 : 46))) lane++;
-                placed.Add((x, lane, e.Kind));
-                // Alternate small offsets around the lane (up, down, further up…) so the stack never reaches the title.
-                int offset = lane == 0 ? 0 : (lane % 2 == 1 ? -1 : 1) * ((lane + 1) / 2) * 20;
-                icon.style.top = e.Kind == TimelineKind.Turn ? 2 + offset : 126 + lane * 22;
-                icon.style.left = Mathf.Clamp01(e.U) * TimelineWidth - (e.Kind == TimelineKind.Turn ? 42 : 28) + (lane > 0 ? (lane % 2 == 1 ? 14 : -14) : 0);
+                var icon = timelineIconViews[e.Id];
+                float w = e.Kind == TimelineKind.Turn ? TurnIcon : CastIcon;
+                float x = at[e.Id] * TimelineWidth;
+                int above = 0;
+                foreach (var o in entries)
+                {
+                    if (o.Id == e.Id) continue;
+                    float ow = o.Kind == TimelineKind.Turn ? TurnIcon : CastIcon;
+                    if (Mathf.Abs(at[o.Id] * TimelineWidth - x) >= (w + ow) * 0.42f) continue;
+                    bool faster = pace[e.Id] > pace[o.Id] + 1e-6f || (Mathf.Abs(pace[e.Id] - pace[o.Id]) <= 1e-6f && e.Id > o.Id);
+                    if (faster) above++;
+                }
+                icon.style.left = x - w / 2f;
+                icon.style.top = TrackY - w / 2f - above * 46f;
             }
+            // Draw order: slow first, fast last (on top).
+            foreach (var e in entries.OrderBy(e => pace[e.Id]).ThenBy(e => e.Id)) timelineIconViews[e.Id].BringToFront();
+            if (State.Timeline.FirstOrDefault(e => timelineIconViews.TryGetValue(e.Id, out var i) && i.ClassListContains("tl-next")) is TimelineEntry n)
+                timelineIconViews[n.Id].BringToFront();
+        }
+
+        /// <summary>Why an enemy isn't moving: a badge on its timeline circle for halting/immobilising effects and pushback stun.</summary>
+        private void SyncTimelineStatus()
+        {
+            foreach (var e in State.Timeline)
+            {
+                if (e.Kind != TimelineKind.Turn || !timelineIconViews.TryGetValue(e.Id, out var icon)) continue;
+                var owner = State.UnitById(e.OwnerId);
+                var badge = timelineIcons.Q<VisualElement>("tl-status-" + e.Id);
+                var status = owner == null ? null : StatusOf(owner, e);
+                var art = icon.Q("px") ?? icon.Q("thumb");
+                if (status == null) { badge?.RemoveFromHierarchy(); if (art != null) art.style.opacity = 1f; continue; }
+                if (badge == null)
+                {
+                    badge = new Label { name = "tl-status-" + e.Id, pickingMode = PickingMode.Ignore };
+                    badge.AddToClassList("pip");
+                    badge.style.position = Position.Absolute;
+                    badge.style.width = badge.style.height = 38;
+                    badge.style.fontSize = 22;
+                    timelineIcons.Add(badge);
+                }
+                ((Label)badge).text = status.Value.letter;
+                badge.style.backgroundColor = status.Value.color;
+                badge.style.left = icon.style.left.value.value + TurnIcon - 30f;
+                badge.style.top = icon.style.top.value.value + TurnIcon - 30f;
+                badge.BringToFront();
+                if (art != null) art.style.opacity = 0.55f; // dimmed: it isn't moving
+            }
+            foreach (var b in timelineIcons.Query<VisualElement>(className: "pip").ToList())
+                if (b.name != null && b.name.StartsWith("tl-status-") && !State.Timeline.Any(e => "tl-status-" + e.Id == b.name && State.UnitById(e.OwnerId) is Unit o && o.Alive && StatusOf(o, e) != null))
+                    b.RemoveFromHierarchy();
+        }
+
+        /// <summary>The effect that stops this unit's clock or turn, if any: buffs that halt/immobilise, else pushback stun.</summary>
+        private static (string letter, Color color, string name)? StatusOf(Unit u, TimelineEntry turn)
+        {
+            foreach (var b in u.Buffs)
+                if (b.Def.HaltsTimeline || b.Def.Immobile)
+                    return (string.IsNullOrEmpty(b.Def.Letter) ? b.Def.Name.Substring(0, 1) : b.Def.Letter, Art.HexColor(b.Def.Color, new Color(0.6f, 0.85f, 1f)), b.Def.Name);
+            if (turn != null && turn.StunTicks > 0) return ("!", new Color(1f, 0.85f, 0.3f), "Stunned");
+            return null;
+        }
+
+        // ── Cast countdowns on the target's frame ──────────────────────────────
+
+        private Dictionary<int, float> lastAt;
+        private int castCycle;
+
+        /// <summary>
+        /// Every pending cast draws a radial countdown around its target's frame in the spell's own colour, plus a
+        /// chip with the spell icon; a unit targeted by several casts cycles through them every 1.2 s.
+        /// </summary>
+        private void SyncCastRings(Dictionary<int, float> at)
+        {
+            var pending = new Dictionary<int, List<(Color color, float left, AbilityDef a)>>();
+            foreach (var e in State.Timeline)
+            {
+                if (e.Kind != TimelineKind.Cast) continue;
+                int target = e.TargetUnitId;
+                if (State.UnitById(target) is not Unit tu || !tu.Alive) target = State.UnitAt(e.TargetTile)?.Id ?? -1;
+                if (target < 0) continue;
+                float u = at != null && at.TryGetValue(e.Id, out var x) ? x : e.U;
+                if (!pending.TryGetValue(target, out var list)) pending[target] = list = new List<(Color, float, AbilityDef)>();
+                list.Add((Art.SpellColor(e.AbilityId), 1f - u, App.Content.TryAbility(e.AbilityId)));
+            }
+            foreach (var kv in board.Units)
+            {
+                if (pending.TryGetValue(kv.Key, out var list))
+                {
+                    var (color, left, a) = list[castCycle % list.Count];
+                    kv.Value.SetCast(color, left, string.IsNullOrEmpty(a?.Icon) ? null : Art.Icon(a.Icon), list.Count, a?.Name);
+                }
+                else kv.Value.SetCast(null, 0f, null, 0);
+            }
+        }
+
+        private void CycleCastRings()
+        {
+            castCycle++;
+            if (State != null && board != null) SyncCastRings(lastAt);
+        }
+
+        /// <summary>Dev hook (automation): queue a pending enemy cast on a unit so the countdown ring can be checked.</summary>
+        public bool DevQueueCast(int targetId, string abilityId, int ticks)
+        {
+            var target = State.UnitById(targetId);
+            var caster = State.Units.FirstOrDefault(u => u.Alive && !u.IsHero);
+            if (target == null || caster == null || App.Content.TryAbility(abilityId) == null) return false;
+            State.Timeline.Add(new TimelineEntry { Id = State.NextEntryId++, Kind = TimelineKind.Cast, OwnerId = caster.Id, AbilityId = abilityId, CasterTeam = Team.Enemy, TargetUnitId = target.Id, TargetTile = target.Pos, TotalCastTicks = ticks, RemainingTicks = ticks, IsCharge = true });
+            SyncAll();
+            return true;
         }
 
         private static void SetBorder(VisualElement e, float radius, float width, Color c)
@@ -584,6 +680,7 @@ namespace Gaiden.App
                 int n = BattleEngine.ActionsUntilTurn(State, u.Id);
                 var cast = State.CastEntryOf(u.Id);
                 Ui.Text(cast != null ? $"Charging {App.Content.TryAbility(cast.AbilityId)?.Name}!" : n < 0 ? "Frozen in time" : n == 0 ? "Acts after your next move!" : $"Acts in {n} moves", "small warn", col);
+                Ui.Text(EnemyPlanner.Describe(EnemyPlanner.TargetingOf(u)), "tiny dim", col);
             }
             if (u.Buffs.Count > 0)
                 Ui.Text(string.Join("  ", u.Buffs.Select(b => $"{b.Def.Name} {b.Remaining}")), "tiny", col);
@@ -840,7 +937,12 @@ namespace Gaiden.App
 
         public void SelectHero(int id)
         {
-            if (SelectedHeroId == id) return;
+            if (SelectedHeroId == id)
+            {
+                // Re-touching the selected hero still dismisses an inspected enemy card (it hid the tutorial card).
+                if (panelUnitId >= 0) { panelUnitId = -1; SyncPanel(); }
+                return;
+            }
             CancelTargeting();
             SelectedHeroId = id;
             panelUnitId = -1;

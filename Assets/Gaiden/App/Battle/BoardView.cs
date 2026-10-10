@@ -7,7 +7,7 @@ using UnityEngine.UIElements;
 
 namespace Gaiden.App
 {
-    /// <summary>One actor on the board: framed portrait crop, HP strip, buff pips, turn countdown badge.</summary>
+    /// <summary>One actor on the board: framed portrait crop, HP strip, buff pips (turn order lives on the timeline).</summary>
     public sealed class UnitView
     {
         public readonly int Id;
@@ -18,8 +18,9 @@ namespace Gaiden.App
         public readonly VisualElement Hp;
         public readonly VisualElement HpFill;
         public readonly VisualElement Buffs;
-        public readonly Label Countdown;
         public readonly VisualElement Glow;
+        public readonly CastRing Cast;
+        public readonly VisualElement CastChip;
         public Coord Tile;
         public int W = 1, H = 1;
         public bool Dead;
@@ -79,14 +80,25 @@ namespace Gaiden.App
             Buffs.style.right = 10; Buffs.style.top = 10;
             Root.Add(Buffs);
 
-            Countdown = new Label { pickingMode = PickingMode.Ignore };
-            Countdown.AddToClassList("shadow");
-            Countdown.style.position = Position.Absolute;
-            Countdown.style.left = 8; Countdown.style.top = 2;
-            Countdown.style.fontSize = 58;
-            Countdown.style.unityFontStyleAndWeight = FontStyle.Bold;
-            Countdown.style.color = new Color(1f, 0.95f, 0.8f);
-            Root.Add(Countdown);
+
+            // Pending-spell countdown traced around the frame, and the incoming spell's icon in the corner.
+            Cast = new CastRing { name = "castring-" + u.Id, pickingMode = PickingMode.Ignore };
+            Cast.style.display = DisplayStyle.None;
+            Root.Add(Cast);
+            CastChip = new VisualElement { name = "castchip-" + u.Id, pickingMode = PickingMode.Ignore };
+            CastChip.style.position = Position.Absolute;
+            CastChip.style.left = 4; CastChip.style.top = 4;
+            CastChip.style.width = CastChip.style.height = 50;
+            CastChip.style.borderTopLeftRadius = CastChip.style.borderTopRightRadius = CastChip.style.borderBottomLeftRadius = CastChip.style.borderBottomRightRadius = 12;
+            CastChip.style.borderTopWidth = CastChip.style.borderBottomWidth = CastChip.style.borderLeftWidth = CastChip.style.borderRightWidth = 3;
+            CastChip.style.backgroundColor = new Color(0.06f, 0.07f, 0.17f, 1f);
+            CastChip.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Contain);
+            CastChip.style.display = DisplayStyle.None;
+            CastChip.Add(new Label { name = "castchip-letter", pickingMode = PickingMode.Ignore });
+            CastChip[0].AddToClassList("shadow");
+            CastChip[0].style.fontSize = 30; CastChip[0].style.unityFontStyleAndWeight = FontStyle.Bold;
+            CastChip[0].style.unityTextAlign = TextAnchor.MiddleCenter; CastChip[0].style.flexGrow = 1;
+            Root.Add(CastChip);
 
             if (u.IsSnakeSegment)
             {
@@ -103,14 +115,25 @@ namespace Gaiden.App
             HpFill.EnableInClassList("gauge-fill--low", f <= 0.25f);
         }
 
-        public void SetBuffs(Unit u, bool colorblind)
+        public void SetBuffs(Unit u, bool colorblind, bool stunned = false)
         {
             Buffs.Clear();
             int n = 0;
+            if (stunned)
+            {
+                // Pushback stun isn't a buff, but it is why the unit isn't moving: show it like one.
+                var st = new Label("!") { name = "stun-" + u.Id, pickingMode = PickingMode.Ignore };
+                st.AddToClassList("pip");
+                st.style.width = st.style.height = 40;
+                st.style.fontSize = 24;
+                st.style.backgroundColor = new Color(1f, 0.85f, 0.3f);
+                Buffs.Add(st);
+                n++;
+            }
             // Show up to 3; with more, the window rotates every 1.5 s so every status gets seen (bible §8.5).
             int count = u.Buffs.Count;
             int start = count > 3 ? (int)(Time.unscaledTime / 1.5f) % count : 0;
-            for (int k = 0; k < Mathf.Min(3, count); k++)
+            for (int k = 0; k < Mathf.Min(3 - n, count); k++)
             {
                 var b = u.Buffs[(start + k) % count];
                 var pip = new Label(string.IsNullOrEmpty(b.Def.Letter) ? b.Def.Name.Substring(0, 1) : b.Def.Letter) { pickingMode = PickingMode.Ignore };
@@ -125,10 +148,21 @@ namespace Gaiden.App
             }
         }
 
-        public void SetCountdown(int actions)
+        /// <summary>Show (or hide, with null) the countdown ring: <paramref name="left"/> = fraction of cast time remaining.</summary>
+        public void SetCast(Color? color, float left, Texture2D icon, int count, string name = null)
         {
-            Countdown.text = actions < 0 ? "" : actions.ToString();
-            Countdown.style.color = actions == 0 ? new Color(1f, 0.35f, 0.3f) : new Color(1f, 0.95f, 0.8f);
+            bool on = color.HasValue;
+            Cast.style.display = on ? DisplayStyle.Flex : DisplayStyle.None;
+            CastChip.style.display = on ? DisplayStyle.Flex : DisplayStyle.None;
+            if (!on) return;
+            Cast.Set(color.Value, left);
+            var c = color.Value;
+            CastChip.style.borderTopColor = CastChip.style.borderBottomColor = CastChip.style.borderLeftColor = CastChip.style.borderRightColor = c;
+            CastChip.style.backgroundImage = icon != null ? new StyleBackground(icon) : new StyleBackground((Texture2D)null);
+            // No icon art (enemy charges): the spell's initial in its colour instead.
+            var letter = (Label)CastChip[0];
+            letter.text = icon == null && !string.IsNullOrEmpty(name) ? name.Substring(0, 1) : "";
+            letter.style.color = c;
         }
 
         public void SetGlow(Color c, float alpha)
@@ -179,7 +213,10 @@ namespace Gaiden.App
                     t.style.position = Position.Absolute;
                     t.style.left = x * Tile; t.style.top = y * Tile;
                     t.style.width = Tile; t.style.height = Tile;
-                    t.style.backgroundImage = new StyleBackground((x + y) % 2 == 0 ? App.Art.TileLight : App.Art.TileDark);
+                    // GridGame2026's tile art, tinted light/dark for the checkerboard (it drew tiles at ~39 % alpha).
+                    bool light = (x + y) % 2 == 0;
+                    t.style.backgroundImage = new StyleBackground(App.Art.BoardTile);
+                    t.style.unityBackgroundImageTintColor = light ? new Color(1.0f, 1.0f, 1.0f, 0.8f) : new Color(0.42f, 0.46f, 0.56f, 0.6f);
                     TileLayer.Add(t);
                     tiles[x, y] = t;
 
@@ -301,6 +338,76 @@ namespace Gaiden.App
                 p.Arc(c, radius, Angle.Degrees(-90f), Angle.Degrees(-90f + 360f * this.frac));
                 p.Stroke();
             };
+        }
+    }
+
+    /// <summary>
+    /// Radial countdown traced around a unit's rounded frame, clockwise from top-centre: the lit part is the cast
+    /// time still to run, so the line shrinks toward the moment the spell lands (bible §2.6, owner request).
+    /// </summary>
+    public sealed class CastRing : VisualElement
+    {
+        private Color color = Color.white;
+        private float left = 1f;
+        public float Left => left;
+        public Color Color => color;
+
+        public CastRing()
+        {
+            style.position = Position.Absolute;
+            style.left = style.top = 2; style.right = style.bottom = 2;
+            generateVisualContent += Draw;
+        }
+
+        public void Set(Color c, float remaining)
+        {
+            color = c; left = Mathf.Clamp01(remaining);
+            MarkDirtyRepaint();
+        }
+
+        private void Draw(MeshGenerationContext ctx)
+        {
+            var r = contentRect;
+            if (r.width <= 0 || left <= 0f) return;
+            var pts = Perimeter(r, 22f, left);
+            var p = ctx.painter2D;
+            p.lineJoin = LineJoin.Round; p.lineCap = LineCap.Round;
+            p.strokeColor = new Color(0f, 0f, 0f, 0.55f); p.lineWidth = 13f;
+            Stroke(p, pts);
+            p.strokeColor = color; p.lineWidth = 8f;
+            Stroke(p, pts);
+        }
+
+        private static void Stroke(Painter2D p, List<Vector2> pts)
+        {
+            if (pts.Count < 2) return;
+            p.BeginPath(); p.MoveTo(pts[0]);
+            for (int i = 1; i < pts.Count; i++) p.LineTo(pts[i]);
+            p.Stroke();
+        }
+
+        /// <summary>Points along a rounded rect's border from top-centre clockwise, covering fraction <paramref name="f"/> of it.</summary>
+        public static List<Vector2> Perimeter(Rect r, float rad, float f)
+        {
+            float inset = 5f;
+            float x0 = r.xMin + inset, y0 = r.yMin + inset, x1 = r.xMax - inset, y1 = r.yMax - inset;
+            rad = Mathf.Min(rad, (x1 - x0) / 2f, (y1 - y0) / 2f);
+            var full = new List<Vector2>();
+            void Line(Vector2 a, Vector2 b, int n) { for (int i = 0; i < n; i++) full.Add(Vector2.Lerp(a, b, i / (float)n)); }
+            void Arc(Vector2 c, float a0, int n) { for (int i = 0; i < n; i++) { float a = (a0 + 90f * i / n) * Mathf.Deg2Rad; full.Add(c + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * rad); } }
+            float cx = (x0 + x1) / 2f;
+            Line(new Vector2(cx, y0), new Vector2(x1 - rad, y0), 12);
+            Arc(new Vector2(x1 - rad, y0 + rad), -90f, 8);
+            Line(new Vector2(x1, y0 + rad), new Vector2(x1, y1 - rad), 24);
+            Arc(new Vector2(x1 - rad, y1 - rad), 0f, 8);
+            Line(new Vector2(x1 - rad, y1), new Vector2(x0 + rad, y1), 24);
+            Arc(new Vector2(x0 + rad, y1 - rad), 90f, 8);
+            Line(new Vector2(x0, y1 - rad), new Vector2(x0, y0 + rad), 24);
+            Arc(new Vector2(x0 + rad, y0 + rad), 180f, 8);
+            Line(new Vector2(x0 + rad, y0), new Vector2(cx, y0), 12);
+            full.Add(new Vector2(cx, y0));
+            int keep = Mathf.Clamp(Mathf.CeilToInt(full.Count * f), 2, full.Count);
+            return full.GetRange(0, keep);
         }
     }
 

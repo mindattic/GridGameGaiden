@@ -28,6 +28,18 @@ def has_text(sub):
     return any(sub in t for t in texts())
 
 
+def until(pred, timeout=6.0, step=0.25):
+    """Poll instead of sleeping a fixed time: screens on a busy machine take a variable moment to mount."""
+    end = time.time() + timeout
+    while time.time() < end:
+        try:
+            if pred(): return True
+        except Exception:
+            pass
+        time.sleep(step)
+    return False
+
+
 def wait_idle(ms=300):
     return h.call("wait", ms=ms)
 
@@ -44,7 +56,8 @@ def main():
     check("title music", h.call("music")["track"] == "TellerOfTheTales")
     h.call("clicktext", text="New Game"); time.sleep(0.8)
     check("slot screen lists 3 slots", sum(1 for t in texts() if t.startswith("Slot ")) == 3)
-    h.call("clicktext", text="Slot 1"); time.sleep(1.2)
+    h.call("clicktext", text="Slot 1")
+    until(lambda: h.call("state")["screen"] == "hub")
     st = h.call("state")
     check("new game lands at camp", st["screen"] == "hub", st["screen"])
     check("camp music", h.call("music")["track"] == "MinstrelGuild")
@@ -56,14 +69,14 @@ def main():
         check("camp menu has every command", True)
 
     # Overwrite confirm on an occupied slot
-    h.call("clicktext", text="Save & Quit"); time.sleep(1.0)
-    h.call("clicktext", text="New Game"); time.sleep(0.8)
-    h.call("clicktext", text="Slot 1"); time.sleep(0.6)
-    check("occupied slot asks to overwrite", has_text("Overwrite slot 1?"))
+    h.call("clicktext", text="Save & Quit"); until(lambda: has_text("New Game"))
+    h.call("clicktext", text="New Game"); until(lambda: has_text("Slot 1"))
+    h.call("clicktext", text="Slot 1")
+    check("occupied slot asks to overwrite", until(lambda: has_text("Overwrite slot 1?"), 4.0))
     h.call("clicktext", text="Cancel"); time.sleep(0.4)
     h.call("back"); time.sleep(0.8)
-    h.call("clicktext", text="Continue"); time.sleep(1.2)
-    check("continue resumes the save", h.call("state")["screen"] == "hub")
+    h.call("clicktext", text="Continue")
+    check("continue resumes the save", until(lambda: h.call("state")["screen"] == "hub"))
 
     # ── Adventure ordering ─────────────────────────────────────────────────
     h.call("clicktext", text="Adventure"); time.sleep(0.8)
@@ -90,7 +103,13 @@ def main():
     check("enemy turn icons are pixel-art sprites", "px" in names, "no 'px' sprite under the timeline icons")
     b = battle_state()
     enemies = [u for u in b["units"] if u["team"] == "Enemy"]
-    check("countdown badges show 'acts in' numbers", all(u["acts_in"] >= 0 for u in enemies) and any(x.isdigit() for x in texts()))
+    check("no turn-number badges on the board (the timeline shows turn order)", not any(x.strip().isdigit() for x in texts()), str([x for x in texts() if x.strip().isdigit()]))
+    track = h.call("element", name="timeline-track")
+    icon = next((h.call("element", name=n) for n in names if n.startswith("tl-")), {})
+    tcy = track.get("y", 0) + track.get("h", 0) / 2
+    check("timeline track is thin", 0 < track.get("h", 99) <= 8, str(track))
+    check("turn icons sit centred on the timeline line",
+          any(abs(h.call("element", name=n)["y"] + h.call("element", name=n)["h"] / 2 - tcy) < 6 for n in names if n.startswith("tl-")), f"track={track} icon={icon}")
     fps = h.call("state")["fps"]
     check("frame rate ≥ 50", fps >= 50, f"fps={fps}")
 
@@ -174,6 +193,27 @@ def main():
     h.call("buff", unit=target["Id"], id="burning")
     st = h.call("style", name=f"buffs-{target['Id']}")
     check("buff shows as a pip on the unit", st.get("children", 0) >= 1, str(st))
+
+    # ── Why isn't it moving? Freeze badge on the tile and on its timeline circle ──
+    h.call("buff", unit=target["Id"], id="frozen"); time.sleep(0.3)
+    tl = h.call("names", prefix="tl-status-")
+    check("frozen enemy shows a status badge on its timeline circle", len(tl) >= 1, str(tl))
+    st = h.call("style", name=f"buffs-{target['Id']}")
+    check("frozen enemy shows the debuff pip on its tile", st.get("children", 0) >= 2, str(st))
+    disc = h.call("style", name=next((n for n in h.call("names", prefix="tl-") if n[3:].isdigit()), "tl-1"))
+    check("timeline circles are opaque (the line never shows through)", disc.get("background", "").upper().endswith("FF"), str(disc))
+
+    # ── Pending-spell countdown ring on the target, in the spell's colour ──
+    hero = next(u for u in battle_state()["units"] if u["team"] == "Hero")
+    h.call("devcast", target=hero["Id"], ability="charge_ice", ticks=40); time.sleep(0.4)
+    ring = h.call("element", name=f"castring-{hero['Id']}")
+    chip = h.call("element", name=f"castchip-{hero['Id']}")
+    check("a pending spell draws a countdown ring + spell chip on its target", ring.get("w", 0) > 0 and chip.get("w", 0) > 0, f"{ring} {chip}")
+    h.call("devcast", target=hero["Id"], ability="charge_fireball", ticks=60); time.sleep(0.2)
+    b1 = h.call("style", name=f"castchip-{hero['Id']}")["border"]; time.sleep(1.4)
+    b2 = h.call("style", name=f"castchip-{hero['Id']}")["border"]
+    check("two pending spells on one unit cycle their countdown colours", b1 != b2, f"{b1} -> {b2}")
+    h.shot("castring")
 
     # ── Long-press tooltip ────────────────────────────────────────────────
     wait_idle(200)

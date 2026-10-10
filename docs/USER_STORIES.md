@@ -287,6 +287,13 @@ test for every rule. 4. A harness step for anything visible. 5. Glyph check gree
 | US-304 | Particle VFX per spell (cast / projectile / impact / linger) | §6.2 | ✅ | Per-element UI Toolkit VFX (`ElementBurst`: fire embers, ice shards + ring, lightning bolt, poison bubbles, holy rays, dark implosion, arcane ring; heal sparkles; status auras); screenshots in artifacts/vfx |
 | US-333 | Pincer close-up cut-in: attackers' portraits sweep past with hand-held sway while the board camera pushes in (owner request, from GridGame2026) | §6.2 | ✅ | `tools/uicheck.py` (both portraits on screen mid-sweep, cleans up; real-pincer counter); autoplay battle showed 4 cut-ins, 0 errors; screenshot artifacts/uicheck/cutin.png |
 | US-334 | Enemy timeline icons are pixel-art sprites of the whole enemy; the next attacker gets a gold ring (owner request) | §2.6 | ✅ | `tools/make_pixel_icons.py` (110 sprites, ImageMagick); `tools/check_assets.py` (every enemy has one); `tools/uicheck.py` (turn icons are pixel sprites); screenshots artifacts/tlshot |
+| US-335 | Enemy turn icons are opaque circles centred on a thin track; sprites masked to the circle; enhanced eyes re-inked on every sprite (docs/PIXEL_ICONS.md) | §2.6 | ✅ | `tools/uicheck.py` (opaque circle, centred on line, thin track); `tools/eyes.json` + `ink_eyes` snap; screenshots artifacts/tlshot |
+| US-336 | No turn-number badges on the board — turn order lives on the timeline | §2.6 | ✅ | `tools/uicheck.py` (no bare digits on the board) |
+| US-337 | Speed tiers (swift 18 / quick 15 / steady 11 / slow 8): a fast enemy overtakes a slow one during the windup; the faster icon hops over in the upper lane | §2.2 | ✅ | `A_fast_enemy_overtakes_a_slow_one_during_the_windup`, `Every_real_enemy_has_a_targeting_personality_and_a_speed_tier`; `LayoutIcons` |
+| US-338 | Enemy targeting personalities: Closest (dumb), Weakest (smart), Threat (tacticians), Squishy (assassins), Erratic (feral); shown on the enemy card and bestiary | §14.1 | ✅ | `Dumb_enemies_attack_the_closest_hero`, `Smart_enemies_hunt_the_weakest_hero_even_across_the_board`, `Assassins_target_the_most_fragile_hero`, `Erratic_enemies_keep_one_target_per_turn_but_vary_between_turns` |
+| US-339 | Frozen / asleep / stunned units show a debuff badge on their timeline circle (sprite dimmed) and a pip on their tile, so it is clear why they are not moving | §8.5 | ✅ | `tools/uicheck.py` (frozen badge on circle + tile pip) |
+| US-340 | Casts ride the same line from 0 (cast start) to 1 (lands) over their own cast time, so quick spells visibly overtake older icons | §2.6 | ✅ | `TimelineEntry.U` (cast), `BattleEngine.UPerTick`; 157 sim tests |
+| US-341 | Pending spells draw a radial countdown around the target's frame in the spell's own colour, with the spell icon chip; several pending spells on one unit cycle every 1.2 s; cast/resolve banners say who casts what on whom and when it lands | §2.6 | ✅ | `tools/uicheck.py` (ring + chip on target, two spells cycle colours); `CastRing`, `Art.SpellColor` |
 | US-305 | HD art pass | §7 (V2) | ⬜ | V2 scope per RFC 0002 (never part of the V1 claim); current art is the original GridGame illustration set |
 
 ## Platform & ship
@@ -309,6 +316,21 @@ test for every rule. 4. A harness step for anything visible. 5. Glyph check gree
 
 ---
 
+
+## Production roadmap (owner direction, 2026-10-10)
+
+| ID | Story | § | Status | Evidence |
+|---|---|---|---|---|
+| US-342 | Power Amplifier (Terra Battle): spawns on a luck-modified random schedule; a pincer attacker aligned with it gets an enhanced attack; enemies cannot use it but can walk through it to shove it away and break amplified combos | §1.2 | ⬜ | owner request 2026-10-10 |
+| US-343 | Defeated enemies burst into gold coins that fly to the gold counter (top right), as in GridGame2026 | §13 | ⬜ | owner request 2026-10-10 |
+| US-344 | Pincer group outline: a line draws itself around the whole Hero–foe…–Hero cluster (no line across the art); short connectors join heroes to their supporters | §6.2 | ⬜ | owner request 2026-10-10 |
+| US-345 | Every enemy family gets its own kit (behaviour, spells, traps — slime trail, poison cloud …) matched to how it looks | §14 | ⬜ | owner direction 2026-10-10 |
+| US-346 | Physical blocks on the grid: no unit may enter, land, be displaced or spawn on a block | §1.1 | ⬜ | owner direction 2026-10-10 |
+| US-347 | Expeditions: a set of X battles, each of Y waves, with no full heal between — survival pressure on consumables and mana | §22 | ⬜ | owner direction 2026-10-10 |
+| US-348 | Caravan story: the party travels with a merchant caravan through dangerous lands (why shops are always open between battles); story beats per expedition | §27 | ⬜ | owner direction 2026-10-10 |
+| US-349 | Guest allies met in battle: rescue them and they join the roster; if they die in that fight they are lost forever | §25 | ⬜ | owner direction 2026-10-10 |
+| US-350 | Upgrades and long-run progression (gear tiers, ability ranks, caravan upgrades) with a meaningful power curve | §21 | ⬜ | owner direction 2026-10-10 |
+
 ## Tally
 
 | | ✅ | 🟡 | ⬜ |
@@ -322,8 +344,9 @@ test for every rule. 4. A harness step for anything visible. 5. Glyph check gree
 | Bosses (7) | 7 | 0 | 0 |
 | Meta & Camp services (37) | 37 | 0 | 0 |
 | UI screens (35) | 35 | 0 | 0 |
-| Audio & VFX (8) | 7 | 0 | 1 |
+| Audio & VFX (15) | 14 | 0 | 1 |
 | Platform & ship (13) | 12 | 0 | 1 |
-| **Total (223)** | **221** | **0** | **2** |
+| Production roadmap (owner direction, 2026-10-10) (9) | 0 | 0 | 9 |
+| **Total (239)** | **228** | **0** | **11** |
 
 Open design questions that gate future stories live in [BIBLE §29](BIBLE.md#29-open-design-questions).

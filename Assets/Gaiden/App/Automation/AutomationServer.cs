@@ -287,6 +287,9 @@ namespace Gaiden.App.Automation
                     string Hex(Color col) => "#" + ColorUtility.ToHtmlStringRGBA(col);
                     return new { border = Hex(rs.borderTopColor), background = Hex(rs.backgroundColor), children = c.childCount };
                 }
+                case "devcast":
+                    if (app.Router.Current is BattleScreen dcs) return new { ok = dcs.DevQueueCast((int)F(q["target"]), q["ability"], (int)F(q["ticks"], 30)) };
+                    return new { error = "not in battle" };
                 case "democutin":
                     if (app.Router.Current is BattleScreen dc) { dc.DemoCutIn(); return new { ok = true }; }
                     return new { error = "not in battle" };

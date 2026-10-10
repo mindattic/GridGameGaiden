@@ -7,6 +7,9 @@ namespace Gaiden.Core.Content
 
     public enum Team { Hero, Enemy }
 
+    /// <summary>How an enemy chooses which hero to go after (bible §14.1). Auto derives it from INT and tags.</summary>
+    public enum Targeting { Auto, Closest, Weakest, Threat, Squishy, Erratic }
+
 
     public enum DamageType { Physical, Fire, Ice, Lightning, Poison, Holy, Dark, Arcane }
 
@@ -127,6 +130,8 @@ namespace Gaiden.Core.Content
         public List<string> DefaultLoadout = new List<string>();
         public string DropTable;
         public int MoveRange = 1;
+        /// <summary>Enemy targeting personality (§14.1).</summary>
+        public Targeting Targeting = Targeting.Auto;
         /// <summary>Straight-line attack reach for the Ranged archetype (1 = melee only).</summary>
         public int AttackRange = 1;
         /// <summary>Buff ids this class shrugs off ("Immune!") — the Mechanical archetype.</summary>

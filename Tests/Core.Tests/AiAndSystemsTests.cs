@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Gaiden.Core;
@@ -246,6 +247,81 @@ namespace Gaiden.Tests
             var second = BattleEngine.Apply(s, new UseSlotCommand { HeroId = k.Id, Slot = 0, Target = k.Pos });
             Assert.Contains(second, e => e is TurnStartedEvent);
             Assert.Equal(2, second.OfType<OrbMintedEvent>().Count(o => o.Reason == "time bank"));
+        }
+
+
+        // ── Targeting personalities (§14.1) and windup overtakes (§2) ──────────
+
+        [Fact]
+        public void Dumb_enemies_attack_the_closest_hero()
+        {
+            var db = Mini();
+            db.Classes["wolf"].Targeting = Targeting.Closest;
+            var (s, _) = Battle(db, Stage(("wolf", 2, 2)), ("knight", 2, 3), ("cleric", 2, 0));
+            Hero(s, "cleric").Hp = 1;
+            Assert.Equal(Hero(s, "knight").Id, EnemyPlanner.PickTarget(s, Enemy(s, "wolf")).Id);
+        }
+
+        [Fact]
+        public void Smart_enemies_hunt_the_weakest_hero_even_across_the_board()
+        {
+            var db = Mini();
+            db.Classes["wolf"].Targeting = Targeting.Weakest;
+            var (s, _) = Battle(db, Stage(("wolf", 2, 2)), ("knight", 2, 3), ("cleric", 5, 7));
+            Hero(s, "cleric").Hp = 3;
+            var wolf = Enemy(s, "wolf");
+            Assert.Equal(Hero(s, "cleric").Id, EnemyPlanner.PickTarget(s, wolf).Id);
+            var step = EnemyPlanner.PlanStep(s, wolf);
+            Assert.True(Math.Abs(step.X - 5) + Math.Abs(step.Y - 7) < Math.Abs(2 - 5) + Math.Abs(2 - 7), "it walks toward the weak hero");
+        }
+
+        [Fact]
+        public void Assassins_target_the_most_fragile_hero()
+        {
+            var db = Mini();
+            db.Classes["wolf"].Targeting = Targeting.Squishy;
+            db.Classes["mage"].BaseStats.Vitality = 3;
+            var (s, _) = Battle(db, Stage(("wolf", 2, 2)), ("knight", 2, 3), ("mage", 5, 7));
+            Assert.Equal(Hero(s, "mage").Id, EnemyPlanner.PickTarget(s, Enemy(s, "wolf")).Id);
+        }
+
+        [Fact]
+        public void Erratic_enemies_keep_one_target_per_turn_but_vary_between_turns()
+        {
+            var db = Mini();
+            db.Classes["wolf"].Targeting = Targeting.Erratic;
+            var (s, _) = Battle(db, Stage(("wolf", 2, 2)), ("knight", 2, 3), ("cleric", 5, 7), ("mage", 0, 7));
+            var wolf = Enemy(s, "wolf");
+            var seen = new HashSet<int>();
+            for (int clock = 0; clock < 30; clock++)
+            {
+                s.Clock = clock;
+                var a = EnemyPlanner.PickTarget(s, wolf);
+                Assert.Same(a, EnemyPlanner.PickTarget(s, wolf));
+                seen.Add(a.Id);
+            }
+            Assert.True(seen.Count >= 2);
+        }
+
+        [Fact]
+        public void Every_real_enemy_has_a_targeting_personality_and_a_speed_tier()
+        {
+            var enemies = Real.Classes.Values.Where(c => c.Team == Team.Enemy).ToList();
+            Assert.All(enemies, c => Assert.NotEqual(Targeting.Auto, c.Targeting));
+            Assert.All(enemies, c => Assert.Contains(c.BaseStats.Speed, new[] { 8f, 11f, 15f, 18f }));
+            Assert.True(enemies.Select(c => c.Targeting).Distinct().Count() >= 4);
+        }
+
+        [Fact]
+        public void A_fast_enemy_overtakes_a_slow_one_during_the_windup()
+        {
+            var db = Mini();
+            var (s, _) = Battle(db, Stage(("wolf", 0, 0), ("tank", 5, 0)), ("knight", 5, 7), ("cleric", 4, 7));
+            var wolf = Enemy(s, "wolf"); var tank = Enemy(s, "tank");
+            wolf.LevelStats.Speed = 18; tank.LevelStats.Speed = 8;
+            s.TurnEntryOf(wolf.Id).Ip = 0;     // fast one starts at the very back
+            s.TurnEntryOf(tank.Id).Ip = 300;   // slow one has a head start
+            Assert.True(BattleEngine.TicksUntilTurn(s, wolf.Id) < BattleEngine.TicksUntilTurn(s, tank.Id));
         }
     }
 }

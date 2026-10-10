@@ -98,6 +98,18 @@ namespace Gaiden.Core.Battle
             return ticks;
         }
 
+        /// <summary>How far along the shared u-axis an icon moves per tick right now (0 when halted/stunned) — the view uses it to decide who overtakes whom.</summary>
+        public static float UPerTick(BattleState s, TimelineEntry e)
+        {
+            var u = s.UnitById(e.OwnerId);
+            if (u == null || !u.Alive || u.IsTimelineHalted) return 0f;
+            if (e.Kind == TimelineKind.Cast) return 1f / System.Math.Max(1, e.TotalCastTicks + e.AccumulatedDelayTicks);
+            if (e.StunTicks > 0) return 0f;
+            int zoneRate = System.Math.Max(1, (BattleConfig.BarLength - BattleConfig.ZoneStart) / BattleConfig.ZoneCrossingTicks);
+            float rate = e.Ip >= BattleConfig.ZoneStart ? zoneRate : u.Effective.Speed * BattleConfig.OpenRatePerSpeed;
+            return System.Math.Max(1, (int)System.Math.Round(rate * u.TimelineSpeedMultiplier)) / (float)BattleConfig.BarLength;
+        }
+
         /// <summary>Player actions until this enemy acts (Terra Battle-style countdown badge). 0 = acts after your next action.</summary>
         public static int ActionsUntilTurn(BattleState s, int unitId)
         {

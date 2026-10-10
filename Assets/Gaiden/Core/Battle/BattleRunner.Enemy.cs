@@ -181,7 +181,7 @@ namespace Gaiden.Core.Battle
             }
         }
 
-        /// <summary>Humanoid enemies resolve any pincer they're part of; otherwise melee the first adjacent hero.</summary>
+        /// <summary>Humanoid enemies resolve any pincer they're part of; otherwise melee the adjacent hero their personality picks.</summary>
         private void EnemyAttack(Unit enemy)
         {
             if (enemy.IsHumanoid && !enemy.IsMultiTile)
@@ -196,9 +196,10 @@ namespace Gaiden.Core.Battle
                     return;
                 }
             }
-            Unit target = null;
+            var adjacent = new List<Unit>();
             foreach (var h in S.Units)
-                if (h.Alive && h.IsHero && enemy.IsAdjacentTo(h) && (target == null || h.Hp < target.Hp)) target = h;
+                if (h.Alive && h.IsHero && enemy.IsAdjacentTo(h)) adjacent.Add(h);
+            var target = EnemyPlanner.PickFrom(S, enemy, adjacent);
             if (target == null && enemy.IsRanged)
             {
                 var shot = EnemyPlanner.RangedTarget(S, enemy);

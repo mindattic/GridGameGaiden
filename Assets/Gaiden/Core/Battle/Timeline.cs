@@ -36,7 +36,7 @@ namespace Gaiden.Core.Battle
         /// <summary>Normalized position on the shared u-axis (0 = spawn/left, 1 = trigger/right).</summary>
         public float U => Kind == TimelineKind.Turn
             ? Math.Max(0f, Math.Min(1f, Ip / (float)BattleConfig.BarLength))
-            : Math.Max(0f, 1f - RemainingTicks * BattleConfig.ReferencePacePerTick / BattleConfig.BarLength);
+            : Math.Max(0f, 1f - RemainingTicks / (float)Math.Max(1, TotalCastTicks + AccumulatedDelayTicks)); // 0 at cast start, 1 = lands
 
         public bool InZone => Kind == TimelineKind.Turn && Ip >= BattleConfig.ZoneStart;
 

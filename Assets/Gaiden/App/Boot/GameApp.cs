@@ -62,6 +62,7 @@ namespace Gaiden.App
             cam.cullingMask = 0;
 
             Content = LoadContent();
+            Art.IndexSpells(Content.Abilities.Keys);
             Saves = new SaveStore(CommandLine.Value("-saveRoot"));
             Audio = Audio.Create(transform);
 

@@ -19,7 +19,7 @@ updated: 2026-10-09
 
 ## 1. The one sentence {#GG-§1}
 
-A tactical grid RPG where **movement deals zero damage** — you drag light-bearing invaders one tile at a time across a 6×8 grid of the Undearth, **sliding** displaced actors aside, to trap enemies in **pincers** (two heroes flanking an unbroken line) on an **act-advanced Timeline**, built as a pure-C# deterministic simulation that a code-built Unity 6 UI Toolkit front end plays back.
+A tactical grid RPG where **movement deals zero damage** — you drag heroes one tile at a time across a 6×8 grid, **sliding** displaced actors aside, to trap enemies in **pincers** (two heroes flanking an unbroken line) on an **act-advanced Timeline**, built as a pure-C# deterministic simulation that a code-built Unity 6 UI Toolkit front end plays back.
 
 The feel target: *Terra Battle pincers + Grandia II timeline + Final Fantasy camp menu + FF8 draw economy.* See [§0 North Star](#0-north-star) for the design pillars.
 
@@ -30,7 +30,7 @@ The feel target: *Terra Battle pincers + Grandia II timeline + Final Fantasy cam
 - **The Timeline is a clock you advance.** Enemy icons load left→right, but the clock only runs when you commit an action (2.0 s of game time each). Hit a foe whose icon sits in the rightmost **Pushback Zone** and its turn is shoved back. ([§2](#2-the-timeline))
 - **Shared, visible mana.** A 12-orb `ManaBank` of generic orbs is the whole party's spell budget; pincers, crits, steals and enemy-cast interrupts refill it. ([§3.1](#31-mana-the-orb-economy))
 - **Casts ride the Timeline.** A spell with a cast time rides the same axis as a small icon below the line and fires when it arrives; every hit on the caster staggers it, enough stagger cancels it, and a rare LCK Clutch lets a dying healer let off one last miracle. ([§13.4](#134-the-interrupt-path))
-- **Beyond the battlefield.** Five themed campaigns of hand-built stages with a skippable story crawl per theme, a Final Fantasy–style **Camp** menu (merchant, blacksmith, alchemist, inn, abilities, party, summon circle, bounties, bestiary), weapon durability with shatter rebound, original Undearth lore. ([§22](#22-the-macro-loop), [§25](#25-the-camp-merged-hub))
+- **Beyond the battlefield.** Five themed campaigns of hand-built stages with a skippable story crawl per theme, a Final Fantasy–style **Camp** menu (merchant, blacksmith, alchemist, inn, abilities, party, summon circle, bounties, bestiary), weapon durability with shatter rebound. Story text is **lorem ipsum placeholder** (amended 2026-10-10) until the caravan story lands (US-348). ([§22](#22-the-macro-loop), [§25](#25-the-camp-merged-hub))
 
 Target pacing: a battle is 15–40 committed actions (~2–5 minutes), a stage ~3–4 min, a session 20–30 min. ([§0.3](#03-session-shape-target-pacing))
 
@@ -240,7 +240,7 @@ A story is ✅ only when 1–6 hold; otherwise 🟡/⬜ ([GG-LAW-12](#GG-LAW-12)
 - **AbilityBar** — the 5-slot Skill / Spell / Item bar of the selected hero; 2 usable on a fresh save, up to 5 by campaign progress. ([§4](#4-the-abilitybar))
 - **Camp** — the Final Fantasy–style hub menu (`HubScreen`). ([§25](#25-the-camp-merged-hub))
 - **Event player** — `BattleScreen.Play`, which animates an event list one awaited beat at a time.
-- **Undearth** — the sunless world the light-bearing invaders descend into (lore).
+- ~~**Undearth**~~ — struck 2026-10-10 (owner): the missing-sun / Undearth lore is removed; story text is lorem ipsum until the caravan story (US-348).
 - **Story crawl** — the skippable per-theme intro text shown on first entry into a theme. ([§27](#27-story-crawl-no-dialog))
 - **Summon Circle** — the Camp service where gold recruits a hero class. ([§25.10](#2510-summon-circle))
 - **Bounty** — a posted kill contract: accept one, track kills, claim gold + an item. ([§22.4](#224-bounty-board))
@@ -466,8 +466,11 @@ The **GUARD** button (right of the timeline) issues `ShieldCommand`:
 
 ### 2.6 One timeline, two lanes — turn icons above, cast icons below
 
-- **Above the line — enemy turn icons (84 px):** each enemy drawn as a **pixel-art sprite of its whole body** (`Resources/Pixel/<id>.png`, made from the portrait by `tools/make_pixel_icons.py` with ImageMagick: 36 px, 16 colours, dark outline + cream rim, point-filtered) on a dark disc; red ring, bosses purple. The turn closest to ACT — **the next attacker** — gets a gold ring and a 1.18× lift (amended 2026-10-10, owner request). `tools/check_assets.py` fails if an enemy has no sprite.
-- **Below the line — cast icons (56 px):** hero casts blue-bordered, enemy charges red-orange, showing the ability icon. A cast's position is `u = 1 − RemainingTicks × 16 / 1000` (the Speed-10 reference pace, `ReferencePacePerTick`), so "3 s left" reads the same as on an enemy icon.
+**Amended 2026-10-10 (owner requests): one line, every icon on it.** The track is a thin 6 px line; every icon is centred on it.
+- **Enemy turn icons (84 px circles):** an opaque dark disc (the line never shows through) masking a **pixel-art sprite of the whole enemy** with enhanced eyes (`Resources/Pixel/<id>.png`; method in [docs/PIXEL_ICONS.md](PIXEL_ICONS.md)); red ring, bosses purple. The turn closest to ACT — **the next attacker** — gets a gold ring and a 1.18× lift. A unit that isn't moving (Frozen, Asleep, pushback stun) shows a **status badge** on its circle and its sprite dims; the same debuff shows as a pip on its tile (stun as a gold "!"). There are no turn-number badges on the board — the timeline is the turn order.
+- **Cast icons (60 px rounded squares):** the ability icon, framed in the spell's own colour (`Art.SpellColor`: golden-ratio hue per ability, so every spell differs). A cast rides the same line from **u = 0 at cast start to u = 1 when it lands** (`u = 1 − Remaining / (Total + stagger delay)`), so a quick spell visibly overtakes turn icons that started earlier; stagger pushes it back.
+- **Overtakes:** where icons overlap, the faster one (higher u per tick, `BattleEngine.UPerTick`) rides one lane up and is drawn in front, so a passing icon hops over the slower one.
+- **Pending-spell countdown on the target:** every pending cast traces a radial countdown around its target's frame (`CastRing`, clockwise from top-centre; the lit length is the time left) in the spell's colour, with the spell's icon in a chip on the tile; a unit with several pending spells cycles through them every 1.2 s. Banners name caster, spell, target and landing time ("Witch charges Ice on Paladin — lands in 3s"; "Paladin: Fireball → Slime").
 - Icons that would overlap step into extra lanes (`BattleScreen.StaggerIcons`).
 
 **Shared clock — casts fire "off-turn" by design.** Both lanes advance on the same ticks; whatever arrives first resolves. Lifecycle: up to **4** hero casts may load at once (`MaxHeroCastsInFlight`; enemy charges don't count) — a fifth cast-time spell is refused before any orbs are spent; orbs are spent at cast start; the icon spawns with `ticks = SecondsToTicks(Formulas.CastTime(base, caster))`; on arrival it resolves (`ResolveCast`) and is removed. A spell with `CastTime` 0 resolves immediately.
@@ -1036,7 +1039,7 @@ Every class has a thumb (`Every_class_can_be_instantiated_and_has_art_reference`
 
 ### 12.2 Procedural pieces and placeholders
 
-`Art` generates the window gradients, cursor, tiles, glow and orb textures at runtime. A missing texture falls back to a purple placeholder and logs once — a gap is visible, never fatal.
+`Art` generates the window gradients, cursor, glow and orb textures at runtime. **Board tiles (amended 2026-10-10, owner):** GridGame2026's own tile art (`Resources/Tiles/tile.png`, its `tile3`, imported by `tools/import_art.py`), tinted light/dark per square to keep the checkerboard. A missing texture falls back to a purple placeholder and logs once — a gap is visible, never fatal.
 
 ### 12.3 VFX
 
@@ -1125,8 +1128,22 @@ Order per hit:
 4. **Charge**: if not already casting, `PlanCast` → queue a charge and end the turn.
 5. **Trap**: a trap-layer with no hero adjacent rolls `LayChance` (0.45) to arm a free, trap-free cardinal tile, ending the turn.
 6. **Move** up to `MoveRange` steps (all content: 1), re-planning each step with `PlanStep`; a multi-tile step shoves heroes ([§1.5](#15-multi-tile-actors-22-bosses)); a snake head drags its chain.
-7. **Attack**: a Humanoid 1×1 enemy that is now an end of an enemy pincer resolves those pincers ("X pincers!"); otherwise it melees the **adjacent hero with the lowest current HP** (**Amended 2026-10-09**). No adjacent hero → no attack.
+7. **Attack**: a Humanoid 1×1 enemy that is now an end of an enemy pincer resolves those pincers ("X pincers!"); otherwise it melees the adjacent hero its **targeting personality** picks (below). No adjacent hero → no attack.
 8. End of turn: its non-halting turn buffs tick; battle-end check.
+
+**Targeting personalities (amended 2026-10-10, owner direction: "smarter enemies attack the weakest, dumb enemies the closest").** `ClassDef.Targeting` drives movement (`PlanStep`), melee choice, ranged choice and charge targets (`EnemyPlanner.PickFrom`); ties fall back to distance, then HP, then id:
+
+| Personality | Picks | Families |
+|---|---|---|
+| Closest | nearest hero | slimes, undead, cyber-zombies, skelepedes, tree golems, mannequin, frogs, toad, sandmaw, cyclopes, troll, yeti, shamblers, ceramic knights, templars, naga |
+| Weakest | lowest current HP, even across the board | wolves, werewolf, vulture, hags, swamp mistress, reaper, phantom, lurkers, tech gremlins, purple prototypes |
+| Threat | hero who has dealt the most damage (Closest until someone has) | captain, soldiers, demon lord, oni, mecha armor, ice mauler |
+| Squishy | lowest VIT (then MaxHP) | gangers, steppin' razors, scorpion, goblin thug |
+| Erratic | a different hero each turn (hash of clock + id; no RNG draw) | bats, flying monkey, ghost |
+
+`Auto` (unset) derives Weakest for INT ≥ 14, Threat for Humanoids, else Closest. The enemy card shows it ("Hunts the weakest hero").
+
+**Speed tiers (amended 2026-10-10):** enemy Speed is 18 (swift: bats, wolves, flyers, werewolf, steppin' razors, phantom), 15 (quick), 11 (steady) or 8 (slow: slimes, undead, zombies, golems, mannequin, ghost). Open-track rate scales with Speed and the Zone is a shared crawl, so a fast enemy can overtake a slow one during the windup but not inside the Zone.
 
 `EnemyPlanner` is pure: it reads state (temporarily moving the enemy's `Pos` to score a candidate, then restoring it) and never commits.
 
@@ -1201,7 +1218,7 @@ Constants live in `EnemyPlanner` and `BattleConfig.RetreatHpThreshold`.
 
 ```
 SaveData                       (Meta/SaveData.cs; one per slot)
-├─ Version (1), Name ("Lightbearer"), CreatedUtc, UpdatedUtc, PlaySeconds
+├─ Version (1), Name ("Player"), CreatedUtc, UpdatedUtc, PlaySeconds
 ├─ Gold (wallet), LifetimeCoins (ticker)
 ├─ HighestClearedStage (campaign index, −1 = none), ClearedStages{}, SeenCrawls{}, LastStage
 ├─ Roster[]  HeroSave: ClassId, TotalXp, Hp (0 = full), Known[], Bar[5],
