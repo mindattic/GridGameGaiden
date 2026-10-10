@@ -708,6 +708,8 @@ namespace Gaiden.App
             if (e.Scanned)
             {
                 Ui.Text(Ui.StatLine(d.BaseStats), "small", w);
+                var kit = Ui.KitTraits(C, d);
+                if (kit.Length > 0) Ui.Text(kit, "small gold", w).style.whiteSpace = WhiteSpace.Normal;
                 Ui.Text(Gaiden.Core.Rules.EnemyPlanner.Describe(d.Targeting != Targeting.Auto ? d.Targeting : d.BaseStats.Intelligence >= 14 ? Targeting.Weakest : d.Tags.Contains("Humanoid") ? Targeting.Threat : Targeting.Closest), "small warn", w);
             }
             else Ui.Text("Scan it in battle to reveal its stats.", "tiny dim", w);

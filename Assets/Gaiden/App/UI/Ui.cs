@@ -215,5 +215,22 @@ namespace Gaiden.App
             if (d.BreaksOnMove) parts.Add("ends when moved");
             return parts.Count == 0 ? (d.Kind == BuffKind.Buff ? "beneficial" : "harmful") : string.Join(", ", parts);
         }
+
+        /// <summary>An enemy's kit in a few words (§14.4) — shown on its card and in the bestiary.</summary>
+        public static string KitTraits(ContentDb c, ClassDef d)
+        {
+            var t = new List<string>();
+            if (d.MoveRange > 1) t.Add($"moves {d.MoveRange} tiles");
+            if (d.AttackRange > 1) t.Add($"shoots {d.AttackRange} tiles");
+            if (!string.IsNullOrEmpty(d.ChargeAbility)) t.Add("casts " + (c.TryAbility(d.ChargeAbility)?.Name ?? d.ChargeAbility));
+            if (!string.IsNullOrEmpty(d.Trap) && c.Traps.TryGetValue(d.Trap, out var tr)) t.Add("lays " + tr.Name);
+            if (!string.IsNullOrEmpty(d.Trail) && c.Traps.TryGetValue(d.Trail, out var tl)) t.Add("leaves a " + tl.Name);
+            if (!string.IsNullOrEmpty(d.OnHitBuff)) t.Add($"hits may inflict {c.TryBuff(d.OnHitBuff)?.Name ?? d.OnHitBuff} ({Mathf.RoundToInt(d.OnHitChance * 100)}%)");
+            if (d.DeathBurst > 0) t.Add($"explodes when killed ({d.DeathBurst})");
+            foreach (var id in d.Abilities)
+                if (c.TryAbility(id) is AbilityDef a && a.Kind == AbilityKind.Passive) t.Add(a.Name.ToLowerInvariant());
+            if (d.ImmuneBuffs != null && d.ImmuneBuffs.Count > 0) t.Add("immune to " + string.Join("/", d.ImmuneBuffs));
+            return t.Count == 0 ? "" : char.ToUpper(t[0][0]) + string.Join(" · ", t).Substring(1);
+        }
     }
 }

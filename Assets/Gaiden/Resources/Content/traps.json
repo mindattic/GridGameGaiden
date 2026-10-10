@@ -5,5 +5,53 @@
     "Damage": 6,
     "ApplyBuff": "poisoned",
     "LayChance": 0.45
+  },
+  {
+    "Id": "slime_trail",
+    "Name": "Slime Trail",
+    "Damage": 0,
+    "ApplyBuff": "slowed",
+    "LayChance": 0.0,
+    "DamageType": "Poison"
+  },
+  {
+    "Id": "mire",
+    "Name": "Mire",
+    "Damage": 0,
+    "ApplyBuff": "slowed",
+    "LayChance": 0.0,
+    "DamageType": "Poison"
+  },
+  {
+    "Id": "quicksand",
+    "Name": "Quicksand",
+    "Damage": 4,
+    "ApplyBuff": "slowed",
+    "LayChance": 0.0,
+    "DamageType": "Physical"
+  },
+  {
+    "Id": "miasma",
+    "Name": "Poison Cloud",
+    "Damage": 4,
+    "ApplyBuff": "poisoned",
+    "LayChance": 0.45,
+    "DamageType": "Poison"
+  },
+  {
+    "Id": "shock_mine",
+    "Name": "Shock Mine",
+    "Damage": 10,
+    "ApplyBuff": "slowed",
+    "LayChance": 0.45,
+    "DamageType": "Lightning"
+  },
+  {
+    "Id": "caltrops",
+    "Name": "Caltrops",
+    "Damage": 8,
+    "ApplyBuff": null,
+    "LayChance": 0.45,
+    "DamageType": "Physical"
   }
 ]

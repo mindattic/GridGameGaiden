@@ -121,6 +121,7 @@ def main():
     e = enemies[0]
     h.call("tap", x=h.tile(e["x"], e["y"])[0], y=h.tile(e["x"], e["y"])[1]); time.sleep(0.4)
     check("tapping an enemy shows it with hidden HP", has_text("???"))
+    check("enemy card describes its kit", has_text("leaves a Slime Trail") or has_text("Leaves a Slime Trail"), str([x for x in texts()][-6:]))
 
     # ── Drag preview + pincer banner (bot's best move), then commit ───────
     sug = h.call("suggest")

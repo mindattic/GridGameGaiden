@@ -700,6 +700,8 @@ namespace Gaiden.App
                 var cast = State.CastEntryOf(u.Id);
                 Ui.Text(cast != null ? $"Charging {App.Content.TryAbility(cast.AbilityId)?.Name}!" : n < 0 ? "Frozen in time" : n == 0 ? "Acts after your next move!" : $"Acts in {n} moves", "small warn", col);
                 Ui.Text(EnemyPlanner.Describe(EnemyPlanner.TargetingOf(u)), "tiny dim", col);
+                var kit = Ui.KitTraits(App.Content, u.Def);
+                if (kit.Length > 0) { var kt = Ui.Text(kit, "tiny gold", col); kt.name = "enemy-kit"; kt.style.whiteSpace = WhiteSpace.Normal; }
             }
             // What the flashing status slot on the tile means, one line per effect.
             var statusTurn = State.TurnEntryOf(u.Id);

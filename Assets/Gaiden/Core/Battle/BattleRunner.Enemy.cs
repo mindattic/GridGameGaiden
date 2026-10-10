@@ -48,8 +48,21 @@ namespace Gaiden.Core.Battle
             EndEnemyTurn(enemy);
         }
 
+        /// <summary>Trail kits (slime, mire, quicksand): the tile just left becomes a trap; at most 3 per enemy, oldest first.</summary>
+        private void LeaveTrail(Unit enemy, Coord from)
+        {
+            if (string.IsNullOrEmpty(enemy.Def.Trail) || !C.Traps.ContainsKey(enemy.Def.Trail)) return;
+            if (!S.Walkable(from) || S.UnitAt(from) != null || S.TrapAt(from) != null) return;
+            var mine = S.Traps.FindAll(t => t.OwnerId == enemy.Id);
+            if (mine.Count >= 3) S.Traps.Remove(mine[0]);
+            S.Traps.Add(new Trap { At = from, TrapId = enemy.Def.Trail, OwnerId = enemy.Id });
+            Emit(new TrapPlacedEvent { ById = enemy.Id, At = from, TrapId = enemy.Def.Trail });
+        }
+
         private void EndEnemyTurn(Unit enemy)
         {
+            // Regenerate kit: knits 6% of MaxHP at the end of its own turn.
+            if (enemy.Alive && HasPassive(enemy, "regenerate") && enemy.Hp < enemy.MaxHp) Heal(enemy, Math.Max(1, enemy.MaxHp * 6 / 100), enemy);
             if (enemy.Alive) TickTurnBuffs(enemy, false);
             CheckEnd();
         }
@@ -153,6 +166,7 @@ namespace Gaiden.Core.Battle
             enemy.Pos = dest;
             Emit(new SteppedEvent { UnitId = enemy.Id, From = from, To = dest });
             if (S.Amplifier == dest) ShoveAmplifier(enemy, from); // enemies can't use it, but walking through drags it along
+            LeaveTrail(enemy, from);
 
             if (enemy.SnakeHeadId == enemy.Id) FollowSnake(enemy, from);
             return true;
@@ -221,16 +235,27 @@ namespace Gaiden.Core.Battle
                 if (shot != null)
                 {
                     Emit(new AttackEvent { AttackerId = enemy.Id, TargetId = shot.Id, IsRanged = true });
-                    var r = Formulas.Physical(enemy, shot, S.Rng);
+                    var r = Formulas.Physical(enemy, shot, S.Rng, KitDamageMultiplier(enemy));
+                    int hp0 = shot.Hp;
                     Damage(shot, r.Damage, enemy, r.Hit, DamageType.Physical);
+                    if (r.Hit != HitKind.Miss) AfterLandedHit(enemy, shot, hp0 - shot.Hp);
                 }
                 return;
             }
             if (target == null) return;
             Emit(new AttackEvent { AttackerId = enemy.Id, TargetId = target.Id, IsMelee = true });
-            var roll = Formulas.Physical(enemy, target, S.Rng);
+            var roll = Formulas.Physical(enemy, target, S.Rng, KitDamageMultiplier(enemy));
+            int hpBefore = target.Hp;
             Damage(target, roll.Damage, enemy, roll.Hit, DamageType.Physical);
-            if (roll.Hit != HitKind.Miss) MaybeCounter(target, enemy);
+            if (roll.Hit != HitKind.Miss) { AfterLandedHit(enemy, target, hpBefore - target.Hp); MaybeCounter(target, enemy); }
+            if (HasPassive(enemy, "double_attack") && target.Alive && enemy.Alive)
+            {
+                Emit(new AttackEvent { AttackerId = enemy.Id, TargetId = target.Id, IsMelee = true });
+                var r2 = Formulas.Physical(enemy, target, S.Rng, 0.5f * KitDamageMultiplier(enemy));
+                int hp2 = target.Hp;
+                Damage(target, r2.Damage, enemy, r2.Hit, DamageType.Physical);
+                if (r2.Hit != HitKind.Miss) AfterLandedHit(enemy, target, hp2 - target.Hp);
+            }
         }
     }
 }

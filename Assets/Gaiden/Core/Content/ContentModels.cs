@@ -130,6 +130,14 @@ namespace Gaiden.Core.Content
         public List<string> DefaultLoadout = new List<string>();
         public string DropTable;
         public int MoveRange = 1;
+        /// <summary>Trap id left on every tile this enemy steps off (slime trail, mire, quicksand — §14.4).</summary>
+        public string Trail;
+        /// <summary>Buff a landed enemy attack may inflict (venom, frost, blinding dirt — §14.4)…</summary>
+        public string OnHitBuff;
+        /// <summary>…with this chance per landed hit.</summary>
+        public float OnHitChance;
+        /// <summary>Damage dealt to every adjacent hero when this enemy dies (cyber-zombie self-destruct). 0 = none.</summary>
+        public int DeathBurst;
         /// <summary>Enemy targeting personality (§14.1).</summary>
         public Targeting Targeting = Targeting.Auto;
         /// <summary>Straight-line attack reach for the Ranged archetype (1 = melee only).</summary>
@@ -346,6 +354,8 @@ namespace Gaiden.Core.Content
         public int Damage;
         public string ApplyBuff;
         public float LayChance = 0.45f;
+        /// <summary>Element of the trap's damage (default Poison).</summary>
+        public DamageType DamageType = DamageType.Poison;
     }
 
     public sealed class BountyDef

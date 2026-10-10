@@ -181,6 +181,8 @@ namespace Gaiden.Core.Battle
         {
             if (!target.Alive) return;
             if (hit != HitKind.Miss && amount > 0 && IsArmored(target)) { amount = 0; note = "Armored!"; }
+            // Tough hide kit (§14.4): physical blows land at 70%.
+            if (hit != HitKind.Miss && amount > 0 && type == DamageType.Physical && !target.IsHero && HasPassive(target, "tough_hide")) amount = Math.Max(1, amount * 7 / 10);
             if (hit != HitKind.Miss && amount > 0)
                 RemoveBuffsWhere(target, b => b.Def.BreaksOnDamage, "woke");
             target.Hp = Math.Max(0, target.Hp - amount);
@@ -188,11 +190,33 @@ namespace Gaiden.Core.Battle
             if (source != null && source.IsHero && target.Team == Team.Enemy) source.DamageDealt += amount;
             if (source != null && hit != HitKind.Miss && amount > 0 && target.IsHero && source.Team == Team.Enemy) WearArmor(target);
 
-            if (target.Hp <= 0) { Kill(target, source); return; }
+            if (target.Hp <= 0) { Kill(target, source); ResolveDeathBursts(); return; }
             if (source == null || hit == HitKind.Miss) return;
 
             if (canPush && source.IsHero && target.Team == Team.Enemy) Pushback(target, source);
             StaggerCasts(target, source);
+        }
+
+        /// <summary>Enemies whose death burst is still to go off (resolved after the blow that killed them).</summary>
+        private readonly List<Unit> DeathBurstPending = new List<Unit>();
+        private bool bursting;
+
+        /// <summary>Self-destruct kit (§14.4): damage every hero adjacent to the fallen enemy.</summary>
+        private void ResolveDeathBursts()
+        {
+            if (bursting) return;
+            bursting = true;
+            while (DeathBurstPending.Count > 0 && !S.IsOver)
+            {
+                var u = DeathBurstPending[0];
+                DeathBurstPending.RemoveAt(0);
+                Announce($"{u.Name} self-destructs!", u.Id);
+                var victims = new List<Unit>();
+                foreach (var h in S.Living(Team.Hero)) if (u.IsAdjacentTo(h)) victims.Add(h);
+                Emit(new AbilityResolvedEvent { CasterId = u.Id, AbilityId = "death_burst", Anchor = u.Pos });
+                foreach (var h in victims) if (h.Alive) Damage(h, u.Def.DeathBurst, null, HitKind.Normal, DamageType.Fire, "Blast", canPush: false);
+            }
+            bursting = false;
         }
 
         private void Heal(Unit target, int amount, Unit source)
@@ -206,6 +230,7 @@ namespace Gaiden.Core.Battle
         private void Kill(Unit u, Unit killer)
         {
             var at = u.Pos;
+            if (!u.IsHero && u.Def.DeathBurst > 0) DeathBurstPending.Add(u);
             u.Hp = 0;
             u.OnBoard = false;
             u.Buffs.Clear();

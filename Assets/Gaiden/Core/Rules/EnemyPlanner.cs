@@ -152,6 +152,26 @@ namespace Gaiden.Core.Rules
             if (!ignoreMeleeRange)
                 foreach (var h in heroes) if (enemy.IsAdjacentTo(h)) return null;
 
+            // Support charges (howl, rally, mend) aim at allies: the most wounded for heals, else the caster's pack.
+            if (ability.Filter == TargetFilter.AllyOnly)
+            {
+                var allies = s.LivingList(Team.Enemy);
+                Unit pick = null;
+                if (ability.BaseHeal > 0)
+                {
+                    foreach (var al in allies) if (al.HpFraction < 0.7f && (pick == null || al.HpFraction < pick.HpFraction)) pick = al;
+                    if (pick == null) return null; // nobody needs mending: act normally instead
+                }
+                else
+                {
+                    var buff = s.Content.TryBuff(ability.ApplyBuff);
+                    bool anyWithout = false;
+                    foreach (var al in allies) if (buff == null || !al.HasBuff(buff.Id)) anyWithout = true;
+                    if (!anyWithout) return null;
+                    pick = enemy;
+                }
+                return new ChargePlan { Target = pick, Ability = ability, Shape = ChargeShape.Single };
+            }
             var target = PickFrom(s, enemy, heroes);
             var plan = new ChargePlan { Target = target, Ability = ability, Shape = enemy.Def.ChargeShape };
             if (plan.Shape == ChargeShape.Line)

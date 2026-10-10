@@ -561,10 +561,12 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "lifesteal"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
-    "MoveRange": 1,
+    "MoveRange": 2,
     "Targeting": "Erratic",
     "XpReward": 10,
     "BossPhases": [],
@@ -670,11 +672,12 @@
     ],
     "Resistances": {},
     "Abilities": [
-      "double_attack"
+      "double_attack",
+      "lifesteal"
     ],
     "DefaultLoadout": [],
     "DropTable": null,
-    "MoveRange": 1,
+    "MoveRange": 2,
     "Targeting": "Erratic",
     "XpReward": 10,
     "BossPhases": [],
@@ -780,11 +783,12 @@
     ],
     "Resistances": {},
     "Abilities": [
-      "double_attack"
+      "double_attack",
+      "lifesteal"
     ],
     "DefaultLoadout": [],
     "DropTable": null,
-    "MoveRange": 1,
+    "MoveRange": 2,
     "Targeting": "Erratic",
     "XpReward": 10,
     "BossPhases": [],
@@ -1494,14 +1498,16 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "charge_rally"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
     "Targeting": "Threat",
     "XpReward": 10,
     "BossPhases": [],
-    "ChargeAbility": null,
+    "ChargeAbility": "charge_rally",
     "ChargeShape": "Single",
     "Trap": null,
     "SnakeSegments": 0
@@ -1604,7 +1610,9 @@
     "Resistances": {
       "Poison": 0.0
     },
-    "Abilities": [],
+    "Abilities": [
+      "tough_hide"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
@@ -1718,7 +1726,9 @@
     "Resistances": {
       "Poison": 0.0
     },
-    "Abilities": [],
+    "Abilities": [
+      "tough_hide"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
@@ -1832,7 +1842,9 @@
     "Resistances": {
       "Poison": 0.0
     },
-    "Abilities": [],
+    "Abilities": [
+      "tough_hide"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
@@ -1946,7 +1958,9 @@
     "Resistances": {
       "Poison": 0.0
     },
-    "Abilities": [],
+    "Abilities": [
+      "tough_hide"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
@@ -2060,7 +2074,9 @@
     "Resistances": {
       "Poison": 0.0
     },
-    "Abilities": [],
+    "Abilities": [
+      "tough_hide"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
@@ -2174,7 +2190,9 @@
     "Resistances": {
       "Poison": 0.0
     },
-    "Abilities": [],
+    "Abilities": [
+      "tough_hide"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
@@ -2288,7 +2306,9 @@
     "Resistances": {
       "Poison": 0.0
     },
-    "Abilities": [],
+    "Abilities": [
+      "tough_hide"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
@@ -2772,7 +2792,8 @@
     "ImmuneBuffs": [
       "poisoned",
       "sleep"
-    ]
+    ],
+    "DeathBurst": 14
   },
   {
     "Id": "cyberzombie01",
@@ -2886,7 +2907,8 @@
     "ImmuneBuffs": [
       "poisoned",
       "sleep"
-    ]
+    ],
+    "DeathBurst": 14
   },
   {
     "Id": "cyberzombie02",
@@ -3000,7 +3022,8 @@
     "ImmuneBuffs": [
       "poisoned",
       "sleep"
-    ]
+    ],
+    "DeathBurst": 14
   },
   {
     "Id": "cyberzombie03",
@@ -3114,7 +3137,8 @@
     "ImmuneBuffs": [
       "poisoned",
       "sleep"
-    ]
+    ],
+    "DeathBurst": 14
   },
   {
     "Id": "cyberzombie04",
@@ -3228,7 +3252,8 @@
     "ImmuneBuffs": [
       "poisoned",
       "sleep"
-    ]
+    ],
+    "DeathBurst": 14
   },
   {
     "Id": "cyclops00",
@@ -3327,7 +3352,8 @@
     ],
     "Resistances": {},
     "Abilities": [
-      "enrage"
+      "enrage",
+      "tough_hide"
     ],
     "DefaultLoadout": [],
     "DropTable": "cyclops00",
@@ -3449,7 +3475,9 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "tough_hide"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
@@ -3557,7 +3585,9 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "tough_hide"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
@@ -3664,7 +3694,9 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "tough_hide"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
@@ -3771,7 +3803,9 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "tough_hide"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
@@ -3878,7 +3912,9 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "tough_hide"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
@@ -4228,14 +4264,17 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "lifesteal",
+      "charge_fireball"
+    ],
     "DefaultLoadout": [],
     "DropTable": "demonlord",
     "MoveRange": 1,
     "Targeting": "Threat",
     "XpReward": 10,
     "BossPhases": [],
-    "ChargeAbility": null,
+    "ChargeAbility": "charge_fireball",
     "ChargeShape": "Single",
     "Trap": null,
     "SnakeSegments": 0
@@ -5181,14 +5220,16 @@
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
-    "MoveRange": 1,
+    "MoveRange": 2,
     "Targeting": "Erratic",
     "XpReward": 10,
     "BossPhases": [],
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "OnHitBuff": "blinded",
+    "OnHitChance": 0.35
   },
   {
     "Id": "frog00",
@@ -5295,7 +5336,9 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "OnHitBuff": "poisoned",
+    "OnHitChance": 0.4
   },
   {
     "Id": "frog01",
@@ -5402,7 +5445,9 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "OnHitBuff": "poisoned",
+    "OnHitChance": 0.4
   },
   {
     "Id": "frog02",
@@ -5509,7 +5554,9 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "OnHitBuff": "poisoned",
+    "OnHitChance": 0.4
   },
   {
     "Id": "frog03",
@@ -5616,7 +5663,9 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "OnHitBuff": "poisoned",
+    "OnHitChance": 0.4
   },
   {
     "Id": "ganger00",
@@ -5723,7 +5772,9 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "OnHitBuff": "blinded",
+    "OnHitChance": 0.3
   },
   {
     "Id": "ganger01",
@@ -5830,7 +5881,9 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "OnHitBuff": "blinded",
+    "OnHitChance": 0.3
   },
   {
     "Id": "ganger02",
@@ -5937,7 +5990,9 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "OnHitBuff": "blinded",
+    "OnHitChance": 0.3
   },
   {
     "Id": "ganger03",
@@ -6044,7 +6099,9 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "OnHitBuff": "blinded",
+    "OnHitChance": 0.3
   },
   {
     "Id": "ganger04",
@@ -6151,7 +6208,9 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "OnHitBuff": "blinded",
+    "OnHitChance": 0.3
   },
   {
     "Id": "ganger05",
@@ -6258,7 +6317,9 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "OnHitBuff": "blinded",
+    "OnHitChance": 0.3
   },
   {
     "Id": "ganger06",
@@ -6365,7 +6426,9 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "OnHitBuff": "blinded",
+    "OnHitChance": 0.3
   },
   {
     "Id": "ghost",
@@ -6472,7 +6535,9 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "OnHitBuff": "slowed",
+    "OnHitChance": 0.5
   },
   {
     "Id": "goblinthug00",
@@ -6578,7 +6643,7 @@
     "BossPhases": [],
     "ChargeAbility": null,
     "ChargeShape": "Single",
-    "Trap": null,
+    "Trap": "caltrops",
     "SnakeSegments": 0
   },
   {
@@ -6794,16 +6859,18 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "charge_miasma"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
     "Targeting": "Weakest",
     "XpReward": 10,
     "BossPhases": [],
-    "ChargeAbility": null,
+    "ChargeAbility": "charge_miasma",
     "ChargeShape": "Single",
-    "Trap": null,
+    "Trap": "miasma",
     "SnakeSegments": 0,
     "AttackRange": 3
   },
@@ -6903,16 +6970,18 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "charge_miasma"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
     "Targeting": "Weakest",
     "XpReward": 10,
     "BossPhases": [],
-    "ChargeAbility": null,
+    "ChargeAbility": "charge_miasma",
     "ChargeShape": "Single",
-    "Trap": null,
+    "Trap": "miasma",
     "SnakeSegments": 0,
     "AttackRange": 3
   },
@@ -7011,16 +7080,18 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "charge_miasma"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
     "Targeting": "Weakest",
     "XpReward": 10,
     "BossPhases": [],
-    "ChargeAbility": null,
+    "ChargeAbility": "charge_miasma",
     "ChargeShape": "Single",
-    "Trap": null,
+    "Trap": "miasma",
     "SnakeSegments": 0
   },
   {
@@ -7118,16 +7189,18 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "charge_miasma"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
     "Targeting": "Weakest",
     "XpReward": 10,
     "BossPhases": [],
-    "ChargeAbility": null,
+    "ChargeAbility": "charge_miasma",
     "ChargeShape": "Single",
-    "Trap": null,
+    "Trap": "miasma",
     "SnakeSegments": 0
   },
   {
@@ -7360,7 +7433,9 @@
     "ChargeAbility": "charge_ice",
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "OnHitBuff": "frozen",
+    "OnHitChance": 0.2
   },
   {
     "Id": "jadeknight",
@@ -7826,14 +7901,16 @@
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
-    "MoveRange": 1,
+    "MoveRange": 2,
     "Targeting": "Weakest",
     "XpReward": 10,
     "BossPhases": [],
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "OnHitBuff": "poisoned",
+    "OnHitChance": 0.3
   },
   {
     "Id": "lurker01",
@@ -7933,14 +8010,16 @@
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
-    "MoveRange": 1,
+    "MoveRange": 2,
     "Targeting": "Weakest",
     "XpReward": 10,
     "BossPhases": [],
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "OnHitBuff": "poisoned",
+    "OnHitChance": 0.3
   },
   {
     "Id": "lurker02",
@@ -8040,14 +8119,16 @@
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
-    "MoveRange": 1,
+    "MoveRange": 2,
     "Targeting": "Weakest",
     "XpReward": 10,
     "BossPhases": [],
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "OnHitBuff": "poisoned",
+    "OnHitChance": 0.3
   },
   {
     "Id": "machinist",
@@ -8264,7 +8345,9 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "counter_attack"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
@@ -8371,7 +8454,9 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "tough_hide"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
@@ -8381,7 +8466,8 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "Trail": "mire"
   },
   {
     "Id": "marshshambler01",
@@ -8478,7 +8564,9 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "tough_hide"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
@@ -8488,7 +8576,8 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "Trail": "mire"
   },
   {
     "Id": "marshshambler03",
@@ -8585,7 +8674,9 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "tough_hide"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
@@ -8595,7 +8686,8 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "Trail": "mire"
   },
   {
     "Id": "martialartist",
@@ -8812,14 +8904,17 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "tough_hide",
+      "charge_thunder"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
     "Targeting": "Threat",
     "XpReward": 10,
     "BossPhases": [],
-    "ChargeAbility": null,
+    "ChargeAbility": "charge_thunder",
     "ChargeShape": "Single",
     "Trap": null,
     "SnakeSegments": 0
@@ -8919,14 +9014,17 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "tough_hide",
+      "charge_thunder"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
     "Targeting": "Threat",
     "XpReward": 10,
     "BossPhases": [],
-    "ChargeAbility": null,
+    "ChargeAbility": "charge_thunder",
     "ChargeShape": "Single",
     "Trap": null,
     "SnakeSegments": 0
@@ -9026,14 +9124,17 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "tough_hide",
+      "charge_thunder"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
     "Targeting": "Threat",
     "XpReward": 10,
     "BossPhases": [],
-    "ChargeAbility": null,
+    "ChargeAbility": "charge_thunder",
     "ChargeShape": "Single",
     "Trap": null,
     "SnakeSegments": 0
@@ -9255,7 +9356,10 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "regenerate",
+      "berserk"
+    ],
     "DefaultLoadout": [],
     "DropTable": "mountaintroll",
     "MoveRange": 1,
@@ -9493,7 +9597,9 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 3
+    "SnakeSegments": 3,
+    "OnHitBuff": "poisoned",
+    "OnHitChance": 0.4
   },
   {
     "Id": "nighthunter",
@@ -9832,7 +9938,9 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "berserk"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
@@ -9939,7 +10047,9 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "berserk"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
@@ -10046,7 +10156,9 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "berserk"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
@@ -10510,14 +10622,16 @@
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
-    "MoveRange": 1,
+    "MoveRange": 2,
     "Targeting": "Weakest",
     "XpReward": 10,
     "BossPhases": [],
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "OnHitBuff": "silenced",
+    "OnHitChance": 0.35
   },
   {
     "Id": "prizefighter",
@@ -10854,7 +10968,9 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "berserk"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
@@ -10961,7 +11077,9 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "berserk"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
@@ -11068,7 +11186,9 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "berserk"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
@@ -11175,7 +11295,9 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "berserk"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
@@ -11282,7 +11404,9 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "berserk"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
@@ -11509,7 +11633,9 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "lifesteal"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
@@ -12339,7 +12465,9 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "berserk"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
@@ -12349,7 +12477,8 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "Trail": "quicksand"
   },
   {
     "Id": "scorpion",
@@ -12458,7 +12587,9 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": "venom_snare",
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "OnHitBuff": "poisoned",
+    "OnHitChance": 0.3
   },
   {
     "Id": "sellsword",
@@ -12930,7 +13061,9 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "OnHitBuff": "poisoned",
+    "OnHitChance": 0.5
   },
   {
     "Id": "skelepede01",
@@ -13038,7 +13171,9 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "OnHitBuff": "poisoned",
+    "OnHitChance": 0.5
   },
   {
     "Id": "skelepede02",
@@ -13146,7 +13281,9 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "OnHitBuff": "poisoned",
+    "OnHitChance": 0.5
   },
   {
     "Id": "slasher",
@@ -13372,7 +13509,8 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "Trail": "slime_trail"
   },
   {
     "Id": "slime01",
@@ -13477,7 +13615,8 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "Trail": "slime_trail"
   },
   {
     "Id": "slime02",
@@ -13582,7 +13721,8 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "Trail": "slime_trail"
   },
   {
     "Id": "slime03",
@@ -13687,7 +13827,8 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "Trail": "slime_trail"
   },
   {
     "Id": "soldier00",
@@ -13784,7 +13925,9 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "counter_attack"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
@@ -13891,7 +14034,9 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "counter_attack"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
@@ -13998,7 +14143,9 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "counter_attack"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
@@ -14105,7 +14252,9 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "counter_attack"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
@@ -14332,10 +14481,12 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "double_attack"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
-    "MoveRange": 1,
+    "MoveRange": 2,
     "Targeting": "Squishy",
     "XpReward": 10,
     "BossPhases": [],
@@ -14439,10 +14590,12 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "double_attack"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
-    "MoveRange": 1,
+    "MoveRange": 2,
     "Targeting": "Squishy",
     "XpReward": 10,
     "BossPhases": [],
@@ -14546,10 +14699,12 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "double_attack"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
-    "MoveRange": 1,
+    "MoveRange": 2,
     "Targeting": "Squishy",
     "XpReward": 10,
     "BossPhases": [],
@@ -14653,10 +14808,12 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "double_attack"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
-    "MoveRange": 1,
+    "MoveRange": 2,
     "Targeting": "Squishy",
     "XpReward": 10,
     "BossPhases": [],
@@ -14760,10 +14917,12 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "double_attack"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
-    "MoveRange": 1,
+    "MoveRange": 2,
     "Targeting": "Squishy",
     "XpReward": 10,
     "BossPhases": [],
@@ -15108,14 +15267,16 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "charge_mend"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
     "Targeting": "Weakest",
     "XpReward": 10,
     "BossPhases": [],
-    "ChargeAbility": null,
+    "ChargeAbility": "charge_mend",
     "ChargeShape": "Single",
     "Trap": null,
     "SnakeSegments": 0,
@@ -15465,7 +15626,7 @@
     "BossPhases": [],
     "ChargeAbility": null,
     "ChargeShape": "Single",
-    "Trap": null,
+    "Trap": "shock_mine",
     "SnakeSegments": 0
   },
   {
@@ -15572,7 +15733,7 @@
     "BossPhases": [],
     "ChargeAbility": null,
     "ChargeShape": "Single",
-    "Trap": null,
+    "Trap": "shock_mine",
     "SnakeSegments": 0
   },
   {
@@ -15679,7 +15840,7 @@
     "BossPhases": [],
     "ChargeAbility": null,
     "ChargeShape": "Single",
-    "Trap": null,
+    "Trap": "shock_mine",
     "SnakeSegments": 0
   },
   {
@@ -15897,14 +16058,17 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "tough_hide",
+      "charge_smite"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
     "Targeting": "Closest",
     "XpReward": 10,
     "BossPhases": [],
-    "ChargeAbility": null,
+    "ChargeAbility": "charge_smite",
     "ChargeShape": "Single",
     "Trap": null,
     "SnakeSegments": 0
@@ -16004,14 +16168,17 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "tough_hide",
+      "charge_smite"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
     "Targeting": "Closest",
     "XpReward": 10,
     "BossPhases": [],
-    "ChargeAbility": null,
+    "ChargeAbility": "charge_smite",
     "ChargeShape": "Single",
     "Trap": null,
     "SnakeSegments": 0
@@ -16111,14 +16278,17 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "tough_hide",
+      "charge_smite"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
     "Targeting": "Closest",
     "XpReward": 10,
     "BossPhases": [],
-    "ChargeAbility": null,
+    "ChargeAbility": "charge_smite",
     "ChargeShape": "Single",
     "Trap": null,
     "SnakeSegments": 0
@@ -16218,14 +16388,17 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "tough_hide",
+      "charge_smite"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
     "Targeting": "Closest",
     "XpReward": 10,
     "BossPhases": [],
-    "ChargeAbility": null,
+    "ChargeAbility": "charge_smite",
     "ChargeShape": "Single",
     "Trap": null,
     "SnakeSegments": 0
@@ -16325,14 +16498,17 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "tough_hide",
+      "charge_smite"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
     "Targeting": "Closest",
     "XpReward": 10,
     "BossPhases": [],
-    "ChargeAbility": null,
+    "ChargeAbility": "charge_smite",
     "ChargeShape": "Single",
     "Trap": null,
     "SnakeSegments": 0
@@ -16432,14 +16608,17 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "tough_hide",
+      "charge_smite"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
     "Targeting": "Closest",
     "XpReward": 10,
     "BossPhases": [],
-    "ChargeAbility": null,
+    "ChargeAbility": "charge_smite",
     "ChargeShape": "Single",
     "Trap": null,
     "SnakeSegments": 0
@@ -16790,7 +16969,9 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "OnHitBuff": "poisoned",
+    "OnHitChance": 0.4
   },
   {
     "Id": "treegolem00",
@@ -16890,7 +17071,9 @@
     "Resistances": {
       "Poison": 0.0
     },
-    "Abilities": [],
+    "Abilities": [
+      "regenerate"
+    ],
     "DefaultLoadout": [],
     "DropTable": "treegolem00",
     "MoveRange": 1,
@@ -17004,7 +17187,9 @@
     "Resistances": {
       "Poison": 0.0
     },
-    "Abilities": [],
+    "Abilities": [
+      "regenerate"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
@@ -17118,7 +17303,9 @@
     "Resistances": {
       "Poison": 0.0
     },
-    "Abilities": [],
+    "Abilities": [
+      "regenerate"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
@@ -17232,7 +17419,9 @@
     "Resistances": {
       "Poison": 0.0
     },
-    "Abilities": [],
+    "Abilities": [
+      "regenerate"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
@@ -17346,7 +17535,9 @@
     "Resistances": {
       "Poison": 0.0
     },
-    "Abilities": [],
+    "Abilities": [
+      "regenerate"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
@@ -17460,7 +17651,9 @@
     "Resistances": {
       "Poison": 0.0
     },
-    "Abilities": [],
+    "Abilities": [
+      "regenerate"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
@@ -17571,7 +17764,9 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "lifesteal"
+    ],
     "DefaultLoadout": [],
     "DropTable": "undead00",
     "MoveRange": 1,
@@ -17678,7 +17873,9 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "lifesteal"
+    ],
     "DefaultLoadout": [],
     "DropTable": "undead01",
     "MoveRange": 1,
@@ -17785,7 +17982,9 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "lifesteal"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
@@ -17892,7 +18091,9 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "lifesteal"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
@@ -18126,7 +18327,7 @@
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
-    "MoveRange": 1,
+    "MoveRange": 2,
     "Targeting": "Weakest",
     "XpReward": 10,
     "BossPhases": [],
@@ -18351,10 +18552,13 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "berserk",
+      "lifesteal"
+    ],
     "DefaultLoadout": [],
     "DropTable": "werewolf00",
-    "MoveRange": 1,
+    "MoveRange": 2,
     "Targeting": "Weakest",
     "XpReward": 10,
     "BossPhases": [],
@@ -18825,14 +19029,16 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "charge_howl"
+    ],
     "DefaultLoadout": [],
     "DropTable": "wolf00",
     "MoveRange": 1,
     "Targeting": "Weakest",
     "XpReward": 10,
     "BossPhases": [],
-    "ChargeAbility": null,
+    "ChargeAbility": "charge_howl",
     "ChargeShape": "Single",
     "Trap": null,
     "SnakeSegments": 0
@@ -18932,14 +19138,16 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "charge_howl"
+    ],
     "DefaultLoadout": [],
     "DropTable": "wolf01",
     "MoveRange": 1,
     "Targeting": "Weakest",
     "XpReward": 10,
     "BossPhases": [],
-    "ChargeAbility": null,
+    "ChargeAbility": "charge_howl",
     "ChargeShape": "Single",
     "Trap": null,
     "SnakeSegments": 0
@@ -19039,14 +19247,16 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "charge_howl"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
     "Targeting": "Weakest",
     "XpReward": 10,
     "BossPhases": [],
-    "ChargeAbility": null,
+    "ChargeAbility": "charge_howl",
     "ChargeShape": "Single",
     "Trap": null,
     "SnakeSegments": 0
@@ -19146,14 +19356,16 @@
       }
     ],
     "Resistances": {},
-    "Abilities": [],
+    "Abilities": [
+      "charge_howl"
+    ],
     "DefaultLoadout": [],
     "DropTable": null,
     "MoveRange": 1,
     "Targeting": "Weakest",
     "XpReward": 10,
     "BossPhases": [],
-    "ChargeAbility": null,
+    "ChargeAbility": "charge_howl",
     "ChargeShape": "Single",
     "Trap": null,
     "SnakeSegments": 0
@@ -19385,6 +19597,8 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "OnHitBuff": "frozen",
+    "OnHitChance": 0.25
   }
 ]

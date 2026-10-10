@@ -70,6 +70,8 @@ namespace Gaiden.Tests
             setup.Party.Add(new HeroSpec { ClassId = "paladin", Level = 20, Start = new Coord(5, 7) });
             setup.Party.Add(new HeroSpec { ClassId = "cleric", Level = 20, Start = new Coord(0, 5) });
             var s = BattleEngine.Create(c, setup, new List<BattleEvent>());
+            // A healing charge only goes out when an ally needs it: wound the caster.
+            if (c.Abilities[abilityId].BaseHeal > 0) { var me = s.Units.First(u => !u.IsHero); me.Hp = me.MaxHp / 3; }
             var all = new List<BattleEvent>();
             for (int i = 0; i < 12 && !s.IsOver; i++) all.AddRange(BattleEngine.Apply(s, new ShieldCommand()));
             Assert.Contains(all, e => e is CastQueuedEvent q && q.IsCharge);

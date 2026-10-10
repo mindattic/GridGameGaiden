@@ -325,6 +325,15 @@ namespace Gaiden.Core.Battle
         /// <summary>Enemy charge resolution (§13.4, §14.2): a magic hit on the target, or every hero still on the locked line.</summary>
         private void ResolveCharge(Unit caster, AbilityDef a, TimelineEntry cast)
         {
+            // Support and area charges (howl, rally, mend, poison cloud) resolve through the shared dispatcher.
+            if (a.Filter == TargetFilter.AllyOnly || (cast.ChargeShape != ChargeShape.Line && a.Shape != TargetShape.SingleActor))
+            {
+                var t = S.UnitById(cast.TargetUnitId);
+                var anchor = t != null && t.Alive ? t.Pos : cast.TargetTile;
+                if (a.Mode == TargetMode.Auto) anchor = caster.Pos;
+                ResolveAbility(caster, a, anchor, t != null && t.Alive ? t : null);
+                return;
+            }
             var victims = new List<Unit>();
             if (cast.ChargeShape == ChargeShape.Line && cast.LineTiles != null)
             {

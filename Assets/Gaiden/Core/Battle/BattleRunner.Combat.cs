@@ -113,7 +113,7 @@ namespace Gaiden.Core.Battle
             var def = C.Traps.TryGetValue(trap.TrapId, out var t) ? t : null;
             Emit(new TrapTriggeredEvent { UnitId = u.Id, At = u.Pos, TrapId = trap.TrapId });
             if (def == null) return;
-            if (def.Damage > 0) Damage(u, def.Damage, null, HitKind.Normal, DamageType.Poison, def.Name);
+            if (def.Damage > 0) Damage(u, def.Damage, null, HitKind.Normal, def.DamageType, def.Name);
             var buff = C.TryBuff(def.ApplyBuff);
             if (buff != null && u.Alive) ApplyBuff(u, buff, buff.Duration);
         }
@@ -217,10 +217,26 @@ namespace Gaiden.Core.Battle
         private void Strike(Unit attacker, Unit target, float mult, bool support)
         {
             Emit(new AttackEvent { AttackerId = attacker.Id, TargetId = target.Id, IsSupport = support });
-            var roll = Formulas.Physical(attacker, target, S.Rng, mult);
+            var roll = Formulas.Physical(attacker, target, S.Rng, mult * KitDamageMultiplier(attacker));
+            int before = target.Hp;
             Damage(target, roll.Damage, attacker, roll.Hit, DamageType.Physical);
             if (roll.Hit == HitKind.Critical && attacker.IsHero) MintOrb(attacker.Id, "critical");
-            if (roll.Hit != HitKind.Miss) MaybeCounter(target, attacker);
+            if (roll.Hit != HitKind.Miss) { AfterLandedHit(attacker, target, before - target.Hp); MaybeCounter(target, attacker); }
+        }
+
+        // ── Enemy kits (§14.4): passives and on-hit effects shared by every enemy attack ──
+
+        /// <summary>Berserk: below half HP an enemy hits 35% harder.</summary>
+        private float KitDamageMultiplier(Unit attacker) =>
+            !attacker.IsHero && attacker.HpFraction < 0.5f && HasPassive(attacker, "berserk") ? 1.35f : 1f;
+
+        /// <summary>After an enemy's attack lands: lifesteal heals half the damage; an on-hit buff may stick.</summary>
+        private void AfterLandedHit(Unit attacker, Unit target, int dealt)
+        {
+            if (attacker.IsHero || !attacker.Alive) return;
+            if (dealt > 0 && HasPassive(attacker, "lifesteal")) Heal(attacker, Math.Max(1, dealt / 2), attacker);
+            var buff = C.TryBuff(attacker.Def.OnHitBuff);
+            if (buff != null && target.Alive && S.Rng.Chance(attacker.Def.OnHitChance)) ApplyBuff(target, buff, buff.Duration);
         }
 
         /// <summary>Armor loses one durability per landing enemy hit; at 0 it breaks and its bonuses are gone (US-243).</summary>
