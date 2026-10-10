@@ -1,0 +1,23 @@
+GRIDGAME GAIDEN
+A MindAttic game — design, code and direction by Ryan DeBraal.
+
+CHARACTER & WORLD ART
+Original illustrations commissioned/created for GridGame (MindAttic).
+
+MUSIC
+"Teller of the Tales", "Minstrel Guild", "Crusade" — Kevin MacLeod (incompetech.com)
+Licensed under Creative Commons: By Attribution 4.0 — http://creativecommons.org/licenses/by/4.0/
+"Triumph (Instrumental RPG Adventure)" — Pixabay contributor (asset 135451), Pixabay Content License
+"Melancholy Lull" — bundled track, origin unverified (to be confirmed or replaced before release)
+
+SOUND EFFECTS
+Battle & UI sound-effect packs bundled with the project (SFX_*, Vefects_*, Click, Move, Slash…)
+— origin unverified; to be confirmed or replaced before commercial release.
+
+FONTS
+Outfit — SIL Open Font License 1.1
+Cinzel — SIL Open Font License 1.1
+Noto Sans, Noto Sans Symbols 2 — SIL Open Font License 1.1
+
+Inspired by the pincer battles of Terra Battle and the timeline of Grandia II.
+Built with Unity.

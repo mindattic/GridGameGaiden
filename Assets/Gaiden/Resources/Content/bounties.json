@@ -1,0 +1,42 @@
+[
+  {
+    "Id": "bounty_slime_culling",
+    "Name": "Slime Culling",
+    "TargetClass": "slime00",
+    "Kills": 5,
+    "RewardGold": 200,
+    "RewardItem": "healing_potion_basic"
+  },
+  {
+    "Id": "bounty_wolf_pack",
+    "Name": "Wolf Pack",
+    "TargetClass": "wolf00",
+    "Kills": 3,
+    "RewardGold": 300,
+    "RewardItem": "hi_potion"
+  },
+  {
+    "Id": "bounty_restless_dead",
+    "Name": "Restless Dead",
+    "TargetClass": "undead00",
+    "Kills": 4,
+    "RewardGold": 400,
+    "RewardItem": "holy_water"
+  },
+  {
+    "Id": "bounty_cave_dweller",
+    "Name": "Cave Dweller",
+    "TargetClass": "cyclops00",
+    "Kills": 2,
+    "RewardGold": 500,
+    "RewardItem": "flame_oil"
+  },
+  {
+    "Id": "bounty_vampire_lord",
+    "Name": "The Vampire Lord",
+    "TargetClass": "vampire",
+    "Kills": 1,
+    "RewardGold": 2000,
+    "RewardItem": "phoenix_down"
+  }
+]

@@ -1,0 +1,201 @@
+using System.Collections.Generic;
+using Gaiden.Core.Content;
+using UnityEngine;
+
+namespace Gaiden.App
+{
+    /// <summary>
+    /// Every texture the game draws: imported art by key (Resources) plus procedurally generated UI
+    /// pieces (window gradient, cursor, orbs, tile). Missing art never throws — it falls back to a
+    /// generated placeholder and logs once, so a gap is visible instead of fatal.
+    /// </summary>
+    public static class Art
+    {
+        private static readonly Dictionary<string, Texture2D> cache = new Dictionary<string, Texture2D>();
+        private static readonly HashSet<string> warned = new HashSet<string>();
+
+        public static Texture2D Load(string path)
+        {
+            if (string.IsNullOrEmpty(path)) return Placeholder;
+            if (cache.TryGetValue(path, out var t) && t != null) return t;
+            t = Resources.Load<Texture2D>(path);
+            if (t == null)
+            {
+                if (warned.Add(path)) Debug.LogWarning($"[Art] missing texture '{path}'");
+                t = Placeholder;
+            }
+            cache[path] = t;
+            return t;
+        }
+
+        public static bool Exists(string path) => Resources.Load<Texture2D>(path) != null;
+
+        public static Texture2D Thumb(string classId) => Load("Thumbs/" + classId);
+        public static Texture2D Portrait(string classId) => Load("Portraits/" + classId);
+        public static Texture2D Icon(string key) => string.IsNullOrEmpty(key) ? null : Load("Icons/" + key);
+
+        public static Texture2D Background(string theme, int index = 0)
+        {
+            var key = $"Backgrounds/{theme ?? "greenvalley"}_{index % 4}";
+            var t = Resources.Load<Texture2D>(key);
+            return t != null ? t : Load("Backgrounds/greenvalley_0");
+        }
+
+        // ── Generated pieces ────────────────────────────────────────────────────────
+
+        private static Texture2D placeholder, window, windowDark, cursor, tileLight, tileDark, glow, orb;
+
+        public static Texture2D Placeholder => placeholder ??= Solid(new Color(0.35f, 0.2f, 0.45f), "placeholder");
+
+        /// <summary>The Final Fantasy window body: a deep vertical blue gradient (border drawn by USS).</summary>
+        public static Texture2D Window => window ??= Gradient(new Color32(44, 70, 170, 255), new Color32(10, 18, 70, 255), "window");
+        public static Texture2D WindowDark => windowDark ??= Gradient(new Color32(30, 36, 80, 255), new Color32(6, 8, 30, 255), "window-dark");
+
+        public static Texture2D Cursor => cursor ??= MakeCursor();
+        public static Texture2D TileLight => tileLight ??= MakeTile(new Color32(70, 82, 120, 150), new Color32(140, 160, 220, 120));
+        public static Texture2D TileDark => tileDark ??= MakeTile(new Color32(50, 60, 96, 150), new Color32(120, 140, 200, 110));
+        public static Texture2D Glow => glow ??= MakeGlow();
+        public static Texture2D Orb => orb ??= MakeOrb();
+
+        private static Texture2D NewTex(int w, int h, string name)
+        {
+            return new Texture2D(w, h, TextureFormat.RGBA32, false) { name = name, wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear, hideFlags = HideFlags.DontSave };
+        }
+
+        private static Texture2D Solid(Color c, string name)
+        {
+            var t = NewTex(4, 4, name);
+            var px = new Color[16];
+            for (int i = 0; i < px.Length; i++) px[i] = c;
+            t.SetPixels(px);
+            t.Apply();
+            return t;
+        }
+
+        private static Texture2D Gradient(Color32 top, Color32 bottom, string name)
+        {
+            const int h = 128;
+            var t = NewTex(2, h, name);
+            for (int y = 0; y < h; y++)
+            {
+                var c = Color32.Lerp(bottom, top, y / (float)(h - 1));
+                t.SetPixel(0, y, c);
+                t.SetPixel(1, y, c);
+            }
+            t.Apply();
+            return t;
+        }
+
+        private static Texture2D MakeCursor()
+        {
+            // A white right-pointing gauntlet-ish arrow with a dark outline, like the classic menu hand.
+            const int s = 64;
+            var t = NewTex(s, s, "cursor");
+            var clear = new Color(0, 0, 0, 0);
+            for (int y = 0; y < s; y++)
+                for (int x = 0; x < s; x++)
+                {
+                    float fx = x / (float)s, fy = y / (float)s;
+                    // arrow head
+                    float head = fx > 0.45f ? (1f - fx) * 1.8f : 0f;
+                    bool inHead = fx > 0.45f && Mathf.Abs(fy - 0.5f) < head * 0.5f;
+                    bool inShaft = fx >= 0.08f && fx <= 0.5f && Mathf.Abs(fy - 0.5f) < 0.13f;
+                    bool inCuff = fx >= 0.04f && fx <= 0.16f && Mathf.Abs(fy - 0.5f) < 0.22f;
+                    bool inside = inHead || inShaft || inCuff;
+                    bool edge = false;
+                    if (!inside)
+                    {
+                        for (int k = 0; k < 8 && !edge; k++)
+                        {
+                            float ox = fx + Mathf.Cos(k * Mathf.PI / 4f) * 0.04f, oy = fy + Mathf.Sin(k * Mathf.PI / 4f) * 0.04f;
+                            float h2 = ox > 0.45f ? (1f - ox) * 1.8f : 0f;
+                            edge = (ox > 0.45f && Mathf.Abs(oy - 0.5f) < h2 * 0.5f) || (ox >= 0.08f && ox <= 0.5f && Mathf.Abs(oy - 0.5f) < 0.13f) || (ox >= 0.04f && ox <= 0.16f && Mathf.Abs(oy - 0.5f) < 0.22f);
+                        }
+                    }
+                    var shade = Mathf.Lerp(1f, 0.78f, fy);
+                    t.SetPixel(x, y, inside ? new Color(shade, shade, 1f, 1f) : edge ? new Color(0.05f, 0.05f, 0.15f, 1f) : clear);
+                }
+            t.Apply();
+            return t;
+        }
+
+        private static Texture2D MakeTile(Color32 fill, Color32 edge)
+        {
+            const int s = 64;
+            var t = NewTex(s, s, "tile");
+            for (int y = 0; y < s; y++)
+                for (int x = 0; x < s; x++)
+                {
+                    int d = Mathf.Min(Mathf.Min(x, y), Mathf.Min(s - 1 - x, s - 1 - y));
+                    Color32 c = d < 2 ? edge : fill;
+                    if (d >= 2 && d < 5) c = Color32.Lerp(edge, fill, (d - 2) / 3f);
+                    t.SetPixel(x, y, c);
+                }
+            t.Apply();
+            return t;
+        }
+
+        /// <summary>GLSL-style smoothstep (Unity's Mathf.SmoothStep is an interpolator, not an edge function).</summary>
+        private static float Edge(float e0, float e1, float x)
+        {
+            float t = Mathf.Clamp01((x - e0) / (e1 - e0));
+            return t * t * (3f - 2f * t);
+        }
+
+        private static Texture2D MakeGlow()
+        {
+            const int s = 64;
+            var t = NewTex(s, s, "glow");
+            for (int y = 0; y < s; y++)
+                for (int x = 0; x < s; x++)
+                {
+                    float dx = (x - s / 2f + 0.5f) / (s / 2f), dy = (y - s / 2f + 0.5f) / (s / 2f);
+                    float d = Mathf.Sqrt(dx * dx + dy * dy);
+                    // Soft ring that stays bright out to the frame edge (≈0.75) then falls off.
+                    float a = d < 0.7f ? 1f : 1f - Edge(0.7f, 1f, d);
+                    t.SetPixel(x, y, new Color(1, 1, 1, a));
+                }
+            t.Apply();
+            return t;
+        }
+
+        private static Texture2D MakeOrb()
+        {
+            const int s = 64;
+            var t = NewTex(s, s, "orb");
+            for (int y = 0; y < s; y++)
+                for (int x = 0; x < s; x++)
+                {
+                    float dx = (x - s / 2f + 0.5f) / (s / 2f), dy = (y - s / 2f + 0.5f) / (s / 2f);
+                    float d = Mathf.Sqrt(dx * dx + dy * dy);
+                    if (d > 1f) { t.SetPixel(x, y, new Color(0, 0, 0, 0)); continue; }
+                    float hl = Mathf.Clamp01(1f - Mathf.Sqrt((dx + 0.35f) * (dx + 0.35f) + (dy - 0.35f) * (dy - 0.35f)) * 1.6f);
+                    float rim = Edge(0.8f, 1f, d);
+                    float v = Mathf.Lerp(0.85f, 0.55f, rim) + hl * 0.5f;
+                    float a = 1f - Edge(0.94f, 1f, d);
+                    t.SetPixel(x, y, new Color(v, v, v, a));
+                }
+            t.Apply();
+            return t;
+        }
+
+        public static Color ManaColorOf(ManaColor c, bool colorblind = false)
+        {
+            switch (c)
+            {
+                case ManaColor.White: return new Color(0.98f, 0.96f, 0.86f);
+                case ManaColor.Blue: return new Color(0.27f, 0.55f, 1f);
+                case ManaColor.Black: return new Color(0.5f, 0.3f, 0.68f);
+                case ManaColor.Red: return colorblind ? new Color(0.84f, 0.37f, 0f) : new Color(0.93f, 0.25f, 0.2f);
+                case ManaColor.Green: return colorblind ? new Color(0f, 0.62f, 0.45f) : new Color(0.25f, 0.75f, 0.35f);
+                default: return new Color(0.8f, 0.8f, 0.84f);
+            }
+        }
+
+        public static Color HexColor(string hex, Color fallback)
+        {
+            if (!string.IsNullOrEmpty(hex) && ColorUtility.TryParseHtmlString(hex.StartsWith("#") ? hex : "#" + hex, out var c)) return c;
+            return fallback;
+        }
+    }
+}

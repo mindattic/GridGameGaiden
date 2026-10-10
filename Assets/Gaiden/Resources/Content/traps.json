@@ -1,0 +1,9 @@
+[
+  {
+    "Id": "venom_snare",
+    "Name": "Venom Snare",
+    "Damage": 6,
+    "ApplyBuff": "poisoned",
+    "LayChance": 0.45
+  }
+]

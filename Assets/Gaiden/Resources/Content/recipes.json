@@ -1,0 +1,2198 @@
+[
+  {
+    "Id": "recipe_sword_iron",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 3
+      },
+      {
+        "Item": "mat_wood_plank",
+        "Count": 1
+      }
+    ],
+    "Gold": 30,
+    "BaseItem": null,
+    "Result": "eq_sword_iron",
+    "ResultCount": 1
+  },
+  {
+    "Id": "recipe_sword_steel",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 6
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 1
+      }
+    ],
+    "Gold": 80,
+    "BaseItem": null,
+    "Result": "eq_sword_steel",
+    "ResultCount": 1
+  },
+  {
+    "Id": "recipe_armor_chain",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 4
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 2
+      }
+    ],
+    "Gold": 40,
+    "BaseItem": null,
+    "Result": "eq_armor_chain",
+    "ResultCount": 1
+  },
+  {
+    "Id": "recipe_boots_leather",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_leather",
+        "Count": 3
+      }
+    ],
+    "Gold": 15,
+    "BaseItem": null,
+    "Result": "eq_boots_leather",
+    "ResultCount": 1
+  },
+  {
+    "Id": "recipe_amulet_bone",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_undead_bone",
+        "Count": 3
+      }
+    ],
+    "Gold": 20,
+    "BaseItem": null,
+    "Result": "eq_amulet_bone",
+    "ResultCount": 1
+  },
+  {
+    "Id": "recipe_staff_mystic",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_wood_plank",
+        "Count": 2
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 3
+      }
+    ],
+    "Gold": 60,
+    "BaseItem": null,
+    "Result": "eq_staff_mystic",
+    "ResultCount": 1
+  },
+  {
+    "Id": "recipe_potion_healing",
+    "Station": "Alchemy",
+    "Inputs": [
+      {
+        "Item": "mat_slime_gel",
+        "Count": 2
+      }
+    ],
+    "Gold": 10,
+    "BaseItem": null,
+    "Result": "healing_potion_basic",
+    "ResultCount": 2
+  },
+  {
+    "Id": "recipe_potion_mana",
+    "Station": "Alchemy",
+    "Inputs": [
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 1
+      },
+      {
+        "Item": "mat_slime_gel",
+        "Count": 1
+      }
+    ],
+    "Gold": 15,
+    "BaseItem": null,
+    "Result": "mana_potion_basic",
+    "ResultCount": 2
+  },
+  {
+    "Id": "recipe_helm_iron",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 3
+      }
+    ],
+    "Gold": 25,
+    "BaseItem": null,
+    "Result": "eq_helm_iron",
+    "ResultCount": 1
+  },
+  {
+    "Id": "recipe_ring_copper",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 2
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 1
+      }
+    ],
+    "Gold": 15,
+    "BaseItem": null,
+    "Result": "eq_ring_copper",
+    "ResultCount": 1
+  },
+  {
+    "Id": "recipe_armor_plate",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 8
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 3
+      },
+      {
+        "Item": "mat_cloth",
+        "Count": 2
+      }
+    ],
+    "Gold": 120,
+    "BaseItem": null,
+    "Result": "eq_armor_plate",
+    "ResultCount": 1
+  },
+  {
+    "Id": "recipe_bow_hunter",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_wood_plank",
+        "Count": 3
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 1
+      }
+    ],
+    "Gold": 35,
+    "BaseItem": null,
+    "Result": "eq_bow_hunter",
+    "ResultCount": 1
+  },
+  {
+    "Id": "recipe_amulet_jade",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 3
+      },
+      {
+        "Item": "mat_undead_bone",
+        "Count": 2
+      }
+    ],
+    "Gold": 50,
+    "BaseItem": null,
+    "Result": "eq_amulet_jade",
+    "ResultCount": 1
+  },
+  {
+    "Id": "recipe_potion_hi",
+    "Station": "Alchemy",
+    "Inputs": [
+      {
+        "Item": "mat_slime_gel",
+        "Count": 5
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 60,
+    "BaseItem": null,
+    "Result": "hi_potion",
+    "ResultCount": 2
+  },
+  {
+    "Id": "recipe_potion_x",
+    "Station": "Alchemy",
+    "Inputs": [
+      {
+        "Item": "mat_slime_gel",
+        "Count": 10
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 5
+      },
+      {
+        "Item": "mat_demon_shard",
+        "Count": 1
+      }
+    ],
+    "Gold": 200,
+    "BaseItem": null,
+    "Result": "x_potion",
+    "ResultCount": 1
+  },
+  {
+    "Id": "recipe_ether",
+    "Station": "Alchemy",
+    "Inputs": [
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 3
+      }
+    ],
+    "Gold": 40,
+    "BaseItem": null,
+    "Result": "ether",
+    "ResultCount": 2
+  },
+  {
+    "Id": "recipe_ether_hi",
+    "Station": "Alchemy",
+    "Inputs": [
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 6
+      },
+      {
+        "Item": "mat_undead_bone",
+        "Count": 2
+      }
+    ],
+    "Gold": 120,
+    "BaseItem": null,
+    "Result": "hi_ether",
+    "ResultCount": 1
+  },
+  {
+    "Id": "recipe_phoenix_down",
+    "Station": "Alchemy",
+    "Inputs": [
+      {
+        "Item": "mat_enchanted_feather",
+        "Count": 2
+      },
+      {
+        "Item": "mat_ghost_ectoplasm",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 4
+      }
+    ],
+    "Gold": 180,
+    "BaseItem": null,
+    "Result": "phoenix_down",
+    "ResultCount": 1
+  },
+  {
+    "Id": "recipe_antidote",
+    "Station": "Alchemy",
+    "Inputs": [
+      {
+        "Item": "mat_slime_gel",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 1
+      }
+    ],
+    "Gold": 15,
+    "BaseItem": null,
+    "Result": "antidote",
+    "ResultCount": 3
+  },
+  {
+    "Id": "recipe_eye_drops",
+    "Station": "Alchemy",
+    "Inputs": [
+      {
+        "Item": "mat_enchanted_feather",
+        "Count": 1
+      },
+      {
+        "Item": "mat_cloth",
+        "Count": 1
+      }
+    ],
+    "Gold": 15,
+    "BaseItem": null,
+    "Result": "eye_drops",
+    "ResultCount": 3
+  },
+  {
+    "Id": "recipe_remedy",
+    "Station": "Alchemy",
+    "Inputs": [
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 3
+      },
+      {
+        "Item": "mat_enchanted_feather",
+        "Count": 1
+      },
+      {
+        "Item": "mat_undead_bone",
+        "Count": 1
+      }
+    ],
+    "Gold": 100,
+    "BaseItem": null,
+    "Result": "remedy",
+    "ResultCount": 1
+  },
+  {
+    "Id": "recipe_smoke_bomb",
+    "Station": "Alchemy",
+    "Inputs": [
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      },
+      {
+        "Item": "mat_cloth",
+        "Count": 2
+      },
+      {
+        "Item": "mat_cracked_fang",
+        "Count": 1
+      }
+    ],
+    "Gold": 40,
+    "BaseItem": null,
+    "Result": "smoke_bomb",
+    "ResultCount": 2
+  },
+  {
+    "Id": "recipe_tent",
+    "Station": "Alchemy",
+    "Inputs": [
+      {
+        "Item": "mat_leather",
+        "Count": 4
+      },
+      {
+        "Item": "mat_wood_plank",
+        "Count": 3
+      },
+      {
+        "Item": "mat_cloth",
+        "Count": 2
+      }
+    ],
+    "Gold": 120,
+    "BaseItem": null,
+    "Result": "tent",
+    "ResultCount": 1
+  },
+  {
+    "Id": "recipe_holy_water",
+    "Station": "Alchemy",
+    "Inputs": [
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      },
+      {
+        "Item": "mat_enchanted_feather",
+        "Count": 1
+      }
+    ],
+    "Gold": 60,
+    "BaseItem": null,
+    "Result": "holy_water",
+    "ResultCount": 2
+  },
+  {
+    "Id": "recipe_flame_oil",
+    "Station": "Alchemy",
+    "Inputs": [
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      },
+      {
+        "Item": "mat_cracked_fang",
+        "Count": 1
+      }
+    ],
+    "Gold": 50,
+    "BaseItem": null,
+    "Result": "flame_oil",
+    "ResultCount": 2
+  },
+  {
+    "Id": "upgrade_eq_sword_rusty",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 2
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 1
+      }
+    ],
+    "Gold": 30,
+    "BaseItem": "eq_sword_rusty",
+    "Result": "eq_sword_rusty_plus1",
+    "ResultCount": 1
+  },
+  {
+    "Id": "upgrade_eq_sword_rusty_plus1",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 4
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 2
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 1
+      }
+    ],
+    "Gold": 80,
+    "BaseItem": "eq_sword_rusty_plus1",
+    "Result": "eq_sword_rusty_plus2",
+    "ResultCount": 1
+  },
+  {
+    "Id": "upgrade_eq_sword_rusty_plus2",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 6
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 3
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 180,
+    "BaseItem": "eq_sword_rusty_plus2",
+    "Result": "eq_sword_rusty_plus3",
+    "ResultCount": 1
+  },
+  {
+    "Id": "upgrade_eq_sword_iron",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 2
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 1
+      }
+    ],
+    "Gold": 30,
+    "BaseItem": "eq_sword_iron",
+    "Result": "eq_sword_iron_plus1",
+    "ResultCount": 1
+  },
+  {
+    "Id": "upgrade_eq_sword_iron_plus1",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 4
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 2
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 1
+      }
+    ],
+    "Gold": 80,
+    "BaseItem": "eq_sword_iron_plus1",
+    "Result": "eq_sword_iron_plus2",
+    "ResultCount": 1
+  },
+  {
+    "Id": "upgrade_eq_sword_iron_plus2",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 6
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 3
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 180,
+    "BaseItem": "eq_sword_iron_plus2",
+    "Result": "eq_sword_iron_plus3",
+    "ResultCount": 1
+  },
+  {
+    "Id": "upgrade_eq_sword_steel",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 2
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 1
+      }
+    ],
+    "Gold": 30,
+    "BaseItem": "eq_sword_steel",
+    "Result": "eq_sword_steel_plus1",
+    "ResultCount": 1
+  },
+  {
+    "Id": "upgrade_eq_sword_steel_plus1",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 4
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 2
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 1
+      }
+    ],
+    "Gold": 80,
+    "BaseItem": "eq_sword_steel_plus1",
+    "Result": "eq_sword_steel_plus2",
+    "ResultCount": 1
+  },
+  {
+    "Id": "upgrade_eq_sword_steel_plus2",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 6
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 3
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 180,
+    "BaseItem": "eq_sword_steel_plus2",
+    "Result": "eq_sword_steel_plus3",
+    "ResultCount": 1
+  },
+  {
+    "Id": "upgrade_eq_staff_mystic",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 2
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 1
+      }
+    ],
+    "Gold": 30,
+    "BaseItem": "eq_staff_mystic",
+    "Result": "eq_staff_mystic_plus1",
+    "ResultCount": 1
+  },
+  {
+    "Id": "upgrade_eq_staff_mystic_plus1",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 4
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 2
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 1
+      }
+    ],
+    "Gold": 80,
+    "BaseItem": "eq_staff_mystic_plus1",
+    "Result": "eq_staff_mystic_plus2",
+    "ResultCount": 1
+  },
+  {
+    "Id": "upgrade_eq_staff_mystic_plus2",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 6
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 3
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 180,
+    "BaseItem": "eq_staff_mystic_plus2",
+    "Result": "eq_staff_mystic_plus3",
+    "ResultCount": 1
+  },
+  {
+    "Id": "upgrade_eq_bow_hunter",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 2
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 1
+      }
+    ],
+    "Gold": 30,
+    "BaseItem": "eq_bow_hunter",
+    "Result": "eq_bow_hunter_plus1",
+    "ResultCount": 1
+  },
+  {
+    "Id": "upgrade_eq_bow_hunter_plus1",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 4
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 2
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 1
+      }
+    ],
+    "Gold": 80,
+    "BaseItem": "eq_bow_hunter_plus1",
+    "Result": "eq_bow_hunter_plus2",
+    "ResultCount": 1
+  },
+  {
+    "Id": "upgrade_eq_bow_hunter_plus2",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 6
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 3
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 180,
+    "BaseItem": "eq_bow_hunter_plus2",
+    "Result": "eq_bow_hunter_plus3",
+    "ResultCount": 1
+  },
+  {
+    "Id": "upgrade_eq_hammer_war",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 2
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 1
+      }
+    ],
+    "Gold": 30,
+    "BaseItem": "eq_hammer_war",
+    "Result": "eq_hammer_war_plus1",
+    "ResultCount": 1
+  },
+  {
+    "Id": "upgrade_eq_hammer_war_plus1",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 4
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 2
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 1
+      }
+    ],
+    "Gold": 80,
+    "BaseItem": "eq_hammer_war_plus1",
+    "Result": "eq_hammer_war_plus2",
+    "ResultCount": 1
+  },
+  {
+    "Id": "upgrade_eq_hammer_war_plus2",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 6
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 3
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 180,
+    "BaseItem": "eq_hammer_war_plus2",
+    "Result": "eq_hammer_war_plus3",
+    "ResultCount": 1
+  },
+  {
+    "Id": "upgrade_eq_dagger_bronze",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 2
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 1
+      }
+    ],
+    "Gold": 30,
+    "BaseItem": "eq_dagger_bronze",
+    "Result": "eq_dagger_bronze_plus1",
+    "ResultCount": 1
+  },
+  {
+    "Id": "upgrade_eq_dagger_bronze_plus1",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 4
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 2
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 1
+      }
+    ],
+    "Gold": 80,
+    "BaseItem": "eq_dagger_bronze_plus1",
+    "Result": "eq_dagger_bronze_plus2",
+    "ResultCount": 1
+  },
+  {
+    "Id": "upgrade_eq_dagger_bronze_plus2",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 6
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 3
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 180,
+    "BaseItem": "eq_dagger_bronze_plus2",
+    "Result": "eq_dagger_bronze_plus3",
+    "ResultCount": 1
+  },
+  {
+    "Id": "upgrade_eq_sword_flame",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 2
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 1
+      }
+    ],
+    "Gold": 30,
+    "BaseItem": "eq_sword_flame",
+    "Result": "eq_sword_flame_plus1",
+    "ResultCount": 1
+  },
+  {
+    "Id": "upgrade_eq_sword_flame_plus1",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 4
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 2
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 1
+      }
+    ],
+    "Gold": 80,
+    "BaseItem": "eq_sword_flame_plus1",
+    "Result": "eq_sword_flame_plus2",
+    "ResultCount": 1
+  },
+  {
+    "Id": "upgrade_eq_sword_flame_plus2",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 6
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 3
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 180,
+    "BaseItem": "eq_sword_flame_plus2",
+    "Result": "eq_sword_flame_plus3",
+    "ResultCount": 1
+  },
+  {
+    "Id": "upgrade_eq_wand_crystal",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 2
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 1
+      }
+    ],
+    "Gold": 30,
+    "BaseItem": "eq_wand_crystal",
+    "Result": "eq_wand_crystal_plus1",
+    "ResultCount": 1
+  },
+  {
+    "Id": "upgrade_eq_wand_crystal_plus1",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 4
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 2
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 1
+      }
+    ],
+    "Gold": 80,
+    "BaseItem": "eq_wand_crystal_plus1",
+    "Result": "eq_wand_crystal_plus2",
+    "ResultCount": 1
+  },
+  {
+    "Id": "upgrade_eq_wand_crystal_plus2",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 6
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 3
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 180,
+    "BaseItem": "eq_wand_crystal_plus2",
+    "Result": "eq_wand_crystal_plus3",
+    "ResultCount": 1
+  },
+  {
+    "Id": "upgrade_eq_spear_serpent",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 2
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 1
+      }
+    ],
+    "Gold": 30,
+    "BaseItem": "eq_spear_serpent",
+    "Result": "eq_spear_serpent_plus1",
+    "ResultCount": 1
+  },
+  {
+    "Id": "upgrade_eq_spear_serpent_plus1",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 4
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 2
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 1
+      }
+    ],
+    "Gold": 80,
+    "BaseItem": "eq_spear_serpent_plus1",
+    "Result": "eq_spear_serpent_plus2",
+    "ResultCount": 1
+  },
+  {
+    "Id": "upgrade_eq_spear_serpent_plus2",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 6
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 3
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 180,
+    "BaseItem": "eq_spear_serpent_plus2",
+    "Result": "eq_spear_serpent_plus3",
+    "ResultCount": 1
+  },
+  {
+    "Id": "upgrade_eq_axe_rune",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 2
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 1
+      }
+    ],
+    "Gold": 30,
+    "BaseItem": "eq_axe_rune",
+    "Result": "eq_axe_rune_plus1",
+    "ResultCount": 1
+  },
+  {
+    "Id": "upgrade_eq_axe_rune_plus1",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 4
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 2
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 1
+      }
+    ],
+    "Gold": 80,
+    "BaseItem": "eq_axe_rune_plus1",
+    "Result": "eq_axe_rune_plus2",
+    "ResultCount": 1
+  },
+  {
+    "Id": "upgrade_eq_axe_rune_plus2",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 6
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 3
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 180,
+    "BaseItem": "eq_axe_rune_plus2",
+    "Result": "eq_axe_rune_plus3",
+    "ResultCount": 1
+  },
+  {
+    "Id": "upgrade_eq_sword_shadow",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 2
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 1
+      }
+    ],
+    "Gold": 30,
+    "BaseItem": "eq_sword_shadow",
+    "Result": "eq_sword_shadow_plus1",
+    "ResultCount": 1
+  },
+  {
+    "Id": "upgrade_eq_sword_shadow_plus1",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 4
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 2
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 1
+      }
+    ],
+    "Gold": 80,
+    "BaseItem": "eq_sword_shadow_plus1",
+    "Result": "eq_sword_shadow_plus2",
+    "ResultCount": 1
+  },
+  {
+    "Id": "upgrade_eq_sword_shadow_plus2",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 6
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 3
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 180,
+    "BaseItem": "eq_sword_shadow_plus2",
+    "Result": "eq_sword_shadow_plus3",
+    "ResultCount": 1
+  },
+  {
+    "Id": "upgrade_eq_mace_starfall",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 2
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 1
+      }
+    ],
+    "Gold": 30,
+    "BaseItem": "eq_mace_starfall",
+    "Result": "eq_mace_starfall_plus1",
+    "ResultCount": 1
+  },
+  {
+    "Id": "upgrade_eq_mace_starfall_plus1",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 4
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 2
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 1
+      }
+    ],
+    "Gold": 80,
+    "BaseItem": "eq_mace_starfall_plus1",
+    "Result": "eq_mace_starfall_plus2",
+    "ResultCount": 1
+  },
+  {
+    "Id": "upgrade_eq_mace_starfall_plus2",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 6
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 3
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 180,
+    "BaseItem": "eq_mace_starfall_plus2",
+    "Result": "eq_mace_starfall_plus3",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_sword_rusty_flame",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_flame",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_sword_rusty",
+    "Result": "eq_sword_rusty_ench_flame",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_sword_rusty_frost",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_frost",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_sword_rusty",
+    "Result": "eq_sword_rusty_ench_frost",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_sword_rusty_spark",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_spark",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_sword_rusty",
+    "Result": "eq_sword_rusty_ench_spark",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_sword_rusty_shadow",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_shadow",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_sword_rusty",
+    "Result": "eq_sword_rusty_ench_shadow",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_sword_iron_flame",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_flame",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_sword_iron",
+    "Result": "eq_sword_iron_ench_flame",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_sword_iron_frost",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_frost",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_sword_iron",
+    "Result": "eq_sword_iron_ench_frost",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_sword_iron_spark",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_spark",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_sword_iron",
+    "Result": "eq_sword_iron_ench_spark",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_sword_iron_shadow",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_shadow",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_sword_iron",
+    "Result": "eq_sword_iron_ench_shadow",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_sword_steel_flame",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_flame",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_sword_steel",
+    "Result": "eq_sword_steel_ench_flame",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_sword_steel_frost",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_frost",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_sword_steel",
+    "Result": "eq_sword_steel_ench_frost",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_sword_steel_spark",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_spark",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_sword_steel",
+    "Result": "eq_sword_steel_ench_spark",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_sword_steel_shadow",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_shadow",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_sword_steel",
+    "Result": "eq_sword_steel_ench_shadow",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_staff_mystic_flame",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_flame",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_staff_mystic",
+    "Result": "eq_staff_mystic_ench_flame",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_staff_mystic_frost",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_frost",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_staff_mystic",
+    "Result": "eq_staff_mystic_ench_frost",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_staff_mystic_spark",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_spark",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_staff_mystic",
+    "Result": "eq_staff_mystic_ench_spark",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_staff_mystic_shadow",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_shadow",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_staff_mystic",
+    "Result": "eq_staff_mystic_ench_shadow",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_bow_hunter_flame",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_flame",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_bow_hunter",
+    "Result": "eq_bow_hunter_ench_flame",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_bow_hunter_frost",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_frost",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_bow_hunter",
+    "Result": "eq_bow_hunter_ench_frost",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_bow_hunter_spark",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_spark",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_bow_hunter",
+    "Result": "eq_bow_hunter_ench_spark",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_bow_hunter_shadow",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_shadow",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_bow_hunter",
+    "Result": "eq_bow_hunter_ench_shadow",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_hammer_war_flame",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_flame",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_hammer_war",
+    "Result": "eq_hammer_war_ench_flame",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_hammer_war_frost",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_frost",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_hammer_war",
+    "Result": "eq_hammer_war_ench_frost",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_hammer_war_spark",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_spark",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_hammer_war",
+    "Result": "eq_hammer_war_ench_spark",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_hammer_war_shadow",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_shadow",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_hammer_war",
+    "Result": "eq_hammer_war_ench_shadow",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_dagger_bronze_flame",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_flame",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_dagger_bronze",
+    "Result": "eq_dagger_bronze_ench_flame",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_dagger_bronze_frost",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_frost",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_dagger_bronze",
+    "Result": "eq_dagger_bronze_ench_frost",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_dagger_bronze_spark",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_spark",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_dagger_bronze",
+    "Result": "eq_dagger_bronze_ench_spark",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_dagger_bronze_shadow",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_shadow",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_dagger_bronze",
+    "Result": "eq_dagger_bronze_ench_shadow",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_sword_flame_flame",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_flame",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_sword_flame",
+    "Result": "eq_sword_flame_ench_flame",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_sword_flame_frost",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_frost",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_sword_flame",
+    "Result": "eq_sword_flame_ench_frost",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_sword_flame_spark",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_spark",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_sword_flame",
+    "Result": "eq_sword_flame_ench_spark",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_sword_flame_shadow",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_shadow",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_sword_flame",
+    "Result": "eq_sword_flame_ench_shadow",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_wand_crystal_flame",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_flame",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_wand_crystal",
+    "Result": "eq_wand_crystal_ench_flame",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_wand_crystal_frost",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_frost",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_wand_crystal",
+    "Result": "eq_wand_crystal_ench_frost",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_wand_crystal_spark",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_spark",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_wand_crystal",
+    "Result": "eq_wand_crystal_ench_spark",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_wand_crystal_shadow",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_shadow",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_wand_crystal",
+    "Result": "eq_wand_crystal_ench_shadow",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_spear_serpent_flame",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_flame",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_spear_serpent",
+    "Result": "eq_spear_serpent_ench_flame",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_spear_serpent_frost",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_frost",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_spear_serpent",
+    "Result": "eq_spear_serpent_ench_frost",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_spear_serpent_spark",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_spark",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_spear_serpent",
+    "Result": "eq_spear_serpent_ench_spark",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_spear_serpent_shadow",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_shadow",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_spear_serpent",
+    "Result": "eq_spear_serpent_ench_shadow",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_axe_rune_flame",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_flame",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_axe_rune",
+    "Result": "eq_axe_rune_ench_flame",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_axe_rune_frost",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_frost",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_axe_rune",
+    "Result": "eq_axe_rune_ench_frost",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_axe_rune_spark",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_spark",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_axe_rune",
+    "Result": "eq_axe_rune_ench_spark",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_axe_rune_shadow",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_shadow",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_axe_rune",
+    "Result": "eq_axe_rune_ench_shadow",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_sword_shadow_flame",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_flame",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_sword_shadow",
+    "Result": "eq_sword_shadow_ench_flame",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_sword_shadow_frost",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_frost",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_sword_shadow",
+    "Result": "eq_sword_shadow_ench_frost",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_sword_shadow_spark",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_spark",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_sword_shadow",
+    "Result": "eq_sword_shadow_ench_spark",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_sword_shadow_shadow",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_shadow",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_sword_shadow",
+    "Result": "eq_sword_shadow_ench_shadow",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_mace_starfall_flame",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_flame",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_mace_starfall",
+    "Result": "eq_mace_starfall_ench_flame",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_mace_starfall_frost",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_frost",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_mace_starfall",
+    "Result": "eq_mace_starfall_ench_frost",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_mace_starfall_spark",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_spark",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_mace_starfall",
+    "Result": "eq_mace_starfall_ench_spark",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_mace_starfall_shadow",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_shadow",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_mace_starfall",
+    "Result": "eq_mace_starfall_ench_shadow",
+    "ResultCount": 1
+  }
+]

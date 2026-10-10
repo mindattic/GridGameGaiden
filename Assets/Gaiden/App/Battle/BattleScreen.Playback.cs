@@ -1,0 +1,528 @@
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using Gaiden.Core;
+using Gaiden.Core.Battle;
+using Gaiden.Core.Content;
+using Gaiden.Meta;
+using UnityEngine;
+using UnityEngine.UIElements;
+
+namespace Gaiden.App
+{
+    public sealed partial class BattleScreen
+    {
+        private int chainCount;
+        private float playStarted;
+
+        /// <summary>
+        /// Plays an event list back, one awaited beat each (bible: no instant anythings). The simulation
+        /// already resolved everything; if any animation is skipped or interrupted, the final SyncAll
+        /// snaps every view to the true state.
+        /// </summary>
+        private IEnumerator Play(List<BattleEvent> events, bool skipMovePrefix)
+        {
+            playing = true;
+            playStarted = Time.unscaledTime;
+            chainCount = 0;
+            int i = 0;
+            if (skipMovePrefix)
+            {
+                // The drag already showed these steps live; only replay their side effects.
+                while (i < events.Count && (events[i] is ActionBeganEvent || events[i] is SteppedEvent || events[i] is DisplacedEvent || events[i] is StepBlockedEvent)) i++;
+                foreach (var u in State.Units)
+                    if (u.Alive && board.Units.TryGetValue(u.Id, out var v)) { board.Place(v, u.Pos); }
+            }
+            for (; i < events.Count; i++)
+            {
+                IEnumerator anim = null;
+                try { anim = Animate(events[i]); }
+                catch (System.Exception e) { Debug.LogException(e); }
+                if (anim != null) yield return Safe(anim);
+            }
+            board.Lines.ClearLines();
+            SyncAll();
+            playing = false;
+            if (State.IsOver && !ended) yield return EndBattle();
+        }
+
+        private float Fx => ReduceMotion ? 0f : 1f;
+
+        /// <summary>Runs a (possibly nested) animation; an exception ends that beat but never the playback.</summary>
+        private static IEnumerator Safe(IEnumerator e)
+        {
+            while (true)
+            {
+                object cur;
+                try
+                {
+                    if (!e.MoveNext()) yield break;
+                    cur = e.Current;
+                }
+                catch (System.Exception ex) { Debug.LogException(ex); yield break; }
+                if (cur is IEnumerator nested) yield return Safe(nested);
+                else yield return cur;
+            }
+        }
+
+        private IEnumerator Animate(BattleEvent e)
+        {
+            switch (e)
+            {
+                case ActionBeganEvent a when a.ActorId >= 0 && a.Label != "Move":
+                    ShowBanner($"{State.UnitById(a.ActorId)?.Name}: {a.Label}");
+                    return Tween.Wait(0.15f);
+                case ActionBeganEvent a when a.Label == "Shield":
+                    ShowBanner("Shields up!");
+                    App.Audio.Sfx("cast");
+                    return Tween.Wait(0.2f);
+
+                case SteppedEvent s: return StepAnim(s.UnitId, s.To, 0.16f, "move");
+                case DisplacedEvent d: return StepAnim(d.UnitId, d.To, 0.14f, "slide");
+                case TeleportedEvent t: return TeleportAnim(t);
+
+                case PincerFormedEvent p: return PincerAnim(p);
+                case AttackEvent at: return AttackAnim(at);
+                case DamagedEvent dm: return DamageAnim(dm);
+                case HealedEvent h: return HealAnim(h);
+                case DiedEvent d: return DeathAnim(d);
+                case LootEvent l: return LootAnim(l);
+                case OrbMintedEvent o: return OrbAnim(o);
+                case OrbsSpentEvent _: SyncOrbs(); App.Audio.Sfx("cast", 0.6f); return Tween.Wait(0.12f);
+
+                case TimelineAdvancedEvent ta: return TimelineAnim(ta);
+                case PushedBackEvent pb: return PushAnim(pb);
+                case HastenedEvent hs: return HastenAnim(hs);
+                case TurnStartedEvent ts: return TurnAnim(ts);
+                case TurnSkippedEvent sk: return FloatText(sk.UnitId, sk.Reason == "asleep" ? "Zzz…" : "…", new Color(0.7f, 0.8f, 1f), 0.35f);
+
+                case CastQueuedEvent cq: return CastQueuedAnim(cq);
+                case CastStaggeredEvent cs: return FloatText(cs.CasterId, cs.Resisted ? "Steady!" : "Stagger!", new Color(1f, 0.85f, 0.4f), 0.25f);
+                case CastCancelledEvent cc: SyncTimeline(null); board.Lines.ClearLines(); board.ClearMarks(); return FloatText(cc.CasterId, cc.Reason == "interrupted" ? "Interrupted!" : "Fizzled", new Color(1f, 0.6f, 0.3f), 0.35f);
+                case ClutchEvent cl: return ClutchAnim(cl);
+                case AbilityResolvedEvent ar: return AbilityAnim(ar);
+                case AbilityRefusedEvent rf: App.Audio.Sfx("ui.error"); ShowBanner(rf.Reason); return null;
+                case ItemUsedEvent iu: ShowBanner($"{App.Content.TryItem(iu.ItemId)?.Name} ({iu.ChargesLeft} left)"); return Tween.Wait(0.1f);
+
+                case BuffAppliedEvent ba: return BuffAnim(ba);
+                case BuffRemovedEvent br: RefreshUnit(br.UnitId); return br.Reason == "steam" ? FloatText(br.UnitId, "Steam!", Color.white, 0.25f) : null;
+                case BuffTickedEvent bt: RefreshUnit(bt.UnitId); return null;
+                case AnnounceEvent an: ShowBanner(an.Text); return Tween.Wait(0.25f);
+                case ScannedEvent sc: return ScanAnim(sc);
+                case TrapPlacedEvent tp: board.SyncTraps(State); App.Audio.Sfx("trap"); return FloatText(tp.ById, "Snare!", new Color(0.8f, 0.4f, 1f), 0.3f);
+                case TrapTriggeredEvent tt: board.SyncTraps(State); App.Audio.Sfx("trap"); return FloatText(tt.UnitId, "Trap!", new Color(0.8f, 0.4f, 1f), 0.25f);
+                case WeaponWornEvent _: return null;
+                case WeaponShatteredEvent ws: App.Audio.Sfx("shatter"); return FloatText(ws.UnitId, "SHATTER!", new Color(1f, 0.7f, 0.3f), 0.5f, 80);
+                case BossPhaseEvent bp: return BossAnim(bp);
+                case WaveStartedEvent wv: return WaveAnim(wv);
+                case WaveClearedEvent wc: ShowBanner("Wave cleared!"); return Tween.Wait(0.4f);
+                case BattleEndedEvent be: ShowBanner(be.Victory ? "VICTORY!" : be.Escaped ? "ESCAPED" : "DEFEAT"); App.Audio.Sfx(be.Victory ? "victory" : be.Escaped ? "dash" : "defeat"); return Tween.Wait(1.0f);
+                case RevivedEvent rv: return ReviveAnim(rv);
+                case PlayerControlEvent _: ShowBanner(""); SyncAll(); return null;
+            }
+            return null;
+        }
+
+        // ── Individual beats ──────────────────────────────────────────────────────
+
+        private IEnumerator StepAnim(int unitId, Coord to, float seconds, string sfx)
+        {
+            if (!board.Units.TryGetValue(unitId, out var v)) yield break;
+            var from = BoardView.PosOf(v.Tile);
+            v.Tile = to;
+            App.Audio.Sfx(sfx, 0.6f);
+            yield return Tween.Move(v.Root, from, BoardView.PosOf(to), seconds);
+        }
+
+        private IEnumerator TeleportAnim(TeleportedEvent t)
+        {
+            if (!board.Units.TryGetValue(t.UnitId, out var v)) yield break;
+            App.Audio.Sfx("magic");
+            yield return Tween.Fade(v.Root, 1, 0, 0.15f);
+            board.Place(v, t.To);
+            yield return Tween.Fade(v.Root, 0, 1, 0.15f);
+        }
+
+        private IEnumerator PincerAnim(PincerFormedEvent p)
+        {
+            chainCount++;
+            var a = State.UnitById(p.Attacker1); var b = State.UnitById(p.Attacker2);
+            if (a == null || b == null) yield break;
+            board.Lines.ClearLines();
+            var color = p.Team == Team.Hero ? new Color(1f, 0.85f, 0.3f, 0.95f) : new Color(1f, 0.3f, 0.3f, 0.95f);
+            board.Lines.Add(BoardView.CenterOf(a.Pos), BoardView.CenterOf(b.Pos), color, 18f);
+            foreach (var sid in p.Supporters)
+            {
+                var s = State.UnitById(sid);
+                var partner = s != null && s.IsAdjacentTo(a) ? a : b;
+                if (s != null) board.Lines.Add(BoardView.CenterOf(s.Pos), BoardView.CenterOf(partner.Pos), new Color(0.4f, 0.8f, 1f, 0.9f), 10f);
+            }
+            App.Audio.Sfx("pincer", 1f, 1f + 0.08f * (chainCount - 1));
+            string label = p.Team == Team.Hero ? (chainCount > 1 ? $"CHAIN ×{chainCount}!" : "PINCER!") : "Enemy pincer!";
+            ShowBanner(label);
+            var mid = (BoardView.CenterOf(a.Pos) + BoardView.CenterOf(b.Pos)) / 2f;
+            var f = board.Float(label, mid, color, 96);
+            App.StartCoroutine(FloatAway(f, 0.7f));
+            if (board.Units.TryGetValue(a.Id, out var av)) App.StartCoroutine(Tween.Pop(av.Root, 1.15f, 0.2f));
+            if (board.Units.TryGetValue(b.Id, out var bv)) App.StartCoroutine(Tween.Pop(bv.Root, 1.15f, 0.2f));
+            yield return Tween.Wait(0.32f);
+        }
+
+        private IEnumerator AttackAnim(AttackEvent at)
+        {
+            var a = State.UnitById(at.AttackerId); var t = State.UnitById(at.TargetId);
+            if (a == null || t == null || !board.Units.TryGetValue(a.Id, out var av)) yield break;
+            Vector2 dir = (BoardView.CenterOf(t.Pos, t.W, t.H) - BoardView.CenterOf(a.Pos, a.W, a.H)).normalized;
+            float lunge = (at.IsSupport ? 18f : 34f) * Fx + 6f;
+            yield return Tween.Run(0.07f, k => av.Root.style.translate = new Translate(dir.x * lunge * k, dir.y * lunge * k));
+            App.StartCoroutine(Tween.Run(0.12f, k => av.Root.style.translate = new Translate(dir.x * lunge * (1 - k), dir.y * lunge * (1 - k))));
+        }
+
+        private IEnumerator DamageAnim(DamagedEvent d)
+        {
+            var t = State.UnitById(d.TargetId);
+            if (t == null || !board.Units.TryGetValue(t.Id, out var v)) yield break;
+            var at = BoardView.CenterOf(v.Tile, v.W, v.H);
+            if (d.Hit == HitKind.Miss)
+            {
+                App.Audio.Sfx("miss");
+                App.StartCoroutine(FloatAway(board.Float("MISS", at, new Color(0.8f, 0.85f, 1f), 56), 0.6f));
+                yield return Tween.Wait(0.12f);
+                yield break;
+            }
+            bool crit = d.Hit == HitKind.Critical;
+            App.Audio.Sfx(d.SourceId < 0 ? "debuff" : crit ? "crit" : SfxFor(d.Type));
+            string text = d.Note == "Armored!" ? "ARMORED" : (crit ? $"{d.Amount}!" : d.Amount.ToString());
+            var color = d.Note == "Armored!" ? new Color(0.7f, 0.7f, 0.75f) : crit ? new Color(1f, 0.85f, 0.2f) : t.IsHero ? new Color(1f, 0.5f, 0.45f) : Color.white;
+            App.StartCoroutine(FloatAway(board.Float(text, at, color, crit ? 100 : 72), 0.75f));
+            v.SetHp(d.HpAfter, t.MaxHp);
+            v.Frame.style.unityBackgroundImageTintColor = new Color(1f, 0.4f, 0.4f);
+            v.Art.style.unityBackgroundImageTintColor = new Color(1f, 0.55f, 0.55f);
+            App.StartCoroutine(Tween.Shake(v.Root, 14f * Fx, 0.18f));
+            if (crit || d.Amount >= t.MaxHp * 0.25f) App.StartCoroutine(Tween.Shake(shake, (crit ? 16f : 9f) * Fx, 0.2f));
+            yield return Tween.Wait(crit ? 0.16f : 0.09f); // hit-stop
+            v.Art.style.unityBackgroundImageTintColor = Color.white;
+        }
+
+        private static string SfxFor(DamageType t)
+        {
+            switch (t)
+            {
+                case DamageType.Fire: return "fire";
+                case DamageType.Ice: return "ice";
+                case DamageType.Lightning: return "lightning";
+                case DamageType.Poison: return "poison";
+                case DamageType.Physical: return "hit";
+                default: return "magic";
+            }
+        }
+
+        private IEnumerator HealAnim(HealedEvent h)
+        {
+            var t = State.UnitById(h.TargetId);
+            if (t == null || !board.Units.TryGetValue(t.Id, out var v)) yield break;
+            App.Audio.Sfx("heal");
+            v.SetHp(h.HpAfter, t.MaxHp);
+            v.SetGlow(new Color(0.4f, 1f, 0.5f), 0.8f);
+            App.StartCoroutine(FloatAway(board.Float("+" + h.Amount, BoardView.CenterOf(v.Tile), new Color(0.45f, 1f, 0.55f), 72), 0.8f));
+            yield return Tween.Wait(0.2f);
+            v.SetGlow(Color.white, 0f);
+        }
+
+        private IEnumerator DeathAnim(DiedEvent d)
+        {
+            if (!board.Units.TryGetValue(d.UnitId, out var v)) yield break;
+            App.Audio.Sfx("death");
+            yield return Tween.Run(0.3f, k =>
+            {
+                v.Root.style.opacity = 1 - k;
+                v.Root.style.scale = new Scale(Vector2.one * (1f - 0.4f * k));
+                v.Root.style.rotate = new Rotate(Fx * 12f * k);
+            });
+            v.Root.RemoveFromHierarchy();
+            v.Root.style.rotate = new Rotate(0);
+            v.Dead = true;
+        }
+
+        private IEnumerator LootAnim(LootEvent l)
+        {
+            coinLabel.text = $"{State.Results.Coins} G";
+            if (l.Coins <= 0 && l.Items.Count == 0) yield break;
+            var at = BoardView.CenterOf(board.Units.TryGetValue(l.FromUnitId, out var v) ? v.Tile : new Coord(2, 2));
+            if (l.Coins > 0) App.StartCoroutine(FloatAway(board.Float($"+{l.Coins} G", at + new Vector2(0, -20), new Color(1f, 0.85f, 0.35f), 52), 0.9f));
+            foreach (var it in l.Items)
+            {
+                var name = App.Content.TryItem(it.Item)?.Name ?? it.Item;
+                App.StartCoroutine(FloatAway(board.Float($"{name} ×{it.Count}", at + new Vector2(0, 40), new Color(0.7f, 1f, 0.8f), 40), 1.1f));
+            }
+            App.Audio.Sfx("ui.buy", 0.6f);
+            yield return Tween.Wait(0.08f);
+        }
+
+        private IEnumerator OrbAnim(OrbMintedEvent o)
+        {
+            App.Audio.Sfx("orb", 0.7f, 1f + Random.Range(-0.05f, 0.1f));
+            var src = State.UnitById(o.SourceUnitId);
+            int index = o.Landed ? State.Bank.Count - 1 : orbViews.Count - 1;
+            // Fly a small orb from the source to its slot in the line.
+            var orb = new VisualElement { pickingMode = PickingMode.Ignore };
+            orb.style.position = Position.Absolute;
+            orb.style.width = orb.style.height = 60;
+            orb.style.backgroundImage = new StyleBackground(Art.Orb);
+            orb.style.unityBackgroundImageTintColor = Art.ManaColorOf(o.Color, Colorblind);
+            App.Overlay.Add(orb);
+            Vector2 from = src != null && board.Units.TryGetValue(src.Id, out var v)
+                ? new Vector2(BoardLeft, BoardTop) + BoardView.CenterOf(v.Tile) : new Vector2(585, 1200);
+            var slot = orbViews[Mathf.Clamp(index, 0, orbViews.Count - 1)];
+            Vector2 to = slot.worldBound.center - App.Stage.worldBound.position;
+            if (float.IsNaN(to.x)) to = new Vector2(585, 2210);
+            yield return Tween.Run(0.22f, k =>
+            {
+                var p = Vector2.Lerp(from, to, Tween.EaseInOut(k)) + Vector2.up * (-140f * Mathf.Sin(k * Mathf.PI));
+                orb.style.left = p.x - 30; orb.style.top = p.y - 30;
+                if (!o.Landed) orb.style.opacity = 1f - k;
+            });
+            orb.RemoveFromHierarchy();
+            SyncOrbs();
+            if (o.Landed && index >= 0 && index < orbViews.Count) App.StartCoroutine(Tween.Pop(orbViews[index], 1.3f, 0.15f));
+        }
+
+        private IEnumerator TimelineAnim(TimelineAdvancedEvent ta)
+        {
+            var starts = new Dictionary<int, float>();
+            foreach (var kv in timelineIconViews)
+                starts[kv.Key] = (kv.Value.resolvedStyle.left + kv.Value.resolvedStyle.width / 2f) / TimelineWidth;
+            // Create icons for entries that appeared, then glide everything to the snapshot.
+            foreach (var e in State.Timeline)
+                if (!timelineIconViews.ContainsKey(e.Id)) { var icon = MakeTimelineIcon(e); timelineIconViews[e.Id] = icon; timelineIcons.Add(icon); starts[e.Id] = ta.U.TryGetValue(e.Id, out var u0) ? u0 : e.U; }
+            float seconds = Mathf.Clamp(ta.Ticks / 40f, 0.18f, 0.45f);
+            yield return Tween.Run(seconds, k =>
+            {
+                foreach (var kv in ta.U)
+                {
+                    if (!timelineIconViews.TryGetValue(kv.Key, out var icon)) continue;
+                    float s = starts.TryGetValue(kv.Key, out var v) ? v : kv.Value;
+                    var entry = State.Timeline.FirstOrDefault(x => x.Id == kv.Key);
+                    PlaceIcon(icon, entry?.Kind ?? TimelineKind.Turn, Mathf.Lerp(s, kv.Value, k));
+                }
+            }, Tween.EaseInOut);
+            StaggerIcons();
+            foreach (var u in State.Units)
+                if (!u.IsHero && u.Alive && board.Units.TryGetValue(u.Id, out var uv)) uv.SetCountdown(BattleEngine.ActionsUntilTurn(State, u.Id));
+        }
+
+        private IEnumerator PushAnim(PushedBackEvent pb)
+        {
+            var entry = State.TurnEntryOf(pb.UnitId);
+            App.Audio.Sfx("slide", 0.8f, 0.8f);
+            if (entry != null && timelineIconViews.TryGetValue(entry.Id, out var icon))
+                App.StartCoroutine(Tween.Run(0.3f, k => PlaceIcon(icon, TimelineKind.Turn, Mathf.Lerp(pb.FromU, pb.ToU, Tween.EaseOut(k)))));
+            yield return FloatText(pb.UnitId, "Pushback!", new Color(0.5f, 0.85f, 1f), 0.12f, 46);
+        }
+
+        private IEnumerator HastenAnim(HastenedEvent h)
+        {
+            if (timelineIconViews.TryGetValue(h.EntryId, out var icon))
+            {
+                var entry = State.Timeline.FirstOrDefault(x => x.Id == h.EntryId);
+                App.StartCoroutine(Tween.Run(0.3f, k => PlaceIcon(icon, entry?.Kind ?? TimelineKind.Turn, Mathf.Lerp(h.FromU, h.ToU, Tween.EaseOut(k)))));
+            }
+            yield return FloatText(h.UnitId, "Haste!", new Color(1f, 0.9f, 0.4f), 0.2f, 50);
+        }
+
+        private IEnumerator TurnAnim(TurnStartedEvent ts)
+        {
+            var u = State.UnitById(ts.UnitId);
+            App.Audio.Sfx("turn", 0.7f);
+            var entry = State.TurnEntryOf(ts.UnitId);
+            if (entry != null && timelineIconViews.TryGetValue(entry.Id, out var icon))
+            {
+                App.StartCoroutine(Tween.Pop(icon, 1.35f, 0.25f));
+                PlaceIcon(icon, TimelineKind.Turn, 0f);
+            }
+            if (u != null && board.Units.TryGetValue(u.Id, out var v))
+            {
+                v.SetGlow(new Color(1f, 0.35f, 0.3f), 0.85f);
+                ShowBanner($"{u.Name}'s turn");
+                yield return Tween.Pop(v.Root, 1.1f, 0.2f);
+                v.SetGlow(Color.white, 0f);
+            }
+        }
+
+        private IEnumerator CastQueuedAnim(CastQueuedEvent cq)
+        {
+            SyncTimeline(null);
+            App.Audio.Sfx("cast");
+            var caster = State.UnitById(cq.CasterId);
+            if (cq.LineTiles != null) foreach (var t in cq.LineTiles) board.Mark(t, new Color(1f, 0.2f, 0.15f), 0.4f);
+            string what = App.Content.TryAbility(cq.AbilityId)?.Name ?? "spell";
+            ShowBanner(cq.IsCharge ? $"{caster?.Name} is charging {what}!" : $"{caster?.Name} begins {what}");
+            yield return FloatText(cq.CasterId, cq.IsCharge ? "Charging…" : "Casting…", new Color(0.6f, 0.85f, 1f), 0.3f, 50);
+        }
+
+        private IEnumerator ClutchAnim(ClutchEvent c)
+        {
+            var flash = Ui.El("fill", App.Overlay);
+            flash.style.backgroundColor = Color.white;
+            flash.pickingMode = PickingMode.Ignore;
+            App.Audio.Sfx("heal");
+            yield return Tween.Fade(flash, 0.9f * Mathf.Max(0.3f, Fx), 0f, 0.35f);
+            flash.RemoveFromHierarchy();
+            yield return FloatText(c.CasterId, "CLUTCH!", new Color(1f, 1f, 0.6f), 0.3f, 90);
+        }
+
+        private IEnumerator AbilityAnim(AbilityResolvedEvent ar)
+        {
+            var a = App.Content.TryAbility(ar.AbilityId);
+            var caster = State.UnitById(ar.CasterId);
+            ShowBanner(a?.Name ?? "");
+            board.ClearMarks();
+            Color c = a == null ? Color.white : a.BaseHeal > 0 ? new Color(0.4f, 1f, 0.55f) : ColorFor(a.DamageType);
+            foreach (var t in ar.Tiles) board.Mark(t, c, 0.45f);
+            if (caster != null && a != null && a.Motion != ProjectileMotion.None && ar.Targets.Count > 0)
+            {
+                Vector2 from = BoardView.CenterOf(caster.Pos, caster.W, caster.H);
+                var targets = ar.Targets.Select(State.UnitById).Where(u => u != null).ToList();
+                App.Audio.Sfx("cast", 0.7f);
+                yield return Tween.Run(0.22f, k =>
+                {
+                    board.Lines.ClearLines();
+                    foreach (var t in targets)
+                    {
+                        Vector2 to = BoardView.CenterOf(t.Pos, t.W, t.H);
+                        var p = Vector2.Lerp(from, to, k) + (a.Motion == ProjectileMotion.Bezier ? Vector2.up * (-160f * Mathf.Sin(k * Mathf.PI)) : Vector2.zero);
+                        board.Lines.Dot(p, 26f, c);
+                    }
+                });
+                board.Lines.ClearLines();
+            }
+            else yield return Tween.Wait(0.12f);
+            App.StartCoroutine(ClearMarksLater(0.35f));
+        }
+
+        private IEnumerator ClearMarksLater(float s)
+        {
+            yield return Tween.Wait(s);
+            if (TargetingSlot < 0) board.ClearMarks();
+        }
+
+        private static Color ColorFor(DamageType t)
+        {
+            switch (t)
+            {
+                case DamageType.Fire: return new Color(1f, 0.45f, 0.15f);
+                case DamageType.Ice: return new Color(0.5f, 0.85f, 1f);
+                case DamageType.Lightning: return new Color(1f, 0.95f, 0.35f);
+                case DamageType.Poison: return new Color(0.6f, 1f, 0.3f);
+                case DamageType.Holy: return new Color(1f, 1f, 0.8f);
+                case DamageType.Dark: return new Color(0.7f, 0.35f, 1f);
+                default: return new Color(0.8f, 0.6f, 1f);
+            }
+        }
+
+        private IEnumerator BuffAnim(BuffAppliedEvent ba)
+        {
+            RefreshUnit(ba.UnitId);
+            var def = App.Content.TryBuff(ba.BuffId);
+            if (def == null) yield break;
+            App.Audio.Sfx(def.Kind == BuffKind.Buff ? "cast" : "debuff", 0.6f);
+            yield return FloatText(ba.UnitId, def.Name + "!", def.Kind == BuffKind.Buff ? new Color(0.5f, 0.9f, 1f) : new Color(0.85f, 0.5f, 1f), 0.15f, 46);
+        }
+
+        private IEnumerator ScanAnim(ScannedEvent sc)
+        {
+            var u = State.UnitById(sc.UnitId);
+            if (u == null) yield break;
+            panelUnitId = u.Id;
+            SyncPanel();
+            ShowBanner($"{u.Name}: HP {sc.Hp}/{sc.MaxHp}  STR {sc.Stats.Strength:0}  VIT {sc.Stats.Vitality:0}  INT {sc.Stats.Intelligence:0}");
+            yield return Tween.Wait(0.8f);
+        }
+
+        private IEnumerator BossAnim(BossPhaseEvent bp)
+        {
+            App.Audio.Sfx("explosion");
+            App.StartCoroutine(Tween.Shake(shake, 20f * Fx, 0.4f));
+            yield return FloatText(bp.UnitId, string.IsNullOrEmpty(bp.Text) ? "ENRAGED!" : bp.Text, new Color(1f, 0.3f, 0.6f), 0.6f, 80);
+        }
+
+        private IEnumerator WaveAnim(WaveStartedEvent wv)
+        {
+            foreach (var id in wv.Spawned)
+            {
+                var u = State.UnitById(id);
+                if (u == null || board.Units.ContainsKey(id)) continue;
+                var v = board.Add(u);
+                v.SetHp(u.Hp, u.MaxHp);
+                v.Root.style.opacity = 0;
+                App.StartCoroutine(Tween.Run(0.3f, k => { v.Root.style.opacity = k; v.Root.style.translate = new Translate(0, -80 * (1 - k)); }, Tween.EaseOut));
+            }
+            SyncTimeline(null);
+            if (wv.Wave > 0 || wv.TotalWaves > 1)
+            {
+                ShowBanner($"Wave {wv.Wave + 1}/{wv.TotalWaves}");
+                var f = board.Float($"WAVE {wv.Wave + 1}", new Vector2(BoardView.Tile * 3, BoardView.Tile * 4), new Color(1f, 0.9f, 0.6f), 120);
+                App.StartCoroutine(FloatAway(f, 1.0f));
+                yield return Tween.Wait(0.6f);
+            }
+        }
+
+        private IEnumerator ReviveAnim(RevivedEvent rv)
+        {
+            var u = State.UnitById(rv.UnitId);
+            if (u == null) yield break;
+            if (!board.Units.TryGetValue(u.Id, out var v)) v = board.Add(u);
+            if (v.Dead) { board.UnitLayer.Add(v.Root); v.Dead = false; }
+            board.Place(v, rv.At);
+            v.SetHp(rv.Hp, u.MaxHp);
+            App.Audio.Sfx("heal");
+            yield return Tween.Run(0.35f, k => { v.Root.style.opacity = k; v.Root.style.scale = new Scale(Vector2.one * (0.6f + 0.4f * k)); });
+            yield return FloatText(u.Id, "Revived!", new Color(1f, 0.95f, 0.6f), 0.2f, 70);
+        }
+
+        // ── Shared helpers ────────────────────────────────────────────────────────
+
+        private void RefreshUnit(int id)
+        {
+            var u = State.UnitById(id);
+            if (u != null && board.Units.TryGetValue(id, out var v)) { v.SetBuffs(u, Colorblind); v.SetHp(u.Hp, u.MaxHp); }
+        }
+
+        private IEnumerator FloatText(int unitId, string text, Color c, float hold, float size = 60)
+        {
+            var u = State.UnitById(unitId);
+            Vector2 at = u != null && board.Units.TryGetValue(unitId, out var v) ? BoardView.CenterOf(v.Tile, v.W, v.H) : new Vector2(BoardView.Tile * 3, BoardView.Tile * 4);
+            App.StartCoroutine(FloatAway(board.Float(text, at + new Vector2(0, -50), c, size), 0.8f));
+            yield return Tween.Wait(hold);
+        }
+
+        private IEnumerator FloatAway(Label l, float seconds)
+        {
+            float top = l.resolvedStyle.top;
+            if (float.IsNaN(top)) top = 0;
+            var start = l.style.top.value.value;
+            yield return Tween.Run(seconds, k =>
+            {
+                l.style.top = start - 90f * Tween.EaseOut(k);
+                l.style.opacity = k < 0.6f ? 1f : 1f - (k - 0.6f) / 0.4f;
+                float s = k < 0.15f ? 0.6f + k / 0.15f * 0.5f : 1.1f - 0.1f * Mathf.Min(1, (k - 0.15f) * 4);
+                l.style.scale = new Scale(Vector2.one * s);
+            });
+            l.RemoveFromHierarchy();
+        }
+
+        private IEnumerator EndBattle()
+        {
+            ended = true;
+            yield return Tween.Wait(0.6f);
+            if (setupOverride != null || App.Save == null)
+            {
+                App.Router.Back();
+                yield break;
+            }
+            var report = BattleFactory.Commit(App.Content, App.Save, State);
+            App.Persist();
+            App.Router.Replace(new PostBattleScreen(report, State.Stage.Id));
+        }
+    }
+}

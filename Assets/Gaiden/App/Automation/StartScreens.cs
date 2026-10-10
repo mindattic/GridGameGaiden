@@ -1,0 +1,50 @@
+using System;
+using System.Linq;
+
+namespace Gaiden.App.Automation
+{
+    /// <summary>Screen ids → factories, for `-start <id>` and the automation `goto` endpoint (snapshot sweeps).</summary>
+    public static class StartScreens
+    {
+        public static readonly string[] All =
+        {
+            "title", "hub", "stages", "items", "status", "equip", "abilities", "party", "shop", "blacksmith",
+            "alchemist", "summon", "bounties", "bestiary", "settings", "credits", "newgame", "load",
+        };
+
+        public static bool TryGet(string id, out GameScreen screen)
+        {
+            screen = null;
+            var app = GameApp.I;
+            bool needsSave = id != "title" && id != "credits" && id != "newgame" && id != "load";
+            if (needsSave && app.Save == null)
+            {
+                app.Save = Meta.Progression.NewGame(app.Content, "Preview");
+                app.Slot = -1;
+            }
+            string hero = app.Save?.Party.FirstOrDefault();
+            switch (id)
+            {
+                case "title": screen = new TitleScreen(); break;
+                case "hub": screen = new HubScreen(); break;
+                case "stages": screen = new StageSelectScreen(); break;
+                case "items": screen = new ItemsScreen(); break;
+                case "status": screen = new StatusScreen(hero); break;
+                case "equip": screen = new EquipScreen(hero); break;
+                case "abilities": screen = new AbilitiesScreen(hero); break;
+                case "party": screen = new PartyScreen(); break;
+                case "shop": screen = new ShopScreen(); break;
+                case "blacksmith": screen = new BlacksmithScreen(); break;
+                case "alchemist": screen = new AlchemistScreen(); break;
+                case "summon": screen = new SummonScreen(); break;
+                case "bounties": screen = new BountyScreen(); break;
+                case "bestiary": screen = new BestiaryScreen(); break;
+                case "settings": screen = new SettingsScreen(); break;
+                case "credits": screen = new CreditsScreen(); break;
+                case "newgame": screen = new SaveSlotScreen(true); break;
+                case "load": screen = new SaveSlotScreen(false); break;
+            }
+            return screen != null;
+        }
+    }
+}

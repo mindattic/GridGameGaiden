@@ -1,0 +1,1116 @@
+[
+  {
+    "Id": "greenvalley-01",
+    "Name": "Green Valley I",
+    "Theme": "greenvalley",
+    "Background": null,
+    "Music": "Battle",
+    "IsTest": false,
+    "Waves": [
+      {
+        "Enemies": [
+          {
+            "Class": "slime00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "slime01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Id": "greenvalley-02",
+    "Name": "Green Valley II",
+    "Theme": "greenvalley",
+    "Background": null,
+    "Music": "Battle",
+    "IsTest": false,
+    "Waves": [
+      {
+        "Enemies": [
+          {
+            "Class": "wolf00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "wolf01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "bat00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Id": "greenvalley-03",
+    "Name": "Green Valley III",
+    "Theme": "greenvalley",
+    "Background": null,
+    "Music": "Battle",
+    "IsTest": false,
+    "Waves": [
+      {
+        "Enemies": [
+          {
+            "Class": "slime02",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "slime03",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "wolf02",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "wolf03",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Id": "desert-01",
+    "Name": "Sandsea Reaches I",
+    "Theme": "desert",
+    "Background": null,
+    "Music": "Battle",
+    "IsTest": false,
+    "Waves": [
+      {
+        "Enemies": [
+          {
+            "Class": "scorpion",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "scorpion",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "vulture",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Id": "desert-02",
+    "Name": "Sandsea Reaches II",
+    "Theme": "desert",
+    "Background": null,
+    "Music": "Battle",
+    "IsTest": false,
+    "Waves": [
+      {
+        "Enemies": [
+          {
+            "Class": "vulture",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "soldier00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "sandmaw",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "soldier01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Id": "desert-03",
+    "Name": "Sandsea Reaches III",
+    "Theme": "desert",
+    "Background": null,
+    "Music": "Battle",
+    "IsTest": false,
+    "Waves": [
+      {
+        "Enemies": [
+          {
+            "Class": "soldier02",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "soldier03",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "soldier00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "soldier01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "captain",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Id": "swamp-01",
+    "Name": "Mireholt Fens I",
+    "Theme": "swamp",
+    "Background": null,
+    "Music": "Battle",
+    "IsTest": false,
+    "Waves": [
+      {
+        "Enemies": [
+          {
+            "Class": "lurker00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "frog00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "marshshambler00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "toad00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Id": "swamp-02",
+    "Name": "Mireholt Fens II",
+    "Theme": "swamp",
+    "Background": null,
+    "Music": "Battle",
+    "IsTest": false,
+    "Waves": [
+      {
+        "Enemies": [
+          {
+            "Class": "lurker01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "marshshambler01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "hag00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "naga00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "lurker02",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Id": "swamp-03",
+    "Name": "Mireholt Fens III",
+    "Theme": "swamp",
+    "Background": null,
+    "Music": "Battle",
+    "IsTest": false,
+    "Waves": [
+      {
+        "Enemies": [
+          {
+            "Class": "frog01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "toad00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "hag01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "marshshambler03",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "swampmistress00",
+            "Level": 5,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "lurker02",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Id": "cave-01",
+    "Name": "Frostmaw Caverns I",
+    "Theme": "cave",
+    "Background": null,
+    "Music": "Battle",
+    "IsTest": false,
+    "Waves": [
+      {
+        "Enemies": [
+          {
+            "Class": "goblinthug00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "goblinthug00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "cyclops00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "mountaintroll",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "skelepede00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Id": "cave-02",
+    "Name": "Frostmaw Caverns II",
+    "Theme": "cave",
+    "Background": null,
+    "Music": "Battle",
+    "IsTest": false,
+    "Waves": [
+      {
+        "Enemies": [
+          {
+            "Class": "cyclops01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "goblinthug00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "skelepede01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "yeti",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "icemauler",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "mountaintroll",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Id": "cave-03",
+    "Name": "Frostmaw Caverns III",
+    "Theme": "cave",
+    "Background": null,
+    "Music": "Battle",
+    "IsTest": false,
+    "Waves": [
+      {
+        "Enemies": [
+          {
+            "Class": "goblinthug00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "skelepede00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "cyclops02",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "mountaintroll",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "yeti",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "icemauler",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "cyclops00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Id": "cityruins-01",
+    "Name": "Veshker Ruins I",
+    "Theme": "cityruins",
+    "Background": null,
+    "Music": "Battle",
+    "IsTest": false,
+    "Waves": [
+      {
+        "Enemies": [
+          {
+            "Class": "undead00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "undead01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "ghost",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "phantom",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "bat00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "undead02",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Id": "cityruins-02",
+    "Name": "Veshker Ruins II",
+    "Theme": "cityruins",
+    "Background": null,
+    "Music": "Battle",
+    "IsTest": false,
+    "Waves": [
+      {
+        "Enemies": [
+          {
+            "Class": "undead00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "undead01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "ghost",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "phantom",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "reaper",
+            "Level": 6,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "undead04",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "bat01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Id": "cityruins-03",
+    "Name": "Veshker Ruins III",
+    "Theme": "cityruins",
+    "Background": null,
+    "Music": "Battle",
+    "IsTest": false,
+    "Waves": [
+      {
+        "Enemies": [
+          {
+            "Class": "undead00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "undead01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "ghost",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "bat00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "bat01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "phantom",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "vampire",
+            "Level": 10,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "reaper",
+            "Level": 6,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "undead04",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Id": "test-00",
+    "Name": "Test-00",
+    "Theme": null,
+    "Background": null,
+    "Music": "Battle",
+    "IsTest": true,
+    "Waves": [
+      {
+        "Enemies": [
+          {
+            "Class": "soldier00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "soldier01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "soldier02",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "soldier03",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "soldier00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "soldier01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "soldier02",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "soldier03",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "soldier00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "soldier01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "soldier02",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "soldier03",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "captain",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "slime00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "slime01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "slime02",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "slime03",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "slime00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "slime01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "slime02",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "slime03",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "slime00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "slime01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "slime02",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "slime03",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "slime00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "slime01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "slime02",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "slime03",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "scorpion",
+            "Level": 10,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "yeti",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "scorpion",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "captain",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "bat00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "bat01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Id": "test-01",
+    "Name": "Test-01",
+    "Theme": null,
+    "Background": null,
+    "Music": "Battle",
+    "IsTest": true,
+    "Waves": [
+      {
+        "Enemies": [
+          {
+            "Class": "slime00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "scorpion",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "bat00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "slime00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "scorpion",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "bat00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "slime00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "scorpion",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "bat00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "slime00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "scorpion",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "bat00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Id": "test-snake",
+    "Name": "Test-Snake",
+    "Theme": null,
+    "Background": null,
+    "Music": "Battle",
+    "IsTest": true,
+    "Waves": [
+      {
+        "Enemies": [
+          {
+            "Class": "naga00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Id": "test-harness",
+    "Name": "Test-Harness",
+    "Theme": null,
+    "Background": null,
+    "Music": "Battle",
+    "IsTest": true,
+    "Waves": [
+      {
+        "Enemies": [
+          {
+            "Class": "slime00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "slime01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      }
+    ]
+  }
+]

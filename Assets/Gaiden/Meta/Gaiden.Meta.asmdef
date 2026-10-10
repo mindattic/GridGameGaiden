@@ -1,0 +1,14 @@
+{
+  "name": "Gaiden.Meta",
+  "rootNamespace": "Gaiden.Meta",
+  "references": ["Gaiden.Core"],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": true,
+  "precompiledReferences": ["Newtonsoft.Json.dll"],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": true
+}

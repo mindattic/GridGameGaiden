@@ -1,0 +1,74 @@
+[
+  {
+    "Id": "flame",
+    "Name": "Flame",
+    "Element": "Flame",
+    "Essence": "mat_essence_flame",
+    "ArcaneDust": 2,
+    "Gold": 150,
+    "Bonus": {
+      "Strength": 5,
+      "Vitality": 0,
+      "Agility": 0,
+      "Speed": 0,
+      "Stamina": 0,
+      "Intelligence": 0,
+      "Wisdom": 0,
+      "Luck": 0
+    }
+  },
+  {
+    "Id": "frost",
+    "Name": "Frost",
+    "Element": "Frost",
+    "Essence": "mat_essence_frost",
+    "ArcaneDust": 2,
+    "Gold": 150,
+    "Bonus": {
+      "Strength": 0,
+      "Vitality": 0,
+      "Agility": 0,
+      "Speed": 0,
+      "Stamina": 0,
+      "Intelligence": 5,
+      "Wisdom": 0,
+      "Luck": 0
+    }
+  },
+  {
+    "Id": "spark",
+    "Name": "Spark",
+    "Element": "Spark",
+    "Essence": "mat_essence_spark",
+    "ArcaneDust": 2,
+    "Gold": 150,
+    "Bonus": {
+      "Strength": 0,
+      "Vitality": 0,
+      "Agility": 3,
+      "Speed": 0,
+      "Stamina": 0,
+      "Intelligence": 0,
+      "Wisdom": 2,
+      "Luck": 0
+    }
+  },
+  {
+    "Id": "shadow",
+    "Name": "Shadow",
+    "Element": "Shadow",
+    "Essence": "mat_essence_shadow",
+    "ArcaneDust": 2,
+    "Gold": 150,
+    "Bonus": {
+      "Strength": 2,
+      "Vitality": 0,
+      "Agility": 0,
+      "Speed": 0,
+      "Stamina": 0,
+      "Intelligence": 0,
+      "Wisdom": 0,
+      "Luck": 3
+    }
+  }
+]

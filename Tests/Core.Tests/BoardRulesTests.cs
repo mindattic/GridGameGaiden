@@ -1,0 +1,177 @@
+using System.Linq;
+using Gaiden.Core;
+using Gaiden.Core.Battle;
+using Gaiden.Core.Content;
+using Xunit;
+using static Gaiden.Tests.TestKit;
+
+namespace Gaiden.Tests
+{
+    public class BoardRulesTests
+    {
+        [Fact]
+        public void Slide_displaces_occupant_into_tile_just_left()
+        {
+            // bible §1.1: H A E E → (drag H east) A H E E → (again) A E H E
+            var db = Mini();
+            var (s, _) = Battle(db, Stage(("tank", 2, 0), ("tank", 3, 0)), ("knight", 0, 0), ("cleric", 1, 0));
+            var knight = Hero(s, "knight");
+            var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = knight.Id, Path = P((1, 0), (2, 0)) });
+            Assert.Equal("cleric", At(s, 0, 0).Def.Id);
+            Assert.Equal("tank", At(s, 1, 0).Def.Id);
+            Assert.Same(knight, At(s, 2, 0));
+            Assert.Equal("tank", At(s, 3, 0).Def.Id);
+            Assert.Equal(2, ev.OfType<DisplacedEvent>().Count());
+            AssertInvariants(s);
+        }
+
+        [Fact]
+        public void Movement_never_deals_damage()
+        {
+            var db = Mini();
+            var (s, _) = Battle(db, Stage(("tank", 1, 0)), ("knight", 0, 0), ("cleric", 5, 7));
+            var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = Hero(s, "knight").Id, Path = P((1, 0), (2, 0)) });
+            Assert.DoesNotContain(ev, e => e is DamagedEvent d && d.TargetId == At(s, 0, 0).Id);
+            Assert.DoesNotContain(ev.TakeWhile(e => !(e is TimelineAdvancedEvent)), e => e is DamagedEvent);
+        }
+
+        [Fact]
+        public void Worked_example_1_4_slide_then_pincer()
+        {
+            // bible §1.4: [C](2,3) [g](3,3) [g](4,3) [K](5,3); K drags west → g shoved to (5,3); C+K pincer g(3,3).
+            var db = Mini();
+            var (s, _) = Battle(db, Stage(("goblin", 3, 3), ("goblin", 4, 3)), ("cleric", 2, 3), ("knight", 5, 3));
+            var knight = Hero(s, "knight");
+            var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = knight.Id, Path = P((4, 3)) });
+            var pincer = ev.OfType<PincerFormedEvent>().Single();
+            Assert.Contains(pincer.Attacker1, new[] { knight.Id, Hero(s, "cleric").Id });
+            Assert.Single(pincer.Opponents);
+            Assert.True(ev.OfType<OrbMintedEvent>().Count(o => o.Reason == "pincer") == 2);
+            Assert.Contains(ev, e => e is DisplacedEvent d && d.To == new Coord(5, 3));
+            AssertInvariants(s);
+        }
+
+        [Fact]
+        public void Gap_or_ally_in_line_breaks_pincer()
+        {
+            var db = Mini();
+            var (s, _) = Battle(db, Stage(("tank", 1, 0), ("tank", 3, 0)), ("knight", 0, 2), ("cleric", 4, 0), ("mage", 5, 5));
+            // knight to (0,0): line (0,0)…(4,0) has a gap at (2,0) → no pincer
+            var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = Hero(s, "knight").Id, Path = P((0, 1), (0, 0)) });
+            Assert.Empty(ev.OfType<PincerFormedEvent>());
+        }
+
+        [Fact]
+        public void Diagonal_is_not_a_pincer_and_diagonal_step_is_refused()
+        {
+            var db = Mini();
+            var (s, _) = Battle(db, Stage(("tank", 1, 1)), ("knight", 0, 0), ("cleric", 3, 3));
+            var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = Hero(s, "cleric").Id, Path = P((2, 2)) });
+            Assert.Contains(ev, e => e is StepBlockedEvent);
+            Assert.Empty(ev.OfType<PincerFormedEvent>());
+            Assert.Equal(new Coord(3, 3), Hero(s, "cleric").Pos);
+        }
+
+        [Fact]
+        public void Off_board_step_stops_the_drag()
+        {
+            var db = Mini();
+            var (s, _) = Battle(db, Stage(("tank", 5, 0)), ("knight", 0, 7), ("cleric", 3, 3));
+            var k = Hero(s, "knight");
+            BattleEngine.Apply(s, new MoveCommand { HeroId = k.Id, Path = P((0, 6), (-1, 6), (-1, 5)) });
+            Assert.Equal(new Coord(0, 6), k.Pos);
+        }
+
+        [Fact]
+        public void Noop_drag_costs_no_time()
+        {
+            var db = Mini();
+            var (s, _) = Battle(db, Stage(("tank", 5, 0)), ("knight", 0, 7), ("cleric", 3, 3));
+            long clock = s.Clock;
+            var k = Hero(s, "knight");
+            var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = k.Id, Path = P((0, 6), (0, 7)) });
+            Assert.Equal(clock, s.Clock);
+            Assert.DoesNotContain(ev, e => e is PlayerControlEvent);
+        }
+
+        [Fact]
+        public void Two_by_two_boss_blocks_slides_and_is_pincered_across_its_width()
+        {
+            var db = Mini();
+            var (s, _) = Battle(db, Stage(("boss", 1, 1)), ("knight", 0, 1), ("cleric", 4, 1));
+            var boss = s.Units.Single(u => u.Def.Id == "boss");
+            // slide into the boss is blocked
+            var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = Hero(s, "knight").Id, Path = P((1, 1)) });
+            Assert.Contains(ev, e => e is StepBlockedEvent b && b.Reason == "immovable");
+            Assert.Equal(new Coord(1, 1), boss.Pos);
+            // cleric steps west to (3,1): knight(0,1) … boss covers (1,1),(2,1) … cleric(3,1) → one opponent
+            ev = BattleEngine.Apply(s, new MoveCommand { HeroId = Hero(s, "cleric").Id, Path = P((3, 1)) });
+            var p = ev.OfType<PincerFormedEvent>().Single();
+            Assert.Equal(new[] { boss.Id }, p.Opponents);
+            AssertInvariants(s);
+        }
+
+        [Fact]
+        public void Supporters_join_and_mint_their_own_orb()
+        {
+            var db = Mini();
+            var (s, _) = Battle(db, Stage(("tank", 2, 3)), ("knight", 1, 3), ("cleric", 3, 4), ("mage", 1, 4));
+            // cleric (3,4) → (3,3): knight(1,3) tank(2,3) cleric(3,3); mage (1,4) adjacent to knight = supporter
+            var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = Hero(s, "cleric").Id, Path = P((3, 3)) });
+            var p = ev.OfType<PincerFormedEvent>().Single();
+            Assert.Contains(Hero(s, "mage").Id, p.Supporters);
+            Assert.Equal(3, ev.OfType<OrbMintedEvent>().Count(o => o.Reason == "pincer" || o.Reason == "support"));
+            Assert.Contains(ev, e => e is AttackEvent a && a.IsSupport);
+        }
+
+        [Fact]
+        public void Chain_pincers_resolve_in_order()
+        {
+            var db = Mini();
+            // knight(0,0) t(1,0) [cleric drops at (2,0)] t(3,0) mage(4,0): two pairs sharing cleric.
+            var (s, _) = Battle(db, Stage(("tank", 1, 0), ("tank", 3, 0)), ("knight", 0, 0), ("cleric", 2, 1), ("mage", 4, 0));
+            var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = Hero(s, "cleric").Id, Path = P((2, 0)) });
+            var ps = ev.OfType<PincerFormedEvent>().ToList();
+            Assert.Equal(2, ps.Count);
+            Assert.Equal(0, ps[0].ChainIndex);
+            Assert.Equal(1, ps[1].ChainIndex);
+            var cleric = Hero(s, "cleric").Id;
+            Assert.True(ps[0].Attacker1 == cleric || ps[0].Attacker2 == cleric);
+        }
+
+        [Fact]
+        public void Killing_last_enemy_of_last_wave_is_victory_with_loot()
+        {
+            var db = Mini();
+            var (s, _) = Battle(db, Stage(("goblin", 1, 0)), ("knight", 0, 0), ("cleric", 2, 1));
+            for (int i = 0; i < 6 && !s.IsOver; i++)
+            {
+                var c = Hero(s, "cleric");
+                var path = c.Pos == new Coord(2, 0) ? P((2, 1)) : P((2, 0));
+                BattleEngine.Apply(s, new MoveCommand { HeroId = c.Id, Path = path });
+                AssertInvariants(s);
+            }
+            Assert.Equal(BattlePhase.Victory, s.Phase);
+            Assert.Equal(3, s.Results.Coins);
+            Assert.Equal(1, s.Results.Items["fang"]);
+            Assert.Equal(1, s.Results.Kills["goblin"]);
+            Assert.True(s.Results.Xp > 0);
+        }
+
+        [Fact]
+        public void Waves_spawn_in_sequence()
+        {
+            var db = Mini();
+            var stage = StageWaves(new[] { ("goblin", 1, 0) }, new[] { ("goblin", 4, 4) });
+            var (s, _) = Battle(db, stage, ("knight", 0, 0), ("cleric", 2, 1));
+            for (int i = 0; i < 6 && s.Wave == 0; i++)
+            {
+                var c = Hero(s, "cleric");
+                BattleEngine.Apply(s, new MoveCommand { HeroId = c.Id, Path = c.Pos == new Coord(2, 0) ? P((2, 1)) : P((2, 0)) });
+            }
+            Assert.Equal(1, s.Wave);
+            Assert.False(s.IsOver);
+            Assert.NotNull(At(s, 4, 4));
+        }
+    }
+}

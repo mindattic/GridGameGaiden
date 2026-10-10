@@ -1,0 +1,194 @@
+/* GridGame Gaiden — UI theme. Final Fantasy-style menus: blue gradient windows, white rounded frames,
+   pointing-hand cursor rows, gold numbers. Every screen is built in C# from these classes. */
+
+.stage {
+    position: absolute;
+    width: 1170px;
+    height: 2532px;
+    overflow: hidden;
+    background-color: rgb(8, 10, 22);
+    color: rgb(240, 242, 255);
+    font-size: 40px;
+}
+
+.letterbox { background-color: rgb(0, 0, 0); }
+
+.fill { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.row { flex-direction: row; align-items: center; }
+.col { flex-direction: column; }
+.grow { flex-grow: 1; }
+.center { align-items: center; justify-content: center; }
+.hidden { display: none; }
+
+/* ── Windows ─────────────────────────────────────────────────────────────── */
+.window {
+    border-width: 5px;
+    border-color: rgb(236, 238, 255);
+    border-radius: 18px;
+    padding: 22px 28px;
+    margin: 10px;
+    background-size: 100% 100%;
+}
+.window--plain { background-color: rgba(10, 16, 52, 0.94); }
+.window-title {
+    font-size: 44px;
+    color: rgb(255, 255, 255);
+    -unity-font-style: bold;
+    margin-bottom: 12px;
+}
+.window-sub { font-size: 34px; color: rgb(170, 184, 255); }
+
+/* ── Text ────────────────────────────────────────────────────────────────── */
+.title { font-size: 120px; color: rgb(255, 244, 214); -unity-text-align: middle-center; -unity-font-style: bold; }
+.h1 { font-size: 64px; color: rgb(255, 255, 255); -unity-font-style: bold; }
+.h2 { font-size: 48px; color: rgb(255, 255, 255); -unity-font-style: bold; }
+.small { font-size: 32px; }
+.tiny { font-size: 26px; }
+.dim { color: rgb(150, 160, 205); }
+.gold { color: rgb(255, 214, 92); }
+.good { color: rgb(120, 236, 150); }
+.bad { color: rgb(255, 110, 110); }
+.warn { color: rgb(255, 196, 92); }
+.shadow { text-shadow: 3px 3px 0 rgba(0, 0, 0, 0.75); }
+.num { -unity-text-align: middle-right; }
+
+/* ── Menu rows (cursor hand) ─────────────────────────────────────────────── */
+.menu-row {
+    flex-direction: row;
+    align-items: center;
+    min-height: 96px;
+    padding: 6px 12px 6px 6px;
+    border-radius: 10px;
+    margin: 2px 0;
+}
+.menu-row:hover { background-color: rgba(255, 255, 255, 0.06); }
+.menu-row--selected { background-color: rgba(140, 170, 255, 0.20); }
+.menu-row--disabled { opacity: 0.42; }
+.menu-cursor { width: 56px; height: 56px; margin-right: 8px; opacity: 0; background-size: contain; }
+.menu-row--selected > .menu-cursor { opacity: 1; }
+.menu-label { flex-grow: 1; font-size: 42px; }
+.menu-value { font-size: 40px; -unity-text-align: middle-right; margin-left: 16px; }
+.menu-icon { width: 64px; height: 64px; margin-right: 18px; background-size: contain; }
+
+/* ── Buttons ─────────────────────────────────────────────────────────────── */
+.btn {
+    min-height: 104px;
+    padding: 0 40px;
+    margin: 8px;
+    border-width: 4px;
+    border-radius: 16px;
+    border-color: rgb(236, 238, 255);
+    background-color: rgb(34, 58, 150);
+    color: rgb(255, 255, 255);
+    font-size: 42px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    transition-property: scale, background-color;
+    transition-duration: 0.08s;
+}
+.btn:hover { background-color: rgb(52, 84, 196); }
+.btn:active { scale: 0.96 0.96; }
+.btn--primary { background-color: rgb(196, 120, 24); border-color: rgb(255, 232, 170); }
+.btn--primary:hover { background-color: rgb(226, 146, 40); }
+.btn--danger { background-color: rgb(150, 30, 40); }
+.btn--disabled { opacity: 0.4; }
+.btn--small { min-height: 80px; font-size: 34px; padding: 0 24px; }
+.btn--icon { width: 104px; padding: 0; }
+
+/* ── Header bar ──────────────────────────────────────────────────────────── */
+.header {
+    flex-direction: row;
+    align-items: center;
+    height: 150px;
+    padding: 0 20px;
+    background-color: rgba(4, 8, 30, 0.85);
+    border-bottom-width: 4px;
+    border-color: rgb(236, 238, 255);
+}
+.header-title { flex-grow: 1; font-size: 56px; -unity-font-style: bold; -unity-text-align: middle-left; margin-left: 12px; }
+.header-gold { font-size: 46px; color: rgb(255, 214, 92); -unity-text-align: middle-right; margin-right: 12px; }
+
+/* ── Tabs ────────────────────────────────────────────────────────────────── */
+.tabs { flex-direction: row; margin: 10px 10px 0 10px; }
+.tab {
+    flex-grow: 1;
+    height: 96px;
+    margin: 0 4px;
+    border-width: 4px 4px 0 4px;
+    border-color: rgb(236, 238, 255);
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    background-color: rgb(18, 28, 84);
+    font-size: 38px;
+    -unity-text-align: middle-center;
+    color: rgb(170, 184, 255);
+}
+.tab--active { background-color: rgb(40, 66, 170); color: rgb(255, 255, 255); -unity-font-style: bold; }
+
+/* ── Gauges ──────────────────────────────────────────────────────────────── */
+.gauge { height: 20px; border-radius: 10px; background-color: rgba(0, 0, 0, 0.6); border-width: 2px; border-color: rgba(255, 255, 255, 0.5); overflow: hidden; }
+.gauge-fill { height: 100%; border-radius: 8px; background-color: rgb(110, 230, 120); }
+.gauge-fill--mid { background-color: rgb(240, 200, 70); }
+.gauge-fill--low { background-color: rgb(240, 80, 70); }
+
+/* ── Toast / dialog ──────────────────────────────────────────────────────── */
+.toast {
+    position: absolute;
+    left: 120px; right: 120px; bottom: 260px;
+    padding: 26px 34px;
+    border-radius: 18px;
+    border-width: 4px;
+    border-color: rgb(236, 238, 255);
+    background-color: rgba(12, 18, 60, 0.96);
+    font-size: 40px;
+    -unity-text-align: middle-center;
+    transition-property: opacity, translate;
+    transition-duration: 0.18s;
+}
+.veil { background-color: rgba(0, 0, 0, 0.6); }
+
+/* ── Fade overlay ────────────────────────────────────────────────────────── */
+.fade { background-color: rgb(0, 0, 0); opacity: 0; transition-property: opacity; transition-duration: 0.22s; }
+.fade--on { opacity: 1; }
+
+/* ── Scroll views ────────────────────────────────────────────────────────── */
+.list { flex-grow: 1; }
+.list .unity-scroller--vertical { width: 18px; }
+.list .unity-scroller__slider .unity-base-slider__dragger { background-color: rgba(236, 238, 255, 0.6); border-radius: 8px; }
+
+/* ── Portrait card ───────────────────────────────────────────────────────── */
+.card {
+    flex-direction: row;
+    align-items: center;
+    padding: 14px;
+    margin: 8px 0;
+    border-radius: 14px;
+    background-color: rgba(255, 255, 255, 0.05);
+}
+.card--selected { background-color: rgba(140, 170, 255, 0.22); }
+.thumb {
+    width: 150px; height: 150px;
+    border-radius: 16px;
+    border-width: 4px;
+    border-color: rgb(236, 238, 255);
+    background-color: rgb(30, 36, 70);
+    background-size: cover;
+    margin-right: 22px;
+}
+
+/* ── Orb pips (mana colors) ──────────────────────────────────────────────── */
+.pip { width: 34px; height: 34px; border-radius: 17px; margin: 0 3px; border-width: 2px; border-color: rgba(255,255,255,0.8); font-size: 20px; -unity-text-align: middle-center; -unity-font-style: bold; color: rgb(20,20,20); }
+.pip--W { background-color: rgb(250, 246, 226); }
+.pip--U { background-color: rgb(70, 140, 255); }
+.pip--B { background-color: rgb(120, 70, 160); color: rgb(240,240,240); }
+.pip--R { background-color: rgb(236, 64, 52); }
+.pip--G { background-color: rgb(64, 190, 90); }
+.pip--C { background-color: rgb(200, 200, 210); }
+
+/* ── Rarity colors ───────────────────────────────────────────────────────── */
+.rarity-Junk { color: rgb(140, 140, 140); }
+.rarity-Common { color: rgb(236, 236, 240); }
+.rarity-Uncommon { color: rgb(110, 230, 120); }
+.rarity-Rare { color: rgb(100, 170, 255); }
+.rarity-Epic { color: rgb(200, 120, 255); }
+.rarity-Legendary { color: rgb(255, 200, 70); }

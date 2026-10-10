@@ -1,0 +1,13 @@
+{
+  "Pool": [
+    "greenninja",
+    "redninja",
+    "pugilist",
+    "ronin",
+    "sellsword",
+    "thief",
+    "vampire"
+  ],
+  "BasePrice": 250,
+  "PriceStep": 250
+}

@@ -1,0 +1,14 @@
+{
+  "name": "Gaiden.Editor",
+  "rootNamespace": "Gaiden.EditorTools",
+  "references": ["Gaiden.Core", "Gaiden.Meta", "Gaiden.App"],
+  "includePlatforms": ["Editor"],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": true,
+  "precompiledReferences": ["Newtonsoft.Json.dll"],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}
