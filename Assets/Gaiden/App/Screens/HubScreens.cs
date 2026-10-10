@@ -734,6 +734,7 @@ namespace Gaiden.App
             Cycle("Battle speed", st.BattleSpeed, new[] { 1f, 1.5f, 2f, 3f }, "×{0:0.#}", v => st.BattleSpeed = v);
             Toggle("Drag timer (4 s)", st.DragTimer, v => st.DragTimer = v);
             Toggle("Colorblind palette", st.ColorblindMode, v => st.ColorblindMode = v);
+            Toggle("Pincer close-ups", st.PincerCutIns, v => st.PincerCutIns = v);
             Toggle("Reduce motion", st.ReduceMotion, v => st.ReduceMotion = v);
             var help = Ui.Window("How to play", body);
             var t = Ui.Text(

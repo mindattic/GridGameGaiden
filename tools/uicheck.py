@@ -118,16 +118,28 @@ def main():
         h.call("release")
         st = wait_idle(400)["battle"]
         check("drop commits one action", st["results"]["ActionsTaken"] == 1, str(st["results"]))
-        check("the tutorial advances after the first move", has_text("Tutorial 2/4") or has_text("Tutorial 3/4"))
+        tut = [x for x in texts() if x.startswith("Tutorial ")]
+        check("the tutorial advances after the first move", any(x in ("Tutorial 2/4", "Tutorial 3/4") for x in tut), f"tutorial texts={tut} panel={[x for x in texts()][-8:]}")
         h.call("click", name="tutorial-skip"); time.sleep(0.4)
         check("tutorial can be skipped", not any(x.startswith("Tutorial ") for x in texts()))
         cues = h.call("cues")
         check("pick-up and every step are voiced", "pickup" in cues and cues.count("move") >= len(sug["path"]), ",".join(cues[:20]))
         if sug["pincers"] > 0:
+            check("a pincer plays the close-up cut-in", st.get("cutins", 0) >= 1, str(st.get("cutins")))
             check("pincer and hits are voiced", "pincer" in cues and any(c in cues for c in ("hit", "crit", "miss")), ",".join(cues[:30]))
     # Every cue the game can play resolves to a bundled clip (no silent events).
     else:
         check("bot suggested a move", False, str(sug))
+
+    # ── Pincer close-up: portraits on screen mid-sweep, camera pushed in, then all restored ──
+    h.call("democutin"); time.sleep(0.5)
+    names = h.call("names")
+    portraits = [n for n in names if str(n).startswith("cutin-")] if isinstance(names, list) else []
+    check("cut-in shows both attackers' portraits", len(portraits) == 2, str(portraits))
+    h.shot("cutin")
+    time.sleep(1.4)
+    names = h.call("names")
+    check("cut-in cleans up after itself", isinstance(names, list) and not any(str(n).startswith("cutin") for n in names))
 
     # ── Targeting + ability card + cancel ─────────────────────────────────
     h.call("givemana", n=8)

@@ -109,6 +109,8 @@ namespace Gaiden.Meta
         public bool DragTimer;
         /// <summary>Battle animation speed multiplier (1 = normal).</summary>
         public float BattleSpeed = 1f;
+        /// <summary>Close-up portrait cut-in on pincers (ported from GridGame2026).</summary>
+        public bool PincerCutIns = true;
     }
 
     public static class SaveMigrations

@@ -168,7 +168,165 @@ namespace Gaiden.App
             App.StartCoroutine(FloatAway(f, 0.7f));
             if (board.Units.TryGetValue(a.Id, out var av)) App.StartCoroutine(Tween.Pop(av.Root, 1.15f, 0.2f));
             if (board.Units.TryGetValue(b.Id, out var bv)) App.StartCoroutine(Tween.Pop(bv.Root, 1.15f, 0.2f));
-            yield return Tween.Wait(0.32f);
+            // The close-up plays on the first link of an action; chained links keep the quick beat.
+            if (chainCount == 1 && CutInsEnabled && !ReduceMotion) yield return PincerCutIn(a, b, p.Team);
+            else yield return Tween.Wait(0.32f);
+        }
+
+        // ── Pincer cut-in (ported from GridGame2026 PortraitManager / Portrait2DInstance, US-145) ──
+        // Both attackers' portraits sweep past in close-up lanes flanking the attacked line on the old
+        // slide curve (fast in, slight overshoot, drift back, fast out) with hand-held sway, while the
+        // board "camera" pushes in on the pincer and settles back afterwards.
+
+        public int CutInsShown { get; private set; }
+        private bool CutInsEnabled => App.Save?.Settings.PincerCutIns ?? true;
+
+        private static readonly AnimationCurve CutInCurve = new AnimationCurve(
+            new Keyframe(0.0f, -1.0f, 0f, 0f, 0f, 0f),
+            new Keyframe(0.8f, 0.05202637f, 0f, 0f, 0.33333334f, 0.70263505f),
+            new Keyframe(1.2f, -0.05f, 0f, 0f, 0.33333334f, 0.33322528f),
+            new Keyframe(1.993103f, 1.0f, 0f, 0f, 0f, 0f));
+        private const float CutInSpeed = 1.75f;
+        private const float CutInStagger = 0.14f;
+        private static float CutInSeconds => 1.993103f / CutInSpeed;
+
+        /// <summary>Debug/automation: play the cut-in on the first two living heroes.</summary>
+        public void DemoCutIn()
+        {
+            var heroes = State.Units.Where(u => u.IsHero && u.Alive).Take(2).ToList();
+            if (heroes.Count == 2) App.StartCoroutine(PincerCutIn(heroes[0], heroes[1], Team.Hero));
+        }
+
+        private sealed class CutInPortrait
+        {
+            public VisualElement El; public bool Horizontal; public float Lane; public float Dir; public float Delay;
+            public float Distance; public float W, H; public float Seed;
+        }
+
+        private IEnumerator PincerCutIn(Unit a, Unit b, Team team)
+        {
+            CutInsShown++;
+            var layer = new VisualElement { name = "cutin", pickingMode = PickingMode.Ignore };
+            layer.style.position = Position.Absolute;
+            layer.style.left = 0; layer.style.top = 0; layer.style.right = 0; layer.style.bottom = 0;
+            layer.style.overflow = Overflow.Hidden;
+            var dim = new VisualElement { pickingMode = PickingMode.Ignore };
+            dim.style.position = Position.Absolute;
+            dim.style.left = 0; dim.style.top = 0; dim.style.right = 0; dim.style.bottom = 0;
+            dim.style.backgroundColor = team == Team.Hero ? new Color(0.02f, 0.03f, 0.08f) : new Color(0.12f, 0.0f, 0.02f);
+            dim.style.opacity = 0f;
+            layer.Add(dim);
+            App.Overlay.Add(layer);
+
+            var origin = new Vector2(BoardLeft, BoardTop);
+            var mid = origin + (BoardView.CenterOf(a.Pos, a.W, a.H) + BoardView.CenterOf(b.Pos, b.W, b.H)) / 2f;
+            bool rowLine = a.Pos.Y == b.Pos.Y;
+            const float StageW = 1170f, StageH = 2532f;
+
+            // Entry pattern (old US-145): counter sweep, mirrored, same-side chase, staggered one-two.
+            float d1 = Random.value < 0.5f ? 1f : -1f, d2 = -d1, delay2 = 0f;
+            switch (Random.Range(0, 4))
+            {
+                case 2: d2 = d1; delay2 = CutInStagger; break;
+                case 3: delay2 = CutInStagger; break;
+            }
+
+            var shots = new List<CutInPortrait>();
+            Unit[] who = { a, b };
+            for (int i = 0; i < 2; i++)
+            {
+                var tex = Art.Portrait(who[i].Def.Id);
+                float aspect = tex != null && tex.height > 0 ? (float)tex.width / tex.height : 0.7f;
+                float h = rowLine ? 760f : 1040f, w = h * aspect;
+                if (!rowLine && w > 540f) { w = 540f; h = w / aspect; }
+                var el = new VisualElement { name = $"cutin-{who[i].Id}", pickingMode = PickingMode.Ignore };
+                el.style.position = Position.Absolute;
+                el.style.width = w; el.style.height = h;
+                el.style.backgroundImage = new StyleBackground(tex);
+                el.style.left = -w * 2; el.style.top = -h * 2;
+                layer.Add(el);
+                shots.Add(new CutInPortrait
+                {
+                    El = el, Horizontal = rowLine, Dir = i == 0 ? d1 : d2, Delay = i == 0 ? 0f : delay2, W = w, H = h,
+                    Distance = rowLine ? StageW / 2f + w / 2f + 2f : StageH / 2f + h / 2f + 2f, Seed = Random.Range(0f, 100f),
+                });
+            }
+            // Lanes flank the attacked line without covering it; at the board edge both shift into the open space.
+            if (rowLine)
+            {
+                float gap = BoardView.Tile / 2f + 20f;
+                float la = mid.y - gap - shots[0].H / 2f, lb = mid.y + gap + shots[1].H / 2f;
+                float shift = Mathf.Max(0f, shots[0].H / 2f - la) - Mathf.Max(0f, lb + shots[1].H / 2f - StageH);
+                shots[0].Lane = la + shift; shots[1].Lane = lb + shift;
+            }
+            else
+            {
+                float gap = BoardView.Tile / 2f + 10f;
+                float la = mid.x - gap - shots[0].W / 2f, lb = mid.x + gap + shots[1].W / 2f;
+                float shift = Mathf.Max(0f, shots[0].W / 2f - la) - Mathf.Max(0f, lb + shots[1].W / 2f - StageW);
+                shots[0].Lane = la + shift; shots[1].Lane = lb + shift;
+            }
+
+            App.Audio.Sfx("dash", 0.7f, 0.9f);
+            if (delay2 > 0f) App.StartCoroutine(DelayedSfx("dash", delay2, 1.05f));
+            var cam = boardHost;
+            cam.style.transformOrigin = new TransformOrigin(mid.x - origin.x, mid.y - origin.y);
+            float total = CutInSeconds + delay2;
+            float camSeed = Random.Range(0f, 100f);
+            yield return Tween.Run(total, k =>
+            {
+                float elapsed = k * total;
+                float fade = Mathf.Clamp01(Mathf.Min(elapsed / 0.15f, (total - elapsed) / 0.2f));
+                dim.style.opacity = 0.5f * fade;
+                // Board camera: slow push-in on the pincer with a hand-held drift.
+                float zoom = 1f + 0.085f * Tween.EaseOut(Mathf.Clamp01(elapsed / 0.6f));
+                float sx = (Mathf.PerlinNoise(camSeed, elapsed * 1.6f) - 0.5f) * 18f;
+                float sy = (Mathf.PerlinNoise(camSeed + 7f, elapsed * 1.6f) - 0.5f) * 18f;
+                cam.style.scale = new Scale(new Vector2(zoom, zoom));
+                cam.style.translate = new Translate(sx, sy);
+                cam.style.rotate = new Rotate((Mathf.PerlinNoise(camSeed + 13f, elapsed * 1.1f) - 0.5f) * 1.2f);
+                foreach (var s in shots)
+                {
+                    float t = Mathf.Max(0f, elapsed - s.Delay) * CutInSpeed;
+                    float v = t <= 0f ? -1f : CutInCurve.Evaluate(Mathf.Min(t, 1.993103f));
+                    float along = s.Dir * s.Distance * v;
+                    float hx = (Mathf.PerlinNoise(s.Seed, elapsed * 2.4f) - 0.5f) * 30f;
+                    float hy = (Mathf.PerlinNoise(s.Seed + 3f, elapsed * 2.4f) - 0.5f) * 30f;
+                    float cx = s.Horizontal ? StageW / 2f + along : s.Lane;
+                    float cy = s.Horizontal ? s.Lane : StageH / 2f + along;
+                    float push = 1f + 0.07f * Mathf.Clamp01(t / 1.993103f);
+                    s.El.style.left = cx - s.W / 2f + hx;
+                    s.El.style.top = cy - s.H / 2f + hy;
+                    s.El.style.scale = new Scale(new Vector2(push, push));
+                    s.El.style.rotate = new Rotate((Mathf.PerlinNoise(s.Seed + 9f, elapsed * 1.7f) - 0.5f) * 4f);
+                }
+            });
+            layer.RemoveFromHierarchy();
+            App.StartCoroutine(SettleCamera(cam));
+        }
+
+        private IEnumerator DelayedSfx(string cue, float delay, float pitch)
+        {
+            yield return Tween.Wait(delay);
+            App.Audio.Sfx(cue, 0.7f, pitch);
+        }
+
+        private static IEnumerator SettleCamera(VisualElement cam)
+        {
+            float s0 = cam.resolvedStyle.scale.value.x;
+            var t0 = cam.resolvedStyle.translate;
+            float r0 = cam.resolvedStyle.rotate.angle.value;
+            yield return Tween.Run(0.3f, k =>
+            {
+                float e = Tween.EaseInOut(k);
+                float s = Mathf.Lerp(s0, 1f, e);
+                cam.style.scale = new Scale(new Vector2(s, s));
+                cam.style.translate = new Translate(t0.x * (1f - e), t0.y * (1f - e));
+                cam.style.rotate = new Rotate(r0 * (1f - e));
+            });
+            cam.style.scale = new Scale(Vector2.one);
+            cam.style.translate = new Translate(0, 0);
+            cam.style.rotate = new Rotate(0);
         }
 
         private IEnumerator RespiteAnim(RespiteEvent rs)

@@ -248,6 +248,7 @@ namespace Gaiden.App.Automation
                         case "dragtimer": st.DragTimer = on; break;
                         case "mutemusic": st.MuteMusic = on; break;
                         case "mutesfx": st.MuteSfx = on; break;
+                        case "cutins": st.PincerCutIns = on; break;
                         default: return new { error = "unknown key" };
                     }
                     app.ApplySettings();
@@ -284,6 +285,9 @@ namespace Gaiden.App.Automation
                     string Hex(Color col) => "#" + ColorUtility.ToHtmlStringRGBA(col);
                     return new { border = Hex(rs.borderTopColor), background = Hex(rs.backgroundColor), children = c.childCount };
                 }
+                case "democutin":
+                    if (app.Router.Current is BattleScreen dc) { dc.DemoCutIn(); return new { ok = true }; }
+                    return new { error = "not in battle" };
                 case "buff":
                     if (app.Router.Current is BattleScreen bb) return new { ok = bb.DevBuff((int)F(q["unit"]), q["id"]) };
                     return new { error = "not in battle" };
@@ -452,7 +456,7 @@ namespace Gaiden.App.Automation
                 dump["battle"] = new
                 {
                     phase = s.Phase.ToString(), wave = s.Wave, clock = s.Clock, busy = b.Busy, selected = b.SelectedHeroId, targeting = b.TargetingSlot,
-                    bank = s.Bank.ToString(),
+                    bank = s.Bank.ToString(), cutins = b.CutInsShown,
                     units = s.Units.Where(u => u.Alive).Select(u => new
                     {
                         u.Id, cls = u.Def.Id, team = u.Team.ToString(), x = u.Pos.X, y = u.Pos.Y, u.W, u.H, u.Hp, u.MaxHp, u.Level,

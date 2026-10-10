@@ -209,3 +209,11 @@ updated: 2026-10-09
   wild orb (crits now mint a plain bonus orb), per-source orb colors, orb letters and the colorblind
   orb tint. GG-LAW-6 (one shared, visible, capped pool) still holds. Bible §3.1 rewritten.
 
+## 2026-10-10 — pincer close-up cut-in (owner request)
+
+- **Owner:** GridGame2026 "had a technique for zooming in on the characters so it was like a close up
+  shot with some shifting like a hand held camera." Ported from `PortraitManager.SpawnPair2DRoutine` /
+  `Portrait2DInstance` (same slide curve, speed ×1.75, four entry patterns, lanes flanking the line) and
+  extended with hand-held Perlin sway, a slow portrait push-in, a world dim and a board push-in. Plays on
+  the first pincer of an action only, so chains stay quick. Settings → "Pincer close-ups" (default on).
+

@@ -44,6 +44,7 @@ namespace Gaiden.App
         private VisualElement feed;
         private Label banner, waveLabel, coinLabel, timerLabel;
         private VisualElement shake;
+        private VisualElement boardHost;
         private bool playing;
         private bool ended;
         private HeroBot autoBot;
@@ -149,7 +150,7 @@ namespace Gaiden.App
             banner.style.left = 0; banner.style.right = 0; banner.style.top = 368; banner.style.height = 70;
             banner.style.unityTextAlign = TextAnchor.MiddleCenter;
 
-            var boardHost = Ui.El("", shake);
+            boardHost = Ui.El("", shake);
             boardHost.style.position = Position.Absolute;
             boardHost.style.left = BoardLeft; boardHost.style.top = BoardTop;
             board = new BoardView(boardHost);
