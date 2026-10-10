@@ -297,6 +297,7 @@ test for every rule. 4. A harness step for anything visible. 5. Glyph check gree
 | US-351 | Every status, ability, item and the cursor is a pixel-art icon from open-licence silhouettes (game-icons.net, CC BY 3.0) | §11 | ✅ | `tools/make_icons.py` + `tools/icons.json` (218 icons); `tools/check_assets.py`; `tools/uicheck.py` (status pips are pixel icons) |
 | US-352 | Combat presentation: FF VI billboard, accumulating damage tally that bursts into the total, cut-in modes (sweep + supporter strip, chain pop-up cards, caster slide) | §6.2 | ✅ | probe run: cut-in 0.81 s, billboard 0.89 s, tally 2.05 s, burst 2.66 s (artifacts/show); `tools/uicheck.py` (pincer names itself on the billboard) |
 | US-353 | Shield Bash knockback (crash into units, slam into stone/edge) and movable tiles (amplifier pushed like an actor, nothing spawns on it) | §6.6, §1.1.2 | ✅ | `Shield_bash_*`, `Bashing_into_a_unit_crashes_both_and_into_stone_slams_hard`, `The_amplifier_is_a_movable_tile_heroes_push_and_nothing_spawns_on` |
+| US-354 | Undead leave solid gravestones / bone piles: destroy them or the undead rises again at half HP | §14.5 | ✅ | `A_slain_undead_leaves_solid_remains_that_block_the_wave_from_clearing`, `Remains_left_alone_raise_their_owner_at_half_hp_without_loot`, `Remains_are_solid_and_real_undead_leave_them`; bot soak |
 | US-305 | HD art pass | §7 (V2) | ⬜ | V2 scope per RFC 0002 (never part of the V1 claim); current art is the original GridGame illustration set |
 
 ## Platform & ship

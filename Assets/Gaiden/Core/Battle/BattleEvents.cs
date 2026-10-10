@@ -299,4 +299,16 @@ namespace Gaiden.Core.Battle
         public Coord At; public int HeroId;
         public override string ToString() => $"Amplifier used by {HeroId} at {At}";
     }
+
+    public sealed class RemainsLeftEvent : BattleEvent
+    {
+        public int RemainsId; public int FromUnitId; public Coord At;
+        public override string ToString() => $"Remains {RemainsId} left by {FromUnitId} at {At}";
+    }
+
+    public sealed class RoseAgainEvent : BattleEvent
+    {
+        public int RemainsId; public int UnitId; public Coord At;
+        public override string ToString() => $"Unit {UnitId} rose from remains {RemainsId} at {At}";
+    }
 }

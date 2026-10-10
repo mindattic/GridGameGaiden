@@ -306,7 +306,7 @@ namespace Gaiden.Tests
         [Fact]
         public void Every_real_enemy_has_a_targeting_personality_and_a_speed_tier()
         {
-            var enemies = Real.Classes.Values.Where(c => c.Team == Team.Enemy).ToList();
+            var enemies = Real.Classes.Values.Where(c => c.Team == Team.Enemy && !c.HasTag("Remains")).ToList();
             Assert.All(enemies, c => Assert.NotEqual(Targeting.Auto, c.Targeting));
             Assert.All(enemies, c => Assert.Contains(c.BaseStats.Speed, new[] { 8f, 11f, 15f, 18f }));
             Assert.True(enemies.Select(c => c.Targeting).Distinct().Count() >= 4);
@@ -452,6 +452,62 @@ namespace Gaiden.Tests
         {
             var (s, k) = Bash(Mini(), Stage(("tank", 2, 1)));
             Assert.False(TargetResolver.IsValidPick(s, s.Content.Abilities["shield_bash"], k, new Coord(2, 1)));
+        }
+
+        // ── Gravestones (§14.5) ──
+
+        private static ContentDb GraveDb()
+        {
+            var db = Mini();
+            db.Classes["grave"] = new ClassDef { Id = "grave", Name = "Gravestone", Team = Team.Enemy, Tags = { "Remains" }, BaseStats = new Stats { Vitality = 2, Speed = 20 }, MoveRange = 0 };
+            db.Classes["wolf"].Remains = "grave";
+            return db;
+        }
+
+        [Fact]
+        public void A_slain_undead_leaves_solid_remains_that_block_the_wave_from_clearing()
+        {
+            var db = GraveDb();
+            var (s, _) = Battle(db, Stage(("wolf", 3, 3)), ("cleric", 2, 3), ("knight", 5, 2));
+            Enemy(s, "wolf").Hp = 1;
+            var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = Hero(s, "knight").Id, Path = P((5, 3), (4, 3)) });
+            var left = ev.OfType<RemainsLeftEvent>().SingleOrDefault();
+            Assert.NotNull(left);
+            Assert.Equal(new Coord(3, 3), left.At);
+            Assert.True(s.UnitById(left.RemainsId).Alive);
+            Assert.False(s.IsOver, "the wave isn't cleared while the remains stand");
+        }
+
+        [Fact]
+        public void Remains_left_alone_raise_their_owner_at_half_hp_without_loot()
+        {
+            var db = GraveDb();
+            var (s, _) = Battle(db, Stage(("wolf", 3, 0), ("tank", 0, 0)), ("cleric", 2, 7), ("knight", 5, 7));
+            var wolf = Enemy(s, "wolf");
+            // the wolf has died: stand up its remains about to reach ACT
+            wolf.Hp = 0; wolf.OnBoard = false; s.Timeline.RemoveAll(e => e.OwnerId == wolf.Id);
+            var remains = new Unit { Id = s.NextUnitId++, Def = db.Classes["grave"], Team = Team.Enemy, Level = 1, Pos = new Coord(3, 0), W = 1, H = 1, RisesAs = "wolf", RisesLevel = 1 };
+            remains.LevelStats = Formulas.StatsAtLevel(remains.Def, 1); remains.MaxHp = remains.Hp = 10;
+            s.Units.Add(remains);
+            s.Timeline.Add(new TimelineEntry { Id = s.NextEntryId++, Kind = TimelineKind.Turn, OwnerId = remains.Id, Ip = 990 });
+            var ev = BattleEngine.Apply(s, new ShieldCommand());
+            var rose = ev.OfType<RoseAgainEvent>().SingleOrDefault();
+            Assert.NotNull(rose);
+            var risen = s.UnitById(rose.UnitId);
+            Assert.Equal("wolf", risen.Def.Id);
+            Assert.True(risen.NoLoot);
+            Assert.False(remains.Alive);
+        }
+
+        [Fact]
+        public void Remains_are_solid_and_real_undead_leave_them()
+        {
+            var db = GraveDb();
+            var (s, _) = Battle(db, Stage(("grave", 1, 3)), ("knight", 0, 3), ("cleric", 5, 7));
+            var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = Hero(s, "knight").Id, Path = P((1, 3)) });
+            Assert.Contains(ev, e => e is StepBlockedEvent b && b.Reason == "immovable");
+            Assert.Equal("gravestone", Real.Classes["undead00"].Remains);
+            Assert.Equal("bonepile", Real.Classes["skelepede00"].Remains);
         }
     }
 }

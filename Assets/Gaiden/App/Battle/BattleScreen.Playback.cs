@@ -88,6 +88,8 @@ namespace Gaiden.App
                 case HealedEvent h: return HealAnim(h);
                 case DiedEvent d: return DeathAnim(d);
                 case LootEvent l: return LootAnim(l);
+                case RemainsLeftEvent rl: return RemainsAnim(rl.RemainsId, false);
+                case RoseAgainEvent ra: return RiseAnim(ra);
                 case AmplifierSpawnedEvent asp: return AmpSpawnAnim(asp);
                 case AmplifierMovedEvent am: return AmpMoveAnim(am);
                 case AmplifierUsedEvent au: return AmpUsedAnim(au);
@@ -475,6 +477,42 @@ namespace Gaiden.App
             }
             App.Audio.Sfx("ui.buy", 0.6f);
             yield return Tween.Wait(0.08f);
+        }
+
+        /// <summary>Remains drop onto the fallen undead's tile with a thud (§14.5).</summary>
+        private IEnumerator RemainsAnim(int remainsId, bool quiet)
+        {
+            var r = State.UnitById(remainsId);
+            if (r == null) yield break;
+            if (!board.Units.TryGetValue(r.Id, out var v)) v = board.Add(r);
+            board.Place(v, r.Pos);
+            v.SetHp(r.Hp, r.MaxHp);
+            SyncTimeline(null);
+            if (!quiet) App.Audio.Sfx("shatter", 0.5f, 0.6f);
+            v.Root.style.translate = new Translate(0, -120);
+            yield return Tween.Run(0.18f, k => v.Root.style.translate = new Translate(0, -120f * (1f - k * k)));
+            App.StartCoroutine(Tween.Shake(v.Root, 10f * Fx, 0.12f));
+            Billboard($"{r.Name} — destroy it or it rises!", null, new Color(0.8f, 0.85f, 1f));
+        }
+
+        /// <summary>The remains crumble and the undead climbs back out.</summary>
+        private IEnumerator RiseAnim(RoseAgainEvent e)
+        {
+            if (board.Units.TryGetValue(e.RemainsId, out var rv))
+            {
+                yield return Tween.Run(0.2f, k => { rv.Root.style.opacity = 1f - k; rv.Root.style.scale = new Scale(Vector2.one * (1f - 0.3f * k)); });
+                rv.Root.RemoveFromHierarchy(); rv.Dead = true;
+            }
+            var u = State.UnitById(e.UnitId);
+            if (u == null) yield break;
+            var v = board.Units.TryGetValue(u.Id, out var existing) ? existing : board.Add(u);
+            board.Place(v, u.Pos);
+            v.SetHp(u.Hp, u.MaxHp);
+            SyncTimeline(null);
+            App.Audio.Sfx("debuff", 0.9f, 0.8f);
+            Billboard($"{u.Name} rises again!", null, new Color(0.75f, 1f, 0.75f));
+            v.Root.style.translate = new Translate(0, 60);
+            yield return Tween.Run(0.3f, k => { v.Root.style.translate = new Translate(0, 60f * (1f - k)); v.Root.style.opacity = k; });
         }
 
         private IEnumerator AmpSpawnAnim(AmplifierSpawnedEvent e)

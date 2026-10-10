@@ -81,6 +81,13 @@ namespace Gaiden.Core.Battle
         public bool Alive => Hp > 0 && OnBoard;
         public bool IsHero => Team == Team.Hero;
         public bool IsMultiTile => W > 1 || H > 1;
+        /// <summary>A grave marker left by an undead (§14.5): solid, never acts except to raise its owner.</summary>
+        public bool IsRemains => Def != null && Def.HasTag("Remains");
+        /// <summary>For remains: the class and level that rise when its turn arrives.</summary>
+        public string RisesAs;
+        public int RisesLevel;
+        /// <summary>A risen undead drops nothing the second time.</summary>
+        public bool NoLoot;
         public bool IsSnakeSegment => SnakeHeadId >= 0 && SnakeIndex > 0;
         public bool IsSnakeMember => SnakeHeadId >= 0;
         public string Name => Def.Name;

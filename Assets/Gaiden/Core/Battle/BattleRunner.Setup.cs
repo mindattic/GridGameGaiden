@@ -158,7 +158,7 @@ namespace Gaiden.Core.Battle
             Emit(started);
         }
 
-        private Unit SpawnEnemy(ClassDef def, int level, int x, int y)
+        internal Unit SpawnEnemy(ClassDef def, int level, int x, int y)
         {
             int w = Math.Max(1, def.Footprint?.W ?? 1), h = Math.Max(1, def.Footprint?.H ?? 1);
             Coord? at = null;
@@ -186,7 +186,7 @@ namespace Gaiden.Core.Battle
                 OwnerId = u.Id,
                 Ip = S.Rng.Range(0, BattleConfig.SpawnStaggerIp + 1),
             });
-            S.Results.Seen.Add(def.Id);
+            if (!def.HasTag("Remains")) S.Results.Seen.Add(def.Id);
             return u;
         }
 

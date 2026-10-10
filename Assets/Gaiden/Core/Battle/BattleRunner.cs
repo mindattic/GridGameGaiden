@@ -236,7 +236,22 @@ namespace Gaiden.Core.Battle
             u.Buffs.Clear();
             S.Timeline.RemoveAll(e => e.OwnerId == u.Id);
             Emit(new DiedEvent { UnitId = u.Id, Team = u.Team, At = at });
-            if (u.Team == Team.Enemy) AwardLoot(u);
+            if (u.IsRemains) { Announce("Laid to rest", u.Id); return; }
+            if (u.Team == Team.Enemy && !u.NoLoot) AwardLoot(u);
+            if (u.Team == Team.Enemy) LeaveRemains(u, at);
+        }
+
+        /// <summary>Undead leave a solid grave marker on their tile (§14.5); destroy it or they rise again.</summary>
+        private void LeaveRemains(Unit u, Coord at)
+        {
+            var def = C.TryClass(u.Def.Remains);
+            if (def == null || u.IsMultiTile) return;
+            var r = SpawnEnemy(def, u.Level, at.X, at.Y);
+            if (r == null || r.Pos != at) { if (r != null) { r.OnBoard = false; r.Hp = 0; S.Timeline.RemoveAll(e => e.OwnerId == r.Id); } return; }
+            r.RisesAs = u.Def.Id;
+            r.RisesLevel = u.Level;
+            Emit(new RemainsLeftEvent { RemainsId = r.Id, FromUnitId = u.Id, At = at });
+            Announce($"{u.Name} leaves {def.Name.ToLowerInvariant()} — destroy it!", r.Id);
         }
 
         private void AwardLoot(Unit enemy)

@@ -14,6 +14,8 @@ namespace Gaiden.Core.Battle
             MintTimeBank();
             Emit(new TurnStartedEvent { UnitId = enemy.Id });
 
+            if (enemy.IsRemains) { RiseAgain(enemy); return; }
+
             var phase = AdvanceBossPhases(enemy);
             if (S.IsOver || !enemy.Alive) return;
 
@@ -58,6 +60,22 @@ namespace Gaiden.Core.Battle
             if (mine.Count >= 3) S.Traps.Remove(mine[0]);
             S.Traps.Add(new Trap { At = from, TrapId = enemy.Def.Trail, OwnerId = enemy.Id });
             Emit(new TrapPlacedEvent { ById = enemy.Id, At = from, TrapId = enemy.Def.Trail });
+        }
+
+        /// <summary>Remains whose turn arrives raise their owner on the same tile at half HP (no loot the second time).</summary>
+        private void RiseAgain(Unit remains)
+        {
+            var def = C.TryClass(remains.RisesAs);
+            var at = remains.Pos;
+            remains.Hp = 0; remains.OnBoard = false;
+            S.Timeline.RemoveAll(e => e.OwnerId == remains.Id);
+            if (def == null) return;
+            var u = SpawnEnemy(def, remains.RisesLevel, at.X, at.Y);
+            if (u == null) return;
+            u.Hp = Math.Max(1, u.MaxHp / 2);
+            u.NoLoot = true;
+            Emit(new RoseAgainEvent { RemainsId = remains.Id, UnitId = u.Id, At = u.Pos });
+            Announce($"{u.Name} rises again!", u.Id);
         }
 
         private void EndEnemyTurn(Unit enemy)

@@ -13067,7 +13067,8 @@
     "Trap": null,
     "SnakeSegments": 0,
     "OnHitBuff": "poisoned",
-    "OnHitChance": 0.5
+    "OnHitChance": 0.5,
+    "Remains": "bonepile"
   },
   {
     "Id": "skelepede01",
@@ -13177,7 +13178,8 @@
     "Trap": null,
     "SnakeSegments": 0,
     "OnHitBuff": "poisoned",
-    "OnHitChance": 0.5
+    "OnHitChance": 0.5,
+    "Remains": "bonepile"
   },
   {
     "Id": "skelepede02",
@@ -13287,7 +13289,8 @@
     "Trap": null,
     "SnakeSegments": 0,
     "OnHitBuff": "poisoned",
-    "OnHitChance": 0.5
+    "OnHitChance": 0.5,
+    "Remains": "bonepile"
   },
   {
     "Id": "slasher",
@@ -17780,7 +17783,8 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "Remains": "gravestone"
   },
   {
     "Id": "undead01",
@@ -17889,7 +17893,8 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "Remains": "gravestone"
   },
   {
     "Id": "undead02",
@@ -17998,7 +18003,8 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "Remains": "gravestone"
   },
   {
     "Id": "undead04",
@@ -18107,7 +18113,8 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "Remains": "gravestone"
   },
   {
     "Id": "vampire",
@@ -19604,5 +19611,249 @@
     "SnakeSegments": 0,
     "OnHitBuff": "frozen",
     "OnHitChance": 0.25
+  },
+  {
+    "Id": "gravestone",
+    "Name": "Gravestone",
+    "Team": "Enemy",
+    "Tags": [
+      "Remains",
+      "Construct"
+    ],
+    "Description": "A cracked grave marker. Break it before the dead climb back out.",
+    "Lore": "A cracked grave marker. Break it before the dead climb back out.",
+    "Card": "A cracked grave marker. Break it before the dead climb back out.",
+    "Portrait": "gravestone",
+    "Crop": {
+      "X": 512,
+      "Y": 140,
+      "Zoom": 1
+    },
+    "Footprint": {
+      "W": 1,
+      "H": 1
+    },
+    "BaseStats": {
+      "Strength": 0,
+      "Vitality": 5,
+      "Agility": 0,
+      "Speed": 5,
+      "Stamina": 16,
+      "Intelligence": 10,
+      "Wisdom": 12,
+      "Luck": 0
+    },
+    "Growth": {
+      "Strength": 0,
+      "Vitality": 1,
+      "Agility": 0,
+      "Speed": 0,
+      "Stamina": 0,
+      "Intelligence": 0,
+      "Wisdom": 0,
+      "Luck": 0
+    },
+    "Milestones": [
+      {
+        "Level": 5,
+        "Growth": {
+          "Strength": 0.3,
+          "Vitality": 0.32,
+          "Agility": 0.17,
+          "Speed": 0.17,
+          "Stamina": 0.33,
+          "Intelligence": 0.19,
+          "Wisdom": 0.24,
+          "Luck": 0.14
+        }
+      },
+      {
+        "Level": 10,
+        "Growth": {
+          "Strength": 0.38,
+          "Vitality": 0.41,
+          "Agility": 0.23,
+          "Speed": 0.23,
+          "Stamina": 0.43,
+          "Intelligence": 0.25,
+          "Wisdom": 0.32,
+          "Luck": 0.18
+        }
+      },
+      {
+        "Level": 20,
+        "Growth": {
+          "Strength": 0.51,
+          "Vitality": 0.54,
+          "Agility": 0.3,
+          "Speed": 0.3,
+          "Stamina": 0.57,
+          "Intelligence": 0.33,
+          "Wisdom": 0.42,
+          "Luck": 0.24
+        }
+      },
+      {
+        "Level": 40,
+        "Growth": {
+          "Strength": 0.68,
+          "Vitality": 0.72,
+          "Agility": 0.4,
+          "Speed": 0.4,
+          "Stamina": 0.76,
+          "Intelligence": 0.44,
+          "Wisdom": 0.56,
+          "Luck": 0.32
+        }
+      }
+    ],
+    "Resistances": {},
+    "Abilities": [],
+    "DefaultLoadout": [],
+    "DropTable": null,
+    "MoveRange": 0,
+    "Targeting": "Closest",
+    "XpReward": 0,
+    "BossPhases": [],
+    "ChargeAbility": null,
+    "ChargeShape": "Single",
+    "Trap": null,
+    "SnakeSegments": 0,
+    "Trail": null,
+    "OnHitBuff": null,
+    "OnHitChance": 0,
+    "DeathBurst": 0,
+    "Remains": null,
+    "ImmuneBuffs": [
+      "poisoned",
+      "sleep",
+      "burning",
+      "frozen",
+      "slowed",
+      "silenced",
+      "blinded"
+    ]
+  },
+  {
+    "Id": "bonepile",
+    "Name": "Bone Pile",
+    "Team": "Enemy",
+    "Tags": [
+      "Remains",
+      "Construct"
+    ],
+    "Description": "A heap of rattling bones that wants to stand up again. Scatter it.",
+    "Lore": "A heap of rattling bones that wants to stand up again. Scatter it.",
+    "Card": "A heap of rattling bones that wants to stand up again. Scatter it.",
+    "Portrait": "bonepile",
+    "Crop": {
+      "X": 512,
+      "Y": 140,
+      "Zoom": 1
+    },
+    "Footprint": {
+      "W": 1,
+      "H": 1
+    },
+    "BaseStats": {
+      "Strength": 0,
+      "Vitality": 5,
+      "Agility": 0,
+      "Speed": 5,
+      "Stamina": 16,
+      "Intelligence": 10,
+      "Wisdom": 12,
+      "Luck": 0
+    },
+    "Growth": {
+      "Strength": 0,
+      "Vitality": 1,
+      "Agility": 0,
+      "Speed": 0,
+      "Stamina": 0,
+      "Intelligence": 0,
+      "Wisdom": 0,
+      "Luck": 0
+    },
+    "Milestones": [
+      {
+        "Level": 5,
+        "Growth": {
+          "Strength": 0.3,
+          "Vitality": 0.32,
+          "Agility": 0.17,
+          "Speed": 0.17,
+          "Stamina": 0.33,
+          "Intelligence": 0.19,
+          "Wisdom": 0.24,
+          "Luck": 0.14
+        }
+      },
+      {
+        "Level": 10,
+        "Growth": {
+          "Strength": 0.38,
+          "Vitality": 0.41,
+          "Agility": 0.23,
+          "Speed": 0.23,
+          "Stamina": 0.43,
+          "Intelligence": 0.25,
+          "Wisdom": 0.32,
+          "Luck": 0.18
+        }
+      },
+      {
+        "Level": 20,
+        "Growth": {
+          "Strength": 0.51,
+          "Vitality": 0.54,
+          "Agility": 0.3,
+          "Speed": 0.3,
+          "Stamina": 0.57,
+          "Intelligence": 0.33,
+          "Wisdom": 0.42,
+          "Luck": 0.24
+        }
+      },
+      {
+        "Level": 40,
+        "Growth": {
+          "Strength": 0.68,
+          "Vitality": 0.72,
+          "Agility": 0.4,
+          "Speed": 0.4,
+          "Stamina": 0.76,
+          "Intelligence": 0.44,
+          "Wisdom": 0.56,
+          "Luck": 0.32
+        }
+      }
+    ],
+    "Resistances": {},
+    "Abilities": [],
+    "DefaultLoadout": [],
+    "DropTable": null,
+    "MoveRange": 0,
+    "Targeting": "Closest",
+    "XpReward": 0,
+    "BossPhases": [],
+    "ChargeAbility": null,
+    "ChargeShape": "Single",
+    "Trap": null,
+    "SnakeSegments": 0,
+    "Trail": null,
+    "OnHitBuff": null,
+    "OnHitChance": 0,
+    "DeathBurst": 0,
+    "Remains": null,
+    "ImmuneBuffs": [
+      "poisoned",
+      "sleep",
+      "burning",
+      "frozen",
+      "slowed",
+      "silenced",
+      "blinded"
+    ]
   }
 ]

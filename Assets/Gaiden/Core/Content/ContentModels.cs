@@ -136,6 +136,8 @@ namespace Gaiden.Core.Content
         public string OnHitBuff;
         /// <summary>…with this chance per landed hit.</summary>
         public float OnHitChance;
+        /// <summary>Class id of the remains this enemy leaves (gravestone, bone pile — §14.5). Destroy them or it rises again.</summary>
+        public string Remains;
         /// <summary>Damage dealt to every adjacent hero when this enemy dies (cyber-zombie self-destruct). 0 = none.</summary>
         public int DeathBurst;
         /// <summary>Enemy targeting personality (§14.1).</summary>
