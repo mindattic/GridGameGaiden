@@ -169,5 +169,9 @@ namespace Gaiden.Core.Rules
             for (int l = 1; l < level; l++) total += XpToNext(l);
             return total;
         }
+
+        /// <summary>Per-action chance that a Power Amplifier appears, from the living party's combined Luck (§1.2.6).</summary>
+        public static float AmplifierChance(float partyLuck) =>
+            Clamp(BattleConfig.AmplifierBaseChance + partyLuck * BattleConfig.AmplifierChancePerLuck, 0f, BattleConfig.AmplifierMaxChance);
     }
 }

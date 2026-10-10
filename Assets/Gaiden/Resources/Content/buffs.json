@@ -35,7 +35,9 @@
     "BlocksSpells": false,
     "OnExpireApply": "warm",
     "Letter": "B",
-    "Color": "#FF731A"
+    "Color": "#FF731A",
+    "Stacking": "Stack",
+    "MaxStacks": 3
   },
   {
     "Id": "frozen",

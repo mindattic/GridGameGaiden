@@ -67,6 +67,10 @@ def main():
             break
     else:
         check("camp menu has every command", True)
+    cards = [h.call("element", name=n) for n in h.call("names", prefix="camp-hero-")]
+    win = h.call("element", name="camp-party")
+    check("camp party is a 2-column grid with room for six", len(cards) >= 3 and all(c["w"] < win["w"] * 0.55 for c in cards)
+          and win["h"] < 700, f"{len(cards)} cards, window {win}")
 
     # Overwrite confirm on an occupied slot
     h.call("clicktext", text="Save & Quit"); until(lambda: has_text("New Game"))
@@ -109,7 +113,7 @@ def main():
     tcy = track.get("y", 0) + track.get("h", 0) / 2
     check("timeline track is thin", 0 < track.get("h", 99) <= 8, str(track))
     check("turn icons sit centred on the timeline line",
-          any(abs(h.call("element", name=n)["y"] + h.call("element", name=n)["h"] / 2 - tcy) < 6 for n in names if n.startswith("tl-")), f"track={track} icon={icon}")
+          all(abs(h.call("element", name=n)["y"] + h.call("element", name=n)["h"] / 2 - tcy) < 6 for n in names if n.startswith("tl-")), f"track={track} icon={icon}")
     fps = h.call("state")["fps"]
     check("frame rate ≥ 50", fps >= 50, f"fps={fps}")
 
@@ -199,20 +203,34 @@ def main():
     tl = h.call("names", prefix="tl-status-")
     check("frozen enemy shows a status badge on its timeline circle", len(tl) >= 1, str(tl))
     st = h.call("style", name=f"buffs-{target['Id']}")
-    check("frozen enemy shows the debuff pip on its tile", st.get("children", 0) >= 2, str(st))
+    check("statuses share one slot on the tile", st.get("children", 0) == 1, str(st))
+    seen = set()
+    for _ in range(4):
+        seen.add(h.call("style", name=f"statuspip-{target['Id']}").get("text")); time.sleep(0.65)
+    check("the status slot flashes through every buff/debuff", len(seen - {None}) >= 2, str(seen))
     disc = h.call("style", name=next((n for n in h.call("names", prefix="tl-") if n[3:].isdigit()), "tl-1"))
     check("timeline circles are opaque (the line never shows through)", disc.get("background", "").upper().endswith("FF"), str(disc))
 
-    # ── Pending-spell countdown ring on the target, in the spell's colour ──
+    # ── Power Amplifier marker ──
+    h.call("devamp", x=0, y=4); time.sleep(0.3)
+    amp = h.call("element", name="amplifier")
+    tx, ty = h.tile(0, 4)
+    check("the Power Amplifier shows on its tile", amp.get("w", 0) > 0 and abs(amp["x"] + amp["w"] / 2 - tx) < 30 and abs(amp["y"] + amp["h"] / 2 - ty) < 30, str(amp))
+    h.shot("amplifier")
+
+    # ── Pending spell: countdown ring on the caster, spell chip on the target, cycling when several ──
     hero = next(u for u in battle_state()["units"] if u["team"] == "Hero")
-    h.call("devcast", target=hero["Id"], ability="charge_ice", ticks=40); time.sleep(0.4)
-    ring = h.call("element", name=f"castring-{hero['Id']}")
+    r = h.call("devcast", target=hero["Id"], ability="charge_ice", ticks=40); time.sleep(0.4)
+    caster = r.get("caster", -1)
+    ring = h.call("element", name=f"castring-{caster}")
     chip = h.call("element", name=f"castchip-{hero['Id']}")
-    check("a pending spell draws a countdown ring + spell chip on its target", ring.get("w", 0) > 0 and chip.get("w", 0) > 0, f"{ring} {chip}")
+    check("a pending spell rings its caster and marks its target", ring.get("w", 0) > 0 and chip.get("w", 0) > 0, f"{r} {ring} {chip}")
+    check("casts are not drawn on the timeline", not any(n.startswith("tl-") and n[3:].isdigit() and h.call("element", name=n).get("w", 0) == 60 for n in h.call("names", prefix="tl-")))
     h.call("devcast", target=hero["Id"], ability="charge_fireball", ticks=60); time.sleep(0.2)
-    b1 = h.call("style", name=f"castchip-{hero['Id']}")["border"]; time.sleep(1.4)
-    b2 = h.call("style", name=f"castchip-{hero['Id']}")["border"]
-    check("two pending spells on one unit cycle their countdown colours", b1 != b2, f"{b1} -> {b2}")
+    seen = set()
+    for _ in range(5):
+        seen.add(h.call("style", name=f"castchip-{hero['Id']}")["border"]); time.sleep(0.5)
+    check("two pending spells on one unit cycle their colours", len(seen) >= 2, str(seen))
     h.shot("castring")
 
     # ── Long-press tooltip ────────────────────────────────────────────────

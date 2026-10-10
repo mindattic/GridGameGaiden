@@ -58,7 +58,8 @@ namespace Gaiden.App
             return cache[path] = Resources.Load<Texture2D>(path);
         }
         public static Texture2D Portrait(string classId) => Load("Portraits/" + classId);
-        public static Texture2D BoardTile => Load("Tiles/tile");
+        /// <summary>The board tile for a campaign theme (tools/make_tiles.py); the original slate tile when a theme has none.</summary>
+        public static Texture2D BoardTile(string theme) => !string.IsNullOrEmpty(theme) && Exists("Tiles/" + theme) ? Load("Tiles/" + theme) : Load("Tiles/tile");
         public static Texture2D Icon(string key) => string.IsNullOrEmpty(key) ? null : Load("Icons/" + key);
 
         public static Texture2D Background(string theme, int index = 0)

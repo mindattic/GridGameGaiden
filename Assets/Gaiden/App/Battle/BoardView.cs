@@ -81,7 +81,7 @@ namespace Gaiden.App
             Root.Add(Buffs);
 
 
-            // Pending-spell countdown traced around the frame, and the incoming spell's icon in the corner.
+            // Casting: countdown traced around the caster's frame. Targeted: the incoming spell's chip in the corner.
             Cast = new CastRing { name = "castring-" + u.Id, pickingMode = PickingMode.Ignore };
             Cast.style.display = DisplayStyle.None;
             Root.Add(Cast);
@@ -115,51 +115,68 @@ namespace Gaiden.App
             HpFill.EnableInClassList("gauge-fill--low", f <= 0.25f);
         }
 
+        private readonly List<(string letter, Color color, float frac)> statuses = new List<(string, Color, float)>();
+        private int statusBeat;
+
+        /// <summary>
+        /// One status slot per unit (owner direction 2026-10-10): it flashes through every buff, debuff and stun on
+        /// the 1.2 s beat; the selected unit's card explains each one.
+        /// </summary>
         public void SetBuffs(Unit u, bool colorblind, bool stunned = false)
         {
+            statuses.Clear();
+            if (stunned) statuses.Add(("!", new Color(1f, 0.85f, 0.3f), 1f)); // pushback stun isn't a buff, but it's why it isn't moving
+            foreach (var b in u.Buffs)
+                statuses.Add((string.IsNullOrEmpty(b.Def.Letter) ? b.Def.Name.Substring(0, 1) : b.Def.Letter,
+                    App.Art.HexColor(b.Def.Color, b.Def.Kind == BuffKind.Buff ? new Color(0.4f, 0.8f, 1f) : new Color(0.8f, 0.4f, 0.9f)),
+                    Mathf.Clamp01(b.Remaining / (float)Mathf.Max(1, b.Def.Duration))));
+            ShowStatus();
+        }
+
+        public void NextStatus()
+        {
+            if (statuses.Count < 2) return;
+            statusBeat++;
+            ShowStatus();
+        }
+
+        private void ShowStatus()
+        {
             Buffs.Clear();
-            int n = 0;
-            if (stunned)
+            if (statuses.Count == 0) return;
+            var (letter, color, frac) = statuses[statusBeat % statuses.Count];
+            var pip = new Label(letter) { name = "statuspip-" + Id, pickingMode = PickingMode.Ignore };
+            pip.AddToClassList("pip");
+            pip.style.width = pip.style.height = 44;
+            pip.style.fontSize = 26;
+            pip.style.backgroundColor = color;
+            pip.Add(new RingTimer(frac) { pickingMode = PickingMode.Ignore });
+            Buffs.Add(pip);
+            if (statuses.Count > 1)
             {
-                // Pushback stun isn't a buff, but it is why the unit isn't moving: show it like one.
-                var st = new Label("!") { name = "stun-" + u.Id, pickingMode = PickingMode.Ignore };
-                st.AddToClassList("pip");
-                st.style.width = st.style.height = 40;
-                st.style.fontSize = 24;
-                st.style.backgroundColor = new Color(1f, 0.85f, 0.3f);
-                Buffs.Add(st);
-                n++;
-            }
-            // Show up to 3; with more, the window rotates every 1.5 s so every status gets seen (bible §8.5).
-            int count = u.Buffs.Count;
-            int start = count > 3 ? (int)(Time.unscaledTime / 1.5f) % count : 0;
-            for (int k = 0; k < Mathf.Min(3 - n, count); k++)
-            {
-                var b = u.Buffs[(start + k) % count];
-                var pip = new Label(string.IsNullOrEmpty(b.Def.Letter) ? b.Def.Name.Substring(0, 1) : b.Def.Letter) { pickingMode = PickingMode.Ignore };
-                pip.AddToClassList("pip");
-                pip.style.width = pip.style.height = 40;
-                pip.style.fontSize = 24;
-                pip.style.backgroundColor = App.Art.HexColor(b.Def.Color, b.Def.Kind == BuffKind.Buff ? new Color(0.4f, 0.8f, 1f) : new Color(0.8f, 0.4f, 0.9f));
-                float frac = Mathf.Clamp01(b.Remaining / (float)Mathf.Max(1, b.Def.Duration));
-                pip.Add(new RingTimer(frac) { pickingMode = PickingMode.Ignore });
-                Buffs.Add(pip);
-                n++;
+                var more = new Label((statuses.Count).ToString()) { pickingMode = PickingMode.Ignore };
+                more.AddToClassList("shadow");
+                more.style.position = Position.Absolute; more.style.right = -6; more.style.bottom = -10;
+                more.style.fontSize = 20; more.style.unityFontStyleAndWeight = FontStyle.Bold;
+                pip.Add(more);
             }
         }
 
-        /// <summary>Show (or hide, with null) the countdown ring: <paramref name="left"/> = fraction of cast time remaining.</summary>
-        public void SetCast(Color? color, float left, Texture2D icon, int count, string name = null)
+        /// <summary>Caster side: show (or hide, with null) the countdown ring; <paramref name="left"/> = fraction of cast time remaining.</summary>
+        public void SetCastRing(Color? color, float left)
         {
-            bool on = color.HasValue;
-            Cast.style.display = on ? DisplayStyle.Flex : DisplayStyle.None;
-            CastChip.style.display = on ? DisplayStyle.Flex : DisplayStyle.None;
-            if (!on) return;
-            Cast.Set(color.Value, left);
+            Cast.style.display = color.HasValue ? DisplayStyle.Flex : DisplayStyle.None;
+            if (color.HasValue) Cast.Set(color.Value, left);
+        }
+
+        /// <summary>Target side: the incoming spell's icon (or initial) in its colour, top-left of the tile.</summary>
+        public void SetCastChip(Color? color, Texture2D icon, string name)
+        {
+            CastChip.style.display = color.HasValue ? DisplayStyle.Flex : DisplayStyle.None;
+            if (!color.HasValue) return;
             var c = color.Value;
             CastChip.style.borderTopColor = CastChip.style.borderBottomColor = CastChip.style.borderLeftColor = CastChip.style.borderRightColor = c;
             CastChip.style.backgroundImage = icon != null ? new StyleBackground(icon) : new StyleBackground((Texture2D)null);
-            // No icon art (enemy charges): the spell's initial in its colour instead.
             var letter = (Label)CastChip[0];
             letter.text = icon == null && !string.IsNullOrEmpty(name) ? name.Substring(0, 1) : "";
             letter.style.color = c;
@@ -187,7 +204,7 @@ namespace Gaiden.App
         private readonly List<VisualElement> trapMarks = new List<VisualElement>();
         public readonly LineLayer Lines;
 
-        public BoardView(VisualElement parent)
+        public BoardView(VisualElement parent, string theme = null)
         {
             Root = new VisualElement { name = "board" };
             Root.style.position = Position.Absolute;
@@ -213,9 +230,9 @@ namespace Gaiden.App
                     t.style.position = Position.Absolute;
                     t.style.left = x * Tile; t.style.top = y * Tile;
                     t.style.width = Tile; t.style.height = Tile;
-                    // GridGame2026's tile art, tinted light/dark for the checkerboard (it drew tiles at ~39 % alpha).
+                    // GridGame2026's tile art recoloured per biome (tools/make_tiles.py), tinted light/dark for the checkerboard.
                     bool light = (x + y) % 2 == 0;
-                    t.style.backgroundImage = new StyleBackground(App.Art.BoardTile);
+                    t.style.backgroundImage = new StyleBackground(App.Art.BoardTile(theme));
                     t.style.unityBackgroundImageTintColor = light ? new Color(1.0f, 1.0f, 1.0f, 0.8f) : new Color(0.42f, 0.46f, 0.56f, 0.6f);
                     TileLayer.Add(t);
                     tiles[x, y] = t;
@@ -248,6 +265,66 @@ namespace Gaiden.App
             int x = Mathf.Clamp(Mathf.FloorToInt(local.x / Tile), 0, BattleConfig.Cols - 1);
             int y = Mathf.Clamp(Mathf.FloorToInt(local.y / Tile), 0, BattleConfig.Rows - 1);
             return new Coord(x, y);
+        }
+
+        // ── Power Amplifier marker (§1.2.6): a pulsing gold diamond on its tile ──
+        private VisualElement amp;
+        public VisualElement Amp => amp;
+
+        public void SyncAmplifier(Coord? at)
+        {
+            if (amp == null)
+            {
+                amp = new VisualElement { name = "amplifier", pickingMode = PickingMode.Ignore };
+                amp.style.position = Position.Absolute;
+                amp.style.width = amp.style.height = Tile * 0.5f;
+                amp.style.rotate = new Rotate(45f);
+                amp.style.borderTopWidth = amp.style.borderBottomWidth = amp.style.borderLeftWidth = amp.style.borderRightWidth = 6;
+                amp.style.borderTopColor = amp.style.borderBottomColor = amp.style.borderLeftColor = amp.style.borderRightColor = new Color(1f, 0.95f, 0.7f);
+                amp.style.backgroundColor = new Color(1f, 0.72f, 0.15f, 0.85f);
+                amp.style.borderTopLeftRadius = amp.style.borderTopRightRadius = amp.style.borderBottomLeftRadius = amp.style.borderBottomRightRadius = 10;
+                var glow = new VisualElement { pickingMode = PickingMode.Ignore };
+                glow.style.position = Position.Absolute;
+                glow.style.left = glow.style.top = glow.style.right = glow.style.bottom = -30;
+                glow.style.backgroundImage = new StyleBackground(App.Art.Glow);
+                glow.style.unityBackgroundImageTintColor = new Color(1f, 0.8f, 0.3f, 0.8f);
+                amp.Add(glow);
+                MarkLayer.Add(amp);
+                amp.schedule.Execute(() =>
+                {
+                    float k = 1f + 0.08f * Mathf.Sin(Time.unscaledTime * 5f);
+                    amp.style.scale = new Scale(new Vector2(k, k));
+                }).Every(33);
+            }
+            amp.style.display = at.HasValue ? DisplayStyle.Flex : DisplayStyle.None;
+            if (at.HasValue) PlaceAmp(CenterOf(at.Value));
+        }
+
+        public void PlaceAmp(Vector2 centre)
+        {
+            amp.style.left = centre.x - Tile * 0.25f;
+            amp.style.top = centre.y - Tile * 0.25f;
+        }
+
+        /// <summary>Board-space rect around every tile of a group (a pincer's attackers + opponents), slightly outside the frames.</summary>
+        public static Rect GroupRect(IEnumerable<(Coord pos, int w, int h)> members)
+        {
+            float x0 = float.MaxValue, y0 = float.MaxValue, x1 = float.MinValue, y1 = float.MinValue;
+            foreach (var (pos, w, h) in members)
+            {
+                x0 = Mathf.Min(x0, pos.X * Tile); y0 = Mathf.Min(y0, pos.Y * Tile);
+                x1 = Mathf.Max(x1, (pos.X + w) * Tile); y1 = Mathf.Max(y1, (pos.Y + h) * Tile);
+            }
+            return Rect.MinMaxRect(x0 - 4f, y0 - 4f, x1 + 4f, y1 + 4f);
+        }
+
+        /// <summary>Short link bridging the gap between a supporter's frame and its partner's (edge to edge, never over the art).</summary>
+        public static (Vector2 a, Vector2 b) EdgeLink(Coord from, Coord to)
+        {
+            var d = new Vector2(to.X - from.X, to.Y - from.Y);
+            if (d.sqrMagnitude > 0f) d.Normalize();
+            var ca = CenterOf(from); var cb = CenterOf(to);
+            return (ca + d * (Tile * 0.5f - 16f), cb - d * (Tile * 0.5f - 16f));
         }
 
         public UnitView Add(Unit u)
@@ -418,10 +495,13 @@ namespace Gaiden.App
         public readonly List<Seg> Segs = new List<Seg>();
         public readonly List<(Vector2 c, float r, Color color)> Dots = new List<(Vector2, float, Color)>();
         public readonly List<(Vector2 c, float r, Color color, float w)> Rings = new List<(Vector2, float, Color, float)>();
+        /// <summary>Rounded outlines drawn around a group of tiles; <c>f</c> is how much of the border has drawn itself (0..1).</summary>
+        public readonly List<(Rect r, Color color, float w, float f)> Outlines = new List<(Rect, Color, float, float)>();
 
         public LineLayer() { generateVisualContent += Draw; }
 
-        public void ClearLines() { Segs.Clear(); Dots.Clear(); Rings.Clear(); MarkDirtyRepaint(); }
+        public void ClearLines() { Segs.Clear(); Dots.Clear(); Rings.Clear(); Outlines.Clear(); MarkDirtyRepaint(); }
+        public void Outline(Rect r, Color color, float w, float f) { Outlines.Add((r, color, w, f)); MarkDirtyRepaint(); }
         public void Ring(Vector2 c, float r, Color color, float w) { Rings.Add((c, r, color, w)); MarkDirtyRepaint(); }
         public void Add(Vector2 a, Vector2 b, Color c, float w) { Segs.Add(new Seg { A = a, B = b, Color = c, Width = w }); MarkDirtyRepaint(); }
         public void Dot(Vector2 c, float r, Color color) { Dots.Add((c, r, color)); MarkDirtyRepaint(); }
@@ -438,6 +518,16 @@ namespace Gaiden.App
                 p.MoveTo(s.A);
                 p.LineTo(s.B);
                 p.Stroke();
+            }
+            foreach (var (rect, color, w, f) in Outlines)
+            {
+                var pts = CastRing.Perimeter(rect, 30f, f);
+                if (pts.Count < 2) continue;
+                p.lineJoin = LineJoin.Round; p.lineCap = LineCap.Round;
+                p.strokeColor = new Color(0f, 0f, 0f, 0.5f * color.a); p.lineWidth = w + 6f;
+                p.BeginPath(); p.MoveTo(pts[0]); for (int i = 1; i < pts.Count; i++) p.LineTo(pts[i]); p.Stroke();
+                p.strokeColor = color; p.lineWidth = w;
+                p.BeginPath(); p.MoveTo(pts[0]); for (int i = 1; i < pts.Count; i++) p.LineTo(pts[i]); p.Stroke();
             }
             foreach (var (c, r, color, w) in Rings)
             {

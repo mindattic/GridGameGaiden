@@ -88,6 +88,9 @@ namespace Gaiden.App
                 case HealedEvent h: return HealAnim(h);
                 case DiedEvent d: return DeathAnim(d);
                 case LootEvent l: return LootAnim(l);
+                case AmplifierSpawnedEvent asp: return AmpSpawnAnim(asp);
+                case AmplifierMovedEvent am: return AmpMoveAnim(am);
+                case AmplifierUsedEvent au: return AmpUsedAnim(au);
                 case OrbMintedEvent o: return OrbAnim(o);
                 case OrbsSpentEvent _: SyncOrbs(); App.Audio.Sfx("cast", 0.6f); return Tween.Wait(0.12f);
 
@@ -153,13 +156,24 @@ namespace Gaiden.App
             if (a == null || b == null) yield break;
             board.Lines.ClearLines();
             var color = p.Team == Team.Hero ? new Color(1f, 0.85f, 0.3f, 0.95f) : new Color(1f, 0.3f, 0.3f, 0.95f);
-            board.Lines.Add(BoardView.CenterOf(a.Pos), BoardView.CenterOf(b.Pos), color, 18f);
+            // The group (Hero, foe…, Hero) gets an outline that draws itself around it; supporters link edge to edge.
+            var group = new List<(Coord, int, int)> { (a.Pos, a.W, a.H), (b.Pos, b.W, b.H) };
+            foreach (var oid in p.Opponents) if (State.UnitById(oid) is Unit o) group.Add((o.Pos, o.W, o.H));
+            var rect = BoardView.GroupRect(group);
+            var links = new List<(Vector2, Vector2)>();
             foreach (var sid in p.Supporters)
             {
                 var s = State.UnitById(sid);
-                var partner = s != null && s.IsAdjacentTo(a) ? a : b;
-                if (s != null) board.Lines.Add(BoardView.CenterOf(s.Pos), BoardView.CenterOf(partner.Pos), new Color(0.4f, 0.8f, 1f, 0.9f), 10f);
+                if (s == null) continue;
+                var partner = s.IsAdjacentTo(a) ? a : b;
+                links.Add(BoardView.EdgeLink(s.Pos, partner.Pos));
             }
+            App.StartCoroutine(Tween.Run(ReduceMotion ? 0.05f : 0.24f, k =>
+            {
+                board.Lines.ClearLines();
+                board.Lines.Outline(rect, color, 9f, k);
+                if (k >= 0.6f) foreach (var (la, lb) in links) board.Lines.Add(la, Vector2.Lerp(la, lb, (k - 0.6f) / 0.4f), new Color(0.4f, 0.8f, 1f, 0.95f), 12f);
+            }));
             App.Audio.Sfx("pincer", 1f, 1f + 0.08f * (chainCount - 1));
             string label = p.Team == Team.Hero ? (chainCount > 1 ? $"CHAIN ×{chainCount}!" : "PINCER!") : "Enemy pincer!";
             ShowBanner(label);
@@ -436,10 +450,13 @@ namespace Gaiden.App
 
         private IEnumerator LootAnim(LootEvent l)
         {
-            coinLabel.text = $"{State.Results.Coins} G";
-            if (l.Coins <= 0 && l.Items.Count == 0) yield break;
+            if (l.Coins <= 0 && l.Items.Count == 0) { SyncCoins(); yield break; }
             var at = BoardView.CenterOf(board.Units.TryGetValue(l.FromUnitId, out var v) ? v.Tile : new Coord(2, 2));
-            if (l.Coins > 0) App.StartCoroutine(FloatAway(board.Float($"+{l.Coins} G", at + new Vector2(0, -20), new Color(1f, 0.85f, 0.35f), 52), 0.9f));
+            if (l.Coins > 0)
+            {
+                App.StartCoroutine(FloatAway(board.Float($"+{l.Coins} G", at + new Vector2(0, -20), new Color(1f, 0.85f, 0.35f), 52), 0.9f));
+                App.StartCoroutine(CoinBurst(at, l.Coins));
+            }
             foreach (var it in l.Items)
             {
                 var name = App.Content.TryItem(it.Item)?.Name ?? it.Item;
@@ -447,6 +464,108 @@ namespace Gaiden.App
             }
             App.Audio.Sfx("ui.buy", 0.6f);
             yield return Tween.Wait(0.08f);
+        }
+
+        private IEnumerator AmpSpawnAnim(AmplifierSpawnedEvent e)
+        {
+            board.SyncAmplifier(e.At);
+            App.Audio.Sfx("orb", 0.8f, 0.7f);
+            Feed("A Power Amplifier appeared — pincer from its tile", new Color(1f, 0.85f, 0.4f));
+            yield return Tween.Pop(board.Amp, 1.6f, 0.3f);
+        }
+
+        private IEnumerator AmpMoveAnim(AmplifierMovedEvent e)
+        {
+            var from = BoardView.CenterOf(e.From); var to = BoardView.CenterOf(e.To);
+            App.Audio.Sfx("slide", 0.6f, 1.3f);
+            yield return Tween.Run(0.22f, k => board.PlaceAmp(Vector2.Lerp(from, to, Tween.EaseOut(k))));
+            board.SyncAmplifier(e.To);
+            var by = State.UnitById(e.ByUnitId);
+            if (by != null) Feed($"{by.Name} shoved the amplifier", new Color(1f, 0.6f, 0.4f));
+        }
+
+        private IEnumerator AmpUsedAnim(AmplifierUsedEvent e)
+        {
+            var at = BoardView.CenterOf(e.At);
+            App.Audio.Sfx("crit", 0.9f);
+            yield return Tween.Run(0.3f, k => { board.Lines.Rings.Clear(); board.Lines.Ring(at, 40f + 160f * k, new Color(1f, 0.8f, 0.3f, 1f - k), 12f); });
+            board.Lines.Rings.Clear(); board.Lines.MarkDirtyRepaint();
+            board.SyncAmplifier(null);
+            yield return FloatText(e.HeroId, "AMPLIFIED!", new Color(1f, 0.85f, 0.3f), 0.2f, 70);
+        }
+
+        /// <summary>Gold shown on the HUD: the party's purse plus what this battle has dropped so far.</summary>
+        private int shownCoins = -1;
+        public int CoinsShown => shownCoins;
+
+        private void SyncCoins(int? value = null)
+        {
+            shownCoins = value ?? ((App.Save?.Gold ?? 0) + State.Results.Coins);
+            coinLabel.text = $"{shownCoins} G";
+        }
+
+        /// <summary>
+        /// The enemy "explodes" into gold (as in GridGame2026): coins burst out and bounce, then fly to the gold counter
+        /// in the top-right, which counts up as each one lands. Runs alongside the next beats; never blocks play.
+        /// </summary>
+        private IEnumerator CoinBurst(Vector2 boardAt, int coins)
+        {
+            int n = Mathf.Clamp(coins, 3, ReduceMotion ? 4 : 12);
+            int start = shownCoins < 0 ? (App.Save?.Gold ?? 0) + State.Results.Coins - coins : shownCoins;
+            Vector2 from = App.Overlay.WorldToLocal(board.Root.LocalToWorld(boardAt));
+            var wb = coinLabel.worldBound;
+            Vector2 to = App.Overlay.WorldToLocal(new Vector2(wb.xMax - 40f, wb.center.y));
+            int landed = 0;
+            for (int i = 0; i < n; i++)
+            {
+                var coin = new VisualElement { name = "coin", pickingMode = PickingMode.Ignore };
+                coin.style.position = Position.Absolute;
+                coin.style.width = coin.style.height = 34;
+                coin.style.backgroundImage = new StyleBackground(Art.Orb);
+                coin.style.unityBackgroundImageTintColor = new Color(1f, 0.82f, 0.25f);
+                App.Overlay.Add(coin);
+                float ang = Random.Range(-Mathf.PI * 0.95f, -Mathf.PI * 0.05f), speed = Random.Range(260f, 520f);
+                var vel = new Vector2(Mathf.Cos(ang), Mathf.Sin(ang)) * speed;
+                float floor = from.y + Random.Range(30f, 70f), delay = i * 0.035f;
+                int share = coins / n + (i < coins % n ? 1 : 0);
+                App.StartCoroutine(OneCoin(coin, from, vel, floor, to, delay, () =>
+                {
+                    landed++;
+                    SyncCoins(Mathf.Min(start + coins, shownCoins + share));
+                    if (landed == n) SyncCoins();
+                    App.Audio.Sfx("ui.buy", 0.35f, 1.1f + landed * 0.03f);
+                    App.StartCoroutine(Tween.Pop(coinLabel, 1.15f, 0.08f));
+                }));
+            }
+            yield break;
+        }
+
+        private IEnumerator OneCoin(VisualElement coin, Vector2 from, Vector2 vel, float floor, Vector2 to, float delay, System.Action arrive)
+        {
+            yield return Tween.Wait(delay);
+            // Burst: ballistic arc with one bounce, ~0.45 s.
+            var pos = from; float t = 0f; bool bounced = false;
+            while (t < 0.45f)
+            {
+                float dt = Mathf.Min(Time.unscaledDeltaTime * Tween.Speed, 0.05f);
+                t += dt;
+                vel.y += 1800f * dt;
+                pos += vel * dt;
+                if (pos.y > floor && vel.y > 0f && !bounced) { pos.y = floor; vel.y *= -0.45f; vel.x *= 0.7f; bounced = true; }
+                coin.style.left = pos.x - 17; coin.style.top = pos.y - 17;
+                yield return null;
+            }
+            // Fly to the counter, accelerating, shrinking a little.
+            var start = pos;
+            yield return Tween.Run(Random.Range(0.32f, 0.45f), k =>
+            {
+                float e = k * k;
+                var p = Vector2.Lerp(start, to, e) + Vector2.up * (-80f * Mathf.Sin(k * Mathf.PI));
+                coin.style.left = p.x - 17; coin.style.top = p.y - 17;
+                coin.style.scale = new Scale(Vector2.one * (1f - 0.35f * k));
+            });
+            coin.RemoveFromHierarchy();
+            arrive();
         }
 
         private IEnumerator OrbAnim(OrbMintedEvent o)
@@ -554,6 +673,7 @@ namespace Gaiden.App
             string on = target != null ? $" on {target.Name}" : cq.LineTiles != null ? " down a line" : "";
             float secs = cq.Ticks / (float)BattleConfig.TicksPerSecond;
             ShowBanner($"{caster?.Name} {(cq.IsCharge ? "charges" : "casts")} {what}{on} — lands in {secs:0.#}s");
+            if (caster != null) yield return Gather(caster, Art.SpellColor(cq.AbilityId));
             yield return FloatText(cq.CasterId, cq.IsCharge ? "Charging…" : "Casting…", new Color(0.6f, 0.85f, 1f), 0.3f, 50);
         }
 
@@ -578,10 +698,12 @@ namespace Gaiden.App
             board.ClearMarks();
             Color c = a == null ? Color.white : a.BaseHeal > 0 ? new Color(0.4f, 1f, 0.55f) : ColorFor(a.DamageType);
             foreach (var t in ar.Tiles) board.Mark(t, c, 0.45f);
-            if (caster != null && a != null && a.Motion != ProjectileMotion.None && ar.Targets.Count > 0)
+            var targets = ar.Targets.Select(State.UnitById).Where(u => u != null).ToList();
+            if (caster != null && a != null && a.Kind == AbilityKind.Spell && targets.Count > 0)
+                yield return SpellVfx(caster, targets, a, c);
+            else if (caster != null && a != null && a.Motion != ProjectileMotion.None && targets.Count > 0)
             {
                 Vector2 from = BoardView.CenterOf(caster.Pos, caster.W, caster.H);
-                var targets = ar.Targets.Select(State.UnitById).Where(u => u != null).ToList();
                 App.Audio.Sfx("cast", 0.7f);
                 yield return Tween.Run(a.Motion == ProjectileMotion.Strike ? 0.18f : 0.26f, k =>
                 {
@@ -598,6 +720,57 @@ namespace Gaiden.App
             }
             else yield return Tween.Wait(0.12f);
             App.StartCoroutine(ClearMarksLater(0.35f));
+        }
+
+        /// <summary>Where the last spell mote stopped above each target: the element strike (lightning…) starts there.</summary>
+        private readonly Dictionary<int, Vector2> strikeFrom = new Dictionary<int, Vector2>();
+
+        /// <summary>
+        /// Every spell plays the same readable arc (owner direction 2026-10-10): the caster draws energy (motes spiral
+        /// in), a cast burst, then one mote per target curves to the space above it; the impact (lightning strike,
+        /// flame burst, frost ring, heal sparkles …) follows from that point when the damage/heal lands.
+        /// </summary>
+        private IEnumerator SpellVfx(Unit caster, List<Unit> targets, AbilityDef a, Color c)
+        {
+            Vector2 from = BoardView.CenterOf(caster.Pos, caster.W, caster.H);
+            bool calm = ReduceMotion;
+            board.Units.TryGetValue(caster.Id, out var cv);
+            // 1. Drawing energy (a timed cast already drew it when it was queued).
+            if (a.CastTime <= 0f) yield return Gather(caster, c);
+            // 2. Cast burst.
+            App.Audio.Sfx("cast", 0.9f, 1.2f);
+            yield return Tween.Run(0.14f, k => { board.Lines.Rings.Clear(); board.Lines.Ring(from, 40f + 90f * k, new Color(c.r, c.g, c.b, 1f - k), 10f); });
+            board.Lines.Rings.Clear(); board.Lines.MarkDirtyRepaint();
+            if (cv != null) cv.SetGlow(Color.white, 0f);
+            // 3. One mote per target curves up and over to the space above it.
+            var ends = targets.ToDictionary(t => t.Id, t => BoardView.CenterOf(t.Pos, t.W, t.H) + new Vector2(0f, -BoardView.Tile * 0.85f));
+            var bends = targets.ToDictionary(t => t.Id, t => (Random.value < 0.5f ? -1f : 1f) * Random.Range(90f, 160f));
+            float travel = calm ? 0.2f : Mathf.Clamp(Vector2.Distance(from, ends.Values.First()) / 1600f, 0.26f, 0.5f);
+            yield return Tween.Run(travel, k =>
+            {
+                board.Lines.ClearLines();
+                foreach (var t in targets)
+                {
+                    Vector2 to = ends[t.Id];
+                    Vector2 Mid(float kk)
+                    {
+                        var d = to - from; var n = new Vector2(-d.y, d.x).normalized;
+                        Vector2 ctrl = (from + to) / 2f + n * bends[t.Id] + Vector2.up * -120f;
+                        float e = Tween.EaseInOut(kk);
+                        return (1 - e) * (1 - e) * from + 2 * (1 - e) * e * ctrl + e * e * to;
+                    }
+                    for (int tr = 4; tr >= 0; tr--)
+                    {
+                        float kk = Mathf.Max(0f, k - tr * 0.05f);
+                        board.Lines.Dot(Mid(kk), 28f - tr * 4f, new Color(c.r, c.g, c.b, 1f - tr * 0.18f));
+                    }
+                    board.Lines.Dot(Mid(k), 12f, Color.white);
+                }
+            });
+            board.Lines.ClearLines();
+            foreach (var kv in ends) strikeFrom[kv.Key] = kv.Value;
+            if (a.BaseHeal > 0 || a.Filter == TargetFilter.AllyOnly)
+                foreach (var t in targets) App.StartCoroutine(HealBurst(BoardView.CenterOf(t.Pos, t.W, t.H)));
         }
 
         /// <summary>Projectile curves (bible §6.1). Reduce Motion flattens everything to a straight line.</summary>
@@ -742,7 +915,8 @@ namespace Gaiden.App
                     break;
                 case DamageType.Lightning:
                 {
-                    var pts = new List<Vector2> { at + new Vector2(Random.Range(-30f, 30f), -560f) };
+                    var origin = TakeStrikeOrigin(at) ?? at + new Vector2(Random.Range(-30f, 30f), -560f);
+                    var pts = new List<Vector2> { origin };
                     while (pts[pts.Count - 1].y < at.y - 40) pts.Add(new Vector2(at.x + Random.Range(-46f, 46f), pts[pts.Count - 1].y + Random.Range(60f, 110f)));
                     pts.Add(at);
                     for (int flash = 0; flash < 2; flash++)
@@ -797,6 +971,39 @@ namespace Gaiden.App
                     break;
             }
             if (board.Lines.Rings.Count > 0) { board.Lines.Rings.Clear(); board.Lines.MarkDirtyRepaint(); }
+        }
+
+        /// <summary>"Drawing energy": motes spiral into the caster while its frame glows in the spell colour.</summary>
+        private IEnumerator Gather(Unit caster, Color c)
+        {
+            Vector2 from = BoardView.CenterOf(caster.Pos, caster.W, caster.H);
+            App.Audio.Sfx("cast", 0.5f);
+            board.Units.TryGetValue(caster.Id, out var cv);
+            cv?.SetGlow(c, 0.8f);
+            int motes = ReduceMotion ? 4 : 12;
+            for (int i = 0; i < motes; i++)
+            {
+                var p = Particle(Random.Range(14f, 24f), c);
+                float ang = i * Mathf.PI * 2f / motes + Random.Range(-0.2f, 0.2f), dist = Random.Range(120f, 170f), spin = Random.Range(1.5f, 2.5f);
+                App.StartCoroutine(Tween.Run(0.34f, k =>
+                {
+                    float r = dist * (1f - k * k), aa = ang + spin * k;
+                    var pos = from + new Vector2(Mathf.Cos(aa), Mathf.Sin(aa)) * r;
+                    p.style.left = pos.x - 10; p.style.top = pos.y - 10;
+                    p.style.opacity = 0.4f + 0.6f * k; if (k >= 1f) p.RemoveFromHierarchy();
+                }));
+            }
+            yield return Tween.Wait(0.34f);
+            cv?.SetGlow(Color.white, 0f);
+        }
+
+        /// <summary>The mote end above the unit at <paramref name="at"/>, consumed once.</summary>
+        private Vector2? TakeStrikeOrigin(Vector2 at)
+        {
+            foreach (var kv in strikeFrom)
+                if (Mathf.Abs(kv.Value.x - at.x) < BoardView.Tile * 0.6f && kv.Value.y < at.y && at.y - kv.Value.y < BoardView.Tile * 2.2f)
+                { strikeFrom.Remove(kv.Key); return kv.Value; }
+            return null;
         }
 
         private IEnumerator HealBurst(Vector2 at)

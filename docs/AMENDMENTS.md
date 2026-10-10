@@ -251,3 +251,21 @@ updated: 2026-10-09
   ipsum for now." All five theme crawls are lorem ipsum; the default profile name is "Player". The replacement
   story is the caravan premise (US-348).
 
+## 2026-10-10 — cast time on the caster; spell VFX arc; biome tiles (owner)
+
+- "instead of putting casting time on the timeline have it show on the caster" → cast icons removed from the
+  line; the countdown ring moves to the caster's frame; the target keeps a spell chip.
+- "always a particle effect … Hero1 'drawing energy' then cast burst, spawns an electrical particle that curves
+  to the space above an enemy where it spawns the lightning strike" → `SpellVfx` (gather → burst → curving mote
+  → element strike from above the target).
+- "each area should use a different tile style" → `tools/make_tiles.py` recolours the original tile per biome.
+
+## 2026-10-10 — overlap beats, one status slot, burn stacks, party of six (owner)
+
+- Timeline circles stay on the centre line; overlapping circles take turns on top (no lane lift).
+- One status slot per actor that flashes through buffs/debuffs; the card explains each.
+- "fire has multiple stacks … not sure if they should tick when it's the user's turn and they are idle; it kills
+  the wait-and-decide component" → burning stacks to 3; DoT ticks only on the act-advanced clock, so idle
+  thinking is free (decision: keep the clock act-advanced; recorded here so the owner can overrule).
+- "Up to six party members need to be visible" → `MaxPartySize` 4 → 6; Camp party is a 2-column grid.
+

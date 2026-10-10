@@ -93,6 +93,8 @@ namespace Gaiden.Core.Battle
         public List<Unit> Units = new List<Unit>();
         public List<TimelineEntry> Timeline = new List<TimelineEntry>();
         public List<Trap> Traps = new List<Trap>();
+        /// <summary>The Power Amplifier's tile, if one is on the board (§1.2.6). Walkable; not an occupant.</summary>
+        public Coord? Amplifier;
         public ManaBank Bank = new ManaBank();
         public int Wave;
         public BattlePhase Phase = BattlePhase.PlayerInput;

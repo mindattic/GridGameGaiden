@@ -148,10 +148,23 @@ namespace Gaiden.Core.Battle
             foreach (var su in supporters) formed.Supporters.Add(su.Id);
             Emit(formed);
 
+            // Power Amplifier: a hero attacker standing on it strikes amplified and uses it up (§1.2.6).
+            Unit amplified = null;
+            if (team == Team.Hero && S.Amplifier.HasValue)
+                foreach (var attacker in new[] { p.A, p.B })
+                    if (amplified == null && attacker.Alive && attacker.Occupies(S.Amplifier.Value)) amplified = attacker;
+            if (amplified != null)
+            {
+                Emit(new AmplifierUsedEvent { At = S.Amplifier.Value, HeroId = amplified.Id });
+                Announce("Amplified!", amplified.Id);
+                S.Amplifier = null;
+            }
+
             foreach (var attacker in new[] { p.A, p.B })
             {
                 if (!attacker.Alive) continue;
                 float mult = 1f + attacker.PincerDamageBonus;
+                if (attacker == amplified) mult *= BattleConfig.AmplifierDamageMultiplier;
                 bool shatters = attacker.IsHero && attacker.WeaponId != null && attacker.WeaponDurability == 1;
                 if (shatters) mult *= BattleConfig.ShatterTargetMultiplier;
                 bool twice = HasPassive(attacker, "double_attack");
@@ -171,6 +184,7 @@ namespace Gaiden.Core.Battle
             if (team == Team.Hero)
             {
                 foreach (var attacker in new[] { p.A, p.B }) if (attacker.Alive) MintOrb(attacker.Id, "pincer");
+                if (amplified != null && amplified.Alive) MintOrb(amplified.Id, "amplifier");
                 foreach (var sup in supporters) if (sup.Alive) MintOrb(sup.Id, "support");
             }
         }

@@ -26,7 +26,7 @@ namespace Gaiden.Meta
     {
         public static readonly string[] StartingRoster = { "paladin", "barbarian", "cleric" };
         public const int StartingGold = 200;
-        public const int MaxPartySize = 4;
+        public const int MaxPartySize = 6;
         public const int MaxBarSlots = 5;
         /// <summary>Slot unlocks: 2 on a fresh save, +1 when the highest cleared campaign index reaches each threshold (§4.7).</summary>
         public static readonly int[] UnlockThresholds = { 0, 2, 5 };
@@ -657,7 +657,7 @@ namespace Gaiden.Meta
                 s.Party.Remove(classId);
                 return Result.Success("Moved to reserve");
             }
-            if (s.Party.Count >= Progression.MaxPartySize) return Result.Fail("Party is full (4)");
+            if (s.Party.Count >= Progression.MaxPartySize) return Result.Fail($"Party is full ({Progression.MaxPartySize})");
             s.Party.Add(classId);
             return Result.Success("Joined the party");
         }

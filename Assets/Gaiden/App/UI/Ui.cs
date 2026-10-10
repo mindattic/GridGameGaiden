@@ -196,5 +196,24 @@ namespace Gaiden.App
             if (Mathf.Abs(d) < 0.5f) return $"{then:0}";
             return d > 0 ? $"{then:0} <color=#78EC96>▲{d:0}</color>" : $"{then:0} <color=#FF6E6E>▼{-d:0}</color>";
         }
+
+        /// <summary>What a buff does, in words, built from its mechanics so it never drifts from the numbers.</summary>
+        public static string BuffEffect(BuffDef d)
+        {
+            var parts = new List<string>();
+            if (d.DamagePerTick > 0) parts.Add($"{d.DamagePerTick} damage each tick");
+            if (d.HealPerTick > 0) parts.Add($"heals {d.HealPerTick} each tick");
+            if (d.Immobile) parts.Add("can't move or act");
+            if (d.HaltsTimeline) parts.Add("timeline halted");
+            if (d.BlocksSpells) parts.Add("can't cast spells");
+            if (d.IncomingDamageMultiplier < 1f) parts.Add($"takes {Mathf.RoundToInt((1f - d.IncomingDamageMultiplier) * 100)}% less damage");
+            if (d.IncomingDamageMultiplier > 1f) parts.Add($"takes {Mathf.RoundToInt((d.IncomingDamageMultiplier - 1f) * 100)}% more damage");
+            if (d.TimelineSpeedMultiplier < 1f) parts.Add("acts slower");
+            if (d.TimelineSpeedMultiplier > 1f) parts.Add("acts faster");
+            if (d.AccuracyMultiplier < 1f) parts.Add("attacks miss more");
+            if (d.BreaksOnDamage) parts.Add("ends when hit");
+            if (d.BreaksOnMove) parts.Add("ends when moved");
+            return parts.Count == 0 ? (d.Kind == BuffKind.Buff ? "beneficial" : "harmful") : string.Join(", ", parts);
+        }
     }
 }

@@ -136,6 +136,8 @@ namespace Gaiden.Core.Battle
                     }
                 enemy.Pos = dest;
                 Emit(new SteppedEvent { UnitId = enemy.Id, From = from, To = dest });
+                if (S.Amplifier.HasValue && enemy.Occupies(S.Amplifier.Value) && !OccupiedBefore(enemy, from, S.Amplifier.Value))
+                    ShoveAmplifier(enemy, VacatedTile(enemy, from, delta, S.Amplifier.Value));
                 foreach (var (hero, to) in shoves)
                 {
                     var hf = hero.Pos;
@@ -150,10 +152,23 @@ namespace Gaiden.Core.Battle
             if (S.UnitAt(dest) != null) return false;
             enemy.Pos = dest;
             Emit(new SteppedEvent { UnitId = enemy.Id, From = from, To = dest });
+            if (S.Amplifier == dest) ShoveAmplifier(enemy, from); // enemies can't use it, but walking through drags it along
 
             if (enemy.SnakeHeadId == enemy.Id) FollowSnake(enemy, from);
             return true;
         }
+
+        /// <summary>Enemies can't use the amplifier; stepping onto it pushes it to the tile they came from (§1.2.6).</summary>
+        private void ShoveAmplifier(Unit enemy, Coord to)
+        {
+            var from = S.Amplifier.Value;
+            if (!BattleState.InBounds(to) || from == to) return;
+            S.Amplifier = to;
+            Emit(new AmplifierMovedEvent { From = from, To = to, ByUnitId = enemy.Id });
+        }
+
+        private static bool OccupiedBefore(Unit u, Coord anchor, Coord c) =>
+            c.X >= anchor.X && c.X < anchor.X + u.W && c.Y >= anchor.Y && c.Y < anchor.Y + u.H;
 
         /// <summary>For a footprint stepping by <paramref name="delta"/>, the tile it vacates on the same lane as <paramref name="entered"/>.</summary>
         private static Coord VacatedTile(Unit u, Coord from, Coord delta, Coord entered)

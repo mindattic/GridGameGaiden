@@ -155,7 +155,7 @@ namespace Gaiden.App
             boardHost = Ui.El("", shake);
             boardHost.style.position = Position.Absolute;
             boardHost.style.left = BoardLeft; boardHost.style.top = BoardTop;
-            board = new BoardView(boardHost);
+            board = new BoardView(boardHost, State.Stage.Theme);
             board.Root.pickingMode = PickingMode.Position;
             board.Root.RegisterCallback<PointerDownEvent>(OnPointerDown);
             board.Root.RegisterCallback<PointerMoveEvent>(OnPointerMove);
@@ -324,13 +324,14 @@ namespace Gaiden.App
                 else v.SetGlow(Color.white, 0f);
             }
             board.SyncTraps(State);
+            board.SyncAmplifier(State.Amplifier);
             SyncTimeline(null);
             SyncOrbs();
             SyncBar();
             SyncPanel();
             int wave = Math.Min(State.Wave + 1, State.Stage.Waves.Count);
             waveLabel.text = $"Wave {wave}/{State.Stage.Waves.Count}";
-            coinLabel.text = $"{State.Results.Coins} G";
+            if (shownCoins < 0) SyncCoins();
         }
 
         /// <summary>Linger effect (bible §6.2 stage 4): units carrying a strong status glow its color.</summary>
@@ -354,6 +355,7 @@ namespace Gaiden.App
             var at = new Dictionary<int, float>();
             foreach (var e in State.Timeline)
             {
+                if (e.Kind == TimelineKind.Cast) { at[e.Id] = Mathf.Clamp01(uOverride != null && uOverride.TryGetValue(e.Id, out var cu) ? cu : e.U); continue; } // casts live on the caster, not the line
                 live.Add(e.Id);
                 if (!timelineIconViews.TryGetValue(e.Id, out var icon))
                 {
@@ -433,34 +435,37 @@ namespace Gaiden.App
         }
 
         /// <summary>
-        /// Lays every icon on the line. Where icons overlap, the faster one (higher u per tick) rides one lane up
-        /// and in front, so an overtake reads as the quick icon hopping over the slow one (bible §2.6).
+        /// Every circle sits on the same centre line (owner direction 2026-10-10: never lift or bury one). Where circles
+        /// overlap they form a cluster, and each member gets its own beat on top: the front one rotates every 1.2 s.
         /// </summary>
         private void LayoutIcons(Dictionary<int, float> at)
         {
-            var entries = State.Timeline.Where(e => timelineIconViews.ContainsKey(e.Id)).ToList();
-            var pace = entries.ToDictionary(e => e.Id, e => BattleEngine.UPerTick(State, e));
+            var entries = State.Timeline.Where(e => e.Kind == TimelineKind.Turn && timelineIconViews.ContainsKey(e.Id))
+                .OrderBy(e => at[e.Id]).ThenBy(e => e.Id).ToList();
             foreach (var e in entries)
             {
                 var icon = timelineIconViews[e.Id];
-                float w = e.Kind == TimelineKind.Turn ? TurnIcon : CastIcon;
-                float x = at[e.Id] * TimelineWidth;
-                int above = 0;
-                foreach (var o in entries)
-                {
-                    if (o.Id == e.Id) continue;
-                    float ow = o.Kind == TimelineKind.Turn ? TurnIcon : CastIcon;
-                    if (Mathf.Abs(at[o.Id] * TimelineWidth - x) >= (w + ow) * 0.42f) continue;
-                    bool faster = pace[e.Id] > pace[o.Id] + 1e-6f || (Mathf.Abs(pace[e.Id] - pace[o.Id]) <= 1e-6f && e.Id > o.Id);
-                    if (faster) above++;
-                }
-                icon.style.left = x - w / 2f;
-                icon.style.top = TrackY - w / 2f - above * 46f;
+                icon.style.left = at[e.Id] * TimelineWidth - TurnIcon / 2f;
+                icon.style.top = TrackY - TurnIcon / 2f;
             }
-            // Draw order: slow first, fast last (on top).
-            foreach (var e in entries.OrderBy(e => pace[e.Id]).ThenBy(e => e.Id)) timelineIconViews[e.Id].BringToFront();
-            if (State.Timeline.FirstOrDefault(e => timelineIconViews.TryGetValue(e.Id, out var i) && i.ClassListContains("tl-next")) is TimelineEntry n)
-                timelineIconViews[n.Id].BringToFront();
+            // Clusters of overlapping circles (sorted by position, chained while neighbours overlap).
+            var cluster = new List<TimelineEntry>();
+            void Flush()
+            {
+                if (cluster.Count == 0) return;
+                foreach (var e in cluster) timelineIconViews[e.Id].BringToFront();
+                if (cluster.Count > 1) timelineIconViews[cluster[castCycle % cluster.Count].Id].BringToFront();
+                cluster.Clear();
+            }
+            float lastX = float.NegativeInfinity;
+            foreach (var e in entries)
+            {
+                float x = at[e.Id] * TimelineWidth;
+                if (x - lastX >= TurnIcon * 0.85f) Flush();
+                cluster.Add(e);
+                lastX = x;
+            }
+            Flush();
         }
 
         /// <summary>Why an enemy isn't moving: a badge on its timeline circle for halting/immobilising effects and pushback stun.</summary>
@@ -511,48 +516,61 @@ namespace Gaiden.App
         private int castCycle;
 
         /// <summary>
-        /// Every pending cast draws a radial countdown around its target's frame in the spell's own colour, plus a
-        /// chip with the spell icon; a unit targeted by several casts cycles through them every 1.2 s.
+        /// Cast time shows on the caster (owner direction 2026-10-10): every pending cast traces a radial countdown
+        /// around its caster's frame in the spell's colour; its target carries the spell chip, so "who casts what on
+        /// whom" reads on the board. A unit with several pending casts (or targeted by several) cycles every 1.2 s.
         /// </summary>
         private void SyncCastRings(Dictionary<int, float> at)
         {
-            var pending = new Dictionary<int, List<(Color color, float left, AbilityDef a)>>();
+            var casting = new Dictionary<int, List<(Color color, float left)>>();
+            var targeted = new Dictionary<int, List<(Color color, AbilityDef a)>>();
             foreach (var e in State.Timeline)
             {
                 if (e.Kind != TimelineKind.Cast) continue;
+                var color = Art.SpellColor(e.AbilityId);
+                var a = App.Content.TryAbility(e.AbilityId);
+                float u = at != null && at.TryGetValue(e.Id, out var x) ? x : e.U;
+                if (!casting.TryGetValue(e.OwnerId, out var cl)) casting[e.OwnerId] = cl = new List<(Color, float)>();
+                cl.Add((color, 1f - u));
                 int target = e.TargetUnitId;
                 if (State.UnitById(target) is not Unit tu || !tu.Alive) target = State.UnitAt(e.TargetTile)?.Id ?? -1;
                 if (target < 0) continue;
-                float u = at != null && at.TryGetValue(e.Id, out var x) ? x : e.U;
-                if (!pending.TryGetValue(target, out var list)) pending[target] = list = new List<(Color, float, AbilityDef)>();
-                list.Add((Art.SpellColor(e.AbilityId), 1f - u, App.Content.TryAbility(e.AbilityId)));
+                if (!targeted.TryGetValue(target, out var tl)) targeted[target] = tl = new List<(Color, AbilityDef)>();
+                tl.Add((color, a));
             }
             foreach (var kv in board.Units)
             {
-                if (pending.TryGetValue(kv.Key, out var list))
+                if (casting.TryGetValue(kv.Key, out var cl)) { var (c, left) = cl[castCycle % cl.Count]; kv.Value.SetCastRing(c, left); }
+                else kv.Value.SetCastRing(null, 0f);
+                if (targeted.TryGetValue(kv.Key, out var tl))
                 {
-                    var (color, left, a) = list[castCycle % list.Count];
-                    kv.Value.SetCast(color, left, string.IsNullOrEmpty(a?.Icon) ? null : Art.Icon(a.Icon), list.Count, a?.Name);
+                    var (c, a) = tl[castCycle % tl.Count];
+                    kv.Value.SetCastChip(c, string.IsNullOrEmpty(a?.Icon) ? null : Art.Icon(a.Icon), a?.Name);
                 }
-                else kv.Value.SetCast(null, 0f, null, 0);
+                else kv.Value.SetCastChip(null, null, null);
             }
         }
 
+        /// <summary>The shared 1.2 s beat: cast rings, overlapping timeline circles and status slots each show their next item.</summary>
         private void CycleCastRings()
         {
             castCycle++;
-            if (State != null && board != null) SyncCastRings(lastAt);
+            if (State == null || board == null || lastAt == null) return;
+            SyncCastRings(lastAt);
+            LayoutIcons(lastAt);
+            SyncTimelineStatus();
+            foreach (var v in board.Units.Values) v.NextStatus();
         }
 
         /// <summary>Dev hook (automation): queue a pending enemy cast on a unit so the countdown ring can be checked.</summary>
-        public bool DevQueueCast(int targetId, string abilityId, int ticks)
+        public int DevQueueCast(int targetId, string abilityId, int ticks)
         {
             var target = State.UnitById(targetId);
             var caster = State.Units.FirstOrDefault(u => u.Alive && !u.IsHero);
-            if (target == null || caster == null || App.Content.TryAbility(abilityId) == null) return false;
+            if (target == null || caster == null || App.Content.TryAbility(abilityId) == null) return -1;
             State.Timeline.Add(new TimelineEntry { Id = State.NextEntryId++, Kind = TimelineKind.Cast, OwnerId = caster.Id, AbilityId = abilityId, CasterTeam = Team.Enemy, TargetUnitId = target.Id, TargetTile = target.Pos, TotalCastTicks = ticks, RemainingTicks = ticks, IsCharge = true });
             SyncAll();
-            return true;
+            return caster.Id;
         }
 
         private static void SetBorder(VisualElement e, float radius, float width, Color c)
@@ -682,8 +700,23 @@ namespace Gaiden.App
                 Ui.Text(cast != null ? $"Charging {App.Content.TryAbility(cast.AbilityId)?.Name}!" : n < 0 ? "Frozen in time" : n == 0 ? "Acts after your next move!" : $"Acts in {n} moves", "small warn", col);
                 Ui.Text(EnemyPlanner.Describe(EnemyPlanner.TargetingOf(u)), "tiny dim", col);
             }
-            if (u.Buffs.Count > 0)
-                Ui.Text(string.Join("  ", u.Buffs.Select(b => $"{b.Def.Name} {b.Remaining}")), "tiny", col);
+            // What the flashing status slot on the tile means, one line per effect.
+            var statusTurn = State.TurnEntryOf(u.Id);
+            if (statusTurn != null && statusTurn.StunTicks > 0) StatusRow(col, "!", new Color(1f, 0.85f, 0.3f), "Stunned", "knocked back on the timeline — its turn icon is held");
+            foreach (var b in u.Buffs)
+                StatusRow(col, string.IsNullOrEmpty(b.Def.Letter) ? b.Def.Name.Substring(0, 1) : b.Def.Letter,
+                    Art.HexColor(b.Def.Color, b.Def.Kind == BuffKind.Buff ? new Color(0.4f, 0.8f, 1f) : new Color(0.8f, 0.4f, 0.9f)),
+                    b.Def.Name, $"{Ui.BuffEffect(b.Def)} ({b.Remaining} {(b.Def.Unit == Gaiden.Core.Content.DurationUnit.Turns ? "turns" : "s")} left)");
+        }
+
+        private static void StatusRow(VisualElement parent, string letter, Color color, string name, string what)
+        {
+            var row = Ui.El("row", parent);
+            var pip = Ui.Text(letter, "pip", row);
+            pip.style.backgroundColor = color;
+            pip.style.width = pip.style.height = 34; pip.style.fontSize = 20; pip.style.marginRight = 10;
+            var t = Ui.Text($"{name} — {what}", "tiny", row);
+            t.style.whiteSpace = WhiteSpace.Normal; t.style.flexShrink = 1;
         }
 
         private void AbilityInfo(AbilityDef a)

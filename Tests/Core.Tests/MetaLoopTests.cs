@@ -117,9 +117,12 @@ namespace Gaiden.Tests
             // Party cap
             while (s.Party.Count < Progression.MaxPartySize)
             {
-                var extra = s.Roster.First(h => !s.Party.Contains(h.ClassId));
-                Assert.True(Party.Toggle(s, extra.ClassId).Ok);
+                var extra = s.Roster.FirstOrDefault(h => !s.Party.Contains(h.ClassId));
+                if (extra != null) { Assert.True(Party.Toggle(s, extra.ClassId).Ok); continue; }
+                s.Gold += Summon.Price(c, s); // recruit until the party can fill (a recruit joins while there's room)
+                Assert.True(Summon.Recruit(c, s, Summon.Pool(c, s).First(d => s.Hero(d.Id) == null).Id).Ok);
             }
+            Assert.Equal(6, s.Party.Count);
 
             // Bounty
             var bounty = Bounties.Posted(c, s).First();

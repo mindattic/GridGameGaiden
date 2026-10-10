@@ -273,7 +273,7 @@ namespace Gaiden.App.Automation
                     if (e == null) return new { error = "not found" };
                     var rs = e.resolvedStyle;
                     string Hex(Color c) => "#" + ColorUtility.ToHtmlStringRGBA(c);
-                    return new { border = Hex(rs.borderTopColor), borderWidth = rs.borderTopWidth, background = Hex(rs.backgroundColor), tint = Hex(rs.unityBackgroundImageTintColor), rs.opacity, rs.width, rs.height, children = e.childCount };
+                    return new { border = Hex(rs.borderTopColor), borderWidth = rs.borderTopWidth, background = Hex(rs.backgroundColor), tint = Hex(rs.unityBackgroundImageTintColor), rs.opacity, rs.width, rs.height, children = e.childCount, text = (e as TextElement)?.text };
                 }
                 case "child_style":
                 {
@@ -288,7 +288,10 @@ namespace Gaiden.App.Automation
                     return new { border = Hex(rs.borderTopColor), background = Hex(rs.backgroundColor), children = c.childCount };
                 }
                 case "devcast":
-                    if (app.Router.Current is BattleScreen dcs) return new { ok = dcs.DevQueueCast((int)F(q["target"]), q["ability"], (int)F(q["ticks"], 30)) };
+                    if (app.Router.Current is BattleScreen dcs) { int caster = dcs.DevQueueCast((int)F(q["target"]), q["ability"], (int)F(q["ticks"], 30)); return new { ok = caster >= 0, caster }; }
+                    return new { error = "not in battle" };
+                case "devamp":
+                    if (app.Router.Current is BattleScreen dab) { dab.State.Amplifier = new Coord((int)F(q["x"]), (int)F(q["y"])); dab.SyncAll(); return new { ok = true }; }
                     return new { error = "not in battle" };
                 case "democutin":
                     if (app.Router.Current is BattleScreen dc) { dc.DemoCutIn(); return new { ok = true }; }
@@ -461,7 +464,7 @@ namespace Gaiden.App.Automation
                 dump["battle"] = new
                 {
                     phase = s.Phase.ToString(), wave = s.Wave, clock = s.Clock, busy = b.Busy, selected = b.SelectedHeroId, targeting = b.TargetingSlot,
-                    bank = s.Bank.ToString(), cutins = b.CutInsShown,
+                    bank = s.Bank.ToString(), cutins = b.CutInsShown, coinsShown = b.CoinsShown, amplifier = s.Amplifier.HasValue ? new[] { s.Amplifier.Value.X, s.Amplifier.Value.Y } : null,
                     units = s.Units.Where(u => u.Alive).Select(u => new
                     {
                         u.Id, cls = u.Def.Id, team = u.Team.ToString(), x = u.Pos.X, y = u.Pos.Y, u.W, u.H, u.Hp, u.MaxHp, u.Level,

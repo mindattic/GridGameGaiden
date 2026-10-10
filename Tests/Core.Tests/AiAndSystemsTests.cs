@@ -323,5 +323,73 @@ namespace Gaiden.Tests
             s.TurnEntryOf(tank.Id).Ip = 300;   // slow one has a head start
             Assert.True(BattleEngine.TicksUntilTurn(s, wolf.Id) < BattleEngine.TicksUntilTurn(s, tank.Id));
         }
+
+        [Fact]
+        public void Burning_stacks_up_to_its_cap_and_each_stack_burns()
+        {
+            var db = Mini();
+            db.Buffs["burning"].Stacking = BuffStacking.Stack;
+            db.Buffs["burning"].MaxStacks = 3;
+            db.Buffs["burning"].Duration = 500; // outlive the casts
+            var (s, _) = Battle(db, Stage(("tank", 2, 2)), ("knight", 5, 7), ("mage", 4, 7));
+            var m = Hero(s, "mage");
+            m.Bar[0] = new AbilitySlot { AbilityId = "fireball" };
+            var tank = Enemy(s, "tank");
+            for (int i = 0; i < 4; i++)
+            {
+                s.Bank.Add(2);
+                BattleEngine.Apply(s, new UseSlotCommand { HeroId = m.Id, Slot = 0, Target = tank.Pos });
+            }
+            Assert.Equal(3, tank.Buffs.Count(b => b.Def.Id == "burning"));
+            Assert.Equal(BuffStacking.Stack, Real.Buffs["burning"].Stacking);
+            Assert.Equal(3, Real.Buffs["burning"].MaxStacks);
+        }
+
+        // ── Power Amplifier (§1.2.6) ───────────────────────────────────────────
+
+        [Fact]
+        public void Amplifier_chance_grows_with_party_luck_and_caps()
+        {
+            Assert.True(Formulas.AmplifierChance(40f) > Formulas.AmplifierChance(10f));
+            Assert.Equal(BattleConfig.AmplifierMaxChance, Formulas.AmplifierChance(10000f));
+            Assert.Equal(BattleConfig.AmplifierBaseChance, Formulas.AmplifierChance(0f), 3);
+        }
+
+        [Fact]
+        public void An_attacker_on_the_amplifier_strikes_harder_mints_a_bonus_orb_and_uses_it_up()
+        {
+            int Hit(bool amp)
+            {
+                var db = Mini();
+                var (s, _) = Battle(db, Stage(("goblin", 3, 3), ("goblin", 4, 3)), ("cleric", 2, 3), ("knight", 5, 3));
+                if (amp) s.Amplifier = new Coord(4, 3); // the knight's destination
+                var knight = Hero(s, "knight");
+                var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = knight.Id, Path = P((4, 3)) });
+                if (amp)
+                {
+                    Assert.Single(ev.OfType<AmplifierUsedEvent>());
+                    Assert.Contains(ev, e => e is OrbMintedEvent o && o.Reason == "amplifier");
+                    Assert.True(s.Amplifier == null || ev.OfType<AmplifierSpawnedEvent>().Any());
+                }
+                return ev.OfType<DamagedEvent>().Where(d => d.SourceId == knight.Id).Sum(d => d.Amount);
+            }
+            Assert.True(Hit(true) > Hit(false));
+        }
+
+        [Fact]
+        public void Enemies_cannot_use_the_amplifier_but_stepping_on_it_shoves_it_back()
+        {
+            var db = Mini();
+            db.Classes["wolf"].Targeting = Targeting.Closest;
+            var (s, _) = Battle(db, Stage(("wolf", 2, 2)), ("knight", 2, 5), ("cleric", 5, 7));
+            var wolf = Enemy(s, "wolf");
+            s.Amplifier = new Coord(2, 3); // on the wolf's path to the knight
+            var ev = BattleEngine.Apply(s, new ShieldCommand());
+            var moved = ev.OfType<AmplifierMovedEvent>().FirstOrDefault();
+            Assert.NotNull(moved);
+            Assert.Equal(new Coord(2, 3), moved.From);
+            Assert.Equal(new Coord(2, 2), moved.To);
+            Assert.DoesNotContain(ev, e => e is AmplifierUsedEvent);
+        }
     }
 }

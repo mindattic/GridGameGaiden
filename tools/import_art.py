@@ -190,6 +190,8 @@ def main():
     if not only or "tiles" in only:
         # The original board tile (GridGame2026 SpriteLibrary "Tile" = Sprites/Tiles/tile3); BoardView tints it into a checkerboard.
         shutil.copyfile(os.path.join(args.src, "Sprites", "Tiles", "tile3.png"), os.path.join(ensure(os.path.join(RES, "Tiles")), "tile.png"))
+        import subprocess
+        subprocess.run([sys.executable, os.path.join(ROOT, "tools", "make_tiles.py")], check=True)  # per-biome recolours
 
 
 if __name__ == "__main__":

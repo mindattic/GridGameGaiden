@@ -74,9 +74,31 @@ namespace Gaiden.Core.Battle
             return true;
         }
 
+        /// <summary>Power Amplifier (§1.2.6): with none on the board, roll the luck-scaled chance to place one on a free tile.</summary>
+        private void MaybeSpawnAmplifier()
+        {
+            if (S.Amplifier.HasValue || S.IsOver) return;
+            float luck = 0f;
+            foreach (var h in S.Living(Team.Hero)) luck += h.Effective.Luck;
+            if (!S.Rng.Chance(Formulas.AmplifierChance(luck))) return;
+            var free = new List<Coord>();
+            for (int y = 0; y < BattleConfig.Rows; y++)
+                for (int x = 0; x < BattleConfig.Cols; x++)
+                {
+                    var c = new Coord(x, y);
+                    if (S.UnitAt(c) == null && S.TrapAt(c) == null) free.Add(c);
+                }
+            if (free.Count == 0) return;
+            var at = free[S.Rng.Range(0, free.Count)];
+            S.Amplifier = at;
+            Emit(new AmplifierSpawnedEvent { At = at });
+            Announce("Power Amplifier!");
+        }
+
         /// <summary>Control returns to the player: hero turn-unit buffs and skill cooldowns tick (§8.3, §4.1.1).</summary>
         private void ReturnControl()
         {
+            MaybeSpawnAmplifier();
             foreach (var h in S.LivingList(Team.Hero))
             {
                 if (h.RegenPerTurn > 0 && h.Hp < h.MaxHp) Heal(h, h.RegenPerTurn, h);
@@ -244,7 +266,12 @@ namespace Gaiden.Core.Battle
                         if (existing.Remaining >= duration) return;
                         u.Buffs.Remove(existing);
                         break;
-                    case BuffStacking.Stack: break; // keep both: ticks and effects apply twice
+                    case BuffStacking.Stack:
+                        // Keep every stack (ticks and effects apply per stack) up to MaxStacks; at the cap the
+                        // oldest stack is replaced, so re-applying still refreshes the timer.
+                        var stacks = u.Buffs.FindAll(b => b.Def.Id == def.Id);
+                        if (def.MaxStacks > 0 && stacks.Count >= def.MaxStacks) u.Buffs.Remove(stacks[0]);
+                        break;
                     default: u.Buffs.RemoveAll(b => b.Def.Id == def.Id); break; // Refresh (§8.6 default)
                 }
             }

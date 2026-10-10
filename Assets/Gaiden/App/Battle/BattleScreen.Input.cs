@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Gaiden.Core;
 using Gaiden.Core.Battle;
 using Gaiden.Core.Content;
@@ -168,7 +169,16 @@ namespace Gaiden.App
             {
                 pv.Positions.TryGetValue(p.A.Id, out var a);
                 pv.Positions.TryGetValue(p.B.Id, out var b);
-                board.Lines.Add(BoardView.CenterOf(a), BoardView.CenterOf(b), new Color(1f, 0.85f, 0.3f, 0.9f), 14f);
+                // Preview: the group outline and edge links the drop would make (no line across the art).
+                var group = new List<(Coord, int, int)> { (a, p.A.W, p.A.H), (b, p.B.W, p.B.H) };
+                foreach (var o in p.Opponents) group.Add((pv.Positions.TryGetValue(o.Id, out var op) ? op : o.Pos, o.W, o.H));
+                board.Lines.Outline(BoardView.GroupRect(group), new Color(1f, 0.85f, 0.3f, 0.9f), 8f, 1f);
+                foreach (var (sup, partner) in p.SupportersA.Select(x => (x, a)).Concat(p.SupportersB.Select(x => (x, b))))
+                {
+                    var sp = pv.Positions.TryGetValue(sup.Id, out var spp) ? spp : sup.Pos;
+                    var (la, lb) = BoardView.EdgeLink(sp, partner);
+                    board.Lines.Add(la, lb, new Color(0.4f, 0.8f, 1f, 0.9f), 10f);
+                }
                 foreach (var o in p.Opponents)
                 {
                     foreach (var t in o.Tiles()) board.Mark(t, new Color(1f, 0.25f, 0.2f), 0.32f);

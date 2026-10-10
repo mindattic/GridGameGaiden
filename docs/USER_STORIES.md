@@ -321,9 +321,9 @@ test for every rule. 4. A harness step for anything visible. 5. Glyph check gree
 
 | ID | Story | § | Status | Evidence |
 |---|---|---|---|---|
-| US-342 | Power Amplifier (Terra Battle): spawns on a luck-modified random schedule; a pincer attacker aligned with it gets an enhanced attack; enemies cannot use it but can walk through it to shove it away and break amplified combos | §1.2 | ⬜ | owner request 2026-10-10 |
-| US-343 | Defeated enemies burst into gold coins that fly to the gold counter (top right), as in GridGame2026 | §13 | ⬜ | owner request 2026-10-10 |
-| US-344 | Pincer group outline: a line draws itself around the whole Hero–foe…–Hero cluster (no line across the art); short connectors join heroes to their supporters | §6.2 | ⬜ | owner request 2026-10-10 |
+| US-342 | Power Amplifier (Terra Battle): spawns on a luck-modified random schedule; a pincer attacker aligned with it gets an enhanced attack; enemies cannot use it but can walk through it to shove it away and break amplified combos | §1.2 | ✅ | `Amplifier_chance_grows_with_party_luck_and_caps`, `An_attacker_on_the_amplifier_strikes_harder_mints_a_bonus_orb_and_uses_it_up`, `Enemies_cannot_use_the_amplifier_but_stepping_on_it_shoves_it_back`; `tools/uicheck.py` (marker on its tile) |
+| US-343 | Defeated enemies burst into gold coins that fly to the gold counter (top right), as in GridGame2026 | §13 | ✅ | `CoinBurst` (coins burst, bounce, fly to the counter, which counts up); counter = purse + battle coins; screenshot artifacts/vfx |
+| US-344 | Pincer group outline: a line draws itself around the whole Hero–foe…–Hero cluster (no line across the art); short connectors join heroes to their supporters | §6.2 | ✅ | `LineLayer.Outline` + `BoardView.GroupRect/EdgeLink` (preview + resolve); screenshots artifacts/pincer |
 | US-345 | Every enemy family gets its own kit (behaviour, spells, traps — slime trail, poison cloud …) matched to how it looks | §14 | ⬜ | owner direction 2026-10-10 |
 | US-346 | Physical blocks on the grid: no unit may enter, land, be displaced or spawn on a block | §1.1 | ⬜ | owner direction 2026-10-10 |
 | US-347 | Expeditions: a set of X battles, each of Y waves, with no full heal between — survival pressure on consumables and mana | §22 | ⬜ | owner direction 2026-10-10 |
@@ -346,7 +346,7 @@ test for every rule. 4. A harness step for anything visible. 5. Glyph check gree
 | UI screens (35) | 35 | 0 | 0 |
 | Audio & VFX (15) | 14 | 0 | 1 |
 | Platform & ship (13) | 12 | 0 | 1 |
-| Production roadmap (owner direction, 2026-10-10) (9) | 0 | 0 | 9 |
-| **Total (239)** | **228** | **0** | **11** |
+| Production roadmap (owner direction, 2026-10-10) (9) | 3 | 0 | 6 |
+| **Total (239)** | **231** | **0** | **8** |
 
 Open design questions that gate future stories live in [BIBLE §29](BIBLE.md#29-open-design-questions).

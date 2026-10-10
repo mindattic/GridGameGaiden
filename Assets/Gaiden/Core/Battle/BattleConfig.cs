@@ -78,5 +78,15 @@ namespace Gaiden.Core.Battle
 
         // ── Enemy AI (§14.1) ────────────────────────────────────────────────────────
         public const float RetreatHpThreshold = 0.30f;
+
+        // ── Power Amplifier (owner request 2026-10-10, from Terra Battle) ────────────
+        /// <summary>Chance per player action that an amplifier appears (when none is on the board)…</summary>
+        public const float AmplifierBaseChance = 0.12f;
+        /// <summary>…plus this per point of the living party's combined Luck…</summary>
+        public const float AmplifierChancePerLuck = 0.003f;
+        /// <summary>…capped here.</summary>
+        public const float AmplifierMaxChance = 0.45f;
+        /// <summary>A pincer attacker standing on the amplifier strikes this much harder (and mints a bonus orb).</summary>
+        public const float AmplifierDamageMultiplier = 1.75f;
     }
 }

@@ -129,6 +129,9 @@ namespace Gaiden.Core.Rules
                 if (!wounded && enemy.IsAdjacentTo(target)) score += 2f;
                 if (!enemy.IsMultiTile && WouldBeFlanked(s, c)) score -= 100f;
                 if (c == original) score -= 0.5f;
+                // Clever foes shove the Power Amplifier away before the party can line up an amplified pincer.
+                var mode = TargetingOf(enemy);
+                if (!wounded && s.Amplifier.HasValue && c == s.Amplifier.Value && (mode == Targeting.Weakest || mode == Targeting.Threat)) score += 4f;
                 if (!wounded && seeksPincer && WouldFormPincer(s, enemy)) score += 50f;
                 if (!wounded && WouldSupportAllyPincer(s, enemy)) score += 25f;
                 enemy.Pos = original;

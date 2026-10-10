@@ -364,6 +364,16 @@ A pair whose opponents are all already dead (killed by an earlier link) is skipp
 
 A drop with no valid pincer is a legal action: the hero stays, the clock advances one action.
 
+#### 1.2.6 Power Amplifier (added 2026-10-10, owner request)
+
+Owner: "Add in the Power Amplifier from the original Terra Battle … if you align attacker1 or attacker2 to it it enhances the attack; it spawns on a random schedule modified by the cumulative luck of the Hero team; the Enemy team cannot utilize it but can move through it to reposition it, with the intent of breaking enhanced pincer combos."
+
+- **Spawn:** when control returns to the player and no amplifier is on the board, it appears on a random free tile with chance `clamp(0.12 + 0.003 × party Luck, 0, 0.45)` (`Formulas.AmplifierChance`; `AmplifierSpawnedEvent`). At most one at a time. It is a tile marker, not an occupant — anyone can stand on it.
+- **Use:** a hero **pincer attacker standing on it** when its pincer resolves strikes at **×1.75** and mints a bonus orb ("amplifier"); the amplifier is used up (`AmplifierUsedEvent`). Supporters don't trigger it.
+- **Enemies:** never use it. An enemy stepping onto it **shoves it to the tile the enemy just left** (a 2×2 drags it along its lane; `AmplifierMovedEvent`). Clever personalities (Weakest, Threat) seek it out to break an amplified setup (+4 step score).
+- **View:** a pulsing gold diamond on its tile; pops in, slides when shoved, flashes a ring and "AMPLIFIED!" when used.
+- *(Tests: `Amplifier_chance_grows_with_party_luck_and_caps`, `An_attacker_on_the_amplifier_strikes_harder_mints_a_bonus_orb_and_uses_it_up`, `Enemies_cannot_use_the_amplifier_but_stepping_on_it_shoves_it_back`.)*
+
 ### 1.3 Humanoid restriction
 
 Only **Humanoid** actors can be pincer attackers. Heroes are always Humanoid (`Unit.IsHumanoid`); enemies need the `Humanoid` tag (71 of 110 enemy classes). Multi-tile actors are never attackers. Humanoid 1×1 enemies **seek** pincers (+50 move score, [§14.1.2](#1412-score-weight-cheat-sheet)) and, **Amended 2026-10-09**, **resolve** them on their turn: after moving, if the enemy is one end of an enemy-team pincer, every such pincer resolves against the trapped heroes (no orbs are minted for enemies); otherwise it melees ([§14.1](#141-enemy-planning)).
@@ -468,9 +478,9 @@ The **GUARD** button (right of the timeline) issues `ShieldCommand`:
 
 **Amended 2026-10-10 (owner requests): one line, every icon on it.** The track is a thin 6 px line; every icon is centred on it.
 - **Enemy turn icons (84 px circles):** an opaque dark disc (the line never shows through) masking a **pixel-art sprite of the whole enemy** with enhanced eyes (`Resources/Pixel/<id>.png`; method in [docs/PIXEL_ICONS.md](PIXEL_ICONS.md)); red ring, bosses purple. The turn closest to ACT — **the next attacker** — gets a gold ring and a 1.18× lift. A unit that isn't moving (Frozen, Asleep, pushback stun) shows a **status badge** on its circle and its sprite dims; the same debuff shows as a pip on its tile (stun as a gold "!"). There are no turn-number badges on the board — the timeline is the turn order.
-- **Cast icons (60 px rounded squares):** the ability icon, framed in the spell's own colour (`Art.SpellColor`: golden-ratio hue per ability, so every spell differs). A cast rides the same line from **u = 0 at cast start to u = 1 when it lands** (`u = 1 − Remaining / (Total + stagger delay)`), so a quick spell visibly overtakes turn icons that started earlier; stagger pushes it back.
-- **Overtakes:** where icons overlap, the faster one (higher u per tick, `BattleEngine.UPerTick`) rides one lane up and is drawn in front, so a passing icon hops over the slower one.
-- **Pending-spell countdown on the target:** every pending cast traces a radial countdown around its target's frame (`CastRing`, clockwise from top-centre; the lit length is the time left) in the spell's colour, with the spell's icon in a chip on the tile; a unit with several pending spells cycles through them every 1.2 s. Banners name caster, spell, target and landing time ("Witch charges Ice on Paladin — lands in 3s"; "Paladin: Fireball → Slime").
+- **Casts are not on the timeline (amended again 2026-10-10, owner: "instead of putting casting time on the timeline have it show on the caster").** A pending cast traces a **radial countdown around its caster's frame** (`CastRing`, clockwise from top-centre; the lit length is the time left, `1 − u` with `u = 1 − Remaining / (Total + stagger delay)`) in the spell's own colour (`Art.SpellColor`: golden-ratio hue per ability, so every spell differs). Its **target** carries a chip with the spell's icon (or initial) in that colour. A unit casting — or targeted by — several spells cycles through them every 1.2 s. Banners name caster, spell, target and landing time ("Witch charges Ice on Paladin — lands in 3s"; "Paladin: Fireball → Slime").
+- **Overlaps (amended 2026-10-10, owner: "all enemies on the timeline share the same center alignment … let each one have its own beat of being on top"):** circles never leave the centre line. Overlapping circles form a cluster and take turns on top, one per 1.2 s beat (`LayoutIcons`), so a fast enemy passing a slow one reads as the two trading places.
+- **Spell VFX (owner direction):** every spell plays one readable arc (`SpellVfx`): the caster *draws energy* (motes spiral in, its frame glows in the spell colour), a *cast burst* ring, then a mote per target *curves to the space above it*, from where the element impact plays — lightning strikes down from that point, flames burst, frost rings, heals sparkle.
 - Icons that would overlap step into extra lanes (`BattleScreen.StaggerIcons`).
 
 **Shared clock — casts fire "off-turn" by design.** Both lanes advance on the same ticks; whatever arrives first resolves. Lifecycle: up to **4** hero casts may load at once (`MaxHeroCastsInFlight`; enemy charges don't count) — a fifth cast-time spell is refused before any orbs are spent; orbs are spent at cast start; the icon spawns with `ticks = SecondsToTicks(Formulas.CastTime(base, caster))`; on arrival it resolves (`ResolveCast`) and is removed. A spell with `CastTime` 0 resolves immediately.
@@ -907,11 +917,11 @@ Enemy-only entries: `charge_fireball` (Fire), `charge_ice` (Ice), `charge_thunde
 
 ### 8.5 Debuff icons (per actor)
 
-**Amended 2026-10-09:** `UnitView.SetBuffs` shows up to **3 letter pips** on the actor's tile, colored by `BuffDef.Color` (letters: P B F W M Z X S ! @). The actor panel lists every buff with its remaining count. ⬜ Not yet built: the radial countdown ring and >3-buff cycling.
+**Amended 2026-10-10 (owner): one status slot per actor.** `UnitView.SetBuffs` shows a single letter pip on the tile (colour `BuffDef.Color`, radial ring = time left) that **flashes through every buff, debuff and pushback stun** on the shared 1.2 s beat, with a small count when there are several. The selected actor's card lists each one with its pip, name and a plain-language effect built from its mechanics (`Ui.BuffEffect`: "4 damage each tick", "can't move or act, timeline halted", …) and time left, so the player learns what each pip means. A unit that isn't moving also shows the badge on its timeline circle.
 
 ### 8.6 Stacking rules
 
-V1 uses **Refresh** uniformly: applying an id the target already has removes the old instance and adds a fresh one at full duration. ⬜ Not yet built: Stack / Ignore / Upgrade policies.
+`BuffDef.Stacking`: **Refresh** (default — re-applying replaces the old instance at full duration), **Ignore**, **Upgrade** (keep the longer), or **Stack** (each stack ticks and applies separately, up to `MaxStacks`; at the cap the oldest stack is replaced). **Burning stacks to 3** (amended 2026-10-10, owner: "fire has multiple stacks"). Damage-over-time ticks on the battle clock, which only advances when the player commits an action or Guards — thinking time never costs HP, so "wait and decide" stays free while every move under fire costs a tick of burn. *(Test: `Burning_stacks_up_to_its_cap_and_each_stack_burns`.)*
 
 ### 8.7 Buff lifecycle
 
@@ -953,6 +963,7 @@ Source (spell, item, charge, trap, expire chain, Shield) → `ApplyBuff` (refres
 ```
 
 - **Banner** (`ShowBanner`) carries announcements, refusal reasons, "PINCER!", "X's turn", "Wave n/m", "VICTORY!". **Amended 2026-10-09:** it replaces the old AnnouncementWindow + combat feed. ⬜ Not yet built: the 7-line combat feed with inline icons.
+- **Pincer group outline (amended 2026-10-10, owner):** instead of a line across the character art, a rounded outline *draws itself* around the whole group — Hero, foe…, Hero (e.g. a 4-tile-long box) — in 0.24 s, in gold (red for enemy pincers); each supporter is joined to its partner by a short blue link that bridges the gap between their frames, edge to edge. The drag preview shows the same outline.
 - **Pincer close-up cut-in** (ported from GridGame2026's portrait slide-in, US-145/US-333): on the first pincer of an action, both attackers' portraits sweep past in lanes flanking the attacked line on the old slide curve (fast in → slight overshoot → drift back → fast out, ~1.14 s at ×1), in one of four entry patterns (counter sweep, mirrored, same-side chase, staggered one-two), with Perlin hand-held sway and a slow push-in. The world dims and the board "camera" pushes in 8.5 % on the pincer with its own sway, then settles back over 0.3 s. Chained links keep the quick beat. Off with Settings → "Pincer close-ups" or Reduce motion (`BattleScreen.PincerCutIn`).
 - **Floating text** over units: damage (crit bigger + shake), heals, "Steam!", "Stagger!", "Steady!", "Interrupted!", "CLUTCH!", "SHATTER!", "Snare!", "Trap!", "Zzz…", "Revived!".
 - **Actor panel**: enemy HP and stats show only if the class has been Scanned (this battle or ever); while targeting it shows the ability card ([§4.5](#45-slot-visual-states)).
@@ -1039,7 +1050,7 @@ Every class has a thumb (`Every_class_can_be_instantiated_and_has_art_reference`
 
 ### 12.2 Procedural pieces and placeholders
 
-`Art` generates the window gradients, cursor, glow and orb textures at runtime. **Board tiles (amended 2026-10-10, owner):** GridGame2026's own tile art (`Resources/Tiles/tile.png`, its `tile3`, imported by `tools/import_art.py`), tinted light/dark per square to keep the checkerboard. A missing texture falls back to a purple placeholder and logs once — a gap is visible, never fatal.
+`Art` generates the window gradients, cursor, glow and orb textures at runtime. **Board tiles (amended 2026-10-10, owner):** GridGame2026's own tile art (`Resources/Tiles/tile.png`, its `tile3`, imported by `tools/import_art.py`), recoloured per campaign biome by `tools/make_tiles.py` (moss, sandstone, murky teal, rust-rose; the caverns keep the original slate) and tinted light/dark per square to keep the checkerboard (`Art.BoardTile(theme)`). A missing texture falls back to a purple placeholder and logs once — a gap is visible, never fatal.
 
 ### 12.3 VFX
 
@@ -1469,7 +1480,7 @@ One thing it does best plus a secondary cope; lopsided stats; colors shape the b
 
 ### 23.4 Roster + party composition
 
-`SaveData.Roster` holds every recruited hero; `Party` the active squad, **max 4** (`Progression.MaxPartySize`). `Party.Toggle` moves a hero between party and reserve, refusing a full party and refusing to remove the last member (**Amended 2026-10-09**). XP lives on the hero, so it survives moves.
+`SaveData.Roster` holds every recruited hero; `Party` the active squad, **max 6** (`Progression.MaxPartySize`; **amended 2026-10-10**, owner: "up to six party members" — the board has six hero start tiles; Camp shows them in a 2-column grid). `Party.Toggle` moves a hero between party and reserve, refusing a full party and refusing to remove the last member (**Amended 2026-10-09**). XP lives on the hero, so it survives moves.
 
 ---
 

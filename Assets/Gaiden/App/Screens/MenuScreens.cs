@@ -197,24 +197,34 @@ namespace Gaiden.App
             var col = Ui.El("fill col", root);
             col.style.paddingTop = 40; col.style.paddingLeft = col.style.paddingRight = 16; col.style.paddingBottom = 30;
 
-            // Party window (portraits, level, HP) — the classic FF main-menu left pane, stacked for portrait.
+            // Party window (portraits, level, HP): a 2-column grid so a full party of six fits above the menu.
             var party = Ui.Window(null, col);
+            party.name = "camp-party";
+            party.style.flexDirection = FlexDirection.Row;
+            party.style.flexWrap = Wrap.Wrap;
+            party.style.justifyContent = Justify.SpaceBetween;
             foreach (var id in s.Party)
             {
                 var h = s.Hero(id);
                 if (h == null) continue;
                 var u = Progression.Preview(c, h);
                 var card = Ui.El("card", party);
-                Ui.Thumb(id, card, 132);
+                card.name = "camp-hero-" + id;
+                card.style.width = Length.Percent(49);
+                card.style.marginTop = card.style.marginBottom = 5;
+                card.style.paddingTop = card.style.paddingBottom = card.style.paddingLeft = card.style.paddingRight = 8;
+                var thumb = Ui.Thumb(id, card, 104);
+                thumb.style.marginRight = 12;
                 var info = Ui.El("col grow", card);
+                info.style.flexShrink = 1; info.style.minWidth = 0;
                 var top = Ui.El("row", info);
-                Ui.Text(c.Class(id).Name, "h2 grow", top);
-                Ui.Text($"Lv {u.Level}", "h2 gold", top);
+                var name = Ui.Text(c.Class(id).Name, "small grow", top);
+                name.style.unityFontStyleAndWeight = FontStyle.Bold;
+                name.style.overflow = Overflow.Hidden; name.style.textOverflow = TextOverflow.Ellipsis;
+                Ui.Text($"Lv {u.Level}", "small gold", top);
                 int hp = h.Hp > 0 ? Math.Min(h.Hp, u.MaxHp) : u.MaxHp;
-                var hpRow = Ui.El("row", info);
-                Ui.Text("HP", "small dim", hpRow).style.width = 70;
-                Ui.Gauge(hp / (float)u.MaxHp, hpRow, 420);
-                Ui.Text($"{hp}/{u.MaxHp}", "small", hpRow).style.marginLeft = 16;
+                Ui.Gauge(hp / (float)u.MaxHp, info, 300).style.marginTop = 6;
+                Ui.Text($"{hp}/{u.MaxHp}", "tiny dim", info);
                 card.RegisterCallback<ClickEvent>(_ => App.Router.Push(new StatusScreen(id)));
             }
 

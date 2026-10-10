@@ -281,4 +281,22 @@ namespace Gaiden.Core.Battle
         public int UnitId; public Coord At; public int Hp;
         public override string ToString() => $"Revived {UnitId} at {At} hp={Hp}";
     }
+
+    public sealed class AmplifierSpawnedEvent : BattleEvent
+    {
+        public Coord At;
+        public override string ToString() => $"Amplifier appears at {At}";
+    }
+
+    public sealed class AmplifierMovedEvent : BattleEvent
+    {
+        public Coord From, To; public int ByUnitId;
+        public override string ToString() => $"Amplifier shoved {From}->{To} by {ByUnitId}";
+    }
+
+    public sealed class AmplifierUsedEvent : BattleEvent
+    {
+        public Coord At; public int HeroId;
+        public override string ToString() => $"Amplifier used by {HeroId} at {At}";
+    }
 }

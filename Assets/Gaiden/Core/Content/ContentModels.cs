@@ -212,6 +212,8 @@ namespace Gaiden.Core.Content
         public bool BlocksSpells;
         public string OnExpireApply;
         public BuffStacking Stacking = BuffStacking.Refresh;
+        /// <summary>Cap for Stack buffs (0 = unlimited). Burning stacks to 3.</summary>
+        public int MaxStacks;
         public string Letter;
         public string Color;
     }
