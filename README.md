@@ -26,6 +26,7 @@ No prefabs, no hand-built scenes, no Inspector wiring.
 ```powershell
 pwsh tools/test.ps1              # rules + meta tests, bot soak over every stage, glyph check (seconds)
 pwsh tools/test.ps1 -Compile     # + Unity batchmode compile (Editor must be closed)
+pwsh tools/test.ps1 -Ui          # + build the player and run the 35-check UI gate
 pwsh tools/build.ps1             # Windows development player → Build/Windows
 python tools/harness.py smoke    # launch the player and play title → hub → battle → results
 python tools/harness.py sweep    # screenshot + layout-audit every menu screen

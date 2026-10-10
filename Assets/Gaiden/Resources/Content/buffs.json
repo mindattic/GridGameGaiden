@@ -188,5 +188,25 @@
     "OnExpireApply": null,
     "Letter": "@",
     "Color": "#595973"
+  },
+  {
+    "Id": "regen",
+    "Name": "Regen",
+    "Kind": "Buff",
+    "Unit": "Ticks",
+    "Duration": 6,
+    "DamagePerTick": 0,
+    "Immobile": false,
+    "HaltsTimeline": false,
+    "BreaksOnDamage": false,
+    "BreaksOnMove": false,
+    "IncomingDamageMultiplier": 1.0,
+    "TimelineSpeedMultiplier": 1.0,
+    "AccuracyMultiplier": 1.0,
+    "BlocksSpells": false,
+    "OnExpireApply": null,
+    "Letter": "R",
+    "Color": "#5CD67A",
+    "HealPerTick": 4
   }
 ]

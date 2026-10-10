@@ -49,11 +49,13 @@ namespace Gaiden.Core.Battle
             if (!acted) return;
 
             S.Results.ActionsTaken++;
+            CheckEnd();
             if (!S.IsOver)
             {
                 if (shield) AdvanceUntilEnemyTurn();
                 else AdvanceClock(BattleConfig.ActionTicks);
             }
+            if (!S.IsOver) CheckEnd();
             if (!S.IsOver) ReturnControl();
             S.Results.TicksElapsed = (int)S.Clock;
         }
@@ -77,6 +79,7 @@ namespace Gaiden.Core.Battle
         {
             foreach (var h in S.LivingList(Team.Hero))
             {
+                if (h.RegenPerTurn > 0 && h.Hp < h.MaxHp) Heal(h, h.RegenPerTurn, h);
                 TickTurnBuffs(h, false);
                 var keys = new List<string>(h.Cooldowns.Keys);
                 foreach (var k in keys)
@@ -119,7 +122,13 @@ namespace Gaiden.Core.Battle
                 }
                 S.Phase = BattlePhase.Victory;
                 foreach (var h in S.Units)
-                    if (h.IsHero) S.Results.WeaponDurability[h.Def.Id] = h.WeaponId != null ? h.WeaponDurability : -1;
+                {
+                    if (!h.IsHero) continue;
+                    S.Results.WeaponDurability[h.Def.Id] = h.WeaponId != null ? h.WeaponDurability : -1;
+                    S.Results.ArmorDurability[h.Def.Id] = h.ArmorId != null ? h.ArmorDurability : -1;
+                    S.Results.FinalWeapon[h.Def.Id] = h.WeaponId;
+                    S.Results.FinalBar[h.Def.Id] = h.Bar.ConvertAll(sl => sl.WeaponId != null ? "weapon:" + sl.WeaponId : null);
+                }
                 Emit(new BattleEndedEvent { Victory = true });
                 return true;
             }
@@ -175,6 +184,7 @@ namespace Gaiden.Core.Battle
             target.Hp = Math.Max(0, target.Hp - amount);
             Emit(new DamagedEvent { TargetId = target.Id, SourceId = source?.Id ?? -1, Amount = amount, Hit = hit, Type = type, HpAfter = target.Hp, Note = note });
             if (source != null && source.IsHero && target.Team == Team.Enemy) source.DamageDealt += amount;
+            if (source != null && hit != HitKind.Miss && amount > 0 && target.IsHero && source.Team == Team.Enemy) WearArmor(target);
 
             if (target.Hp <= 0) { Kill(target, source); return; }
             if (source == null || hit == HitKind.Miss) return;
@@ -241,9 +251,24 @@ namespace Gaiden.Core.Battle
         private void ApplyBuff(Unit u, BuffDef def, int duration)
         {
             if (!u.Alive || def == null) return;
-            u.Buffs.RemoveAll(b => b.Def.Id == def.Id); // refresh policy (§8.6)
-            u.Buffs.Add(new BuffInstance { Def = def, Remaining = Math.Max(1, duration), Fresh = true });
-            Emit(new BuffAppliedEvent { UnitId = u.Id, BuffId = def.Id, Duration = Math.Max(1, duration) });
+            duration = Math.Max(1, duration);
+            if (u.Def.ImmuneBuffs != null && u.Def.ImmuneBuffs.Contains(def.Id)) { Announce("Immune!", u.Id); return; }
+            var existing = u.Buffs.Find(b => b.Def.Id == def.Id);
+            if (existing != null)
+            {
+                switch (def.Stacking)
+                {
+                    case BuffStacking.Ignore: return;
+                    case BuffStacking.Upgrade:
+                        if (existing.Remaining >= duration) return;
+                        u.Buffs.Remove(existing);
+                        break;
+                    case BuffStacking.Stack: break; // keep both: ticks and effects apply twice
+                    default: u.Buffs.RemoveAll(b => b.Def.Id == def.Id); break; // Refresh (§8.6 default)
+                }
+            }
+            u.Buffs.Add(new BuffInstance { Def = def, Remaining = duration, Fresh = true });
+            Emit(new BuffAppliedEvent { UnitId = u.Id, BuffId = def.Id, Duration = duration });
         }
 
         private void RemoveBuffsWhere(Unit u, Predicate<BuffInstance> pred, string reason)
@@ -303,6 +328,7 @@ namespace Gaiden.Core.Battle
                         b.TickAccumulator -= BattleConfig.BuffTickInterval;
                         if (b.Def.DamagePerTick > 0)
                             Damage(u, b.Def.DamagePerTick, null, HitKind.Normal, DamageType.Physical, b.Def.Name);
+                        if (b.Def.HealPerTick > 0 && u.Alive && u.Hp < u.MaxHp) Heal(u, b.Def.HealPerTick, null);
                         if (!u.Alive) break;
                         b.Remaining--;
                         if (b.Remaining <= 0) { Expire(u, b); break; }

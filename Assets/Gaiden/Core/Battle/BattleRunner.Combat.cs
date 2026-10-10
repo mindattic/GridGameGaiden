@@ -147,9 +147,9 @@ namespace Gaiden.Core.Battle
             foreach (var attacker in new[] { p.A, p.B })
             {
                 if (!attacker.Alive) continue;
-                float mult = 1f;
+                float mult = 1f + attacker.PincerDamageBonus;
                 bool shatters = attacker.IsHero && attacker.WeaponId != null && attacker.WeaponDurability == 1;
-                if (shatters) mult = BattleConfig.ShatterTargetMultiplier;
+                if (shatters) mult *= BattleConfig.ShatterTargetMultiplier;
                 bool twice = HasPassive(attacker, "double_attack");
                 foreach (var target in p.Opponents)
                 {
@@ -198,6 +198,24 @@ namespace Gaiden.Core.Battle
             Damage(target, roll.Damage, attacker, roll.Hit, DamageType.Physical);
             if (roll.Hit == HitKind.Critical && attacker.IsHero) MintOrb(ManaColor.Colorless, attacker.Id, "critical");
             if (roll.Hit != HitKind.Miss) MaybeCounter(target, attacker);
+        }
+
+        /// <summary>Armor loses one durability per landing enemy hit; at 0 it breaks and its bonuses are gone (US-243).</summary>
+        private void WearArmor(Unit hero)
+        {
+            if (hero.ArmorId == null || hero.ArmorDurability <= 0) return;
+            hero.ArmorDurability--;
+            if (hero.ArmorDurability > 0) return;
+            var armor = C.TryItem(hero.ArmorId);
+            if (armor != null)
+            {
+                hero.GearStats = hero.GearStats + armor.Stats * -1f;
+                foreach (var kv in armor.Resistances)
+                    if (hero.GearResist.TryGetValue(kv.Key, out var cur) && kv.Value != 0f) hero.GearResist[kv.Key] = cur / kv.Value;
+            }
+            Emit(new ArmorBrokenEvent { UnitId = hero.Id, ArmorId = hero.ArmorId });
+            Announce("Armor broke!", hero.Id);
+            hero.ArmorId = null;
         }
 
         /// <summary>One durability per pincer; at 0 the weapon shatters: the strike already dealt ×1.5, the wielder takes 15% MaxHP (§24.5).</summary>

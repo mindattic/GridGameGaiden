@@ -56,6 +56,7 @@ namespace Gaiden.Core.Battle
 
         // ── Shield (§2.5) ───────────────────────────────────────────────────────────
         public const string ShieldBuffId = "protection";
+        public const int MaxBankCapacityBonus = 4;
 
         // ── Time bank (§3.1.8, act-advanced amendment: drag-timer remainder) ────────
         public const float DragTimerSeconds = 4f;

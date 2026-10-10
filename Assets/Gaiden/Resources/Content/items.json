@@ -1422,7 +1422,8 @@
     "OnUseAbility": null,
     "Resistances": {},
     "SoldByVendor": false,
-    "Icon": null
+    "Icon": null,
+    "RegenPerTurn": 3
   },
   {
     "Id": "eq_ring_gold",
@@ -1482,7 +1483,8 @@
     "OnUseAbility": null,
     "Resistances": {},
     "SoldByVendor": false,
-    "Icon": null
+    "Icon": null,
+    "PincerDamageBonus": 0.15
   },
   {
     "Id": "eq_ring_phantom",
@@ -1512,7 +1514,9 @@
     "OnUseAbility": null,
     "Resistances": {},
     "SoldByVendor": false,
-    "Icon": null
+    "Icon": null,
+    "StartsProtected": true,
+    "PincerDamageBonus": 0.1
   },
   {
     "Id": "eq_amulet_iron",
@@ -1568,13 +1572,14 @@
       "Wisdom": 0,
       "Luck": 0
     },
-    "BattleStartManaOrbs": 0,
+    "BattleStartManaOrbs": 1,
     "OnUseAbility": null,
     "Resistances": {
       "Fire": 0.7
     },
     "SoldByVendor": false,
-    "Icon": null
+    "Icon": null,
+    "PincerDamageBonus": 0.1
   },
   {
     "Id": "eq_amulet_stars",
@@ -1604,7 +1609,9 @@
     "OnUseAbility": null,
     "Resistances": {},
     "SoldByVendor": false,
-    "Icon": null
+    "Icon": null,
+    "BankCapacityBonus": 2,
+    "RegenPerTurn": 2
   },
   {
     "Id": "mat_broken_blade",

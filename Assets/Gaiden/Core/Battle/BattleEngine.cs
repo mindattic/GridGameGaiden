@@ -57,6 +57,7 @@ namespace Gaiden.Core.Battle
             if (slot >= h.Bar.Count || h.Bar[slot].IsEmpty) return SlotStatus.Empty;
             if (h.IsImmobile) return SlotStatus.CannotAct;
             var sl = h.Bar[slot];
+            if (sl.IsWeapon) return SlotStatus.Ready;
             if (sl.IsItem)
             {
                 if (sl.Charges <= 0) return SlotStatus.OutOfCharges;

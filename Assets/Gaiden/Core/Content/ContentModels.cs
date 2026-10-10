@@ -23,6 +23,9 @@ namespace Gaiden.Core.Content
 
     public enum BuffKind { Buff, Debuff }
 
+    /// <summary>What happens when a buff is applied to a unit that already has it (bible §8.6).</summary>
+    public enum BuffStacking { Refresh, Stack, Ignore, Upgrade }
+
     public enum DurationUnit { Turns, Ticks }
 
     public enum ItemType { Equipment, Consumable, CraftingMaterial, QuestItem }
@@ -126,6 +129,10 @@ namespace Gaiden.Core.Content
         public List<string> DefaultLoadout = new List<string>();
         public string DropTable;
         public int MoveRange = 1;
+        /// <summary>Straight-line attack reach for the Ranged archetype (1 = melee only).</summary>
+        public int AttackRange = 1;
+        /// <summary>Buff ids this class shrugs off ("Immune!") — the Mechanical archetype.</summary>
+        public List<string> ImmuneBuffs = new List<string>();
         public int XpReward = 10;
         public List<BossPhaseDef> BossPhases = new List<BossPhaseDef>();
         /// <summary>Enemy charge spell id (Caster archetype). Optional.</summary>
@@ -191,6 +198,7 @@ namespace Gaiden.Core.Content
         public DurationUnit Unit = DurationUnit.Turns;
         public int Duration = 1;
         public int DamagePerTick;
+        public int HealPerTick;
         public bool Immobile;
         public bool HaltsTimeline;
         public bool BreaksOnDamage;
@@ -200,6 +208,7 @@ namespace Gaiden.Core.Content
         public float AccuracyMultiplier = 1f;
         public bool BlocksSpells;
         public string OnExpireApply;
+        public BuffStacking Stacking = BuffStacking.Refresh;
         public string Letter;
         public string Color;
     }
@@ -237,6 +246,14 @@ namespace Gaiden.Core.Content
         public bool OutOfBattleOnly;
         public string BonusVsTag;
         public float BonusMultiplier = 1f;
+        /// <summary>Extra ManaBank slots while equipped (bible §3.1.4 knob), summed over the party, max +4.</summary>
+        public int BankCapacityBonus;
+        /// <summary>Relic passive: this hero's pincer strikes deal +X (fraction).</summary>
+        public float PincerDamageBonus;
+        /// <summary>Relic passive: HP restored each time control returns to the player.</summary>
+        public int RegenPerTurn;
+        /// <summary>Relic passive: start every battle with Protection.</summary>
+        public bool StartsProtected;
 
         public int EffectiveSellValue => SellValue >= 0 ? SellValue : System.Math.Max(1, BaseCost / 2);
         public bool IsRelic => Slot == EquipmentSlot.Relic1 || Slot == EquipmentSlot.Relic2 || Slot == EquipmentSlot.Relic3;

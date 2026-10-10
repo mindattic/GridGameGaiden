@@ -199,6 +199,17 @@ namespace Gaiden.Core.Battle
             Unit target = null;
             foreach (var h in S.Units)
                 if (h.Alive && h.IsHero && enemy.IsAdjacentTo(h) && (target == null || h.Hp < target.Hp)) target = h;
+            if (target == null && enemy.IsRanged)
+            {
+                var shot = EnemyPlanner.RangedTarget(S, enemy);
+                if (shot != null)
+                {
+                    Emit(new AttackEvent { AttackerId = enemy.Id, TargetId = shot.Id, IsRanged = true });
+                    var r = Formulas.Physical(enemy, shot, S.Rng);
+                    Damage(shot, r.Damage, enemy, r.Hit, DamageType.Physical);
+                }
+                return;
+            }
             if (target == null) return;
             Emit(new AttackEvent { AttackerId = enemy.Id, TargetId = target.Id, IsMelee = true });
             var roll = Formulas.Physical(enemy, target, S.Rng);

@@ -20,12 +20,15 @@ namespace Gaiden.Core.Battle
     {
         public string AbilityId;
         public string ItemId;
+        /// <summary>A spare weapon carried on the bar; using it swaps it with the equipped one.</summary>
+        public string WeaponId;
         public int Charges;
         public int MaxCharges;
         /// <summary>True when the stack came from the player's inventory (use also consumes the item).</summary>
         public bool FromInventory;
 
-        public bool IsEmpty => AbilityId == null && ItemId == null;
+        public bool IsEmpty => AbilityId == null && ItemId == null && WeaponId == null;
+        public bool IsWeapon => WeaponId != null;
         public bool IsItem => ItemId != null;
 
         public AbilitySlot Clone() => (AbilitySlot)MemberwiseClone();
@@ -61,6 +64,10 @@ namespace Gaiden.Core.Battle
         public float WeaponPower;
         public int WeaponDurability;
         public float ArmorRating;
+        public string ArmorId;
+        public int ArmorDurability;
+        public float PincerDamageBonus;
+        public int RegenPerTurn;
         public Dictionary<DamageType, float> GearResist = new Dictionary<DamageType, float>();
 
         // Snake chain (segmented boss): head has SnakeIndex 0; segments 1..n follow.
@@ -79,6 +86,7 @@ namespace Gaiden.Core.Battle
         public string Name => Def.Name;
         public ManaColor Color => Def.ColorAffinity;
         public bool IsHumanoid => Team == Team.Hero || Def.HasTag("Humanoid");
+        public bool IsRanged => Def.AttackRange > 1;
 
         public Stats Effective
         {

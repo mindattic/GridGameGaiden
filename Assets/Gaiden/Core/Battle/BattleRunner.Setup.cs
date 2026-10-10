@@ -23,7 +23,11 @@ namespace Gaiden.Core.Battle
                 SpawnHero(spec, start, setup.UnlockedSlots);
                 i++;
             }
+            if (pendingBankBonus > 0) S.Bank = new ManaBank(ManaBank.DefaultCapacity + System.Math.Min(BattleConfig.MaxBankCapacityBonus, pendingBankBonus));
             ApplyBattleStartOrbs();
+            var prot = C.TryBuff(BattleConfig.ShieldBuffId);
+            if (prot != null)
+                foreach (var id in startProtected) { var h = S.UnitById(id); if (h != null) ApplyBuff(h, prot, prot.Duration); }
             SpawnWave(0);
         }
 
@@ -46,6 +50,10 @@ namespace Gaiden.Core.Battle
                 if (item == null) continue;
                 u.GearStats = u.GearStats + item.Stats;
                 pendingStartOrbs += Math.Max(0, item.BattleStartManaOrbs);
+                pendingBankBonus += Math.Max(0, item.BankCapacityBonus);
+                u.PincerDamageBonus += item.PincerDamageBonus;
+                u.RegenPerTurn += item.RegenPerTurn;
+                if (item.StartsProtected && !startProtected.Contains(u.Id)) startProtected.Add(u.Id);
                 foreach (var kv in item.Resistances)
                 {
                     u.GearResist.TryGetValue(kv.Key, out var cur);
@@ -63,6 +71,12 @@ namespace Gaiden.Core.Battle
                     u.GearStats = u.GearStats + weapon.Stats;
                 }
             }
+            var armor = C.TryItem(spec.ArmorId);
+            if (armor != null && armor.Durability > 0)
+            {
+                u.ArmorId = armor.Id;
+                u.ArmorDurability = spec.ArmorDurability > 0 ? spec.ArmorDurability : armor.Durability;
+            }
             u.MaxHp = Formulas.MaxHp(u.Effective, u.Level);
             u.Hp = spec.Hp > 0 ? Math.Min(spec.Hp, u.MaxHp) : u.MaxHp;
 
@@ -79,6 +93,13 @@ namespace Gaiden.Core.Battle
         {
             var slot = new AbilitySlot();
             if (string.IsNullOrEmpty(entry)) return slot;
+            if (entry.StartsWith("weapon:", StringComparison.Ordinal))
+            {
+                var w = C.TryItem(entry.Substring(7));
+                spec.ItemCounts.TryGetValue(entry.Substring(7), out var have);
+                if (w != null && w.Slot == EquipmentSlot.Weapon && have > 0) { slot.WeaponId = w.Id; spec.ItemCounts[w.Id] = have - 1; }
+                return slot;
+            }
             if (entry.StartsWith("item:", StringComparison.Ordinal))
             {
                 // "item:<id>" draws charges from the owned count; "item:<id>:<n>" is a preset stack.
@@ -106,6 +127,8 @@ namespace Gaiden.Core.Battle
         }
 
         private int pendingStartOrbs;
+        private int pendingBankBonus;
+        private readonly List<int> startProtected = new List<int>();
 
         /// <summary>Gear with BattleStartManaOrbs (Mage/Wizard Robe) seeds random WUBRG orbs, capped by the bank (§24.8).</summary>
         private void ApplyBattleStartOrbs()

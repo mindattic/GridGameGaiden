@@ -54,6 +54,10 @@ namespace Gaiden.App
         private const float HintDelay = 5f;
         private bool HintsEnabled => App.Save == null || App.Save.HighestClearedStage < 2;
 
+        private int slotPress = -1;
+        private float slotPressTime;
+        private bool slotInfoShown;
+
         // drag state
         private bool pressing, dragging;
         private int dragHeroId = -1;
@@ -191,7 +195,15 @@ namespace Gaiden.App
                 slot.style.borderTopLeftRadius = slot.style.borderTopRightRadius = slot.style.borderBottomLeftRadius = slot.style.borderBottomRightRadius = 18;
                 slot.style.borderTopWidth = slot.style.borderBottomWidth = slot.style.borderLeftWidth = slot.style.borderRightWidth = 4;
                 slot.style.backgroundImage = new StyleBackground(Art.Window);
-                slot.RegisterCallback<ClickEvent>(_ => OnSlot(idx));
+                slot.RegisterCallback<PointerDownEvent>(_ => { slotPress = idx; slotPressTime = Time.unscaledTime; slotInfoShown = false; });
+                slot.RegisterCallback<PointerLeaveEvent>(_ => { if (slotPress == idx) slotPress = -1; });
+                slot.RegisterCallback<ClickEvent>(_ =>
+                {
+                    bool wasInfo = slotInfoShown;
+                    slotPress = -1; slotInfoShown = false;
+                    if (wasInfo) { SyncPanel(); return; }
+                    OnSlot(idx);
+                });
                 var icon = Ui.El("menu-icon", slot); icon.name = "icon"; icon.style.marginRight = 0; icon.style.width = icon.style.height = 76;
                 var name = Ui.Text("", "tiny", slot); name.name = "name"; name.style.unityTextAlign = TextAnchor.MiddleCenter; name.style.whiteSpace = WhiteSpace.Normal; name.style.maxWidth = 200;
                 var cost = Ui.El("row", slot); cost.name = "cost"; cost.style.height = 36;
@@ -206,10 +218,12 @@ namespace Gaiden.App
             row.style.position = Position.Absolute;
             row.style.left = 40; row.style.right = 40; row.style.top = BoardTop + BoardView.Tile * BattleConfig.Rows + 228; row.style.height = 76;
             row.style.justifyContent = Justify.SpaceBetween;
-            for (int i = 0; i < ManaBank.DefaultCapacity; i++)
+            int cap = Mathf.Clamp(State.Bank.Capacity, ManaBank.DefaultCapacity, 16);
+            float size = cap <= 12 ? 74 : Mathf.Floor(1080f / cap) - 6;
+            for (int i = 0; i < cap; i++)
             {
                 var o = Ui.Text("", "", row);
-                o.style.width = o.style.height = 74;
+                o.style.width = o.style.height = size;
                 o.style.backgroundImage = new StyleBackground(Art.Orb);
                 o.style.unityTextAlign = TextAnchor.MiddleCenter;
                 o.style.fontSize = 30; o.style.unityFontStyleAndWeight = FontStyle.Bold;
@@ -382,7 +396,14 @@ namespace Gaiden.App
                 {
                     var sl = hero.Bar[i];
                     var a = BattleEngine.SlotAbility(State, hero, i);
-                    if (sl.IsItem)
+                    if (sl.IsWeapon)
+                    {
+                        var w = App.Content.TryItem(sl.WeaponId);
+                        name.text = $"⭾ {w?.Name}";
+                        border = new Color(0.8f, 0.8f, 0.9f);
+                        icon.style.backgroundImage = new StyleBackground(Art.Orb);
+                    }
+                    else if (sl.IsItem)
                     {
                         var item = App.Content.TryItem(sl.ItemId);
                         name.text = $"{item?.Name}\n{sl.Charges}/{sl.MaxCharges}";
@@ -470,6 +491,16 @@ namespace Gaiden.App
         // ─────────────────────────────────────────────────────────────────────────
 
         public bool CanCommand() => !playing && !ended && !State.IsOver;
+
+        /// <summary>Dev/automation helper: add orbs to the bank (cheat — development builds only call this).</summary>
+        public void DevGiveMana(string letters)
+        {
+            foreach (var c in ManaBank.ParseCost(letters)) State.Bank.Add(c);
+            SyncOrbs();
+            SyncBar();
+        }
+
+        public string BannerText => banner?.text;
 
         /// <summary>Apply a command to the simulation and play its consequences.</summary>
         public void Commit(BattleCommand cmd, bool skipMovePrefix = false)
@@ -586,6 +617,13 @@ namespace Gaiden.App
             }
             else if (timerLabel != null) timerLabel.text = "";
 
+            if (slotPress >= 0 && !slotInfoShown && Time.unscaledTime - slotPressTime > 0.45f)
+            {
+                var hero = State.UnitById(SelectedHeroId);
+                var ab = hero == null ? null : BattleEngine.SlotAbility(State, hero, slotPress);
+                if (ab != null) { panel.Clear(); AbilityInfo(ab); slotInfoShown = true; App.Audio.Sfx("ui.select", 0.5f); }
+            }
+
             if (!AutoPlay && CanCommand() && !pressing && TargetingSlot < 0 && HintsEnabled)
             {
                 idle += dt;
@@ -630,7 +668,21 @@ namespace Gaiden.App
         private void ShowHint()
         {
             hintShown = true;
-            var cmd = new HeroBot(7).Decide(State) as MoveCommand;
+            var decision = new HeroBot(7).Decide(State);
+            if (decision is UseSlotCommand use)
+            {
+                var caster = State.UnitById(use.HeroId);
+                var ab = caster == null ? null : BattleEngine.SlotAbility(State, caster, use.Slot);
+                if (caster != null && ab != null)
+                {
+                    SelectHero(caster.Id);
+                    if (use.Slot < slotViews.Count) App.StartCoroutine(Tween.Pop(slotViews[use.Slot], 1.12f, 0.35f));
+                    ShowBanner($"Hint: {caster.Name} can use {ab.Name}");
+                }
+                return;
+            }
+            if (decision is ShieldCommand) { ShowBanner("Hint: nothing good to do? Press GUARD"); return; }
+            var cmd = decision as MoveCommand;
             if (cmd == null || cmd.Path.Count == 0) return;
             var pv = BattleEngine.PreviewMove(State, cmd.HeroId, cmd.Path);
             if (pv.Pincers.Count == 0) { ShowBanner("Tip: trap an enemy between two heroes"); return; }

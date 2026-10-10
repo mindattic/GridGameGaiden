@@ -97,7 +97,9 @@
     "ColorAffinity": "Green",
     "Abilities": [
       "frost",
-      "steal"
+      "steal",
+      "regen",
+      "rejuvenate"
     ],
     "DefaultLoadout": [
       "frost",
@@ -214,7 +216,8 @@
     "Abilities": [
       "steal",
       "mug",
-      "bolt"
+      "bolt",
+      "poison"
     ],
     "DefaultLoadout": [
       "steal",
@@ -440,19 +443,22 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "Red",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "meteor",
+      "shock_wave",
+      "cross_hit"
     ],
     "DefaultLoadout": [
-      "heal",
       "fireball",
-      "frost",
       "bolt",
-      "item:healing_potion_basic"
+      "item:healing_potion_basic",
+      "meteor",
+      "cross_hit"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -886,19 +892,24 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "Black",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "poison",
+      "sleep",
+      "steal",
+      "mug",
+      "teleport"
     ],
     "DefaultLoadout": [
-      "heal",
-      "fireball",
-      "frost",
-      "bolt",
-      "item:healing_potion_basic"
+      "poison",
+      "steal",
+      "item:healing_potion_basic",
+      "teleport",
+      "mug"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -1005,20 +1016,24 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "Black",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
       "bolt",
-      "charge_fireball"
+      "charge_fireball",
+      "poison",
+      "sleep",
+      "steal",
+      "mug"
     ],
     "DefaultLoadout": [
-      "heal",
-      "fireball",
-      "frost",
-      "bolt",
-      "item:healing_potion_basic"
+      "poison",
+      "steal",
+      "item:healing_potion_basic",
+      "sleep",
+      "mug"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -1124,19 +1139,22 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "Green",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "regen",
+      "rejuvenate",
+      "steal"
     ],
     "DefaultLoadout": [
-      "heal",
-      "fireball",
-      "frost",
-      "bolt",
-      "item:healing_potion_basic"
+      "regen",
+      "steal",
+      "item:healing_potion_basic",
+      "rejuvenate",
+      "fireball"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -1247,14 +1265,18 @@
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "slow",
+      "quicken",
+      "shock_wave",
+      "teleport"
     ],
     "DefaultLoadout": [
-      "heal",
-      "fireball",
       "frost",
-      "bolt",
-      "item:healing_potion_basic"
+      "quicken",
+      "item:healing_potion_basic",
+      "teleport",
+      "bolt"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -1360,19 +1382,22 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "Red",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "meteor",
+      "shock_wave",
+      "cross_hit"
     ],
     "DefaultLoadout": [
-      "heal",
       "fireball",
-      "frost",
       "bolt",
-      "item:healing_potion_basic"
+      "item:healing_potion_basic",
+      "meteor",
+      "cross_hit"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -1585,7 +1610,9 @@
         }
       }
     ],
-    "Resistances": {},
+    "Resistances": {
+      "Poison": 0.0
+    },
     "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
@@ -1596,7 +1623,11 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "ImmuneBuffs": [
+      "poisoned",
+      "sleep"
+    ]
   },
   {
     "Id": "ceramicknight01",
@@ -1693,7 +1724,9 @@
         }
       }
     ],
-    "Resistances": {},
+    "Resistances": {
+      "Poison": 0.0
+    },
     "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
@@ -1704,7 +1737,11 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "ImmuneBuffs": [
+      "poisoned",
+      "sleep"
+    ]
   },
   {
     "Id": "ceramicknight02",
@@ -1801,7 +1838,9 @@
         }
       }
     ],
-    "Resistances": {},
+    "Resistances": {
+      "Poison": 0.0
+    },
     "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
@@ -1812,7 +1851,11 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "ImmuneBuffs": [
+      "poisoned",
+      "sleep"
+    ]
   },
   {
     "Id": "ceramicknight03",
@@ -1909,7 +1952,9 @@
         }
       }
     ],
-    "Resistances": {},
+    "Resistances": {
+      "Poison": 0.0
+    },
     "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
@@ -1920,7 +1965,11 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "ImmuneBuffs": [
+      "poisoned",
+      "sleep"
+    ]
   },
   {
     "Id": "ceramicknight04",
@@ -2017,7 +2066,9 @@
         }
       }
     ],
-    "Resistances": {},
+    "Resistances": {
+      "Poison": 0.0
+    },
     "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
@@ -2028,7 +2079,11 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "ImmuneBuffs": [
+      "poisoned",
+      "sleep"
+    ]
   },
   {
     "Id": "ceramicknight05",
@@ -2125,7 +2180,9 @@
         }
       }
     ],
-    "Resistances": {},
+    "Resistances": {
+      "Poison": 0.0
+    },
     "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
@@ -2136,7 +2193,11 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "ImmuneBuffs": [
+      "poisoned",
+      "sleep"
+    ]
   },
   {
     "Id": "ceramicknight06",
@@ -2233,7 +2294,9 @@
         }
       }
     ],
-    "Resistances": {},
+    "Resistances": {
+      "Poison": 0.0
+    },
     "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
@@ -2244,7 +2307,11 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "ImmuneBuffs": [
+      "poisoned",
+      "sleep"
+    ]
   },
   {
     "Id": "chromaninja",
@@ -2346,14 +2413,18 @@
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "slow",
+      "quicken",
+      "shock_wave",
+      "teleport"
     ],
     "DefaultLoadout": [
-      "heal",
-      "fireball",
       "frost",
-      "bolt",
-      "item:healing_potion_basic"
+      "quicken",
+      "item:healing_potion_basic",
+      "teleport",
+      "bolt"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -2575,19 +2646,22 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "Green",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "regen",
+      "rejuvenate",
+      "steal"
     ],
     "DefaultLoadout": [
-      "heal",
-      "fireball",
-      "frost",
-      "bolt",
-      "item:healing_potion_basic"
+      "regen",
+      "steal",
+      "item:healing_potion_basic",
+      "rejuvenate",
+      "fireball"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -2693,7 +2767,9 @@
         }
       }
     ],
-    "Resistances": {},
+    "Resistances": {
+      "Poison": 0.0
+    },
     "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
@@ -2704,7 +2780,11 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "ImmuneBuffs": [
+      "poisoned",
+      "sleep"
+    ]
   },
   {
     "Id": "cyberzombie01",
@@ -2801,7 +2881,9 @@
         }
       }
     ],
-    "Resistances": {},
+    "Resistances": {
+      "Poison": 0.0
+    },
     "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
@@ -2812,7 +2894,11 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "ImmuneBuffs": [
+      "poisoned",
+      "sleep"
+    ]
   },
   {
     "Id": "cyberzombie02",
@@ -2909,7 +2995,9 @@
         }
       }
     ],
-    "Resistances": {},
+    "Resistances": {
+      "Poison": 0.0
+    },
     "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
@@ -2920,7 +3008,11 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "ImmuneBuffs": [
+      "poisoned",
+      "sleep"
+    ]
   },
   {
     "Id": "cyberzombie03",
@@ -3017,7 +3109,9 @@
         }
       }
     ],
-    "Resistances": {},
+    "Resistances": {
+      "Poison": 0.0
+    },
     "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
@@ -3028,7 +3122,11 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "ImmuneBuffs": [
+      "poisoned",
+      "sleep"
+    ]
   },
   {
     "Id": "cyberzombie04",
@@ -3125,7 +3223,9 @@
         }
       }
     ],
-    "Resistances": {},
+    "Resistances": {
+      "Poison": 0.0
+    },
     "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
@@ -3136,7 +3236,11 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "ImmuneBuffs": [
+      "poisoned",
+      "sleep"
+    ]
   },
   {
     "Id": "cyclops00",
@@ -3890,19 +3994,23 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "Black",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "poison",
+      "sleep",
+      "steal",
+      "mug"
     ],
     "DefaultLoadout": [
-      "heal",
-      "fireball",
-      "frost",
-      "bolt",
-      "item:healing_potion_basic"
+      "poison",
+      "steal",
+      "item:healing_potion_basic",
+      "sleep",
+      "mug"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -4008,19 +4116,24 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "White",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "mass_heal",
+      "antidote",
+      "silence",
+      "scan",
+      "sleep"
     ],
     "DefaultLoadout": [
       "heal",
-      "fireball",
-      "frost",
-      "bolt",
-      "item:healing_potion_basic"
+      "silence",
+      "item:healing_potion_basic",
+      "mass_heal",
+      "antidote"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -4233,19 +4346,22 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "Green",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "regen",
+      "rejuvenate",
+      "steal"
     ],
     "DefaultLoadout": [
-      "heal",
-      "fireball",
-      "frost",
-      "bolt",
-      "item:healing_potion_basic"
+      "regen",
+      "steal",
+      "item:healing_potion_basic",
+      "rejuvenate",
+      "fireball"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -4351,19 +4467,24 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "White",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "mass_heal",
+      "antidote",
+      "silence",
+      "scan",
+      "sleep"
     ],
     "DefaultLoadout": [
       "heal",
-      "fireball",
-      "frost",
-      "bolt",
-      "item:healing_potion_basic"
+      "silence",
+      "item:healing_potion_basic",
+      "mass_heal",
+      "antidote"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -4474,14 +4595,17 @@
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "slow",
+      "quicken",
+      "shock_wave"
     ],
     "DefaultLoadout": [
-      "heal",
-      "fireball",
       "frost",
-      "bolt",
-      "item:healing_potion_basic"
+      "quicken",
+      "item:healing_potion_basic",
+      "slow",
+      "bolt"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -4587,19 +4711,22 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "Red",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "meteor",
+      "shock_wave",
+      "cross_hit"
     ],
     "DefaultLoadout": [
-      "heal",
       "fireball",
-      "frost",
       "bolt",
-      "item:healing_potion_basic"
+      "item:healing_potion_basic",
+      "meteor",
+      "cross_hit"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -4710,14 +4837,17 @@
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "slow",
+      "quicken",
+      "shock_wave"
     ],
     "DefaultLoadout": [
-      "heal",
-      "fireball",
       "frost",
-      "bolt",
-      "item:healing_potion_basic"
+      "quicken",
+      "item:healing_potion_basic",
+      "slow",
+      "bolt"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -4823,19 +4953,22 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "Red",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "meteor",
+      "shock_wave",
+      "cross_hit"
     ],
     "DefaultLoadout": [
-      "heal",
       "fireball",
-      "frost",
       "bolt",
-      "item:healing_potion_basic"
+      "item:healing_potion_basic",
+      "meteor",
+      "cross_hit"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -4941,19 +5074,22 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "Red",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "meteor",
+      "shock_wave",
+      "cross_hit"
     ],
     "DefaultLoadout": [
-      "heal",
       "fireball",
-      "frost",
       "bolt",
-      "item:healing_potion_basic"
+      "item:healing_potion_basic",
+      "meteor",
+      "cross_hit"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -6562,7 +6698,9 @@
     "Abilities": [
       "teleport",
       "steal",
-      "fireball"
+      "fireball",
+      "regen",
+      "rejuvenate"
     ],
     "DefaultLoadout": [
       "teleport",
@@ -6584,7 +6722,8 @@
     "Name": "Hag",
     "Team": "Enemy",
     "Tags": [
-      "Humanoid"
+      "Humanoid",
+      "Ranged"
     ],
     "Description": "A flexible fighter with no single defining specialty.",
     "Lore": "Walks many roads, never lost for lack of a single path.",
@@ -6684,14 +6823,16 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "AttackRange": 3
   },
   {
     "Id": "hag01",
     "Name": "Hag",
     "Team": "Enemy",
     "Tags": [
-      "Humanoid"
+      "Humanoid",
+      "Ranged"
     ],
     "Description": "A flexible fighter with no single defining specialty.",
     "Lore": "Walks many roads, never lost for lack of a single path.",
@@ -6791,7 +6932,8 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "AttackRange": 3
   },
   {
     "Id": "hag02",
@@ -7102,19 +7244,23 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "Black",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "poison",
+      "sleep",
+      "steal",
+      "mug"
     ],
     "DefaultLoadout": [
-      "heal",
-      "fireball",
-      "frost",
-      "bolt",
-      "item:healing_potion_basic"
+      "poison",
+      "steal",
+      "item:healing_potion_basic",
+      "sleep",
+      "mug"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -7331,19 +7477,24 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "White",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "mass_heal",
+      "antidote",
+      "silence",
+      "scan",
+      "sleep"
     ],
     "DefaultLoadout": [
       "heal",
-      "fireball",
-      "frost",
-      "bolt",
-      "item:healing_potion_basic"
+      "silence",
+      "item:healing_potion_basic",
+      "mass_heal",
+      "antidote"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -7449,19 +7600,24 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "White",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "mass_heal",
+      "antidote",
+      "silence",
+      "scan",
+      "sleep"
     ],
     "DefaultLoadout": [
       "heal",
-      "fireball",
-      "frost",
-      "bolt",
-      "item:healing_potion_basic"
+      "silence",
+      "item:healing_potion_basic",
+      "mass_heal",
+      "antidote"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -7567,19 +7723,24 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "White",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "mass_heal",
+      "antidote",
+      "silence",
+      "scan",
+      "sleep"
     ],
     "DefaultLoadout": [
       "heal",
-      "fireball",
-      "frost",
-      "bolt",
-      "item:healing_potion_basic"
+      "silence",
+      "item:healing_potion_basic",
+      "mass_heal",
+      "antidote"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -8011,14 +8172,17 @@
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "slow",
+      "quicken",
+      "shock_wave"
     ],
     "DefaultLoadout": [
-      "heal",
-      "fireball",
       "frost",
-      "bolt",
-      "item:healing_potion_basic"
+      "quicken",
+      "item:healing_potion_basic",
+      "slow",
+      "bolt"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -8552,19 +8716,22 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "Red",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "meteor",
+      "shock_wave",
+      "cross_hit"
     ],
     "DefaultLoadout": [
-      "heal",
       "fireball",
-      "frost",
       "bolt",
-      "item:healing_potion_basic"
+      "item:healing_potion_basic",
+      "meteor",
+      "cross_hit"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -8991,19 +9158,24 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "White",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "mass_heal",
+      "antidote",
+      "silence",
+      "scan",
+      "sleep"
     ],
     "DefaultLoadout": [
       "heal",
-      "fireball",
-      "frost",
-      "bolt",
-      "item:healing_potion_basic"
+      "silence",
+      "item:healing_potion_basic",
+      "mass_heal",
+      "antidote"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -9216,19 +9388,22 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "Red",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "meteor",
+      "shock_wave",
+      "cross_hit"
     ],
     "DefaultLoadout": [
-      "heal",
       "fireball",
-      "frost",
       "bolt",
-      "item:healing_potion_basic"
+      "item:healing_potion_basic",
+      "meteor",
+      "cross_hit"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -9441,19 +9616,23 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "Black",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "poison",
+      "sleep",
+      "steal",
+      "mug"
     ],
     "DefaultLoadout": [
-      "heal",
-      "fireball",
-      "frost",
-      "bolt",
-      "item:healing_potion_basic"
+      "poison",
+      "steal",
+      "item:healing_potion_basic",
+      "sleep",
+      "mug"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -9559,19 +9738,23 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "Black",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "poison",
+      "sleep",
+      "steal",
+      "mug"
     ],
     "DefaultLoadout": [
-      "heal",
-      "fireball",
-      "frost",
-      "bolt",
-      "item:healing_potion_basic"
+      "poison",
+      "steal",
+      "item:healing_potion_basic",
+      "sleep",
+      "mug"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -9998,19 +10181,23 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "Black",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "poison",
+      "sleep",
+      "steal",
+      "mug"
     ],
     "DefaultLoadout": [
-      "heal",
-      "fireball",
-      "frost",
-      "bolt",
-      "item:healing_potion_basic"
+      "poison",
+      "steal",
+      "item:healing_potion_basic",
+      "sleep",
+      "mug"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -10230,19 +10417,22 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "Green",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "regen",
+      "rejuvenate",
+      "steal"
     ],
     "DefaultLoadout": [
-      "heal",
-      "fireball",
-      "frost",
-      "bolt",
-      "item:healing_potion_basic"
+      "regen",
+      "steal",
+      "item:healing_potion_basic",
+      "rejuvenate",
+      "fireball"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -10455,19 +10645,22 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "Red",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "meteor",
+      "shock_wave",
+      "cross_hit"
     ],
     "DefaultLoadout": [
-      "heal",
       "fireball",
-      "frost",
       "bolt",
-      "item:healing_potion_basic"
+      "item:healing_potion_basic",
+      "meteor",
+      "cross_hit"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -10573,19 +10766,22 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "Red",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "meteor",
+      "shock_wave",
+      "cross_hit"
     ],
     "DefaultLoadout": [
-      "heal",
       "fireball",
-      "frost",
       "bolt",
-      "item:healing_potion_basic"
+      "item:healing_potion_basic",
+      "meteor",
+      "cross_hit"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -11226,19 +11422,22 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "Red",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "meteor",
+      "shock_wave",
+      "cross_hit"
     ],
     "DefaultLoadout": [
-      "heal",
       "fireball",
-      "frost",
       "bolt",
-      "item:healing_potion_basic"
+      "item:healing_potion_basic",
+      "meteor",
+      "cross_hit"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -11458,14 +11657,17 @@
       "fireball",
       "frost",
       "bolt",
-      "charge_fireball"
+      "charge_fireball",
+      "slow",
+      "quicken",
+      "shock_wave"
     ],
     "DefaultLoadout": [
-      "heal",
-      "fireball",
       "frost",
-      "bolt",
-      "item:healing_potion_basic"
+      "quicken",
+      "item:healing_potion_basic",
+      "slow",
+      "bolt"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -11687,19 +11889,23 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "Black",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "poison",
+      "sleep",
+      "steal",
+      "mug"
     ],
     "DefaultLoadout": [
-      "heal",
-      "fireball",
-      "frost",
-      "bolt",
-      "item:healing_potion_basic"
+      "poison",
+      "steal",
+      "item:healing_potion_basic",
+      "sleep",
+      "mug"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -11806,20 +12012,24 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "Black",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
       "bolt",
-      "charge_fireball"
+      "charge_fireball",
+      "poison",
+      "sleep",
+      "steal",
+      "mug"
     ],
     "DefaultLoadout": [
-      "heal",
-      "fireball",
-      "frost",
-      "bolt",
-      "item:healing_potion_basic"
+      "poison",
+      "steal",
+      "item:healing_potion_basic",
+      "sleep",
+      "mug"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -11925,19 +12135,22 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "Red",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "meteor",
+      "shock_wave",
+      "cross_hit"
     ],
     "DefaultLoadout": [
-      "heal",
       "fireball",
-      "frost",
       "bolt",
-      "item:healing_potion_basic"
+      "item:healing_potion_basic",
+      "meteor",
+      "cross_hit"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -12044,20 +12257,25 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "White",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
       "bolt",
-      "charge_fireball"
+      "charge_fireball",
+      "mass_heal",
+      "antidote",
+      "silence",
+      "scan",
+      "sleep"
     ],
     "DefaultLoadout": [
       "heal",
-      "fireball",
-      "frost",
-      "bolt",
-      "item:healing_potion_basic"
+      "silence",
+      "item:healing_potion_basic",
+      "mass_heal",
+      "antidote"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -12377,19 +12595,22 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "Red",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "meteor",
+      "shock_wave",
+      "cross_hit"
     ],
     "DefaultLoadout": [
-      "heal",
       "fireball",
-      "frost",
       "bolt",
-      "item:healing_potion_basic"
+      "item:healing_potion_basic",
+      "meteor",
+      "cross_hit"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -12495,19 +12716,24 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "White",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "mass_heal",
+      "antidote",
+      "silence",
+      "scan",
+      "sleep"
     ],
     "DefaultLoadout": [
       "heal",
-      "fireball",
-      "frost",
-      "bolt",
-      "item:healing_potion_basic"
+      "silence",
+      "item:healing_potion_basic",
+      "mass_heal",
+      "antidote"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -12613,19 +12839,24 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "White",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "mass_heal",
+      "antidote",
+      "silence",
+      "scan",
+      "sleep"
     ],
     "DefaultLoadout": [
       "heal",
-      "fireball",
-      "frost",
-      "bolt",
-      "item:healing_potion_basic"
+      "silence",
+      "item:healing_potion_basic",
+      "mass_heal",
+      "antidote"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -13055,19 +13286,23 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "Black",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "poison",
+      "sleep",
+      "steal",
+      "mug"
     ],
     "DefaultLoadout": [
-      "heal",
-      "fireball",
-      "frost",
-      "bolt",
-      "item:healing_potion_basic"
+      "poison",
+      "steal",
+      "item:healing_potion_basic",
+      "sleep",
+      "mug"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -14026,14 +14261,17 @@
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "slow",
+      "quicken",
+      "shock_wave"
     ],
     "DefaultLoadout": [
-      "heal",
-      "fireball",
       "frost",
-      "bolt",
-      "item:healing_potion_basic"
+      "quicken",
+      "item:healing_potion_basic",
+      "slow",
+      "bolt"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -14674,19 +14912,22 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "Red",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "meteor",
+      "shock_wave",
+      "cross_hit"
     ],
     "DefaultLoadout": [
-      "heal",
       "fireball",
-      "frost",
       "bolt",
-      "item:healing_potion_basic"
+      "item:healing_potion_basic",
+      "meteor",
+      "cross_hit"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -14792,19 +15033,22 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "Red",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "meteor",
+      "shock_wave",
+      "cross_hit"
     ],
     "DefaultLoadout": [
-      "heal",
       "fireball",
-      "frost",
       "bolt",
-      "item:healing_potion_basic"
+      "item:healing_potion_basic",
+      "meteor",
+      "cross_hit"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -14820,7 +15064,8 @@
     "Name": "Swamp Mistress",
     "Team": "Enemy",
     "Tags": [
-      "Humanoid"
+      "Humanoid",
+      "Ranged"
     ],
     "Description": "A flexible fighter with no single defining specialty.",
     "Lore": "Walks many roads, never lost for lack of a single path.",
@@ -14920,7 +15165,8 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "AttackRange": 3
   },
   {
     "Id": "swordmaster",
@@ -15017,19 +15263,22 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "Red",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "meteor",
+      "shock_wave",
+      "cross_hit"
     ],
     "DefaultLoadout": [
-      "heal",
       "fireball",
-      "frost",
       "bolt",
-      "item:healing_potion_basic"
+      "item:healing_potion_basic",
+      "meteor",
+      "cross_hit"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -15135,19 +15384,22 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "Red",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "meteor",
+      "shock_wave",
+      "cross_hit"
     ],
     "DefaultLoadout": [
-      "heal",
       "fireball",
-      "frost",
       "bolt",
-      "item:healing_potion_basic"
+      "item:healing_potion_basic",
+      "meteor",
+      "cross_hit"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -15579,14 +15831,17 @@
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "slow",
+      "quicken",
+      "shock_wave"
     ],
     "DefaultLoadout": [
-      "heal",
-      "fireball",
       "frost",
-      "bolt",
-      "item:healing_potion_basic"
+      "quicken",
+      "item:healing_potion_basic",
+      "slow",
+      "bolt"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -16334,19 +16589,23 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "Black",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "poison",
+      "sleep",
+      "steal",
+      "mug"
     ],
     "DefaultLoadout": [
-      "heal",
-      "fireball",
-      "frost",
-      "bolt",
-      "item:healing_potion_basic"
+      "poison",
+      "steal",
+      "item:healing_potion_basic",
+      "sleep",
+      "mug"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -16457,14 +16716,17 @@
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "slow",
+      "quicken",
+      "shock_wave"
     ],
     "DefaultLoadout": [
-      "heal",
-      "fireball",
       "frost",
-      "bolt",
-      "item:healing_potion_basic"
+      "quicken",
+      "item:healing_potion_basic",
+      "slow",
+      "bolt"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -16677,7 +16939,9 @@
         }
       }
     ],
-    "Resistances": {},
+    "Resistances": {
+      "Poison": 0.0
+    },
     "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
@@ -16688,7 +16952,11 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "ImmuneBuffs": [
+      "poisoned",
+      "sleep"
+    ]
   },
   {
     "Id": "treegolem01",
@@ -16785,7 +17053,9 @@
         }
       }
     ],
-    "Resistances": {},
+    "Resistances": {
+      "Poison": 0.0
+    },
     "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
@@ -16796,7 +17066,11 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "ImmuneBuffs": [
+      "poisoned",
+      "sleep"
+    ]
   },
   {
     "Id": "treegolem02",
@@ -16893,7 +17167,9 @@
         }
       }
     ],
-    "Resistances": {},
+    "Resistances": {
+      "Poison": 0.0
+    },
     "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
@@ -16904,7 +17180,11 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "ImmuneBuffs": [
+      "poisoned",
+      "sleep"
+    ]
   },
   {
     "Id": "treegolem03",
@@ -17001,7 +17281,9 @@
         }
       }
     ],
-    "Resistances": {},
+    "Resistances": {
+      "Poison": 0.0
+    },
     "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
@@ -17012,7 +17294,11 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "ImmuneBuffs": [
+      "poisoned",
+      "sleep"
+    ]
   },
   {
     "Id": "treegolem04",
@@ -17109,7 +17395,9 @@
         }
       }
     ],
-    "Resistances": {},
+    "Resistances": {
+      "Poison": 0.0
+    },
     "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
@@ -17120,7 +17408,11 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "ImmuneBuffs": [
+      "poisoned",
+      "sleep"
+    ]
   },
   {
     "Id": "treegolem06",
@@ -17217,7 +17509,9 @@
         }
       }
     ],
-    "Resistances": {},
+    "Resistances": {
+      "Poison": 0.0
+    },
     "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
@@ -17228,7 +17522,11 @@
     "ChargeAbility": null,
     "ChargeShape": "Single",
     "Trap": null,
-    "SnakeSegments": 0
+    "SnakeSegments": 0,
+    "ImmuneBuffs": [
+      "poisoned",
+      "sleep"
+    ]
   },
   {
     "Id": "undead00",
@@ -17754,19 +18052,23 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "Black",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "poison",
+      "sleep",
+      "steal",
+      "mug"
     ],
     "DefaultLoadout": [
-      "heal",
-      "fireball",
-      "frost",
-      "bolt",
-      "item:healing_potion_basic"
+      "poison",
+      "steal",
+      "item:healing_potion_basic",
+      "sleep",
+      "mug"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -17980,19 +18282,22 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "Red",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "meteor",
+      "shock_wave",
+      "cross_hit"
     ],
     "DefaultLoadout": [
-      "heal",
       "fireball",
-      "frost",
       "bolt",
-      "item:healing_potion_basic"
+      "item:healing_potion_basic",
+      "meteor",
+      "cross_hit"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -18206,19 +18511,25 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "White",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "mass_heal",
+      "antidote",
+      "silence",
+      "scan",
+      "sleep",
+      "teleport"
     ],
     "DefaultLoadout": [
       "heal",
-      "fireball",
-      "frost",
-      "bolt",
-      "item:healing_potion_basic"
+      "silence",
+      "item:healing_potion_basic",
+      "teleport",
+      "antidote"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -18325,20 +18636,25 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "White",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
       "bolt",
-      "charge_fireball"
+      "charge_fireball",
+      "mass_heal",
+      "antidote",
+      "silence",
+      "scan",
+      "sleep"
     ],
     "DefaultLoadout": [
       "heal",
-      "fireball",
-      "frost",
-      "bolt",
-      "item:healing_potion_basic"
+      "silence",
+      "item:healing_potion_basic",
+      "mass_heal",
+      "antidote"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -18444,19 +18760,22 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
+    "ColorAffinity": "Green",
     "Abilities": [
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "regen",
+      "rejuvenate",
+      "steal"
     ],
     "DefaultLoadout": [
-      "heal",
-      "fireball",
-      "frost",
-      "bolt",
-      "item:healing_potion_basic"
+      "regen",
+      "steal",
+      "item:healing_potion_basic",
+      "rejuvenate",
+      "fireball"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -18995,14 +19314,18 @@
       "heal",
       "fireball",
       "frost",
-      "bolt"
+      "bolt",
+      "slow",
+      "quicken",
+      "shock_wave",
+      "teleport"
     ],
     "DefaultLoadout": [
-      "heal",
-      "fireball",
       "frost",
-      "bolt",
-      "item:healing_potion_basic"
+      "quicken",
+      "item:healing_potion_basic",
+      "teleport",
+      "bolt"
     ],
     "DropTable": null,
     "MoveRange": 1,

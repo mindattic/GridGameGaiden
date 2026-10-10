@@ -11,6 +11,11 @@ namespace Gaiden.Core.Battle
         public static AbilityDef AbilityForSlot(ContentDb c, AbilitySlot slot)
         {
             if (slot == null || slot.IsEmpty) return null;
+            if (slot.IsWeapon)
+            {
+                var w = c.TryItem(slot.WeaponId);
+                return new AbilityDef { Id = "weapon:" + slot.WeaponId, Name = "Equip " + (w?.Name ?? slot.WeaponId), Kind = AbilityKind.Skill, Shape = TargetShape.Self, Mode = TargetMode.Auto, Filter = TargetFilter.Any, Description = "Swap this weapon with the one in hand. Costs a turn." };
+            }
             if (!slot.IsItem) return c.TryAbility(slot.AbilityId);
             return ItemAbility(c, c.TryItem(slot.ItemId));
         }
@@ -80,6 +85,11 @@ namespace Gaiden.Core.Battle
 
             Emit(new ActionBeganEvent { ActorId = hero.Id, Label = a.Name });
 
+            if (slot.IsWeapon)
+            {
+                SwapWeapon(hero, slot);
+                return true;
+            }
             if (slot.IsItem)
             {
                 slot.Charges--;
@@ -247,6 +257,23 @@ namespace Gaiden.Core.Battle
                     ApplyBuff(t, buff, dur);
                 }
             }
+        }
+
+        /// <summary>Bar weapon swap: the slot's weapon goes in hand at factory durability; the old one takes the slot.</summary>
+        private void SwapWeapon(Unit hero, AbilitySlot slot)
+        {
+            var incoming = C.TryItem(slot.WeaponId);
+            var outgoing = C.TryItem(hero.WeaponId);
+            if (outgoing != null) hero.GearStats = hero.GearStats + outgoing.Stats * -1f;
+            if (incoming != null)
+            {
+                hero.GearStats = hero.GearStats + incoming.Stats;
+                hero.WeaponId = incoming.Id;
+                hero.WeaponPower = incoming.BaseDamage;
+                hero.WeaponDurability = incoming.Durability;
+            }
+            Emit(new WeaponSwappedEvent { UnitId = hero.Id, FromWeapon = outgoing?.Id, ToWeapon = incoming?.Id });
+            slot.WeaponId = outgoing?.Id;
         }
 
         /// <summary>Phoenix Down: the first fallen hero returns on the free tile nearest the user.</summary>

@@ -10,6 +10,9 @@ namespace Gaiden.App
         private readonly List<AudioSource> sfx = new List<AudioSource>();
         private readonly Dictionary<string, AudioClip> clips = new Dictionary<string, AudioClip>();
         private string currentTrack;
+        public string CurrentTrack => currentTrack;
+        /// <summary>Recent cues (for automation checks that every event is voiced).</summary>
+        public readonly List<string> CueLog = new List<string>();
         private float musicVolume = 0.6f, sfxVolume = 0.85f;
         private readonly Dictionary<string, float> lastPlayed = new Dictionary<string, float>();
 
@@ -60,7 +63,10 @@ namespace Gaiden.App
         /// <summary>Plays a cue. Rapid repeats of the same cue are thinned so chains don't clip into noise.</summary>
         public void Sfx(string key, float volume = 1f, float pitch = 1f)
         {
-            if (sfxVolume <= 0f || string.IsNullOrEmpty(key)) return;
+            if (string.IsNullOrEmpty(key)) return;
+            CueLog.Add(key);
+            if (CueLog.Count > 300) CueLog.RemoveAt(0);
+            if (sfxVolume <= 0f) return;
             float now = Time.unscaledTime;
             if (lastPlayed.TryGetValue(key, out var last) && now - last < 0.04f) return;
             lastPlayed[key] = now;

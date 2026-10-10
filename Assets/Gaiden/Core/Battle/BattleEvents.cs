@@ -56,7 +56,7 @@ namespace Gaiden.Core.Battle
 
     public sealed class AttackEvent : BattleEvent
     {
-        public int AttackerId; public int TargetId; public bool IsSupport; public bool IsMelee;
+        public int AttackerId; public int TargetId; public bool IsSupport; public bool IsMelee; public bool IsRanged;
         public override string ToString() => $"Attack {AttackerId}->{TargetId}{(IsSupport ? " (support)" : "")}{(IsMelee ? " (melee)" : "")}";
     }
 
@@ -224,6 +224,18 @@ namespace Gaiden.Core.Battle
     {
         public int UnitId; public string WeaponId; public int Durability;
         public override string ToString() => $"WeaponWorn {UnitId} {WeaponId} {Durability}";
+    }
+
+    public sealed class ArmorBrokenEvent : BattleEvent
+    {
+        public int UnitId; public string ArmorId;
+        public override string ToString() => $"ArmorBroken {UnitId} {ArmorId}";
+    }
+
+    public sealed class WeaponSwappedEvent : BattleEvent
+    {
+        public int UnitId; public string FromWeapon; public string ToWeapon;
+        public override string ToString() => $"WeaponSwapped {UnitId} {FromWeapon}->{ToWeapon}";
     }
 
     public sealed class WeaponShatteredEvent : BattleEvent

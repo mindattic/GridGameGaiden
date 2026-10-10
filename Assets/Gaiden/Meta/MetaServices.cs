@@ -110,7 +110,7 @@ namespace Gaiden.Meta
     {
         public static HeroSpec SpecFor(ContentDb c, HeroSave h)
         {
-            var spec = new HeroSpec { ClassId = h.ClassId, Level = Progression.Level(h), Hp = h.Hp, WeaponId = h.WeaponId, WeaponDurability = h.WeaponDurability };
+            var spec = new HeroSpec { ClassId = h.ClassId, Level = Progression.Level(h), Hp = h.Hp, WeaponId = h.WeaponId, WeaponDurability = h.WeaponDurability, ArmorId = h.ArmorId, ArmorDurability = h.ArmorDurability };
             if (h.WeaponId != null) spec.EquippedItemIds.Add(h.WeaponId);
             if (h.ArmorId != null) spec.EquippedItemIds.Add(h.ArmorId);
             foreach (var r in h.Relics) if (r != null) spec.EquippedItemIds.Add(r);
@@ -171,10 +171,26 @@ namespace Gaiden.Meta
                     if (after > before) rep.LevelUps.Add((h.ClassId, before, after));
                     // Wounds carry; a hero who fell revives at 1 HP; a level-up refreshes to full.
                     h.Hp = after > before ? 0 : (u.Alive ? (u.Hp >= u.MaxHp ? 0 : u.Hp) : 1);
+                    if (r.FinalWeapon.TryGetValue(u.Def.Id, out var finalWeapon) && finalWeapon != h.WeaponId && finalWeapon != null)
+                    {
+                        // A bar swap: the old weapon goes back to the bag, the new one leaves it.
+                        if (h.WeaponId != null) s.AddItem(h.WeaponId, 1);
+                        s.AddItem(finalWeapon, -1);
+                        h.WeaponId = finalWeapon;
+                        h.WeaponRepairs = 0;
+                    }
+                    if (r.FinalBar.TryGetValue(u.Def.Id, out var bar))
+                        for (int i = 0; i < bar.Count && i < h.Bar.Count; i++)
+                            if (h.Bar[i] != null && h.Bar[i].StartsWith("weapon:")) h.Bar[i] = bar[i];
                     if (r.WeaponDurability.TryGetValue(u.Def.Id, out var dur))
                     {
                         if (dur < 0 && h.WeaponId != null && u.WeaponId == null) { h.WeaponId = null; h.WeaponDurability = 0; h.WeaponRepairs = 0; }
                         else if (dur >= 0) h.WeaponDurability = dur;
+                    }
+                    if (r.ArmorDurability.TryGetValue(u.Def.Id, out var adur))
+                    {
+                        if (adur < 0 && h.ArmorId != null && u.ArmorId == null) { h.ArmorId = null; h.ArmorDurability = 0; h.ArmorRepairs = 0; }
+                        else if (adur >= 0 && h.ArmorId != null) h.ArmorDurability = adur;
                     }
                 }
 
@@ -558,6 +574,12 @@ namespace Gaiden.Meta
                 {
                     var item = c.TryItem(entry.Substring(5));
                     if (item == null || item.Type != ItemType.Consumable) return Result.Fail("Not usable in battle");
+                }
+                else if (entry.StartsWith("weapon:"))
+                {
+                    var w = c.TryItem(entry.Substring(7));
+                    if (w == null || w.Slot != EquipmentSlot.Weapon) return Result.Fail("Not a weapon");
+                    if (s.Count(w.Id) < 1) return Result.Fail("You need a spare one in your bag");
                 }
                 else if (!h.Known.Contains(entry)) return Result.Fail("Not learned");
                 int dup = h.Bar.IndexOf(entry);

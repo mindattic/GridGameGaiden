@@ -44,6 +44,15 @@ namespace Gaiden.App
             if (i.BaseHealing > 0) parts.Add($"Heals {i.BaseHealing}");
             if (i.Durability > 0) parts.Add($"Durability {i.Durability}");
             if (i.BattleStartManaOrbs > 0) parts.Add($"+{i.BattleStartManaOrbs} orbs at battle start");
+            if (i.BankCapacityBonus > 0) parts.Add($"+{i.BankCapacityBonus} orb slots");
+            if (i.PincerDamageBonus > 0) parts.Add($"Pincer +{i.PincerDamageBonus:P0}");
+            if (i.RegenPerTurn > 0) parts.Add($"Regen {i.RegenPerTurn}/turn");
+            if (i.StartsProtected) parts.Add("Starts battles Protected");
+            if (i.GrantsOrbs > 0) parts.Add($"+{i.GrantsOrbs} orbs");
+            if (i.Revives) parts.Add("Revives a fallen ally");
+            if (i.Escape) parts.Add("Escape from battle");
+            if (i.CuresAll) parts.Add("Cures all ailments");
+            else if (i.CuresBuff != null) parts.Add($"Cures {i.CuresBuff}");
             foreach (var kv in i.Resistances) parts.Add($"{kv.Key} ×{kv.Value:0.##}");
             return string.Join("   ", parts);
         }
@@ -307,12 +316,13 @@ namespace Gaiden.App
             }
             else if (tab == 1)
             {
-                var items = S.Inventory.Where(kv => kv.Value > 0).Select(kv => C.TryItem(kv.Key)).Where(i => i != null && i.Type == ItemType.Consumable).ToList();
+                var items = S.Inventory.Where(kv => kv.Value > 0).Select(kv => C.TryItem(kv.Key)).Where(i => i != null && (i.Type == ItemType.Consumable || i.Slot == EquipmentSlot.Weapon)).ToList();
                 if (items.Count == 0) Ui.Text("No battle items. Buy potions from the Merchant.", "small dim", list);
                 foreach (var it in items)
                 {
                     var item = it;
-                    ItemUi.Row(item, $"×{S.Count(item.Id)}", () => Done(Abilities.Assign(C, S, h, slot, "item:" + item.Id)), list, slot < unlocked);
+                    bool weapon = item.Slot == EquipmentSlot.Weapon;
+                    ItemUi.Row(item, weapon ? "swap in battle" : $"×{S.Count(item.Id)}", () => Done(Abilities.Assign(C, S, h, slot, (weapon ? "weapon:" : "item:") + item.Id)), list, slot < unlocked);
                 }
             }
             else
@@ -339,12 +349,13 @@ namespace Gaiden.App
         {
             if (entry == null) return null;
             if (entry.StartsWith("item:")) { var it = C.TryItem(entry.Substring(5)); return it == null ? null : $"{it.Name} ×{S.Count(it.Id)}"; }
+            if (entry.StartsWith("weapon:")) { var w = C.TryItem(entry.Substring(7)); return w == null ? null : $"⭾ {w.Name}"; }
             return C.TryAbility(entry)?.Name;
         }
 
         private Texture2D EntryIcon(string entry)
         {
-            if (entry == null || entry.StartsWith("item:")) return null;
+            if (entry == null || entry.StartsWith("item:") || entry.StartsWith("weapon:")) return null;
             return Art.Icon(C.TryAbility(entry)?.Icon);
         }
     }
@@ -721,6 +732,8 @@ namespace Gaiden.App
             }
             Cycle("Music volume", st.MusicVolume, new[] { 0f, 0.2f, 0.4f, 0.6f, 0.8f, 1f }, "{0:P0}", v => st.MusicVolume = v);
             Cycle("Sound volume", st.SfxVolume, new[] { 0f, 0.25f, 0.5f, 0.85f, 1f }, "{0:P0}", v => st.SfxVolume = v);
+            Toggle("Mute music", st.MuteMusic, v => st.MuteMusic = v);
+            Toggle("Mute sound", st.MuteSfx, v => st.MuteSfx = v);
             Cycle("Battle speed", st.BattleSpeed, new[] { 1f, 1.5f, 2f, 3f }, "×{0:0.#}", v => st.BattleSpeed = v);
             Toggle("Drag timer (4 s)", st.DragTimer, v => st.DragTimer = v);
             Toggle("Colorblind palette", st.ColorblindMode, v => st.ColorblindMode = v);

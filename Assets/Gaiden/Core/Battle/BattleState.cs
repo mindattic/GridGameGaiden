@@ -22,6 +22,8 @@ namespace Gaiden.Core.Battle
         public int Hp;
         public string WeaponId;
         public int WeaponDurability;
+        public string ArmorId;
+        public int ArmorDurability;
         public List<string> EquippedItemIds = new List<string>();
         /// <summary>Ability bar entries: ability id, or "item:id". Null/empty = empty slot.</summary>
         public List<string> Bar = new List<string>();
@@ -53,6 +55,11 @@ namespace Gaiden.Core.Battle
         public Dictionary<string, int> ItemsConsumed = new Dictionary<string, int>();
         /// <summary>Hero class → weapon durability after battle (-1 = shattered/removed).</summary>
         public Dictionary<string, int> WeaponDurability = new Dictionary<string, int>();
+        /// <summary>Hero class → armor durability after battle (-1 = broke).</summary>
+        public Dictionary<string, int> ArmorDurability = new Dictionary<string, int>();
+        /// <summary>Hero class → weapon equipped at the end (after bar swaps), and what the bar slot then held.</summary>
+        public Dictionary<string, string> FinalWeapon = new Dictionary<string, string>();
+        public Dictionary<string, List<string>> FinalBar = new Dictionary<string, List<string>>();
         public int ActionsTaken;
         public int TicksElapsed;
 
@@ -67,6 +74,9 @@ namespace Gaiden.Core.Battle
                 Scanned = new HashSet<string>(Scanned),
                 ItemsConsumed = new Dictionary<string, int>(ItemsConsumed),
                 WeaponDurability = new Dictionary<string, int>(WeaponDurability),
+                ArmorDurability = new Dictionary<string, int>(ArmorDurability),
+                FinalWeapon = new Dictionary<string, string>(FinalWeapon),
+                FinalBar = new Dictionary<string, List<string>>(FinalBar),
             };
         }
     }

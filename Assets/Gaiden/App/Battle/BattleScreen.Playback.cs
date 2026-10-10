@@ -113,6 +113,8 @@ namespace Gaiden.App
                 case TrapTriggeredEvent tt: board.SyncTraps(State); App.Audio.Sfx("trap"); return FloatText(tt.UnitId, "Trap!", new Color(0.8f, 0.4f, 1f), 0.25f);
                 case WeaponWornEvent _: return null;
                 case WeaponShatteredEvent ws: App.Audio.Sfx("shatter"); return FloatText(ws.UnitId, "SHATTER!", new Color(1f, 0.7f, 0.3f), 0.5f, 80);
+                case ArmorBrokenEvent ab: App.Audio.Sfx("shatter", 0.7f); return FloatText(ab.UnitId, "Armor broke!", new Color(1f, 0.6f, 0.4f), 0.4f, 64);
+                case WeaponSwappedEvent sw: App.Audio.Sfx("dash"); SyncBar(); return FloatText(sw.UnitId, "⭾ " + (App.Content.TryItem(sw.ToWeapon)?.Name ?? "Swap"), new Color(0.85f, 0.9f, 1f), 0.3f, 54);
                 case BossPhaseEvent bp: return BossAnim(bp);
                 case WaveStartedEvent wv: return WaveAnim(wv);
                 case WaveClearedEvent wc: ShowBanner("Wave cleared!"); return Tween.Wait(0.4f);
@@ -173,6 +175,15 @@ namespace Gaiden.App
             var a = State.UnitById(at.AttackerId); var t = State.UnitById(at.TargetId);
             if (a == null || t == null || !board.Units.TryGetValue(a.Id, out var av)) yield break;
             Vector2 dir = (BoardView.CenterOf(t.Pos, t.W, t.H) - BoardView.CenterOf(a.Pos, a.W, a.H)).normalized;
+            if (at.IsRanged)
+            {
+                // A hexed bolt flies down the lane.
+                var from = BoardView.CenterOf(a.Pos, a.W, a.H); var to = BoardView.CenterOf(t.Pos, t.W, t.H);
+                App.Audio.Sfx("magic", 0.7f);
+                yield return Tween.Run(0.22f, k => { board.Lines.ClearLines(); board.Lines.Dot(ProjectilePoint(ProjectileMotion.Twist, from, to, k), 22f, new Color(0.7f, 0.35f, 1f)); });
+                board.Lines.ClearLines();
+                yield break;
+            }
             float lunge = (at.IsSupport ? 18f : 34f) * Fx + 6f;
             yield return Tween.Run(0.07f, k => av.Root.style.translate = new Translate(dir.x * lunge * k, dir.y * lunge * k));
             App.StartCoroutine(Tween.Run(0.12f, k => av.Root.style.translate = new Translate(dir.x * lunge * (1 - k), dir.y * lunge * (1 - k))));
@@ -391,20 +402,38 @@ namespace Gaiden.App
                 Vector2 from = BoardView.CenterOf(caster.Pos, caster.W, caster.H);
                 var targets = ar.Targets.Select(State.UnitById).Where(u => u != null).ToList();
                 App.Audio.Sfx("cast", 0.7f);
-                yield return Tween.Run(0.22f, k =>
+                yield return Tween.Run(a.Motion == ProjectileMotion.Strike ? 0.18f : 0.26f, k =>
                 {
                     board.Lines.ClearLines();
                     foreach (var t in targets)
                     {
                         Vector2 to = BoardView.CenterOf(t.Pos, t.W, t.H);
-                        var p = Vector2.Lerp(from, to, k) + (a.Motion == ProjectileMotion.Bezier ? Vector2.up * (-160f * Mathf.Sin(k * Mathf.PI)) : Vector2.zero);
+                        var p = ProjectilePoint(a.Motion, from, to, k);
                         board.Lines.Dot(p, 26f, c);
+                        board.Lines.Dot(ProjectilePoint(a.Motion, from, to, Mathf.Max(0f, k - 0.08f)), 16f, new Color(c.r, c.g, c.b, 0.5f));
                     }
                 });
                 board.Lines.ClearLines();
             }
             else yield return Tween.Wait(0.12f);
             App.StartCoroutine(ClearMarksLater(0.35f));
+        }
+
+        /// <summary>Projectile curves (bible §6.1). Reduce Motion flattens everything to a straight line.</summary>
+        private Vector2 ProjectilePoint(ProjectileMotion m, Vector2 from, Vector2 to, float k)
+        {
+            if (ReduceMotion) m = ProjectileMotion.Straight;
+            var d = to - from;
+            var n = new Vector2(-d.y, d.x).normalized;
+            switch (m)
+            {
+                case ProjectileMotion.Bezier: return Vector2.Lerp(from, to, k) + Vector2.up * (-160f * Mathf.Sin(k * Mathf.PI));
+                case ProjectileMotion.Homing: return Vector2.Lerp(from, to, Tween.EaseInOut(k)) + n * (90f * Mathf.Sin(k * Mathf.PI) * (1f - k));
+                case ProjectileMotion.Spiral: { float r = 70f * (1f - k); float ang = k * Mathf.PI * 6f; return Vector2.Lerp(from, to, k) + new Vector2(Mathf.Cos(ang), Mathf.Sin(ang)) * r; }
+                case ProjectileMotion.Twist: return Vector2.Lerp(from, to, k) + n * (40f * Mathf.Sin(k * Mathf.PI * 3f));
+                case ProjectileMotion.Strike: { var top = new Vector2(to.x, to.y - 520f); return Vector2.Lerp(top, to, k * k); }
+                default: return Vector2.Lerp(from, to, k);
+            }
         }
 
         private IEnumerator ClearMarksLater(float s)

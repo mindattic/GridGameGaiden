@@ -153,3 +153,27 @@ updated: 2026-10-09
 - **Projectiles are a moving dot, straight or arced** (other motions pending).
 - **Ability info shows in the actor panel while targeting** (long-press tooltips pending).
 - **HUD is absolute design-pixel layout in `BattleScreen`** (old `HudLayout` row constants gone).
+
+## 2026-10-10 — parity batch
+
+- **Black and Green orbs now have uses.** The old catalog had no spell costing B or G, so Black/Green
+  heroes minted dead orbs. *Change:* Poison costs (B)(B); new Green spells **Regen** (G — heal 4/s for
+  6 s via the new `regen` buff, `BuffDef.HealPerTick`) and **Rejuvenate** (GG — heal 30 + cleanse).
+- **Distinct kits for the 55 default-kit hero classes.** Each gets a color identity (from its name/role)
+  and a color-matched preset + learnable pool; ninjas carry Teleport. The bible's seven seeded loadouts
+  (§23.2) are unchanged.
+- **Ranged archetype built** (§14.2): `ClassDef.AttackRange`; hags and the Swamp Mistress shoot the
+  lowest-HP hero in a clear straight lane within 3 tiles and keep their distance.
+- **Mechanical archetype built**: `ClassDef.ImmuneBuffs` (Mechanical/Construct: poisoned, sleep → "Immune!")
+  plus Poison resistance 0.
+- **Buff stacking policies** (§8.6): `BuffDef.Stacking` = Refresh (default) / Stack / Ignore / Upgrade.
+- **Armor wears in battle**: −1 durability per landing enemy hit; at 0 it breaks and its bonuses vanish
+  (no shatter damage — that stays weapon-only). Repair works as for weapons.
+- **Relic passives** (§24.1.1 named passives): `PincerDamageBonus`, `RegenPerTurn`, `StartsProtected`,
+  `BankCapacityBonus` (the §3.1.4 knob, max +4 slots), authored on Bloodstone, Jade, Sunfire, Phantom, Stars.
+- **Ability-bar weapon swap** (old US feature): a bar slot can hold `weapon:<id>` from the bag; using it
+  swaps weapons (costs a turn; incoming weapon at factory durability); the save follows the swap.
+- **Battle end is checked after every action**, not only after kills/turns (robustness).
+- **UI**: mute toggles; distinct projectile curves; long-press ability card; radial buff timers with
+  >3-buff rotation; idle hint also suggests spells/GUARD.
+

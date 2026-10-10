@@ -65,6 +65,13 @@ namespace Gaiden.Core.Rules
                 enemy.Pos = c;
                 float dist = enemy.DistanceTo(target);
                 float score = wounded ? dist : -dist;
+                if (enemy.IsRanged && !wounded)
+                {
+                    // Ranged: hold at its reach, prefer a clear firing lane, avoid melee contact.
+                    score = -Math.Abs(dist - enemy.Def.AttackRange) * 1.5f;
+                    if (RangedTarget(s, enemy) != null) score += 3f;
+                    if (enemy.IsAdjacentTo(target)) score -= 2f;
+                }
                 if (!wounded && enemy.IsAdjacentTo(target)) score += 2f;
                 if (!enemy.IsMultiTile && WouldBeFlanked(s, c)) score -= 100f;
                 if (c == original) score -= 0.5f;
@@ -116,6 +123,24 @@ namespace Gaiden.Core.Rules
             if (dir.Y > 0) start = new Coord(caster.Pos.X, caster.Pos.Y + caster.H - 1);
             for (var c = start + dir; BattleState.InBounds(c); c = c + dir) list.Add(c);
             return list;
+        }
+
+        /// <summary>The lowest-HP hero in a straight row/column line within reach with nothing in between, or null.</summary>
+        public static Unit RangedTarget(BattleState s, Unit enemy)
+        {
+            Unit best = null;
+            foreach (var d in Coord.Cardinals)
+            {
+                var c = enemy.Pos + d;
+                for (int i = 1; i <= enemy.Def.AttackRange && BattleState.InBounds(c); i++, c = c + d)
+                {
+                    var occ = s.UnitAt(c);
+                    if (occ == null) continue;
+                    if (occ.IsHero && (best == null || occ.Hp < best.Hp)) best = occ;
+                    break; // line of sight stops at the first unit
+                }
+            }
+            return best;
         }
 
         public static bool FootprintStepLegal(BattleState s, Unit enemy, Coord newAnchor)

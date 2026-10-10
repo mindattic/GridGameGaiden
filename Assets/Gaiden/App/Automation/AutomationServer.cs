@@ -33,6 +33,7 @@ namespace Gaiden.App.Automation
         private readonly List<string> logs = new List<string>();
         private string artifacts;
         private Mouse mouse;
+        private bool holdDrag;
 
         public static void TryStart(GameApp app)
         {
@@ -140,6 +141,7 @@ namespace Gaiden.App.Automation
                     StartCoroutine(Tap(F(q["x"]), F(q["y"]), reply));
                     return Pending;
                 case "drag":
+                    holdDrag = q["hold"] == "1";
                     StartCoroutine(Drag(ParsePoints(q["path"]), F(q["step"], 0.03f), reply));
                     return Pending;
                 case "click":
@@ -218,6 +220,68 @@ namespace Gaiden.App.Automation
                     return new { x = tl.x, y = tl.y, w = br.x - tl.x, h = br.y - tl.y, visible = e.resolvedStyle.display != DisplayStyle.None };
                 }
                 case "layout": return LayoutAudit();
+                case "texts":
+                    return app.Stage.Query<TextElement>().ToList()
+                        .Where(t => !string.IsNullOrEmpty(t.text) && t.resolvedStyle.display != DisplayStyle.None && t.resolvedStyle.visibility == Visibility.Visible && t.worldBound.width > 0 && Opaque(t))
+                        .Select(t => t.text).ToList();
+                case "names":
+                {
+                    var prefix = q["prefix"] ?? "";
+                    return app.Stage.Query<VisualElement>().ToList().Where(e => e.name != null && e.name.StartsWith(prefix) && e.worldBound.width > 0).Select(e => e.name).ToList();
+                }
+                case "music": return new { track = app.Audio.CurrentTrack };
+                case "cues":
+                {
+                    var list = app.Audio.CueLog.ToList();
+                    if (q["clear"] == "1") app.Audio.CueLog.Clear();
+                    return list;
+                }
+                case "setting":
+                {
+                    if (app.Save == null) return new { error = "no save" };
+                    var st = app.Save.Settings;
+                    bool on = q["value"] == "1" || q["value"] == "true";
+                    switch (q["key"])
+                    {
+                        case "colorblind": st.ColorblindMode = on; break;
+                        case "reducemotion": st.ReduceMotion = on; break;
+                        case "dragtimer": st.DragTimer = on; break;
+                        case "mutemusic": st.MuteMusic = on; break;
+                        case "mutesfx": st.MuteSfx = on; break;
+                        default: return new { error = "unknown key" };
+                    }
+                    app.ApplySettings();
+                    return new { ok = true };
+                }
+                case "givemana":
+                    if (app.Router.Current is BattleScreen gm) { gm.DevGiveMana(q["colors"] ?? "RRWWUU"); return new { ok = true }; }
+                    return new { error = "not in battle" };
+                case "suggest":
+                {
+                    if (!(app.Router.Current is BattleScreen sb2)) return new { error = "not in battle" };
+                    var cmd = new Gaiden.Core.Bot.HeroBot(5).Decide(sb2.State) as MoveCommand;
+                    if (cmd == null) return new { error = "no move" };
+                    var pv = BattleEngine.PreviewMove(sb2.State, cmd.HeroId, cmd.Path);
+                    var hero = sb2.State.UnitById(cmd.HeroId);
+                    return new { hero = cmd.HeroId, from = new[] { hero.Pos.X, hero.Pos.Y }, path = cmd.Path.Select(c => new[] { c.X, c.Y }).ToList(), pincers = pv.Pincers.Count,
+                                 moved = pv.Positions.Where(kv => kv.Key != cmd.HeroId && sb2.State.UnitById(kv.Key).Pos != kv.Value).Select(kv => new { id = kv.Key, x = kv.Value.X, y = kv.Value.Y }).ToList() };
+                }
+                case "banner":
+                    return new { text = (app.Router.Current as BattleScreen)?.BannerText };
+                case "press":
+                    StartCoroutine(Press(F(q["x"]), F(q["y"]), F(q["ms"], 600) / 1000f, reply));
+                    return Pending;
+                case "release":
+                    MouseTo(lastHeld, false);
+                    StartCoroutine(Frames(3, () => reply(new { ok = true })));
+                    return Pending;
+                case "stagebounds":
+                {
+                    var sb = app.Stage.worldBound;
+                    var root = app.Document.rootVisualElement.worldBound;
+                    float k = Screen.width / Mathf.Max(1f, root.width);
+                    return new { x = sb.x * k, y = sb.y * k, w = sb.width * k, h = sb.height * k, screen = new[] { Screen.width, Screen.height } };
+                }
                 case "resize":
                     Screen.SetResolution((int)F(q["w"], 585), (int)F(q["h"], 1266), FullScreenMode.Windowed);
                     return new { ok = true };
@@ -259,6 +323,27 @@ namespace Gaiden.App.Automation
             reply(new { ok = true, x, y });
         }
 
+        private Vector2 lastHeld;
+
+        private static bool Opaque(VisualElement e)
+        {
+            for (var x = e; x != null; x = x.parent) if (x.resolvedStyle.opacity <= 0.01f) return false;
+            return true;
+        }
+
+        private IEnumerator Frames(int n, Action done) { for (int i = 0; i < n; i++) yield return null; done(); }
+
+        /// <summary>Press and hold at a design point for a while, then reply (button stays down until `release`).</summary>
+        private IEnumerator Press(float x, float y, float seconds, Action<object> reply)
+        {
+            var p = ToScreen(x, y);
+            lastHeld = p;
+            MouseTo(p, false); yield return null;
+            MouseTo(p, true);
+            yield return new WaitForSecondsRealtime(seconds);
+            reply(new { ok = true });
+        }
+
         private IEnumerator Drag(List<Vector2> pts, float stepSeconds, Action<object> reply)
         {
             if (pts.Count == 0) { reply(new { error = "empty path" }); yield break; }
@@ -277,6 +362,8 @@ namespace Gaiden.App.Automation
             }
             var last = pts[pts.Count - 1];
             yield return null;
+            lastHeld = ToScreen(last.x, last.y);
+            if (holdDrag) { holdDrag = false; reply(new { ok = true, held = true }); yield break; }
             MouseTo(ToScreen(last.x, last.y), false);
             yield return null; yield return null;
             reply(new { ok = true, points = pts.Count });

@@ -104,15 +104,21 @@ namespace Gaiden.App
         {
             Buffs.Clear();
             int n = 0;
-            foreach (var b in u.Buffs)
+            // Show up to 3; with more, the window rotates every 1.5 s so every status gets seen (bible §8.5).
+            int count = u.Buffs.Count;
+            int start = count > 3 ? (int)(Time.unscaledTime / 1.5f) % count : 0;
+            for (int k = 0; k < Mathf.Min(3, count); k++)
             {
-                if (n++ >= 3) break;
+                var b = u.Buffs[(start + k) % count];
                 var pip = new Label(string.IsNullOrEmpty(b.Def.Letter) ? b.Def.Name.Substring(0, 1) : b.Def.Letter) { pickingMode = PickingMode.Ignore };
                 pip.AddToClassList("pip");
                 pip.style.width = pip.style.height = 40;
                 pip.style.fontSize = 24;
                 pip.style.backgroundColor = App.Art.HexColor(b.Def.Color, b.Def.Kind == BuffKind.Buff ? new Color(0.4f, 0.8f, 1f) : new Color(0.8f, 0.4f, 0.9f));
+                float frac = Mathf.Clamp01(b.Remaining / (float)Mathf.Max(1, b.Def.Duration));
+                pip.Add(new RingTimer(frac) { pickingMode = PickingMode.Ignore });
                 Buffs.Add(pip);
+                n++;
             }
         }
 
@@ -267,6 +273,31 @@ namespace Gaiden.App
             l.style.color = color;
             FxLayer.Add(l);
             return l;
+        }
+    }
+
+    /// <summary>Radial countdown ring drawn around a buff pip: the arc shrinks clockwise as the buff runs out.</summary>
+    public sealed class RingTimer : VisualElement
+    {
+        private readonly float frac;
+        public RingTimer(float frac)
+        {
+            this.frac = frac;
+            style.position = Position.Absolute;
+            style.left = style.top = style.right = style.bottom = -4;
+            generateVisualContent += ctx =>
+            {
+                var p = ctx.painter2D;
+                var r = contentRect;
+                var c = r.center;
+                float radius = Mathf.Min(r.width, r.height) / 2f - 2f;
+                p.lineWidth = 4f;
+                p.strokeColor = new Color(1f, 0.92f, 0.35f, 0.95f);
+                p.lineCap = LineCap.Round;
+                p.BeginPath();
+                p.Arc(c, radius, Angle.Degrees(-90f), Angle.Degrees(-90f + 360f * this.frac));
+                p.Stroke();
+            };
         }
     }
 

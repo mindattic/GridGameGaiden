@@ -28,9 +28,9 @@ def tile(x, y):
     return (BOARD_LEFT + TILE * x + TILE // 2, BOARD_TOP + TILE * y + TILE // 2)
 
 
-def call(path, timeout=130, **params):
+def call(endpoint, timeout=130, **params):
     q = urllib.parse.urlencode({k: v for k, v in params.items() if v is not None})
-    url = f"{BASE}/{path}" + (f"?{q}" if q else "")
+    url = f"{BASE}/{endpoint}" + (f"?{q}" if q else "")
     with urllib.request.urlopen(url, timeout=timeout) as r:
         body = r.read().decode("utf-8")
     try:
@@ -47,7 +47,7 @@ def alive():
         return False
 
 
-def launch(run, width=585, height=1266, extra=()):
+def launch(run, width=585, height=1266, extra=(), fresh=False):
     if alive():
         try:
             call("quit", timeout=3)
@@ -56,6 +56,9 @@ def launch(run, width=585, height=1266, extra=()):
         time.sleep(1.5)
     art = os.path.join(ROOT, "artifacts", run)
     saves = os.path.join(ROOT, "artifacts", run, "saves")
+    if fresh and os.path.isdir(saves):
+        import shutil
+        shutil.rmtree(saves, ignore_errors=True)
     os.makedirs(saves, exist_ok=True)
     args = [EXE, "-automation", str(PORT), "-artifacts", art, "-saveRoot", saves,
             "-screen-width", str(width), "-screen-height", str(height), "-screen-fullscreen", "0",
