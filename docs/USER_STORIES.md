@@ -64,7 +64,7 @@ test for every rule. 4. A harness step for anything visible. 5. Glyph check gree
 | US-029 | Fixed hero start tiles; enemy spawn tile or random rows 0–4 | §1 | ✅ | `Heroes_start_on_their_tiles_and_enemies_on_authored_or_upper_rows` |
 | US-030 | Double Attack passive: pincer attacker strikes each target twice (2nd at ½) | §7 | ✅ | `Double_attack_passive_strikes_twice_and_counter_strikes_back` |
 | US-031 | Counter Attack passive: adjacent defender strikes back at ½`, `no chains | §7 | ✅ | `Double_attack_passive_strikes_twice_and_counter_strikes_back` |
-| US-032 | Respite spin when a link's whole line is already dead | §1.2.4 | ⬜ | none (dropped: such pairs are skipped) |
+| US-032 | Respite spin when a link's whole line is already dead | §1.2.4 | ✅ | `Second_pincer_on_an_already_dead_target_plays_respite` (spin + "Respite") |
 
 ## Timeline
 
@@ -104,7 +104,7 @@ test for every rule. 4. A harness step for anything visible. 5. Glyph check gree
 | US-078 | Battle-start orbs from Mage Robes (2) / Wizard Robe (3) | §24.8 | ✅ | `Mage_robe_seeds_battle_start_orbs_and_gear_resistance_applies` |
 | US-079 | Time-banked orbs: 1 Blue per 1.25 s left on the drag timer, max 3, at the next enemy turn | §3.1.8 | ✅ | `Drag_timer_remainder_banks_blue_orbs_at_the_enemy_handoff`, `Time_bank_carries_until_the_next_enemy_turn` |
 | US-080 | Mana Potion / Ether / Hi-Ether grant 2 / 3 / 6 orbs | §4.3 | ✅ | `Every_consumable_has_a_working_battle_effect_or_is_camp_only` (asserts an orb mint) |
-| US-081 | Orb letters + colorblind tint | §31.1 | 🟡 | none |
+| US-081 | Orb letters + colorblind tint | §31.1 | ✅ | `tools/uicheck.py` (orb letters; colorblind changes the red tint) |
 | US-082 | Bank capacity bonus gear knob | §3.1.4 | ✅ | `Bank_capacity_bonus_gear_widens_the_orb_line` |
 
 ## Abilities & spells
@@ -159,7 +159,7 @@ test for every rule. 4. A harness step for anything visible. 5. Glyph check gree
 | US-152 | Turn-buff tick points: heroes per action; enemies end of own turn; Frozen at the shared boundary | §8.3 | ✅ | `Frozen_costs_the_enemy_a_full_cycle_before_thawing`, `Frozen_halts_the_enemy_icon_and_expires_into_wet` |
 | US-153 | Tick-unit buffs: 1 step per 10 clock ticks; DOT is environmental | §8.3 | ✅ | `Burning_ticks_four_per_second_for_five_then_turns_warm`, `Poison_ticks_three_for_six` |
 | US-154 | Cleanse (Antidote spell, Remedy) and single cures (Antidote item, Eye Drops) | §8.8 | ✅ | `Every_consumable_has_a_working_battle_effect_or_is_camp_only` (items); spell resolves |
-| US-155 | Up to 3 letter pips per unit, buff-colored | §8.5 | 🟡 | smoke screenshots (visual) |
+| US-155 | Up to 3 letter pips per unit, buff-colored | §8.5 | ✅ | `tools/uicheck.py` (buff pip on the unit) + `RingTimer` |
 | US-156 | Radial countdown ring + >3 buff cycling | §8.5 | ✅ | `RingTimer` + 1.5 s rotation in `UnitView.SetBuffs` (visual) |
 | US-157 | Stack / Ignore / Upgrade reapply policies | §8.6 | ✅ | `Buff_stacking_policies` |
 | US-158 | Frozen lasts beyond the action it lands in | §8.3 | ✅ | `Frozen_costs_the_enemy_a_full_cycle_before_thawing` |
@@ -192,7 +192,7 @@ test for every rule. 4. A harness step for anything visible. 5. Glyph check gree
 | US-193 | Snake: head grows 3 segments; segments follow the trail; no icon | §14.2 | ✅ | `Snake_body_follows_the_head_and_is_armored_tail_first` |
 | US-194 | Snake tail-first armor ("Armored!", 0 damage) | §14.2 | ✅ | `Snake_body_follows_the_head_and_is_armored_tail_first` |
 | US-195 | Snake members are immovable to drags | §14.2 | ✅ | `Snake_members_are_immovable_to_drags` |
-| US-196 | Boss turn icon purple border | §2.6 | 🟡 | visual only |
+| US-196 | Boss turn icon purple border | §2.6 | ✅ | `tools/uicheck.py` (boss frame #DB66FF); Boss tag on cyclops/naga/vampire |
 
 ## Meta & Camp services
 
@@ -271,7 +271,7 @@ test for every rule. 4. A harness step for anything visible. 5. Glyph check gree
 | US-288 | Colorblind palette | §31.1 | ✅ | `tools/uicheck.py` (battle completes in colorblind mode) |
 | US-289 | Reduce motion | §31.2 | ✅ | `tools/uicheck.py` (battle completes with reduce motion) |
 | US-290 | Battle speed ×1 / 1.5 / 2 / 3 | §12.0.2 | ✅ | `tools/uicheck.py` (battle completes at ×3) |
-| US-291 | Combat feed | §9 | 🟡 | 3 fading lines over the board (`BattleScreen.Feed`); no inline icons yet |
+| US-291 | Combat feed | §9 | ✅ | 3 fading lines with type glyphs (†/☠/✚/★/▶); `tools/uicheck.py` asserts the feed exists |
 | US-292 | Actor panel: tap unit; HP/stats hidden until scanned | §9 | ✅ | `tools/uicheck.py` (tap enemy → HP hidden '???') |
 | US-293 | Glyph coverage for every UI string | GG-LAW-11 | ✅ | `tools/check_glyphs.py` (in `tools/test.ps1`) |
 | US-294 | Mute toggles in Settings | §31.5 | ✅ | Settings → Mute music / Mute sound |
@@ -296,11 +296,11 @@ test for every rule. 4. A harness step for anything visible. 5. Glyph check gree
 | US-322 | Bot soak over every stage; soft-lock detection | §6 | ✅ | `Bots_play_every_stage_without_breaking_invariants` |
 | US-323 | Automation server (input injection, state, screenshots, layout audit) | §6 | ✅ | smoke, sweep |
 | US-324 | Windows development build | §11.4 | ✅ | `Build/Windows/GridGameGaiden.exe` launched by smoke |
-| US-325 | Windows release / Android / WebGL builds | §11.4 | 🟡 | Windows dev build + Android APK built 2026-10-09; APK not yet run on a device; WebGL not built |
+| US-325 | Windows release / Android / WebGL builds | §11.4 | 🟡 | Windows dev ✅ (`tools/uicheck.py`); WebGL ✅ in Chromium (`tools/webcheck.mjs`: boot, saves survive reload, mouse drag commits); Android APK builds but is unrun on a device |
 | US-326 | Unity batchmode compile check | §17.3 | ✅ | `tools/build.ps1` compiles + builds clean each pass |
 | US-327 | 60 fps target pinned; fps reported by automation `state` | §30 | ✅ | `tools/uicheck.py` (fps ≥ 50 in battle) |
 | US-328 | On-device profiling pass | §30.5 | ⬜ | none |
-| US-329 | Portrait orientation, no splash, version from `VERSION` | §11.4 | 🟡 | `GaidenBuild.EnsureScene`; not asserted |
+| US-329 | Portrait orientation, no splash, version from `VERSION` | §11.4 | ✅ | `tools/uicheck.py` (ProjectSettings portrait, splash off, version.txt) |
 | US-330 | Verify or replace unverified audio before release | §12.0 | ⬜ | none |
 | US-331 | Guided tutorial | §29 | ⬜ | open question (hints are US-270) |
 | US-332 | Permadeath / NG+ | §29 | ⬜ | open question |
@@ -311,17 +311,17 @@ test for every rule. 4. A harness step for anything visible. 5. Glyph check gree
 
 | | ✅ | 🟡 | ⬜ |
 |---|---|---|---|
-| Battle core (board, slide, pincer, combat) (32) | 31 | 0 | 1 |
+| Battle core (board, slide, pincer, combat) (32) | 32 | 0 | 0 |
 | Timeline (18) | 18 | 0 | 0 |
-| Mana (13) | 12 | 1 | 0 |
+| Mana (13) | 13 | 0 | 0 |
 | Abilities & spells (28) | 27 | 0 | 1 |
-| Buffs (19) | 18 | 1 | 0 |
+| Buffs (19) | 19 | 0 | 0 |
 | AI (13) | 13 | 0 | 0 |
-| Bosses (7) | 6 | 1 | 0 |
+| Bosses (7) | 7 | 0 | 0 |
 | Meta & Camp services (37) | 35 | 0 | 2 |
-| UI screens (35) | 33 | 2 | 0 |
+| UI screens (35) | 34 | 1 | 0 |
 | Audio & VFX (6) | 3 | 2 | 1 |
-| Platform & ship (13) | 7 | 2 | 4 |
-| **Total (221)** | **203** | **9** | **9** |
+| Platform & ship (13) | 8 | 1 | 4 |
+| **Total (221)** | **209** | **4** | **8** |
 
 Open design questions that gate future stories live in [BIBLE §29](BIBLE.md#29-open-design-questions).

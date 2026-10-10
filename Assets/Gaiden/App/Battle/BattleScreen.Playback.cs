@@ -82,6 +82,7 @@ namespace Gaiden.App
                 case TeleportedEvent t: return TeleportAnim(t);
 
                 case PincerFormedEvent p: return PincerAnim(p);
+                case RespiteEvent rs: return RespiteAnim(rs);
                 case AttackEvent at: return AttackAnim(at);
                 case DamagedEvent dm: return DamageAnim(dm);
                 case HealedEvent h: return HealAnim(h);
@@ -170,6 +171,14 @@ namespace Gaiden.App
             yield return Tween.Wait(0.32f);
         }
 
+        private IEnumerator RespiteAnim(RespiteEvent rs)
+        {
+            foreach (var id in new[] { rs.Attacker1, rs.Attacker2 })
+                if (board.Units.TryGetValue(id, out var v))
+                    App.StartCoroutine(Tween.Run(0.45f, k => v.Root.style.rotate = new Rotate(k >= 1f ? 0f : 360f * Tween.EaseInOut(k))));
+            yield return FloatText(rs.Attacker1, "Respite", new Color(0.8f, 0.95f, 1f), 0.45f, 56);
+        }
+
         private IEnumerator AttackAnim(AttackEvent at)
         {
             var a = State.UnitById(at.AttackerId); var t = State.UnitById(at.TargetId);
@@ -204,7 +213,7 @@ namespace Gaiden.App
             bool crit = d.Hit == HitKind.Critical;
             App.Audio.Sfx(d.SourceId < 0 ? "debuff" : crit ? "crit" : SfxFor(d.Type));
             var src = State.UnitById(d.SourceId);
-            Feed($"{(src != null ? src.Name + " → " : "")}{t.Name}: {d.Amount}{(crit ? " CRIT" : "")}{(d.Note != null ? " (" + d.Note + ")" : "")}", t.IsHero ? new Color(1f, 0.65f, 0.6f) : new Color(1f, 1f, 1f, 0.9f));
+            Feed($"{(d.SourceId < 0 ? "☠" : "†")} {(src != null ? src.Name + " → " : "")}{t.Name}: {d.Amount}{(crit ? " CRIT" : "")}{(d.Note != null ? " (" + d.Note + ")" : "")}", t.IsHero ? new Color(1f, 0.65f, 0.6f) : new Color(1f, 1f, 1f, 0.9f));
             if (d.Amount > 0 && !ReduceMotion) Sparks(at, crit ? 12 : 7, crit ? new Color(1f, 0.85f, 0.3f) : (d.Type == DamageType.Physical ? new Color(1f, 0.95f, 0.85f) : ColorFor(d.Type)));
             string text = d.Note == "Armored!" ? "ARMORED" : (crit ? $"{d.Amount}!" : d.Amount.ToString());
             var color = d.Note == "Armored!" ? new Color(0.7f, 0.7f, 0.75f) : crit ? new Color(1f, 0.85f, 0.2f) : t.IsHero ? new Color(1f, 0.5f, 0.45f) : Color.white;
@@ -235,7 +244,7 @@ namespace Gaiden.App
         {
             var t = State.UnitById(h.TargetId);
             if (t == null || !board.Units.TryGetValue(t.Id, out var v)) yield break;
-            Feed($"{t.Name} +{h.Amount} HP", new Color(0.5f, 1f, 0.6f));
+            Feed($"✚ {t.Name} +{h.Amount} HP", new Color(0.5f, 1f, 0.6f));
             App.Audio.Sfx("heal");
             v.SetHp(h.HpAfter, t.MaxHp);
             v.SetGlow(new Color(0.4f, 1f, 0.5f), 0.8f);
@@ -248,7 +257,7 @@ namespace Gaiden.App
         {
             if (!board.Units.TryGetValue(d.UnitId, out var v)) yield break;
             var du = State.UnitById(d.UnitId);
-            if (du != null) Feed($"{du.Name} is defeated", du.IsHero ? new Color(1f, 0.45f, 0.4f) : new Color(1f, 0.85f, 0.4f));
+            if (du != null) Feed($"★ {du.Name} is defeated", du.IsHero ? new Color(1f, 0.45f, 0.4f) : new Color(1f, 0.85f, 0.4f));
             App.Audio.Sfx("death");
             yield return Tween.Run(0.3f, k =>
             {
@@ -350,7 +359,7 @@ namespace Gaiden.App
         private IEnumerator TurnAnim(TurnStartedEvent ts)
         {
             var u = State.UnitById(ts.UnitId);
-            if (u != null) Feed($"{u.Name}'s turn", new Color(1f, 0.6f, 0.5f));
+            if (u != null) Feed($"▶ {u.Name}'s turn", new Color(1f, 0.6f, 0.5f));
             App.Audio.Sfx("turn", 0.7f);
             var entry = State.TurnEntryOf(ts.UnitId);
             if (entry != null && timelineIconViews.TryGetValue(entry.Id, out var icon))

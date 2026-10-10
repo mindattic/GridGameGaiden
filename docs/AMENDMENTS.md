@@ -176,4 +176,9 @@ updated: 2026-10-09
 - **Battle end is checked after every action**, not only after kills/turns (robustness).
 - **UI**: mute toggles; distinct projectile curves; long-press ability card; radial buff timers with
   >3-buff rotation; idle hint also suggests spells/GUARD.
+- **WebGL build** (§11.4): uncompressed Minimal template; saves flush to IndexedDB via `GaidenSync.jslib`
+  (`FS.syncfs`), and `SaveStore` falls back from `File.Replace` where unsupported.
+- **Bosses are tagged `Boss`** (cyclops, naga, vampire) so their frame and timeline icon read purple
+  (heroes never take boss styling).
+- **Respite** restored (§13.1.1): a later link whose whole line already fell spins and shows "Respite".
 

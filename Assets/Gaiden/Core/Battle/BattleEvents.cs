@@ -54,6 +54,13 @@ namespace Gaiden.Core.Battle
         public override string ToString() => $"Pincer {Team} {Attacker1}+{Attacker2} vs [{string.Join(",", Opponents)}] sup[{string.Join(",", Supporters)}] #{ChainIndex}";
     }
 
+    /// <summary>A chained pincer whose whole line already fell: the attackers spin in triumph (cosmetic, §13.1.1).</summary>
+    public sealed class RespiteEvent : BattleEvent
+    {
+        public int Attacker1; public int Attacker2;
+        public override string ToString() => $"Respite {Attacker1}+{Attacker2}";
+    }
+
     public sealed class AttackEvent : BattleEvent
     {
         public int AttackerId; public int TargetId; public bool IsSupport; public bool IsMelee; public bool IsRanged;

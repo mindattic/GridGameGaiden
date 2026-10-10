@@ -132,6 +132,20 @@ namespace Gaiden.App
             Stage.Add(fade);
 
             FitStage();
+#if DEVELOPMENT_BUILD
+            if (CommandLine.Has("-traceInput"))
+            {
+                root.RegisterCallback<PointerDownEvent>(e => Debug.Log($"[Input] down at {e.position} target={(e.target as VisualElement)?.name}/{(e.target as VisualElement)?.GetType().Name} id={e.pointerId}"), TrickleDown.TrickleDown);
+                root.RegisterCallback<PointerUpEvent>(e => Debug.Log($"[Input] up at {e.position} target={(e.target as VisualElement)?.name}/{(e.target as VisualElement)?.GetType().Name} id={e.pointerId}"), TrickleDown.TrickleDown);
+                root.RegisterCallback<ClickEvent>(e =>
+                {
+                    var sb = new System.Text.StringBuilder();
+                    for (var v = e.target as VisualElement; v != null; v = v.parent)
+                        sb.Append($" > {v.GetType().Name}#{v.name}[{string.Join(".", v.GetClasses())}]{v.worldBound}");
+                    Debug.Log("[Input] click path" + sb);
+                }, TrickleDown.TrickleDown);
+            }
+#endif
         }
 
         /// <summary>Fit the fixed design canvas inside the screen: scale to the limiting axis, center, bars elsewhere — never stretch.</summary>

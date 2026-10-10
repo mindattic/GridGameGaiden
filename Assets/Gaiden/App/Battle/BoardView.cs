@@ -48,7 +48,7 @@ namespace Gaiden.App
             Frame.style.borderTopLeftRadius = Frame.style.borderTopRightRadius = Frame.style.borderBottomLeftRadius = Frame.style.borderBottomRightRadius = r;
             Frame.style.borderTopWidth = Frame.style.borderBottomWidth = Frame.style.borderLeftWidth = Frame.style.borderRightWidth = 6;
             var c = u.IsHero ? new Color(0.98f, 0.86f, 0.45f) : new Color(0.92f, 0.28f, 0.3f);
-            if (u.Def.HasTag("Boss")) c = new Color(0.86f, 0.4f, 1f);
+            if (!u.IsHero && (u.Def.HasTag("Boss") || u.IsMultiTile)) c = new Color(0.86f, 0.4f, 1f);
             Frame.style.borderTopColor = Frame.style.borderBottomColor = Frame.style.borderLeftColor = Frame.style.borderRightColor = c;
             Frame.style.backgroundColor = u.IsHero ? new Color(0.12f, 0.2f, 0.45f) : new Color(0.3f, 0.08f, 0.12f);
             Frame.style.overflow = Overflow.Hidden;
@@ -71,7 +71,7 @@ namespace Gaiden.App
             Hp.Add(HpFill);
             Root.Add(Hp);
 
-            Buffs = new VisualElement { pickingMode = PickingMode.Ignore };
+            Buffs = new VisualElement { name = "buffs-" + u.Id, pickingMode = PickingMode.Ignore };
             Buffs.style.position = Position.Absolute;
             Buffs.style.flexDirection = FlexDirection.Row;
             Buffs.style.right = 10; Buffs.style.top = 10;

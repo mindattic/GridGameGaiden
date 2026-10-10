@@ -79,6 +79,7 @@ namespace Gaiden.App
             var menu = Ui.Window(null, col);
             menu.style.width = 760;
             int recent = App.Saves.MostRecent();
+            Debug.Log($"[Title] most recent save slot: {recent}");
             if (recent >= 0) Ui.MenuRow("Continue", "", () => Continue(recent), menu);
             Ui.MenuRow("New Game", "", () => App.Router.Push(new SaveSlotScreen(true)), menu);
             Ui.MenuRow("Load Game", "", () => App.Router.Push(new SaveSlotScreen(false)), menu, null, recent >= 0);
@@ -92,6 +93,7 @@ namespace Gaiden.App
 
         private void Continue(int slot)
         {
+            Debug.Log($"[Title] continue slot {slot}");
             var s = App.Saves.Load(slot);
             if (s == null) { App.Toast("That save is damaged"); return; }
             App.Save = s; App.Slot = slot;

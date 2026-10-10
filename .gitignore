@@ -24,3 +24,5 @@ Tests/**/obj/
 !Tests/**/*.csproj
 __pycache__/
 /.utmp/
+/tools/node_modules/
+/tools/package-lock.json

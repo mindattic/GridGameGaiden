@@ -688,5 +688,27 @@ namespace Gaiden.Tests
             var ev = BattleEngine.Apply(s, new ShieldCommand());
             Assert.Contains(ev, e => e is CastQueuedEvent q && q.IsCharge);
         }
+
+        [Fact] // US-032
+        public void Second_pincer_on_an_already_dead_target_plays_respite()
+        {
+            var db = Mini();
+            db.Classes["goblin"].BaseStats.Vitality = 0; // 13 HP: one landing strike kills
+            db.Classes["rogue"] = new ClassDef { Id = "rogue", Name = "Rogue", Team = Team.Hero, Tags = { "Humanoid" }, BaseStats = new Stats { Strength = 20, Vitality = 10, Speed = 10 } };
+            bool saw = false;
+            for (int seed = 1; seed < 60 && !saw; seed++)
+            {
+                // Goblin at (1,1) is flanked twice by one drop: horizontally (0,1)–(2,1) and vertically (1,0)–(1,2).
+                var setup = new BattleSetup { Stage = Stage(("goblin", 1, 1)), Seed = seed, UnlockedSlots = 2 };
+                setup.Party.Add(new HeroSpec { ClassId = "knight", Start = new Coord(0, 1) });
+                setup.Party.Add(new HeroSpec { ClassId = "cleric", Start = new Coord(1, 0) });
+                setup.Party.Add(new HeroSpec { ClassId = "mage", Start = new Coord(1, 2) });
+                setup.Party.Add(new HeroSpec { ClassId = "rogue", Start = new Coord(3, 1) });
+                var s = BattleEngine.Create(db, setup, new List<BattleEvent>());
+                var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = Hero(s, "rogue").Id, Path = P((2, 1)) });
+                if (ev.OfType<PincerFormedEvent>().Count() == 1 && ev.Any(e => e is DiedEvent)) saw = ev.Any(e => e is RespiteEvent);
+            }
+            Assert.True(saw, "the second link over a goblin killed by the first should play Respite");
+        }
     }
 }

@@ -266,6 +266,27 @@ namespace Gaiden.App.Automation
                     return new { hero = cmd.HeroId, from = new[] { hero.Pos.X, hero.Pos.Y }, path = cmd.Path.Select(c => new[] { c.X, c.Y }).ToList(), pincers = pv.Pincers.Count,
                                  moved = pv.Positions.Where(kv => kv.Key != cmd.HeroId && sb2.State.UnitById(kv.Key).Pos != kv.Value).Select(kv => new { id = kv.Key, x = kv.Value.X, y = kv.Value.Y }).ToList() };
                 }
+                case "style":
+                {
+                    var e = app.Stage.Q(q["name"]);
+                    if (e == null) return new { error = "not found" };
+                    var rs = e.resolvedStyle;
+                    string Hex(Color c) => "#" + ColorUtility.ToHtmlStringRGBA(c);
+                    return new { border = Hex(rs.borderTopColor), background = Hex(rs.backgroundColor), tint = Hex(rs.unityBackgroundImageTintColor), children = e.childCount };
+                }
+                case "child_style":
+                {
+                    // style of the Nth child of a named element (unit frames are the 2nd child of unit-<id>)
+                    var e = app.Stage.Q(q["name"]);
+                    int idx = (int)F(q["index"], 0);
+                    if (e == null || idx >= e.childCount) return new { error = "not found" };
+                    var c = e[idx]; var rs = c.resolvedStyle;
+                    string Hex(Color col) => "#" + ColorUtility.ToHtmlStringRGBA(col);
+                    return new { border = Hex(rs.borderTopColor), background = Hex(rs.backgroundColor), children = c.childCount };
+                }
+                case "buff":
+                    if (app.Router.Current is BattleScreen bb) return new { ok = bb.DevBuff((int)F(q["unit"]), q["id"]) };
+                    return new { error = "not in battle" };
                 case "banner":
                     return new { text = (app.Router.Current as BattleScreen)?.BannerText };
                 case "press":

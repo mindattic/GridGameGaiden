@@ -94,10 +94,14 @@ namespace Gaiden.App
             row.RegisterCallback<PointerEnterEvent>(_ => Select(row));
             row.RegisterCallback<ClickEvent>(_ =>
             {
-                Select(row);
-                if (!enabled) { GameApp.I?.Audio?.Sfx("ui.error"); return; }
-                GameApp.I?.Audio?.Sfx("ui.select");
-                onClick?.Invoke();
+                try
+                {
+                    Select(row);
+                    if (!enabled) { GameApp.I?.Audio?.Sfx("ui.error"); return; }
+                    GameApp.I?.Audio?.Sfx("ui.select");
+                    onClick?.Invoke();
+                }
+                catch (Exception e) { Debug.LogException(e); }
             });
             return row;
         }

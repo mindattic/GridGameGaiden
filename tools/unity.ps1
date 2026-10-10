@@ -3,7 +3,8 @@
 param(
     [Parameter(Mandatory = $true)][string]$Method,
     [string]$Log = "unity",
-    [switch]$NoGraphics
+    [switch]$NoGraphics,
+    [string[]]$Extra = @()
 )
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
@@ -17,6 +18,7 @@ New-Item -ItemType Directory -Force "$root/Logs" | Out-Null
 $logFile = "$root/Logs/$Log.log"
 $uargs = @("-batchmode", "-quit", "-projectPath", $root, "-executeMethod", $Method, "-logFile", $logFile)
 if ($NoGraphics) { $uargs = @("-nographics") + $uargs }
+$uargs += $Extra
 $p = Start-Process -FilePath $unity -ArgumentList $uargs -Wait -PassThru -NoNewWindow
 $errors = Select-String -Path $logFile -Pattern "error CS\d+" | Select-Object -First 40
 if ($errors) { $errors | ForEach-Object { Write-Host $_.Line -ForegroundColor Red } }

@@ -129,7 +129,11 @@ namespace Gaiden.Core.Battle
                 if (!p.A.Alive || !p.B.Alive) continue;
                 bool anyAlive = false;
                 foreach (var o in p.Opponents) if (o.Alive) anyAlive = true;
-                if (!anyAlive) continue;
+                if (!anyAlive)
+                {
+                    if (chain > 0) Emit(new RespiteEvent { Attacker1 = p.A.Id, Attacker2 = p.B.Id });
+                    continue;
+                }
                 ResolvePincer(p, team, chain++);
             }
         }

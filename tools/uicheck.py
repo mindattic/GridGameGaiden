@@ -139,6 +139,24 @@ def main():
     else:
         check("slot tap enters targeting (or auto-casts)", st["results"]["ActionsTaken"] >= 2, str(st["targeting"]))
 
+    # ── Orb letters + colorblind tint (US-081) ────────────────────────────
+    t = texts()
+    check("orbs carry their color letter", sum(1 for x in t if x in ("R", "W")) >= 4)
+    normal = h.call("style", name="orb0")["tint"]
+    h.call("setting", key="colorblind", value=1); time.sleep(0.3)
+    h.call("givemana", colors="")  # forces an orb resync
+    cb = h.call("style", name="orb0")["tint"]
+    check("colorblind palette changes the red orb tint", normal != cb, f"{normal} vs {cb}")
+    h.call("setting", key="colorblind", value=0)
+    h.call("givemana", colors="")
+
+    # ── Buff pips with timer ring (US-155/156) ───────────────────────────
+    b = battle_state()
+    target = next(u for u in b["units"] if u["team"] == "Enemy")
+    h.call("buff", unit=target["Id"], id="burning")
+    st = h.call("style", name=f"buffs-{target['Id']}")
+    check("buff shows as a pip on the unit", st.get("children", 0) >= 1, str(st))
+
     # ── Long-press tooltip ────────────────────────────────────────────────
     wait_idle(200)
     h.call("press", x=slot0[0], y=slot0[1], ms=700)
@@ -183,6 +201,32 @@ def main():
     check("wide window letterboxes (aspect kept, centered)", abs(aspect - 1170 / 2532) < 0.01 and centered, json.dumps(sb))
     h.shot("letterbox-wide")
     h.call("resize", w=585, h=1266); time.sleep(1.0)
+
+    # ── Boss styling (US-196): purple frame on the 2×2 Cyclops ───────────
+    h.call("back"); time.sleep(0.4)
+    h.call("clicktext", text="Continue"); time.sleep(1.0)
+    h.call("battle", stage="cave-02"); time.sleep(2.0)
+    b = battle_state()
+    boss = next((u for u in b["units"] if u["cls"].startswith("cyclops")), None)
+    if boss is None:
+        for _ in range(30):  # the cyclops may arrive in a later wave: autoplay until it appears
+            h.call("autoplay", on=1); time.sleep(1.0)
+            b = battle_state() or {}
+            boss = next((u for u in b.get("units", []) if u["cls"].startswith("cyclops")), None)
+            if boss or not b: break
+        h.call("autoplay", on=0)
+    if boss:
+        fr = h.call("child_style", name=f"unit-{boss['Id']}", index=1)
+        check("2×2 boss gets the purple boss frame", fr.get("border", "").upper().startswith("#DB66FF"), str(fr))
+        h.shot("boss")
+    else:
+        check("2×2 boss appears in Frostmaw Caverns II", False)
+
+    # ── Build settings (US-329) ───────────────────────────────────────────
+    ps = open(os.path.join(h.ROOT, "ProjectSettings", "ProjectSettings.asset"), encoding="utf-8").read()
+    ver = open(os.path.join(h.ROOT, "version.txt"), encoding="utf-8").read().strip()
+    check("portrait orientation, no splash, version from version.txt",
+          "defaultScreenOrientation: 0" in ps and "m_ShowUnitySplashScreen: 0" in ps and f"bundleVersion: {ver}" in ps)
 
     logs = h.call("logs")
     errs = [l for l in logs if l.startswith(("Error", "Exception")) and "first mouse position" not in l]

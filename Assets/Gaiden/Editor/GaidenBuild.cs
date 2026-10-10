@@ -35,6 +35,8 @@ namespace Gaiden.EditorTools
             AssetDatabase.SaveAssets();
         }
 
+        private static bool CommandLine(string flag) => System.Array.IndexOf(System.Environment.GetCommandLineArgs(), flag) >= 0;
+
         private static string Version()
         {
             try { return File.ReadAllText("version.txt").Trim(); } catch { return "1"; }
@@ -55,7 +57,16 @@ namespace Gaiden.EditorTools
             Build(BuildTarget.Android, "Build/Android/GridGameGaiden.apk", true);
         }
 
-        public static void BuildWebGL() => Build(BuildTarget.WebGL, "Build/WebGL", true);
+        public static void BuildWebGL()
+        {
+            // Uncompressed so any static file server (and Playwright) can serve it without special headers.
+            PlayerSettings.WebGL.compressionFormat = WebGLCompressionFormat.Disabled;
+            PlayerSettings.WebGL.decompressionFallback = false;
+            PlayerSettings.WebGL.template = "APPLICATION:Minimal";
+            PlayerSettings.defaultWebScreenWidth = 585;
+            PlayerSettings.defaultWebScreenHeight = 1266;
+            Build(BuildTarget.WebGL, "Build/WebGL", CommandLine("-dev"));
+        }
 
         private static void Build(BuildTarget target, string output, bool development)
         {

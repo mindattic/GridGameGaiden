@@ -223,6 +223,7 @@ namespace Gaiden.App
             for (int i = 0; i < cap; i++)
             {
                 var o = Ui.Text("", "", row);
+                o.name = "orb" + i;
                 o.style.width = o.style.height = size;
                 o.style.backgroundImage = new StyleBackground(Art.Orb);
                 o.style.unityTextAlign = TextAnchor.MiddleCenter;
@@ -300,7 +301,7 @@ namespace Gaiden.App
                 icon.style.top = 2;
                 icon.style.backgroundImage = new StyleBackground(Art.Thumb(owner?.Def.Id));
                 icon.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Cover);
-                SetBorder(icon, 42, 4, owner != null && owner.Def.HasTag("Boss") ? new Color(0.86f, 0.4f, 1f) : new Color(0.92f, 0.3f, 0.3f));
+                SetBorder(icon, 42, 4, owner != null && (owner.Def.HasTag("Boss") || owner.IsMultiTile) ? new Color(0.86f, 0.4f, 1f) : new Color(0.92f, 0.3f, 0.3f));
             }
             else
             {
@@ -502,12 +503,24 @@ namespace Gaiden.App
 
         public string BannerText => banner?.text;
 
+        /// <summary>Dev/automation helper: put a buff on a unit and refresh its view.</summary>
+        public bool DevBuff(int unitId, string buffId)
+        {
+            var u = State.UnitById(unitId);
+            var def = App.Content.TryBuff(buffId);
+            if (u == null || def == null) return false;
+            u.Buffs.Add(new BuffInstance { Def = def, Remaining = def.Duration });
+            SyncAll();
+            return true;
+        }
+
         /// <summary>Apply a command to the simulation and play its consequences.</summary>
         public void Commit(BattleCommand cmd, bool skipMovePrefix = false)
         {
             if (!CanCommand()) return;
             CancelTargeting();
             var events = BattleEngine.Apply(State, cmd);
+            Debug.Log($"[Battle] {cmd} → {events.Count} events, clock {State.Clock}");
             App.StartCoroutine(Play(events, skipMovePrefix));
         }
 

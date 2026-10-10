@@ -3247,7 +3247,8 @@
     "Name": "Cyclops",
     "Team": "Enemy",
     "Tags": [
-      "Humanoid"
+      "Humanoid",
+      "Boss"
     ],
     "Description": "A flexible fighter with no single defining specialty.",
     "Lore": "Walks many roads, never lost for lack of a single path.",
@@ -3369,7 +3370,8 @@
     "Name": "Cyclops",
     "Team": "Enemy",
     "Tags": [
-      "Humanoid"
+      "Humanoid",
+      "Boss"
     ],
     "Description": "A flexible fighter with no single defining specialty.",
     "Lore": "Walks many roads, never lost for lack of a single path.",
@@ -3476,7 +3478,8 @@
     "Name": "Cyclops",
     "Team": "Enemy",
     "Tags": [
-      "Humanoid"
+      "Humanoid",
+      "Boss"
     ],
     "Description": "A flexible fighter with no single defining specialty.",
     "Lore": "Walks many roads, never lost for lack of a single path.",
@@ -9419,7 +9422,8 @@
     "Name": "Naga",
     "Team": "Enemy",
     "Tags": [
-      "Aquatic"
+      "Aquatic",
+      "Boss"
     ],
     "Description": "A feral threat that overwhelms foes with instinct and power.",
     "Lore": "Born to the deep places, it runs by instinct and strikes without doubt.",
@@ -17962,7 +17966,8 @@
     "Team": "Hero",
     "Tags": [
       "Humanoid",
-      "Undead"
+      "Undead",
+      "Boss"
     ],
     "Description": "An unnatural entity that endures through grim resilience and dread.",
     "Lore": "Life ended. Purpose remained. The rest is hunger and memory.",

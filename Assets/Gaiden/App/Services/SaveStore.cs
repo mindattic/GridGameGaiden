@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using Gaiden.Core.Content;
 using Gaiden.Meta;
 using Newtonsoft.Json;
@@ -45,14 +46,32 @@ namespace Gaiden.App
             var p = PathFor(slot);
             var tmp = p + ".tmp";
             File.WriteAllText(tmp, JsonConvert.SerializeObject(s, Formatting.Indented, ContentLoader.Settings));
-            if (File.Exists(p)) File.Replace(tmp, p, null);
-            else File.Move(tmp, p);
+            try
+            {
+                if (File.Exists(p)) File.Replace(tmp, p, null);
+                else File.Move(tmp, p);
+            }
+            catch (PlatformNotSupportedException)
+            {
+                // WebGL's file system has no atomic replace.
+                if (File.Exists(p)) File.Delete(p);
+                File.Move(tmp, p);
+            }
+            Flush();
         }
+
+#if UNITY_WEBGL && !UNITY_EDITOR
+        [DllImport("__Internal")] private static extern void GaidenSyncFiles();
+        private static void Flush() => GaidenSyncFiles();
+#else
+        private static void Flush() { }
+#endif
 
         public void Delete(int slot)
         {
             var p = PathFor(slot);
             if (File.Exists(p)) File.Delete(p);
+            Flush();
         }
 
         public int MostRecent()
