@@ -125,6 +125,6 @@
     "mat_essence_shadow": ["delapouite/sparkles", "shadow"]
   },
   "ui": {
-    "cursor": ["lorc/pointing", "glove", "rot:-45"]
+    "cursor": ["lorc/pointing", "glove", "rot:-135", "flop"]
   }
 }
