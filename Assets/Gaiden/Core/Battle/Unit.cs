@@ -9,6 +9,8 @@ namespace Gaiden.Core.Battle
         public int Remaining;
         /// <summary>Tick-unit buffs accumulate timeline ticks here; one duration step per BattleConfig.BuffTickInterval.</summary>
         public int TickAccumulator;
+        /// <summary>Set on application; a halting (Frozen) buff skips the turn boundary of the action that applied it.</summary>
+        public bool Fresh;
 
         public BuffInstance Clone() => (BuffInstance)MemberwiseClone();
     }

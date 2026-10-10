@@ -175,8 +175,9 @@ namespace Gaiden.Tests
             s.Bank.Add(ManaColor.Blue, 2);
             var tank = s.Units.Single(u => u.Def.Id == "tank");
             var ev = BattleEngine.Apply(s, new UseSlotCommand { HeroId = m.Id, Slot = 0, Target = new Coord(2, 2) });
-            // The freeze lands, the clock advances 2s with the icon frozen, then the shared turn boundary thaws it.
             Assert.Contains(ev, e => e is BuffAppliedEvent b && b.BuffId == "frozen");
+            // Frozen survives the action that applied it and thaws into Wet at the next turn boundary.
+            ev = BattleEngine.Apply(s, new MoveCommand { HeroId = Hero(s, "knight").Id, Path = P((5, 6)) });
             Assert.Contains(ev, e => e is BuffRemovedEvent r && r.BuffId == "frozen");
             Assert.True(tank.HasBuff("wet"));
         }

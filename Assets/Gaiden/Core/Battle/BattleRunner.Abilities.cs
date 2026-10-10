@@ -219,12 +219,7 @@ namespace Gaiden.Core.Battle
                     float chance = Math.Max(0f, Math.Min(1f, (cs.Luck + 0.5f * cs.Agility) / BattleConfig.StealDivisor));
                     if (S.Rng.Chance(chance)) { MintOrb(RandomColor(), t.Id, "steal"); Announce("Steal!", t.Id); }
                     else Announce("Missed!", t.Id);
-                    // Mug = steal + a physical hit.
-                    if (a.Id == "mug" && t.Alive)
-                    {
-                        int dmg = Math.Max(1, (int)Math.Round(BattleConfig.MugDamage * t.ResistanceMultiplier(DamageType.Physical) * t.IncomingDamageMultiplier));
-                        Damage(t, dmg, caster, HitKind.Normal, DamageType.Physical);
-                    }
+                    // Mug = Steal + its BaseDamage physical hit, handled by the damage step below.
                 }
 
                 if (deals && t.Alive)

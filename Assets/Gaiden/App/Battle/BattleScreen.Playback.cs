@@ -192,6 +192,9 @@ namespace Gaiden.App
             }
             bool crit = d.Hit == HitKind.Critical;
             App.Audio.Sfx(d.SourceId < 0 ? "debuff" : crit ? "crit" : SfxFor(d.Type));
+            var src = State.UnitById(d.SourceId);
+            Feed($"{(src != null ? src.Name + " → " : "")}{t.Name}: {d.Amount}{(crit ? " CRIT" : "")}{(d.Note != null ? " (" + d.Note + ")" : "")}", t.IsHero ? new Color(1f, 0.65f, 0.6f) : new Color(1f, 1f, 1f, 0.9f));
+            if (d.Amount > 0 && !ReduceMotion) Sparks(at, crit ? 12 : 7, crit ? new Color(1f, 0.85f, 0.3f) : (d.Type == DamageType.Physical ? new Color(1f, 0.95f, 0.85f) : ColorFor(d.Type)));
             string text = d.Note == "Armored!" ? "ARMORED" : (crit ? $"{d.Amount}!" : d.Amount.ToString());
             var color = d.Note == "Armored!" ? new Color(0.7f, 0.7f, 0.75f) : crit ? new Color(1f, 0.85f, 0.2f) : t.IsHero ? new Color(1f, 0.5f, 0.45f) : Color.white;
             App.StartCoroutine(FloatAway(board.Float(text, at, color, crit ? 100 : 72), 0.75f));
@@ -221,6 +224,7 @@ namespace Gaiden.App
         {
             var t = State.UnitById(h.TargetId);
             if (t == null || !board.Units.TryGetValue(t.Id, out var v)) yield break;
+            Feed($"{t.Name} +{h.Amount} HP", new Color(0.5f, 1f, 0.6f));
             App.Audio.Sfx("heal");
             v.SetHp(h.HpAfter, t.MaxHp);
             v.SetGlow(new Color(0.4f, 1f, 0.5f), 0.8f);
@@ -232,6 +236,8 @@ namespace Gaiden.App
         private IEnumerator DeathAnim(DiedEvent d)
         {
             if (!board.Units.TryGetValue(d.UnitId, out var v)) yield break;
+            var du = State.UnitById(d.UnitId);
+            if (du != null) Feed($"{du.Name} is defeated", du.IsHero ? new Color(1f, 0.45f, 0.4f) : new Color(1f, 0.85f, 0.4f));
             App.Audio.Sfx("death");
             yield return Tween.Run(0.3f, k =>
             {
@@ -333,6 +339,7 @@ namespace Gaiden.App
         private IEnumerator TurnAnim(TurnStartedEvent ts)
         {
             var u = State.UnitById(ts.UnitId);
+            if (u != null) Feed($"{u.Name}'s turn", new Color(1f, 0.6f, 0.5f));
             App.Audio.Sfx("turn", 0.7f);
             var entry = State.TurnEntryOf(ts.UnitId);
             if (entry != null && timelineIconViews.TryGetValue(entry.Id, out var icon))
@@ -478,6 +485,30 @@ namespace Gaiden.App
             App.Audio.Sfx("heal");
             yield return Tween.Run(0.35f, k => { v.Root.style.opacity = k; v.Root.style.scale = new Scale(Vector2.one * (0.6f + 0.4f * k)); });
             yield return FloatText(u.Id, "Revived!", new Color(1f, 0.95f, 0.6f), 0.2f, 70);
+        }
+
+        /// <summary>Little particles radiating from a hit (UI Toolkit, no particle system needed).</summary>
+        private void Sparks(Vector2 at, int count, Color color)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                var p = new VisualElement { pickingMode = PickingMode.Ignore };
+                p.style.position = Position.Absolute;
+                float size = Random.Range(10f, 22f);
+                p.style.width = p.style.height = size;
+                p.style.backgroundImage = new StyleBackground(Art.Glow);
+                p.style.unityBackgroundImageTintColor = color;
+                board.FxLayer.Add(p);
+                float ang = Random.Range(0f, Mathf.PI * 2f), dist = Random.Range(60f, 150f);
+                var dir = new Vector2(Mathf.Cos(ang), Mathf.Sin(ang));
+                App.StartCoroutine(Tween.Run(Random.Range(0.25f, 0.4f), k =>
+                {
+                    var pos = at + dir * dist * Tween.EaseOut(k) + Vector2.up * (60f * k * k);
+                    p.style.left = pos.x - size / 2; p.style.top = pos.y - size / 2;
+                    p.style.opacity = 1f - k;
+                    if (k >= 1f) p.RemoveFromHierarchy();
+                }));
+            }
         }
 
         // ── Shared helpers ────────────────────────────────────────────────────────

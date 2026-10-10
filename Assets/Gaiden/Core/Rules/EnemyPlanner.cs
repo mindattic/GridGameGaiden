@@ -80,7 +80,7 @@ namespace Gaiden.Core.Rules
         /// <summary>Caster archetype: telegraph a charge when no hero is adjacent (or a boss phase prefers charging).</summary>
         public static ChargePlan PlanCast(BattleState s, Unit enemy, bool ignoreMeleeRange)
         {
-            if (enemy.IsImmobile) return null;
+            if (enemy.IsImmobile || enemy.IsSilenced) return null;
             var ability = s.Content.TryAbility(enemy.Def.ChargeAbility);
             if (ability == null) return null;
             var heroes = s.LivingList(Team.Hero);

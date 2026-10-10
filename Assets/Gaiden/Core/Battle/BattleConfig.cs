@@ -64,7 +64,6 @@ namespace Gaiden.Core.Battle
 
         // ── Steal (§6 stage 8) ──────────────────────────────────────────────────────
         public const float StealDivisor = 50f;
-        public const int MugDamage = 10;
 
         // ── Weapon durability (§24.5) ───────────────────────────────────────────────
         public const float ShatterTargetMultiplier = 1.5f;

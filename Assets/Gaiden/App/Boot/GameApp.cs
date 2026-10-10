@@ -148,6 +148,20 @@ namespace Gaiden.App
             float logicalH = screenAspect > designAspect ? DesignHeight : DesignWidth / screenAspect;
             Stage.style.left = (logicalW - DesignWidth) / 2f;
             Stage.style.top = (logicalH - DesignHeight) / 2f;
+            ApplySafeArea(logicalW, logicalH);
+        }
+
+        /// <summary>Insets the screens where the device's safe area (notch / home bar) overlaps the stage (bible §26.5).</summary>
+        private void ApplySafeArea(float logicalW, float logicalH)
+        {
+            var safe = Screen.safeArea;
+            if (Screen.width <= 0 || Screen.height <= 0) return;
+            float k = logicalH / Screen.height;
+            float stageTop = (logicalH - DesignHeight) / 2f, stageBottom = stageTop + DesignHeight;
+            float safeTop = (Screen.height - safe.yMax) * k, safeBottom = logicalH - safe.yMin * k;
+            var screens = Stage.Q("screens");
+            screens.style.top = Mathf.Max(0f, safeTop - stageTop);
+            screens.style.bottom = Mathf.Max(0f, stageBottom - safeBottom);
         }
 
         private void Update()

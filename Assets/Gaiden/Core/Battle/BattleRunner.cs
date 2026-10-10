@@ -85,7 +85,6 @@ namespace Gaiden.Core.Battle
             // Timeline-halting debuffs on enemies (Frozen) count down on the shared turn cycle,
             // since a halted icon never reaches its own turn boundary.
             foreach (var e in S.LivingList(Team.Enemy)) TickTurnBuffs(e, true);
-            S.PendingTimeBankSeconds = 0f;
             Emit(new PlayerControlEvent());
         }
 
@@ -243,7 +242,7 @@ namespace Gaiden.Core.Battle
         {
             if (!u.Alive || def == null) return;
             u.Buffs.RemoveAll(b => b.Def.Id == def.Id); // refresh policy (§8.6)
-            u.Buffs.Add(new BuffInstance { Def = def, Remaining = Math.Max(1, duration) });
+            u.Buffs.Add(new BuffInstance { Def = def, Remaining = Math.Max(1, duration), Fresh = true });
             Emit(new BuffAppliedEvent { UnitId = u.Id, BuffId = def.Id, Duration = Math.Max(1, duration) });
         }
 
@@ -281,6 +280,7 @@ namespace Gaiden.Core.Battle
                 var b = u.Buffs[i];
                 if (b.Def.Unit != DurationUnit.Turns) continue;
                 if (haltingOnly != b.Def.HaltsTimeline) continue;
+                if (b.Def.HaltsTimeline && b.Fresh) { b.Fresh = false; continue; }
                 b.Remaining--;
                 if (b.Remaining <= 0) Expire(u, b);
                 else Emit(new BuffTickedEvent { UnitId = u.Id, BuffId = b.Def.Id, Remaining = b.Remaining });

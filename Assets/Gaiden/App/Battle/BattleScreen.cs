@@ -41,6 +41,7 @@ namespace Gaiden.App
         private readonly List<VisualElement> slotViews = new List<VisualElement>();
         private readonly List<VisualElement> orbViews = new List<VisualElement>();
         private VisualElement panel;
+        private VisualElement feed;
         private Label banner, waveLabel, coinLabel, timerLabel;
         private VisualElement shake;
         private bool playing;
@@ -98,6 +99,16 @@ namespace Gaiden.App
             board.Root.RegisterCallback<PointerMoveEvent>(OnPointerMove);
             board.Root.RegisterCallback<PointerUpEvent>(OnPointerUp);
             board.Root.RegisterCallback<PointerCaptureOutEvent>(_ => { if (dragging) CommitDrag(); pressing = false; });
+
+            feed = Ui.El("col", shake);
+            feed.name = "feed";
+            feed.pickingMode = PickingMode.Ignore;
+            feed.style.position = Position.Absolute;
+            feed.style.left = BoardLeft + 14; feed.style.top = BoardTop + BoardView.Tile * BattleConfig.Rows - 140;
+            feed.style.width = 640;
+            feed.style.backgroundColor = new Color(0f, 0f, 0.05f, 0.35f);
+            feed.style.borderTopRightRadius = 12;
+            feed.style.justifyContent = Justify.FlexEnd;
 
             BuildAbilityBar(shake);
             BuildOrbs(shake);
@@ -308,7 +319,10 @@ namespace Gaiden.App
                 int lane = 0;
                 while (placed.Any(p => p.kind == e.Kind && p.lane == lane && Mathf.Abs(p.x - x) < (e.Kind == TimelineKind.Turn ? 70 : 46))) lane++;
                 placed.Add((x, lane, e.Kind));
-                icon.style.top = e.Kind == TimelineKind.Turn ? 2 - lane * 34 : 126 + lane * 26;
+                // Alternate small offsets around the lane (up, down, further up…) so the stack never reaches the title.
+                int offset = lane == 0 ? 0 : (lane % 2 == 1 ? -1 : 1) * ((lane + 1) / 2) * 20;
+                icon.style.top = e.Kind == TimelineKind.Turn ? 2 + offset : 126 + lane * 22;
+                icon.style.left = Mathf.Clamp01(e.U) * TimelineWidth - (e.Kind == TimelineKind.Turn ? 42 : 28) + (lane > 0 ? (lane % 2 == 1 ? 14 : -14) : 0);
             }
         }
 
@@ -650,6 +664,25 @@ namespace Gaiden.App
                     v.SetGlow(new Color(1f, 0.9f, 0.5f), u.Id == id ? 0.65f : 0f);
             SyncBar();
             SyncPanel();
+        }
+
+        /// <summary>Combat feed (bible §9 row 4): the last few events as fading lines over the board's corner.</summary>
+        public void Feed(string text, Color color)
+        {
+            if (feed == null || string.IsNullOrEmpty(text)) return;
+            var l = Ui.Text(text, "tiny shadow", feed);
+            l.style.color = color;
+            l.style.fontSize = 30;
+            while (feed.childCount > 3) feed.RemoveAt(0);
+            App.StartCoroutine(FeedFade(l));
+        }
+
+        private IEnumerator FeedFade(Label l)
+        {
+            yield return new WaitForSecondsRealtime(4f);
+            float t = 0;
+            while (t < 0.6f && l.parent != null) { t += Time.unscaledDeltaTime; l.style.opacity = 1f - t / 0.6f; yield return null; }
+            l.RemoveFromHierarchy();
         }
 
         /// <summary>Action/status banner above the board; long text steps the font down so it never runs off-stage.</summary>

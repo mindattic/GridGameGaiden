@@ -37,7 +37,7 @@ namespace Gaiden.EditorTools
 
         private static string Version()
         {
-            try { return File.ReadAllText("VERSION").Trim(); } catch { return "1"; }
+            try { return File.ReadAllText("version.txt").Trim(); } catch { return "1"; }
         }
 
         [MenuItem("Gaiden/Build Windows (Development)")]
@@ -45,7 +45,15 @@ namespace Gaiden.EditorTools
 
         public static void BuildWindowsRelease() => Build(BuildTarget.StandaloneWindows64, "Build/WindowsRelease/GridGameGaiden.exe", false);
 
-        public static void BuildAndroid() => Build(BuildTarget.Android, "Build/Android/GridGameGaiden.apk", false);
+        public static void BuildAndroid()
+        {
+            PlayerSettings.SetApplicationIdentifier(UnityEditor.Build.NamedBuildTarget.Android, "com.mindattic.gridgamegaiden");
+            PlayerSettings.SetScriptingBackend(UnityEditor.Build.NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);
+            PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
+            PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel26;
+            EditorUserBuildSettings.buildAppBundle = false;
+            Build(BuildTarget.Android, "Build/Android/GridGameGaiden.apk", true);
+        }
 
         public static void BuildWebGL() => Build(BuildTarget.WebGL, "Build/WebGL", true);
 
