@@ -103,7 +103,7 @@ namespace Gaiden.Core.Battle
             foreach (var d in Coord.Cardinals)
             {
                 var c = enemy.Pos + d;
-                if (BattleState.InBounds(c) && S.UnitAt(c) == null && S.TrapAt(c) == null) spots.Add(c);
+                if (S.Walkable(c) && S.UnitAt(c) == null && S.TrapAt(c) == null) spots.Add(c);
             }
             if (spots.Count == 0) return false;
             var at = spots[S.Rng.Range(0, spots.Count)];
@@ -149,7 +149,7 @@ namespace Gaiden.Core.Battle
                 return true;
             }
 
-            if (S.UnitAt(dest) != null) return false;
+            if (S.UnitAt(dest) != null || !S.Walkable(dest)) return false;
             enemy.Pos = dest;
             Emit(new SteppedEvent { UnitId = enemy.Id, From = from, To = dest });
             if (S.Amplifier == dest) ShoveAmplifier(enemy, from); // enemies can't use it, but walking through drags it along
@@ -162,7 +162,7 @@ namespace Gaiden.Core.Battle
         private void ShoveAmplifier(Unit enemy, Coord to)
         {
             var from = S.Amplifier.Value;
-            if (!BattleState.InBounds(to) || from == to) return;
+            if (!S.Walkable(to) || from == to) return;
             S.Amplifier = to;
             Emit(new AmplifierMovedEvent { From = from, To = to, ByUnitId = enemy.Id });
         }

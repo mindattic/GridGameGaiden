@@ -31,6 +31,7 @@ namespace Gaiden.Core.Battle
                 RecommendedLevel = setup.RecommendedLevel,
                 NewGamePlus = setup.NewGamePlus,
                 Rng = new Rng(setup.Seed),
+                Blocks = new HashSet<Coord>(setup.Stage?.Blocks ?? new List<Coord>()),
             }, events);
             r.Setup(setup);
             return r.S;

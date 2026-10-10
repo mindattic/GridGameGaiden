@@ -202,7 +202,7 @@ namespace Gaiden.Core.Battle
                 foreach (var d in new[] { Coord.Up, Coord.Left, Coord.Right, Coord.Down })
                 {
                     var c = prev + d;
-                    if (BattleState.InBounds(c) && S.UnitAt(c) == null) { next = c; break; }
+                    if (S.Walkable(c) && S.UnitAt(c) == null) { next = c; break; }
                 }
                 if (next == null) break;
                 var seg = new Unit
@@ -229,7 +229,7 @@ namespace Gaiden.Core.Battle
                 for (int dx = 0; dx < w; dx++)
                 {
                     var c = new Coord(anchor.X + dx, anchor.Y + dy);
-                    if (!BattleState.InBounds(c) || S.UnitAt(c) != null || S.TrapAt(c) != null) return false;
+                    if (!S.Walkable(c) || S.UnitAt(c) != null || S.TrapAt(c) != null) return false;
                 }
             return true;
         }

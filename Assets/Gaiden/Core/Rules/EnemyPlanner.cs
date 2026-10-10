@@ -103,7 +103,7 @@ namespace Gaiden.Core.Rules
                 if (enemy.IsMultiTile) { if (!FootprintStepLegal(s, enemy, c)) continue; }
                 else
                 {
-                    if (!BattleState.InBounds(c)) continue;
+                    if (!s.Walkable(c)) continue;
                     var occ = s.UnitAt(c);
                     if (occ != null && occ != enemy) continue;
                 }
@@ -156,14 +156,14 @@ namespace Gaiden.Core.Rules
             var plan = new ChargePlan { Target = target, Ability = ability, Shape = enemy.Def.ChargeShape };
             if (plan.Shape == ChargeShape.Line)
             {
-                plan.Line = LineToward(enemy, target);
+                plan.Line = LineToward(enemy, target, s);
                 if (plan.Line.Count == 0) plan.Shape = ChargeShape.Single; // edge-pinned: fall back
             }
             return plan;
         }
 
         /// <summary>Cardinal line from beside the caster to the board edge along the dominant axis toward the target (X on ties).</summary>
-        public static List<Coord> LineToward(Unit caster, Unit target)
+        public static List<Coord> LineToward(Unit caster, Unit target, BattleState state = null)
         {
             int dx = target.Pos.X - caster.Pos.X, dy = target.Pos.Y - caster.Pos.Y;
             Coord dir = Math.Abs(dx) >= Math.Abs(dy)
@@ -173,7 +173,7 @@ namespace Gaiden.Core.Rules
             Coord start = caster.Pos;
             if (dir.X > 0) start = new Coord(caster.Pos.X + caster.W - 1, caster.Pos.Y);
             if (dir.Y > 0) start = new Coord(caster.Pos.X, caster.Pos.Y + caster.H - 1);
-            for (var c = start + dir; BattleState.InBounds(c); c = c + dir) list.Add(c);
+            for (var c = start + dir; BattleState.InBounds(c) && !(state?.IsBlock(c) ?? false); c = c + dir) list.Add(c); // a block stops the charge
             return list;
         }
 
@@ -186,6 +186,7 @@ namespace Gaiden.Core.Rules
                 var c = enemy.Pos + d;
                 for (int i = 1; i <= enemy.Def.AttackRange && BattleState.InBounds(c); i++, c = c + d)
                 {
+                    if (s.IsBlock(c)) break; // blocks stop line of sight
                     var occ = s.UnitAt(c);
                     if (occ == null) continue;
                     if (occ.IsHero) inSight.Add(occ);
@@ -201,7 +202,7 @@ namespace Gaiden.Core.Rules
                 for (int dx = 0; dx < enemy.W; dx++)
                 {
                     var t = new Coord(newAnchor.X + dx, newAnchor.Y + dy);
-                    if (!BattleState.InBounds(t)) return false;
+                    if (!s.Walkable(t)) return false;
                     var occ = s.UnitAt(t);
                     if (occ != null && occ != enemy && occ.Team == Team.Enemy) return false;
                 }

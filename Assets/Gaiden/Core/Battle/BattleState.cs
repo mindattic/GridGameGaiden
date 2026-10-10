@@ -121,6 +121,14 @@ namespace Gaiden.Core.Battle
 
         public static bool InBounds(Coord c) => c.X >= 0 && c.X < BattleConfig.Cols && c.Y >= 0 && c.Y < BattleConfig.Rows;
 
+        /// <summary>Physical blocks on this board (from the stage). Immutable during a battle, so clones share it.</summary>
+        public HashSet<Coord> Blocks = new HashSet<Coord>();
+
+        public bool IsBlock(Coord c) => Blocks.Contains(c);
+
+        /// <summary>The collider check: on the board and not a physical block. Every enter/land/displace/spawn goes through it.</summary>
+        public bool Walkable(Coord c) => InBounds(c) && !Blocks.Contains(c);
+
         public IEnumerable<Unit> Living(Team team)
         {
             foreach (var u in Units) if (u.Alive && u.Team == team) yield return u;

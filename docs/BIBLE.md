@@ -317,6 +317,17 @@ Side effects of a step: Sleep (and any `BreaksOnMove` buff) is removed from a di
 
 **Damage rule**: movement never deals damage ([GG-LAW-1](#GG-LAW-1)).
 
+### 1.1.1 Physical blocks (added 2026-10-10, owner direction)
+
+Owner: "the grid can have physical blocks that disallow entrance … nobody moving through or landing or spawning on a physical block."
+
+- `StageDef.Blocks` lists block tiles (rocks, pillars, dead trees); `BattleState.Blocks` holds them for the battle. **`BattleState.Walkable(c)`** (on the board and not a block) is the single collider check every rule uses: hero steps (`StepBlockedEvent` "block"), enemy steps and 2×2 footprints, snake moves, teleports, spawns (initial and reinforcements), trap laying and amplifier spawns/shoves.
+- Displacement can never push a unit into a block — the displaced unit always takes the tile the mover just left.
+- A block is not an opponent, so a block inside a line **breaks the pincer**. Blocks also stop ranged line of sight and line charges.
+- Content: Mireholt Fens III, all three Frostmaw Caverns and all three city-ruin stages carry 2–3 blocks, kept off the hero start rows (6–7). The bot soak plays every stage with them.
+- View: a raised, bevelled stone block (the biome tile, lit top edge, dark base, drop shadow).
+- *(Tests: `A_hero_cannot_step_onto_a_block`, `A_block_in_the_line_breaks_the_pincer`, `Nobody_spawns_or_walks_onto_blocks`, `Real_stages_carry_their_blocks`.)*
+
 ### 1.2 Pincer attacks
 
 A pincer is **two allies in the same row OR column, with every tile between them covered by opponents** — no gaps, no allies in the line, at least one opponent ([GG-LAW-2](#GG-LAW-2)).

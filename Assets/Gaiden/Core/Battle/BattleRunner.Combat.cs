@@ -76,6 +76,11 @@ namespace Gaiden.Core.Battle
                     Emit(new StepBlockedEvent { UnitId = hero.Id, At = next, Reason = "edge" });
                     return false;
                 }
+                if (S.IsBlock(next))
+                {
+                    Emit(new StepBlockedEvent { UnitId = hero.Id, At = next, Reason = "block" });
+                    return false;
+                }
                 var occ = S.UnitAt(next);
                 if (occ != null && (occ.IsMultiTile || occ.IsSnakeMember))
                 {

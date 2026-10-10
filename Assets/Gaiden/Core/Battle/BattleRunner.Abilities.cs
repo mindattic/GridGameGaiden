@@ -162,7 +162,7 @@ namespace Gaiden.Core.Battle
         {
             if (a.IsTeleport)
             {
-                if (S.UnitAt(anchor) != null || !BattleState.InBounds(anchor)) { Announce("Blocked", caster.Id); return; }
+                if (!S.Walkable(anchor) || S.UnitAt(anchor) != null) { Announce("Blocked", caster.Id); return; }
                 var from = caster.Pos;
                 caster.Pos = anchor;
                 Emit(new AbilityResolvedEvent { CasterId = caster.Id, AbilityId = a.Id, Anchor = anchor, Tiles = { anchor } });

@@ -321,6 +321,8 @@ namespace Gaiden.Core.Content
         public string Background;
         public string Music;
         public bool IsTest;
+        /// <summary>Physical blocks (rocks, pillars, wreckage): tiles no unit may enter, land on, be pushed into or spawn on (§1.1.1).</summary>
+        public List<Coord> Blocks = new List<Coord>();
         public List<WaveDef> Waves = new List<WaveDef>();
     }
 

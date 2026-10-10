@@ -86,7 +86,7 @@ namespace Gaiden.Core.Battle
                 for (int x = 0; x < BattleConfig.Cols; x++)
                 {
                     var c = new Coord(x, y);
-                    if (S.UnitAt(c) == null && S.TrapAt(c) == null) free.Add(c);
+                    if (S.Walkable(c) && S.UnitAt(c) == null && S.TrapAt(c) == null) free.Add(c);
                 }
             if (free.Count == 0) return;
             var at = free[S.Rng.Range(0, free.Count)];

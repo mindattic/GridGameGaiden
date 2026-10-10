@@ -291,6 +291,8 @@ def main():
             boss = next((u for u in b.get("units", []) if u["cls"].startswith("cyclops")), None)
             if boss or not b: break
         h.call("autoplay", on=0)
+    blocks = h.call("names", prefix="block-")
+    check("physical blocks draw on cave stages", len(blocks) >= 2, str(blocks))
     if boss:
         fr = h.call("child_style", name=f"unit-{boss['Id']}", index=1)
         kl = h.call("child_style", name=f"unit-{boss['Id']}", index=1, child=1)

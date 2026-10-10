@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using Gaiden.Core;
 using Gaiden.Core.Battle;
@@ -172,6 +173,59 @@ namespace Gaiden.Tests
             Assert.Equal(1, s.Wave);
             Assert.False(s.IsOver);
             Assert.NotNull(At(s, 4, 4));
+        }
+
+        // ── Physical blocks (§1.1.1) ────────────────────────────────────────────
+
+        [Fact]
+        public void A_hero_cannot_step_onto_a_block()
+        {
+            var db = Mini();
+            var stage = Stage(("tank", 5, 0));
+            stage.Blocks.Add(new Coord(1, 3));
+            var (s, _) = Battle(db, stage, ("knight", 0, 3), ("cleric", 5, 7));
+            var knight = Hero(s, "knight");
+            var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = knight.Id, Path = P((1, 3)) });
+            Assert.Contains(ev, e => e is StepBlockedEvent b && b.Reason == "block");
+            Assert.Equal(new Coord(0, 3), knight.Pos);
+        }
+
+        [Fact]
+        public void A_block_in_the_line_breaks_the_pincer()
+        {
+            var db = Mini();
+            var stage = Stage(("goblin", 3, 3));
+            stage.Blocks.Add(new Coord(4, 3));
+            var (s, _) = Battle(db, stage, ("cleric", 2, 3), ("knight", 5, 2));
+            var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = Hero(s, "knight").Id, Path = P((5, 3)) });
+            Assert.DoesNotContain(ev, e => e is PincerFormedEvent);
+        }
+
+        [Fact]
+        public void Nobody_spawns_or_walks_onto_blocks()
+        {
+            var db = Mini();
+            for (int seed = 0; seed < 40; seed++)
+            {
+                var stage = Stage(("wolf", -1, -1), ("wolf", -1, -1), ("wolf", -1, -1), ("wolf", -1, -1));
+                for (int x = 0; x < 6; x++) if (x != 2) stage.Blocks.Add(new Coord(x, 2));
+                var setup = new BattleSetup { Stage = stage, Seed = seed, UnlockedSlots = 2 };
+                setup.Party.Add(new HeroSpec { ClassId = "knight" });
+                setup.Party.Add(new HeroSpec { ClassId = "cleric" });
+                var s = BattleEngine.Create(db, setup, new List<BattleEvent>());
+                for (int i = 0; i < 6 && !s.IsOver; i++)
+                {
+                    BattleEngine.Apply(s, new ShieldCommand());
+                    Assert.All(s.Units.Where(u => u.Alive), u => Assert.False(s.IsBlock(u.Pos), $"{u.Name} on a block at {u.Pos}"));
+                }
+            }
+        }
+
+        [Fact]
+        public void Real_stages_carry_their_blocks()
+        {
+            Assert.True(Real.Stages["cave-03"].Blocks.Count >= 2);
+            Assert.All(Real.Stages.Values.SelectMany(st => st.Blocks), b => Assert.True(b.Y <= 5, "blocks stay clear of the hero start rows"));
         }
     }
 }

@@ -318,6 +318,16 @@
     "Background": null,
     "Music": "Battle",
     "IsTest": false,
+    "Blocks": [
+      {
+        "X": 1,
+        "Y": 3
+      },
+      {
+        "X": 4,
+        "Y": 4
+      }
+    ],
     "Waves": [
       {
         "Enemies": [
@@ -376,6 +386,16 @@
     "Background": null,
     "Music": "Battle",
     "IsTest": false,
+    "Blocks": [
+      {
+        "X": 2,
+        "Y": 3
+      },
+      {
+        "X": 3,
+        "Y": 3
+      }
+    ],
     "Waves": [
       {
         "Enemies": [
@@ -424,6 +444,16 @@
     "Background": null,
     "Music": "Battle",
     "IsTest": false,
+    "Blocks": [
+      {
+        "X": 0,
+        "Y": 4
+      },
+      {
+        "X": 5,
+        "Y": 4
+      }
+    ],
     "Waves": [
       {
         "Enemies": [
@@ -478,6 +508,20 @@
     "Background": null,
     "Music": "Battle",
     "IsTest": false,
+    "Blocks": [
+      {
+        "X": 1,
+        "Y": 2
+      },
+      {
+        "X": 4,
+        "Y": 2
+      },
+      {
+        "X": 2,
+        "Y": 5
+      }
+    ],
     "Waves": [
       {
         "Enemies": [
@@ -542,6 +586,16 @@
     "Background": null,
     "Music": "Battle",
     "IsTest": false,
+    "Blocks": [
+      {
+        "X": 1,
+        "Y": 4
+      },
+      {
+        "X": 4,
+        "Y": 4
+      }
+    ],
     "Waves": [
       {
         "Enemies": [
@@ -596,6 +650,16 @@
     "Background": null,
     "Music": "Battle",
     "IsTest": false,
+    "Blocks": [
+      {
+        "X": 2,
+        "Y": 2
+      },
+      {
+        "X": 3,
+        "Y": 4
+      }
+    ],
     "Waves": [
       {
         "Enemies": [
@@ -660,6 +724,20 @@
     "Background": null,
     "Music": "Battle",
     "IsTest": false,
+    "Blocks": [
+      {
+        "X": 0,
+        "Y": 3
+      },
+      {
+        "X": 5,
+        "Y": 3
+      },
+      {
+        "X": 2,
+        "Y": 4
+      }
+    ],
     "Waves": [
       {
         "Enemies": [

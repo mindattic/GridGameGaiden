@@ -204,8 +204,11 @@ namespace Gaiden.App
         private readonly List<VisualElement> trapMarks = new List<VisualElement>();
         public readonly LineLayer Lines;
 
+        private readonly string theme;
+
         public BoardView(VisualElement parent, string theme = null)
         {
+            this.theme = theme;
             Root = new VisualElement { name = "board" };
             Root.style.position = Position.Absolute;
             Root.style.width = Tile * BattleConfig.Cols;
@@ -266,6 +269,40 @@ namespace Gaiden.App
             int y = Mathf.Clamp(Mathf.FloorToInt(local.y / Tile), 0, BattleConfig.Rows - 1);
             return new Coord(x, y);
         }
+
+        // ── Physical blocks (§1.1.1): raised stone that nothing can enter ──
+        private readonly HashSet<Coord> drawnBlocks = new HashSet<Coord>();
+
+        public void SyncBlocks(IEnumerable<Coord> blocks)
+        {
+            foreach (var c in blocks)
+            {
+                if (!drawnBlocks.Add(c)) continue;
+                var shadow = new VisualElement { pickingMode = PickingMode.Ignore };
+                shadow.style.position = Position.Absolute;
+                shadow.style.left = c.X * Tile + 14; shadow.style.top = c.Y * Tile + 22;
+                shadow.style.width = Tile - 22; shadow.style.height = Tile - 22;
+                shadow.style.backgroundColor = new Color(0f, 0f, 0f, 0.45f);
+                SetRadius(shadow, 26);
+                TileLayer.Add(shadow);
+                var rock = new VisualElement { name = $"block-{c.X}-{c.Y}", pickingMode = PickingMode.Ignore };
+                rock.style.position = Position.Absolute;
+                rock.style.left = c.X * Tile + 8; rock.style.top = c.Y * Tile + 8;
+                rock.style.width = Tile - 16; rock.style.height = Tile - 22;
+                rock.style.backgroundImage = new StyleBackground(App.Art.BoardTile(theme));
+                rock.style.unityBackgroundImageTintColor = new Color(0.85f, 0.85f, 0.9f, 1f);
+                rock.style.backgroundColor = new Color(0.32f, 0.33f, 0.38f, 1f);
+                SetRadius(rock, 26);
+                rock.style.borderTopWidth = 6; rock.style.borderLeftWidth = rock.style.borderRightWidth = 4; rock.style.borderBottomWidth = 12;
+                rock.style.borderTopColor = new Color(0.78f, 0.8f, 0.86f, 0.9f);
+                rock.style.borderLeftColor = rock.style.borderRightColor = new Color(0.45f, 0.47f, 0.53f, 1f);
+                rock.style.borderBottomColor = new Color(0.16f, 0.17f, 0.2f, 1f);
+                TileLayer.Add(rock);
+            }
+        }
+
+        private static void SetRadius(VisualElement e, float r) =>
+            e.style.borderTopLeftRadius = e.style.borderTopRightRadius = e.style.borderBottomLeftRadius = e.style.borderBottomRightRadius = r;
 
         // ── Power Amplifier marker (§1.2.6): a pulsing gold diamond on its tile ──
         private VisualElement amp;

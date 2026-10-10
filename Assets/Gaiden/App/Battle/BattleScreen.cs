@@ -324,6 +324,7 @@ namespace Gaiden.App
                 else v.SetGlow(Color.white, 0f);
             }
             board.SyncTraps(State);
+            board.SyncBlocks(State.Blocks);
             board.SyncAmplifier(State.Amplifier);
             SyncTimeline(null);
             SyncOrbs();
