@@ -14,6 +14,7 @@ namespace Gaiden.App
         public readonly VisualElement Root;
         public readonly VisualElement Frame;
         public readonly VisualElement Art;
+        public readonly VisualElement Keyline;
         public readonly VisualElement Hp;
         public readonly VisualElement HpFill;
         public readonly VisualElement Buffs;
@@ -40,18 +41,13 @@ namespace Gaiden.App
             Glow.style.opacity = 0f;
             Root.Add(Glow);
 
+            // Same frame as every menu portrait (.thumb): white rounded border over the window gradient.
             Frame = new VisualElement { pickingMode = PickingMode.Ignore };
+            Frame.AddToClassList("unit-frame");
             Frame.style.position = Position.Absolute;
             Frame.style.left = Frame.style.top = 6;
             Frame.style.right = Frame.style.bottom = 6;
-            float r = 22;
-            Frame.style.borderTopLeftRadius = Frame.style.borderTopRightRadius = Frame.style.borderBottomLeftRadius = Frame.style.borderBottomRightRadius = r;
-            Frame.style.borderTopWidth = Frame.style.borderBottomWidth = Frame.style.borderLeftWidth = Frame.style.borderRightWidth = 6;
-            var c = u.IsHero ? new Color(0.98f, 0.86f, 0.45f) : new Color(0.92f, 0.28f, 0.3f);
-            if (!u.IsHero && (u.Def.HasTag("Boss") || u.IsMultiTile)) c = new Color(0.86f, 0.4f, 1f);
-            Frame.style.borderTopColor = Frame.style.borderBottomColor = Frame.style.borderLeftColor = Frame.style.borderRightColor = c;
-            Frame.style.backgroundColor = u.IsHero ? new Color(0.12f, 0.2f, 0.45f) : new Color(0.3f, 0.08f, 0.12f);
-            Frame.style.overflow = Overflow.Hidden;
+            Frame.style.backgroundImage = new StyleBackground(App.Art.Window);
             Root.Add(Frame);
 
             Art = new VisualElement { pickingMode = PickingMode.Ignore };
@@ -61,6 +57,12 @@ namespace Gaiden.App
             Art.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Cover);
             if (!u.IsHero) Art.style.scale = new Scale(new Vector2(-1, 1)); // enemies face the party
             Frame.Add(Art);
+
+            // Team keyline just inside the white border, so heroes, foes and bosses still read apart.
+            Keyline = new VisualElement { name = "keyline", pickingMode = PickingMode.Ignore };
+            Keyline.AddToClassList("unit-keyline");
+            Keyline.AddToClassList(u.IsHero ? "unit-keyline--hero" : (u.Def.HasTag("Boss") || u.IsMultiTile) ? "unit-keyline--boss" : "unit-keyline--foe");
+            Frame.Add(Keyline);
 
             Hp = new VisualElement { pickingMode = PickingMode.Ignore };
             Hp.AddToClassList("gauge");
@@ -89,6 +91,7 @@ namespace Gaiden.App
             if (u.IsSnakeSegment)
             {
                 Frame.style.borderTopLeftRadius = Frame.style.borderTopRightRadius = Frame.style.borderBottomLeftRadius = Frame.style.borderBottomRightRadius = tile * 0.4f;
+                Keyline.style.borderTopLeftRadius = Keyline.style.borderTopRightRadius = Keyline.style.borderBottomLeftRadius = Keyline.style.borderBottomRightRadius = tile * 0.4f - 4;
             }
         }
 

@@ -217,3 +217,10 @@ updated: 2026-10-09
   extended with hand-held Perlin sway, a slow portrait push-in, a world dim and a board push-in. Plays on
   the first pincer of an action only, so chains stay quick. Settings → "Pincer close-ups" (default on).
 
+## 2026-10-10 — battle unit frames match the menus (owner request)
+
+- **Owner:** "make the borders around the Heros and Enemies in the battle match the menu system that
+  exists outside the battle; same UI for all." Unit frames now use the menu portrait frame (white
+  rounded border, window gradient). The old gold/red/purple outer borders became a thin inner keyline
+  so team and boss still read at a glance.
+

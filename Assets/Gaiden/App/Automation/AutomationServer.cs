@@ -281,7 +281,9 @@ namespace Gaiden.App.Automation
                     var e = app.Stage.Q(q["name"]);
                     int idx = (int)F(q["index"], 0);
                     if (e == null || idx >= e.childCount) return new { error = "not found" };
-                    var c = e[idx]; var rs = c.resolvedStyle;
+                    var c = e[idx];
+                    if (q["child"] != null) { int ci = (int)F(q["child"], 0); if (ci >= c.childCount) return new { error = "not found" }; c = c[ci]; }
+                    var rs = c.resolvedStyle;
                     string Hex(Color col) => "#" + ColorUtility.ToHtmlStringRGBA(col);
                     return new { border = Hex(rs.borderTopColor), background = Hex(rs.backgroundColor), children = c.childCount };
                 }

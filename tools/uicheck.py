@@ -234,7 +234,9 @@ def main():
         h.call("autoplay", on=0)
     if boss:
         fr = h.call("child_style", name=f"unit-{boss['Id']}", index=1)
-        check("2×2 boss gets the purple boss frame", fr.get("border", "").upper().startswith("#DB66FF"), str(fr))
+        kl = h.call("child_style", name=f"unit-{boss['Id']}", index=1, child=1)
+        check("unit frame uses the menu portrait frame (white border)", fr.get("border", "").upper().startswith("#ECEEFF"), str(fr))
+        check("2×2 boss gets the purple boss keyline", kl.get("border", "").upper().startswith("#DB66FF"), str(kl))
         h.shot("boss")
     else:
         check("2×2 boss appears in Frostmaw Caverns II", False)

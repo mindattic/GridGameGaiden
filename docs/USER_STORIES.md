@@ -192,7 +192,7 @@ test for every rule. 4. A harness step for anything visible. 5. Glyph check gree
 | US-193 | Snake: head grows 3 segments; segments follow the trail; no icon | §14.2 | ✅ | `Snake_body_follows_the_head_and_is_armored_tail_first` |
 | US-194 | Snake tail-first armor ("Armored!", 0 damage) | §14.2 | ✅ | `Snake_body_follows_the_head_and_is_armored_tail_first` |
 | US-195 | Snake members are immovable to drags | §14.2 | ✅ | `Snake_members_are_immovable_to_drags` |
-| US-196 | Boss turn icon purple border | §2.6 | ✅ | `tools/uicheck.py` (boss frame #DB66FF); Boss tag on cyclops/naga/vampire |
+| US-196 | Boss turn icon purple border | §2.6 | ✅ | `tools/uicheck.py` (boss keyline #DB66FF, unit frame = menu white frame); Boss tag on cyclops/naga/vampire |
 
 ## Meta & Camp services
 

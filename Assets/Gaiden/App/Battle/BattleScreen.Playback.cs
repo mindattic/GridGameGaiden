@@ -387,6 +387,7 @@ namespace Gaiden.App
             if (crit || d.Amount >= t.MaxHp * 0.25f) App.StartCoroutine(Tween.Shake(shake, (crit ? 16f : 9f) * Fx, 0.2f));
             yield return Tween.Wait(crit ? 0.16f : 0.09f); // hit-stop
             v.Art.style.unityBackgroundImageTintColor = Color.white;
+            v.Frame.style.unityBackgroundImageTintColor = Color.white;
         }
 
         private static string SfxFor(DamageType t)
