@@ -224,3 +224,10 @@ updated: 2026-10-09
   rounded border, window gradient). The old gold/red/purple outer borders became a thin inner keyline
   so team and boss still read at a glance.
 
+## 2026-10-10 — pixel-art enemy timeline icons (owner request)
+
+- **Owner:** "use imagemagick to reduce and enhance the enemy icons so that they stand out and look like
+  pixel art versions of the full enemy … so the user can tell from a glance who's the next attacker."
+  Turn icons now show the whole enemy as a 36 px, 16-colour sprite with a sticker outline; the next
+  attacker's icon gets a gold ring and a slight lift.
+

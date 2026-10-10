@@ -466,7 +466,7 @@ The **GUARD** button (right of the timeline) issues `ShieldCommand`:
 
 ### 2.6 One timeline, two lanes — turn icons above, cast icons below
 
-- **Above the line — enemy turn icons (84 px portraits):** red border; bosses purple.
+- **Above the line — enemy turn icons (84 px):** each enemy drawn as a **pixel-art sprite of its whole body** (`Resources/Pixel/<id>.png`, made from the portrait by `tools/make_pixel_icons.py` with ImageMagick: 36 px, 16 colours, dark outline + cream rim, point-filtered) on a dark disc; red ring, bosses purple. The turn closest to ACT — **the next attacker** — gets a gold ring and a 1.18× lift (amended 2026-10-10, owner request). `tools/check_assets.py` fails if an enemy has no sprite.
 - **Below the line — cast icons (56 px):** hero casts blue-bordered, enemy charges red-orange, showing the ability icon. A cast's position is `u = 1 − RemainingTicks × 16 / 1000` (the Speed-10 reference pace, `ReferencePacePerTick`), so "3 s left" reads the same as on an enemy icon.
 - Icons that would overlap step into extra lanes (`BattleScreen.StaggerIcons`).
 

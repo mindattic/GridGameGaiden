@@ -87,6 +87,7 @@ def main():
     for el in ["board", "abilitybar", "orbs", "shield", "menu", "feed"]:
         check(f"HUD element {el}", el in names)
     check("timeline icons present", any(n.startswith("tl-") for n in names))
+    check("enemy turn icons are pixel-art sprites", "px" in names, "no 'px' sprite under the timeline icons")
     b = battle_state()
     enemies = [u for u in b["units"] if u["team"] == "Enemy"]
     check("countdown badges show 'acts in' numbers", all(u["acts_in"] >= 0 for u in enemies) and any(x.isdigit() for x in texts()))

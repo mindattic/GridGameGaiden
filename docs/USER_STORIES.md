@@ -286,6 +286,7 @@ test for every rule. 4. A harness step for anything visible. 5. Glyph check gree
 | US-303 | Effect cadence: every event is an awaited beat; watchdog | §12.0.2 | ✅ | `tools/uicheck.py` + `BattleScreen.Safe`/watchdog; zero errors across the run |
 | US-304 | Particle VFX per spell (cast / projectile / impact / linger) | §6.2 | ✅ | Per-element UI Toolkit VFX (`ElementBurst`: fire embers, ice shards + ring, lightning bolt, poison bubbles, holy rays, dark implosion, arcane ring; heal sparkles; status auras); screenshots in artifacts/vfx |
 | US-333 | Pincer close-up cut-in: attackers' portraits sweep past with hand-held sway while the board camera pushes in (owner request, from GridGame2026) | §6.2 | ✅ | `tools/uicheck.py` (both portraits on screen mid-sweep, cleans up; real-pincer counter); autoplay battle showed 4 cut-ins, 0 errors; screenshot artifacts/uicheck/cutin.png |
+| US-334 | Enemy timeline icons are pixel-art sprites of the whole enemy; the next attacker gets a gold ring (owner request) | §2.6 | ✅ | `tools/make_pixel_icons.py` (110 sprites, ImageMagick); `tools/check_assets.py` (every enemy has one); `tools/uicheck.py` (turn icons are pixel sprites); screenshots artifacts/tlshot |
 | US-305 | HD art pass | §7 (V2) | ⬜ | V2 scope per RFC 0002 (never part of the V1 claim); current art is the original GridGame illustration set |
 
 ## Platform & ship
@@ -321,8 +322,8 @@ test for every rule. 4. A harness step for anything visible. 5. Glyph check gree
 | Bosses (7) | 7 | 0 | 0 |
 | Meta & Camp services (37) | 37 | 0 | 0 |
 | UI screens (35) | 35 | 0 | 0 |
-| Audio & VFX (7) | 6 | 0 | 1 |
+| Audio & VFX (8) | 7 | 0 | 1 |
 | Platform & ship (13) | 12 | 0 | 1 |
-| **Total (222)** | **220** | **0** | **2** |
+| **Total (223)** | **221** | **0** | **2** |
 
 Open design questions that gate future stories live in [BIBLE §29](BIBLE.md#29-open-design-questions).

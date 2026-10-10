@@ -361,6 +361,7 @@ namespace Gaiden.App
                 PlaceIcon(icon, e.Kind, u);
             }
             StaggerIcons();
+            MarkNextAttacker();
             foreach (var kv in timelineIconViews.ToList())
                 if (!live.Contains(kv.Key)) { kv.Value.RemoveFromHierarchy(); timelineIconViews.Remove(kv.Key); }
         }
@@ -370,13 +371,34 @@ namespace Gaiden.App
             var owner = State.UnitById(e.OwnerId);
             var icon = new VisualElement { name = "tl-" + e.Id, pickingMode = PickingMode.Ignore };
             icon.style.position = Position.Absolute;
+            icon.style.flexShrink = 0;
             if (e.Kind == TimelineKind.Turn)
             {
                 icon.style.width = icon.style.height = 84;
                 icon.style.top = 2;
-                icon.style.backgroundImage = new StyleBackground(Art.Thumb(owner?.Def.Id));
-                icon.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Cover);
-                SetBorder(icon, 42, 4, owner != null && (owner.Def.HasTag("Boss") || owner.IsMultiTile) ? new Color(0.86f, 0.4f, 1f) : new Color(0.92f, 0.3f, 0.3f));
+                SetBorder(icon, 40, 4, TurnRing(owner));
+                // The whole enemy as a pixel-art sprite standing on a dark disc, so the next attacker reads at a glance.
+                var px = Art.Pixel(owner?.Def.Id);
+                if (px != null)
+                {
+                    var disc = new VisualElement { name = "disc", pickingMode = PickingMode.Ignore };
+                    disc.style.position = Position.Absolute;
+                    disc.style.left = disc.style.top = disc.style.right = disc.style.bottom = 0;
+                    disc.style.borderTopLeftRadius = disc.style.borderTopRightRadius = disc.style.borderBottomLeftRadius = disc.style.borderBottomRightRadius = 38;
+                    disc.style.backgroundColor = new Color(0.05f, 0.06f, 0.16f, 0.92f);
+                    icon.Add(disc);
+                    var sprite = new VisualElement { name = "px", pickingMode = PickingMode.Ignore };
+                    sprite.style.position = Position.Absolute;
+                    sprite.style.left = sprite.style.top = sprite.style.right = sprite.style.bottom = 2; // inside the ring
+                    sprite.style.backgroundImage = new StyleBackground(px);
+                    sprite.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Contain);
+                    icon.Add(sprite);
+                }
+                else
+                {
+                    icon.style.backgroundImage = new StyleBackground(Art.Thumb(owner?.Def.Id));
+                    icon.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Cover);
+                }
             }
             else
             {
@@ -390,6 +412,27 @@ namespace Gaiden.App
                 if (tex != null) { icon.style.backgroundImage = new StyleBackground(tex); icon.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Contain); }
             }
             return icon;
+        }
+
+        private static readonly Color NextRing = new Color(1f, 0.85f, 0.3f);
+
+        private static Color TurnRing(Unit owner) =>
+            owner != null && (owner.Def.HasTag("Boss") || owner.IsMultiTile) ? new Color(0.86f, 0.4f, 1f) : new Color(0.92f, 0.3f, 0.3f);
+
+        /// <summary>The enemy turn closest to ACT gets a gold ring and a slight lift: "this one hits next".</summary>
+        private void MarkNextAttacker()
+        {
+            var next = State.Timeline.Where(e => e.Kind == TimelineKind.Turn && State.UnitById(e.OwnerId) is Unit o && !o.IsHero)
+                .OrderByDescending(e => e.U).FirstOrDefault();
+            foreach (var e in State.Timeline)
+            {
+                if (e.Kind != TimelineKind.Turn || !timelineIconViews.TryGetValue(e.Id, out var icon)) continue;
+                bool isNext = next != null && e.Id == next.Id;
+                SetBorder(icon, 40, 4, isNext ? NextRing : TurnRing(State.UnitById(e.OwnerId)));
+                icon.style.scale = new Scale(isNext ? new Vector2(1.18f, 1.18f) : Vector2.one);
+                icon.EnableInClassList("tl-next", isNext);
+                if (isNext) icon.BringToFront();
+            }
         }
 
         private void PlaceIcon(VisualElement icon, TimelineKind kind, float u)

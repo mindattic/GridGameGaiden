@@ -31,6 +31,14 @@ namespace Gaiden.App
         public static bool Exists(string path) => Resources.Load<Texture2D>(path) != null;
 
         public static Texture2D Thumb(string classId) => Load("Thumbs/" + classId);
+        /// <summary>Pixel-art full-body sprite (tools/make_pixel_icons.py; enemies only) — null when the class has none.</summary>
+        public static Texture2D Pixel(string classId)
+        {
+            if (string.IsNullOrEmpty(classId)) return null;
+            string path = "Pixel/" + classId;
+            if (cache.TryGetValue(path, out var t)) return t;
+            return cache[path] = Resources.Load<Texture2D>(path);
+        }
         public static Texture2D Portrait(string classId) => Load("Portraits/" + classId);
         public static Texture2D Icon(string key) => string.IsNullOrEmpty(key) ? null : Load("Icons/" + key);
 
