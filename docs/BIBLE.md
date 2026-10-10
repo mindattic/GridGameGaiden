@@ -28,7 +28,7 @@ The feel target: *Terra Battle pincers + Grandia II timeline + Final Fantasy cam
 - **Position is the only weapon.** Damage is dealt by the *pincer* a new position completes, never by the move itself. Every drop asks "does this finish the line?" ([§1.2](#12-pincer-attacks))
 - **The slide.** Dragging a hero onto an occupied tile displaces that actor — friend or foe — into the tile you just left. Set up flanks, eject allies, feed enemies into kill zones. ([§1.1](#11-sliding-and-displacement))
 - **The Timeline is a clock you advance.** Enemy icons load left→right, but the clock only runs when you commit an action (2.0 s of game time each). Hit a foe whose icon sits in the rightmost **Pushback Zone** and its turn is shoved back. ([§2](#2-the-timeline))
-- **Shared, visible mana.** A 12-orb colored `ManaBank` is the whole party's spell budget; pincers, crits, steals and enemy-cast interrupts refill it. ([§3.1](#31-mana-the-orb-economy))
+- **Shared, visible mana.** A 12-orb `ManaBank` of generic orbs is the whole party's spell budget; pincers, crits, steals and enemy-cast interrupts refill it. ([§3.1](#31-mana-the-orb-economy))
 - **Casts ride the Timeline.** A spell with a cast time rides the same axis as a small icon below the line and fires when it arrives; every hit on the caster staggers it, enough stagger cancels it, and a rare LCK Clutch lets a dying healer let off one last miracle. ([§13.4](#134-the-interrupt-path))
 - **Beyond the battlefield.** Five themed campaigns of hand-built stages with a skippable story crawl per theme, a Final Fantasy–style **Camp** menu (merchant, blacksmith, alchemist, inn, abilities, party, summon circle, bounties, bestiary), weapon durability with shatter rebound, original Undearth lore. ([§22](#22-the-macro-loop), [§25](#25-the-camp-merged-hub))
 
@@ -91,7 +91,7 @@ GridGame Gaiden is **NOT**:
 - **AbilityDef** — `abilities.json` (25: 15 spells, 6 skills, 4 enemy charges). ([§7](#7-the-spell-catalog))
 - **BuffDef / BuffInstance** — `buffs.json` (10). ([§8](#8-buffs-and-debuffs))
 - **ItemDef** — `items.json` (167: 129 equipment, 23 materials, 15 consumables). ([§24](#24-equipment-items-materials-currency))
-- **ManaBank** — `Core/Battle/ManaBank.cs`: 12 ordered colored orbs (W U B R G C). ([§3.1](#31-mana-the-orb-economy))
+- **ManaBank** — `Core/Battle/ManaBank.cs`: a capped count of 12 generic orbs. ([§3.1](#31-mana-the-orb-economy))
 - **TimelineEntry** — `Core/Battle/Timeline.cs`: a Turn icon (enemy, integer IP 0..1000) or a Cast icon (remaining ticks). ([§2](#2-the-timeline))
 - **BattleState** — `Core/Battle/BattleState.cs`: units, timeline, traps, bank, wave, phase, clock, seeded `Rng`, accumulated `BattleResults`. Cloneable (previews, bot look-ahead).
 - **SaveData** — `Meta/SaveData.cs`: one save slot. ([§15](#15-save))
@@ -116,7 +116,7 @@ GridGame Gaiden is **NOT**:
 
 | File | Holds |
 |---|---|
-| `classes.json` | 172 `ClassDef`s — stats, growth, milestones, tags, resistances, color affinity, learnable abilities, default loadout, drop table, move range, XP reward, boss phases, charge ability/shape, trap, snake segments, footprint, lore/card text, portrait crop |
+| `classes.json` | 172 `ClassDef`s — stats, growth, milestones, tags, resistances, learnable abilities, default loadout, drop table, move range, XP reward, boss phases, charge ability/shape, trap, snake segments, footprint, lore/card text, portrait crop |
 | `abilities.json` | 25 `AbilityDef`s — cost letters, cast time, cooldown, shape/radius/mode/filter, motion, damage type/base, heal, buff + chance, cleanse, steal, hasten, teleport, scan, VFX/SFX keys |
 | `buffs.json` | 10 `BuffDef`s — kind, unit (Turns/Ticks), duration, DOT, immobile, halts timeline, breaks on damage/move, incoming-damage / timeline-speed / accuracy multipliers, blocks spells, expire chain, letter, color |
 | `items.json` | 167 `ItemDef`s — type, rarity, slot, cost, stack, durability, healing/damage, stats, battle-start orbs, on-use ability, orb grants, cures, revive, escape, camp-only, bonus-vs-tag, resistances, vendor flag |
@@ -191,7 +191,7 @@ A story is ✅ only with evidence a script produced: a named test in `Tests/Core
 
 - ✅ Board rules: slide/displacement, edge stop, no-op drag cancel, pincer geometry, chains, supporters, 2×2 immovable + width pincer, waves, victory/defeat (`BoardRulesTests`).
 - ✅ Act-advanced timeline: clock only on committed actions, enemy turns on arrival, Zone pushback, Quicken, Shield, Frozen halt (`TimelineAndAbilityTests`).
-- ✅ Mana: shared capped bank, class-color pincer mint, supporter mint, Colorless wildcard, overflow.
+- ✅ Mana: shared capped bank of generic orbs, pincer mint, supporter mint, crit bonus orb, overflow.
 - ✅ Every hero ability, enemy charge, recipe and class resolves through the real engine (`CatalogTests`).
 - ✅ Determinism and bot soak across all content (`ContentAndSoakTests`).
 - ✅ Camp loop: new game, save round-trip, battle commit, merchant, forge, equip, repair, inn, learn + assign, summon, party cap, bounty (`MetaLoopTests`); every Camp screen renders (harness sweep).
@@ -233,8 +233,7 @@ A story is ✅ only when 1–6 hold; otherwise 🟡/⬜ ([GG-LAW-12](#GG-LAW-12)
 - **Hasten / Quicken** — the inverse: slide an icon forward toward the trigger. ([§2.7.1](#271-hasten--quicken--the-inverse))
 - **Cast icon** — a spell with a cast time rides the timeline below the line and resolves when its remaining ticks reach 0. ([§2.6](#26-one-timeline-two-lanes--turn-icons-above-cast-icons-below))
 - **Clutch** — rare LCK interrupt outcome on hero casts: the hit is shrugged and the cast resolves on the spot. ([§13.4](#134-the-interrupt-path))
-- **ManaBank / orb** — shared 12-orb colored pool (W U B R G C). ([§3.1](#31-mana-the-orb-economy))
-- **Wild orb** — a Colorless orb (crit-minted) that satisfies any single color on spend.
+- **ManaBank / orb** — shared 12-orb pool of identical orbs; any orbs pay any spell. ([§3.1](#31-mana-the-orb-economy))
 - **Drag timer** — optional Terra Battle–style 4 s limit per drag (Settings). ([§2.9](#29-drag-timer-optional))
 - **Time-banked orbs** — Blue orbs minted from drag-timer seconds left at the drop. ([§3.1.8](#318-time-banked-orbs))
 - **Countdown badge** — the number on an enemy: actions you get before it acts. ([§2.10](#210-countdown-badge))
@@ -381,7 +380,7 @@ Step 0:   col: 0  1  2   3   4   5          Step 1 (Knight drags west one tile):
 1. The Knight enters (4,3); the goblin there is displaced into (5,3) (`DisplacedEvent`).
 2. `DoMove` commits; `ResolvePincers` finds C(2,3) — g(3,3) — K(4,3): one opponent, valid.
 3. The Knight (the dropped hero, attacker A) strikes, then the Cleric; no supporters.
-4. Two orbs mint: White (Cleric) and the Knight's class color.
+4. Two orbs mint, one per attacker.
 5. If the goblin's icon was in the Zone, each landing hit pushes it back and stuns it ([§2.3](#23-pushback-the-interrupt-by-hitting-mechanic)).
 6. The clock advances 20 ticks; any enemy whose icon reaches 1000 in that window takes its turn; any cast that reaches 0 resolves.
 7. Control returns: hero turn-unit buffs and skill cooldowns tick, enemy Frozen ticks, `PlayerControlEvent`.
@@ -519,74 +518,61 @@ Net: one deep-Zone hit buys 275 IP (~1.2 actions at Speed 10, since it now re-cr
 
 ### 3.1 Mana (the orb economy)
 
-Mana is a **line of colored orbs** (`ManaBank`), capacity **12**, shared by the party ([GG-LAW-6](#GG-LAW-6)). The HUD draws 12 orb slots; each filled orb is tinted and shows its letter.
+**Amended 2026-10-10 (owner decision): mana is generic.** Every orb is identical and any spell can be paid from any orbs. `ManaBank` is a capped count (capacity **12**) shared by the party ([GG-LAW-6](#GG-LAW-6)). The HUD draws 12 orb slots; filled slots glow mana-blue, empty slots are dim.
 
-#### 3.1.1 The palette
+#### 3.1.1 Costs
 
-| Letter | `ManaColor` | Role (loose) |
-|---|---|---|
-| W | White | heal / shield / order |
-| U | Blue | control / slow / freeze |
-| B | Black | drain / decay |
-| R | Red | raw damage |
-| G | Green | regen / growth |
-| C | Colorless | wild; crit drop |
-
-Costs are letter strings in `abilities.json` (`"RRU"`); the UI renders them as colored pips (`Ui.CostPips`).
+A spell's cost is a whole number of orbs (`AbilityDef.Cost`, an int in `abilities.json`); the UI renders it as that many orb pips (`Ui.CostPips`). Content costs are 1–3 (the former letter counts: Fireball 2, Bolt 3, Heal 1, …). Skills and items cost 0.
 
 #### 3.1.2 Harvesting
 
-Orbs mint through `BattleRunner.MintOrb` (event `OrbMintedEvent`, reason string):
-- **Pincer** (`pincer`): each living hero attacker mints 1 orb of its **class color** (`ClassDef.ColorAffinity`); each living supporter mints 1 of its own color (`support`).
-- **Critical hit** (`critical`): a hero's critical physical strike (attacker or supporter) mints 1 **Colorless** wild orb. Spells never crit.
-- **Steal / Mug** (`steal`): per target, chance `clamp01((LCK + 0.5 × AGI) / 50)` → 1 random WUBRG orb.
-- **Cancelling an enemy charge** (`interrupt`): 1 orb of the charge's color — its first cost letter, else by damage type (Ice→U, Fire/Lightning→R, Poison→G, Holy→W, Dark→B, else U).
-- **Battle-start gear** (`battle start`): `ItemDef.BattleStartManaOrbs` summed over the party's equipped items → that many random WUBRG orbs before wave 1 (Mage Robes 2, Wizard Robe 3).
+Orbs mint through `BattleRunner.MintOrb` (event `OrbMintedEvent`, reason string), one orb each:
+- **Pincer** (`pincer`): each living hero attacker mints 1; each living supporter mints 1 (`support`).
+- **Critical hit** (`critical`): a hero's critical strike (physical attacker/supporter, or a spell crit) mints 1 bonus orb.
+- **Steal / Mug** (`steal`): per target, chance `clamp01((LCK + 0.5 × AGI) / 50)` → 1 orb.
+- **Cancelling an enemy charge** (`interrupt`): 1 orb.
+- **Battle-start gear** (`battle start`): `ItemDef.BattleStartManaOrbs` summed over the party's equipped items before wave 1 (Mage Robes 2, Wizard Robe 3).
 - **Time bank** (`time bank`): see [§3.1.8](#318-time-banked-orbs).
-- **Mana items** (`item`): **Amended 2026-10-09:** Mana Potion 2, Ether 3, Hi-Ether 6 random WUBRG orbs.
+- **Mana items** (`item`): Mana Potion 2, Ether 3, Hi-Ether 6.
 
 The view flies each orb from its source to its slot in a 0.22 s arc (overflowing orbs fade in flight).
 
 #### 3.1.3 Spending
 
-`ManaBank.Spend(cost)` removes exactly the demanded colors or fails. **Amended 2026-10-09:** the old dev flag `AllowAnyColor` does not exist. Orbs are spent at cast start; an interrupted cast refunds nothing.
+`ManaBank.Spend(cost)` removes `cost` orbs or fails without spending. Orbs are spent at cast start; an interrupted cast refunds nothing. *(Test: `Any_orbs_pay_for_any_spell`.)*
 
 #### 3.1.4 Bank-full rules (overflow)
 
 | State | Mint |
 |---|---|
-| `Count + n ≤ 12` | all land |
-| `Count == 12` | orb flies and fades; bank unchanged (`OrbMintedEvent.Landed = false`) |
-| `Count + n > 12` | first `12 − Count` land, rest fade |
+| `Count + n ≤ cap` | all land |
+| `Count == cap` | orb flies and fades; bank unchanged (`OrbMintedEvent.Landed = false`) |
+| `Count + n > cap` | first `cap − Count` land, rest fade |
 
-⬜ Not yet built: a `BankCapacityBonus` gear knob (never built in the old game either).
+`ItemDef.BankCapacityBonus` gear raises the cap (summed over the party, max +4).
 
-#### 3.1.5 Spend ordering
+#### 3.1.5–3.1.6 (struck 2026-10-10)
 
-For each demanded color the **leftmost** orb of that color is consumed; survivors stay left-packed in insertion order, so cost is predictable left-to-right.
-
-#### 3.1.6 Pressure valve — Colorless wildcard
-
-A Colorless orb satisfies any single colored requirement: colored costs take their own color first, then any shortfall is paid by Colorless; an explicit `C` requirement is paid only by Colorless (`ManaBank.PlanSpend`). There is no color converter. *(Test: `Colorless_wild_orb_covers_a_colored_shortfall`.)*
+~~Spend ordering by color~~ and ~~the Colorless wildcard~~ no longer exist — there are no colors to order or substitute.
 
 #### 3.1.7 At-a-glance mint cadence
 
-| Event | Orbs | Color |
-|---|---|---|
-| 2-hero pincer, no supporters | 2 | each attacker's class color |
-| Pincer with 2 supporters | 4 | attackers + supporters |
-| A hero in two chained links | 1 per link | its color, per link |
-| Critical hit | 1 | Colorless |
-| Steal/Mug, 3 adjacent enemies, 2 rolls succeed | 2 | random |
-| Cancel an enemy charge | 1 | charge color |
-| Battle start, one Mage Robes equipped | 2 | random WUBRG |
-| Drop with ≥ 3.75 s left on the drag timer, then an enemy turn | 3 (cap) | Blue |
+| Event | Orbs |
+|---|---|
+| 2-hero pincer, no supporters | 2 |
+| Pincer with 2 supporters | 4 |
+| A hero in two chained links | 1 per link |
+| Critical hit (physical or spell) | +1 |
+| Steal/Mug, 3 adjacent enemies, 2 rolls succeed | 2 |
+| Cancel an enemy charge | 1 |
+| Battle start, one Mage Robes equipped | 2 |
+| Drop with ≥ 3.75 s left on the drag timer, then an enemy turn | 3 (cap) |
 
 #### 3.1.8 Time-banked orbs
 
 **Amended 2026-10-09 (owner decision):** the bank is fed by the **optional drag timer**, not by real-time seconds before an enemy trigger.
 - A committed move stores `PendingTimeBankSeconds = clamp(TimeLeftSeconds, 0, 4)` (0 when the timer is off).
-- At the start of the **first enemy turn** during that action's clock advance (`MintTimeBank` in `RunEnemyTurn`), it converts to **1 Blue orb per `SecondsPerTimeBankOrb` = 1.25 s**, max `MaxTimeBankOrbs` = **3**, with a "Banked N mana" announcement.
+- At the start of the **first enemy turn** during that action's clock advance (`MintTimeBank` in `RunEnemyTurn`), it converts to **1 orb per `SecondsPerTimeBankOrb` = 1.25 s**, max `MaxTimeBankOrbs` = **3**, with a "Banked N mana" announcement.
 - It is cleared at control return and by Shield. Consequence (current truth, tuning watch): a quick drop that is **not** followed by an enemy turn within the same action banks nothing.
 
 ### 3.2 HP and stats
@@ -632,7 +618,7 @@ The battle HUD shows **5 slot buttons** for the **selected hero** (`BattleRunner
 | Kind | Cost | Cast time | Frame |
 |---|---|---|---|
 | **Skill** | free; costs the action; per-skill cooldown | instant | green |
-| **Spell** | colored orbs | cast icon on the timeline (all content spells: 1.5 s base) | blue + cost pips |
+| **Spell** | mana orbs | cast icon on the timeline (all content spells: 1.5 s base) | blue + cost pips |
 | **Item** | one charge of the slot's stack | instant | warm leather; "name n/max" |
 
 #### 4.1.1 Skill cooldowns
@@ -668,7 +654,7 @@ On a fresh save (2 slots) the starting trio's potion sits in locked slot 3 until
 |---|---|---|
 | `BaseHealing` | single-ally heal (PickActor, AllyOnly) | Healing Potion 50, Hi-Potion 150, X-Potion 500 |
 | `BaseDamage` (+`DamageType`, `BonusVsTag` ×`BonusMultiplier`) | single-enemy hit | Holy Water 40 Holy (×2 vs Undead), Flame Oil 45 Fire (×1.5 vs Beast) |
-| `GrantsOrbs` | random WUBRG orbs (Auto) | Mana Potion 2, Ether 3, Hi-Ether 6 |
+| `GrantsOrbs` | orbs (Auto) | Mana Potion 2, Ether 3, Hi-Ether 6 |
 | `CuresBuff` / `CuresAll` | remove one debuff id / all debuffs from an ally | Antidote (poisoned), Eye Drops (blinded), Remedy (all) |
 | `Revives` | first fallen hero returns on the free tile nearest the user with `BaseHealing` HP; refused if nobody has fallen | Phoenix Down (50) |
 | `Escape` | battle ends as **Escaped** ([§22.2](#222-failure-path-detail)) | Smoke Bomb |
@@ -825,21 +811,21 @@ All entries in `abilities.json`. Every spell has base cast time **1.5 s** (scale
 
 | Spell | Cost | Shape / Mode / Filter | Motion | Effect | Role |
 |---|---|---|---|---|---|
-| **Heal** | W | SingleActor / PickActor / AllyOnly | None | +25 HP | spot heal |
-| **Mass Heal** | W | AllAllies / Auto / AllyOnly | None | +12 HP each | emergency top-up |
-| **Antidote** | W | SingleActor / PickActor / AllyOnly | None | removes all debuffs | cleanse |
-| **Scan** | W | SingleActor / PickActor / EnemyOnly | Straight | reveals HP + stats; bestiary Scanned | recon |
-| **Fireball** | RR | SingleActor / PickActor / EnemyOnly | Twist | 18 Fire + Burning | burst + DOT |
-| **Frost** | UU | Square(1) / PickTile / EnemyOnly | Bezier | 10 Ice + Frozen | AoE control |
-| **Bolt** | RRU | Row / PickActor / EnemyOnly | Strike | 14 Lightning (×1.5 Wet), 30% Blind | row clear |
-| **Poison** | UU | Cross(1) / PickTile / EnemyOnly | Bezier | 6 Poison + Poisoned | long tail |
-| **Sleep** | W | SingleActor / PickActor / EnemyOnly | Homing | Asleep (breaks on damage/move) | hard CC |
-| **Slow** | UU | Row / PickActor / EnemyOnly | Bezier | Slowed (icon ×0.5) | row tempo |
-| **Quicken** | U | SingleActor / PickActor / Any | Straight | +0.30 u (or rush a cast) | tempo |
-| **Silence** | W | SingleActor / PickActor / EnemyOnly | Straight | Silenced | see note |
-| **Meteor** | RR | Diamond(2) / PickTile / EnemyOnly | Strike | 22 Fire + Burning | big AoE |
-| **ShockWave** | RRU | Column / PickActor / EnemyOnly | Strike | 10 Lightning | column cleave |
-| **CrossHit** | RRU | Plus / PickTile / EnemyOnly | Strike | 8 Lightning | row + column |
+| **Heal** | 1 | SingleActor / PickActor / AllyOnly | None | +25 HP | spot heal |
+| **Mass Heal** | 1 | AllAllies / Auto / AllyOnly | None | +12 HP each | emergency top-up |
+| **Antidote** | 1 | SingleActor / PickActor / AllyOnly | None | removes all debuffs | cleanse |
+| **Scan** | 1 | SingleActor / PickActor / EnemyOnly | Straight | reveals HP + stats; bestiary Scanned | recon |
+| **Fireball** | 2 | SingleActor / PickActor / EnemyOnly | Twist | 18 Fire + Burning | burst + DOT |
+| **Frost** | 2 | Square(1) / PickTile / EnemyOnly | Bezier | 10 Ice + Frozen | AoE control |
+| **Bolt** | 3 | Row / PickActor / EnemyOnly | Strike | 14 Lightning (×1.5 Wet), 30% Blind | row clear |
+| **Poison** | 2 | Cross(1) / PickTile / EnemyOnly | Bezier | 6 Poison + Poisoned | long tail |
+| **Sleep** | 1 | SingleActor / PickActor / EnemyOnly | Homing | Asleep (breaks on damage/move) | hard CC |
+| **Slow** | 2 | Row / PickActor / EnemyOnly | Bezier | Slowed (icon ×0.5) | row tempo |
+| **Quicken** | 1 | SingleActor / PickActor / Any | Straight | +0.30 u (or rush a cast) | tempo |
+| **Silence** | 1 | SingleActor / PickActor / EnemyOnly | Straight | Silenced | see note |
+| **Meteor** | 2 | Diamond(2) / PickTile / EnemyOnly | Strike | 22 Fire + Burning | big AoE |
+| **ShockWave** | 3 | Column / PickActor / EnemyOnly | Strike | 10 Lightning | column cleave |
+| **CrossHit** | 3 | Plus / PickTile / EnemyOnly | Strike | 8 Lightning | row + column |
 | **Steal** (Skill, CD 3) | free | Cross(1) / Auto / EnemyOnly | Homing | per adjacent enemy: LCK+AGI roll → orb | resource grab |
 | **Mug** (Skill, CD 2) | free | Cross(1) / Auto / EnemyOnly | Straight | Steal roll + 10 Physical — see note | steal + hit |
 | **Teleport** (Skill, CD 3) | free | SingleTile / PickTile / EmptyOnly | None | relocate + pincer scan | mobility |
@@ -1116,7 +1102,7 @@ Order per hit:
 1. **Clutch** (hero casts only): chance `min(20%, LCK / 200)` → `ClutchEvent`, "Clutch!", the cast resolves immediately (`ResolveCast`). The view plays a white flash + "CLUTCH!".
 2. **WIS shrug**: chance `min(60%, 1.5% × WIS)` → `CastStaggeredEvent(Resisted)` "Steady!", no delay.
 3. **Stagger**: `delay = 0.6 s × (1 + attacker STR / 20) / (1 + caster WIS / 15)` → ticks, added to both `RemainingTicks` and `AccumulatedDelayTicks` ("Stagger!").
-4. **Cancel**: once accumulated delay ≥ the cast's original ticks, the cast is removed (`CastCancelledEvent` "interrupted", "Interrupted!"); orbs stay spent. Cancelling an **enemy charge** mints one orb of its color ([§3.1.2](#312-harvesting)).
+4. **Cancel**: once accumulated delay ≥ the cast's original ticks, the cast is removed (`CastCancelledEvent` "interrupted", "Interrupted!"); orbs stay spent. Cancelling an **enemy charge** mints one orb ([§3.1.2](#312-harvesting)).
 
 **Enemy charges** ([§14.2](#142-enemy-archetypes-design-palette)): `EnemyPlanner.PlanCast` lets a unit with a `ChargeAbility`, not immobile and **not adjacent to any hero** (unless its boss phase `PrefersCharge`), queue a charge on the nearest hero instead of moving. **Amended 2026-10-09:**
 - Single-target charges **lock onto the hero**, wherever it moves — dodge only by interrupting (or killing).
@@ -1423,7 +1409,7 @@ All classes share `classes.json`; `Team` separates heroes (62) from enemies (110
 
 ### 23.1 Class identity
 
-Base stats, per-level growth, milestone bonuses, tags, resistances, **color affinity** (the orb it mints in a pincer), learnable `Abilities`, `DefaultLoadout`, lore/card text, portrait crop. No dialogue.
+Base stats, per-level growth, milestone bonuses, tags, resistances, learnable `Abilities`, `DefaultLoadout`, lore/card text, portrait crop. No dialogue.
 
 ### 23.2 Hero classes with seeded kits
 
@@ -1546,7 +1532,7 @@ ENEMIES ─▶ drop tables ─▶ Inventory ─┬▶ Blacksmith (forge / upgrad
 
 ### 24.8 Specific items
 
-- **Mage Robes** (`eq_armor_mage`, Uncommon): +2 random WUBRG orbs at battle start; **Wizard Robe** (`eq_armor_wizard`, Rare): +3; stacks across the party, capped by the bank.
+- **Mage Robes** (`eq_armor_mage`, Uncommon): +2 orbs at battle start; **Wizard Robe** (`eq_armor_wizard`, Rare): +3; stacks across the party, capped by the bank.
 - **Sleep Dart** (`cons_sleep_dart`, stack 5): casts `sleep` (PickActor) with no mana — the item-casts-a-spell path.
 - **Sunfire Amulet** (`eq_amulet_sunfire`, relic): Fire damage taken ×0.7.
 - Consumables table: [§4.3](#43-item-stacks-and-effects).
@@ -1695,7 +1681,7 @@ Target: **60 fps** on a 4-year-old mid-tier phone; `GameApp.Awake` pins `targetF
 
 ## 31. Accessibility
 
-- **Color-blindness:** orbs always carry their letter (W U B R G C), costs render as lettered pips, buff pips carry letters. 🟡 **Colorblind palette** (`SettingsSave.ColorblindMode`): Red orbs become vermilion, Green bluish-green (`Art.ManaColorOf`); buff pip colors are not yet remapped.
+- **Color-blindness:** mana has one color by design (filled vs empty reads by brightness); buff pips carry letters. **Colorblind palette** (`SettingsSave.ColorblindMode`) remaps buff pip colors.
 - **Motion:** 🟡 **Reduce motion** (`SettingsSave.ReduceMotion`) zeroes lunges, shakes and the death spin and dims the Clutch flash (`BattleScreen.Fx`); **Battle speed** ×1/1.5/2/3 shortens every beat.
 - **Touch targets:** slots 216×196 and tiles 180² design px clear 44 dp at every supported scale; a dragged hero lifts above the finger.
 - **Readability:** 40-px body text, white on deep-blue windows, HP as gauge + numbers on the panel.

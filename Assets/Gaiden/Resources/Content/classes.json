@@ -94,7 +94,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Green",
     "Abilities": [
       "frost",
       "steal",
@@ -212,7 +211,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Black",
     "Abilities": [
       "steal",
       "mug",
@@ -329,7 +327,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Red",
     "Abilities": [
       "fireball",
       "bolt"
@@ -443,7 +440,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Red",
     "Abilities": [
       "heal",
       "fireball",
@@ -565,7 +561,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -673,7 +668,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [
       "double_attack"
     ],
@@ -783,7 +777,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [
       "double_attack"
     ],
@@ -892,7 +885,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Black",
     "Abilities": [
       "heal",
       "fireball",
@@ -1016,7 +1008,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Black",
     "Abilities": [
       "heal",
       "fireball",
@@ -1139,7 +1130,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Green",
     "Abilities": [
       "heal",
       "fireball",
@@ -1260,7 +1250,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [
       "heal",
       "fireball",
@@ -1382,7 +1371,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Red",
     "Abilities": [
       "heal",
       "fireball",
@@ -1503,7 +1491,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -1613,7 +1600,6 @@
     "Resistances": {
       "Poison": 0.0
     },
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -1727,7 +1713,6 @@
     "Resistances": {
       "Poison": 0.0
     },
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -1841,7 +1826,6 @@
     "Resistances": {
       "Poison": 0.0
     },
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -1955,7 +1939,6 @@
     "Resistances": {
       "Poison": 0.0
     },
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -2069,7 +2052,6 @@
     "Resistances": {
       "Poison": 0.0
     },
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -2183,7 +2165,6 @@
     "Resistances": {
       "Poison": 0.0
     },
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -2297,7 +2278,6 @@
     "Resistances": {
       "Poison": 0.0
     },
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -2408,7 +2388,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [
       "heal",
       "fireball",
@@ -2531,7 +2510,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "White",
     "Abilities": [
       "heal",
       "frost"
@@ -2646,7 +2624,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Green",
     "Abilities": [
       "heal",
       "fireball",
@@ -2770,7 +2747,6 @@
     "Resistances": {
       "Poison": 0.0
     },
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -2884,7 +2860,6 @@
     "Resistances": {
       "Poison": 0.0
     },
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -2998,7 +2973,6 @@
     "Resistances": {
       "Poison": 0.0
     },
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -3112,7 +3086,6 @@
     "Resistances": {
       "Poison": 0.0
     },
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -3226,7 +3199,6 @@
     "Resistances": {
       "Poison": 0.0
     },
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -3338,7 +3310,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [
       "enrage"
     ],
@@ -3461,7 +3432,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -3569,7 +3539,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -3676,7 +3645,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -3783,7 +3751,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -3890,7 +3857,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -3997,7 +3963,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Black",
     "Abilities": [
       "heal",
       "fireball",
@@ -4119,7 +4084,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "White",
     "Abilities": [
       "heal",
       "fireball",
@@ -4242,7 +4206,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": "demonlord",
@@ -4349,7 +4312,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Green",
     "Abilities": [
       "heal",
       "fireball",
@@ -4470,7 +4432,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "White",
     "Abilities": [
       "heal",
       "fireball",
@@ -4593,7 +4554,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [
       "heal",
       "fireball",
@@ -4714,7 +4674,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Red",
     "Abilities": [
       "heal",
       "fireball",
@@ -4835,7 +4794,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [
       "heal",
       "fireball",
@@ -4956,7 +4914,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Red",
     "Abilities": [
       "heal",
       "fireball",
@@ -5077,7 +5034,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Red",
     "Abilities": [
       "heal",
       "fireball",
@@ -5199,7 +5155,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -5306,7 +5261,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": "frog00",
@@ -5413,7 +5367,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -5520,7 +5473,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -5627,7 +5579,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -5734,7 +5685,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -5841,7 +5791,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -5948,7 +5897,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -6055,7 +6003,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -6162,7 +6109,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -6269,7 +6215,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -6376,7 +6321,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -6483,7 +6427,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": "ghost",
@@ -6590,7 +6533,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": "goblinthug00",
@@ -6697,7 +6639,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Green",
     "Abilities": [
       "teleport",
       "steal",
@@ -6816,7 +6757,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -6925,7 +6865,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -7033,7 +6972,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -7140,7 +7078,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -7247,7 +7184,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Black",
     "Abilities": [
       "heal",
       "fireball",
@@ -7371,7 +7307,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [
       "charge_ice"
     ],
@@ -7480,7 +7415,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "White",
     "Abilities": [
       "heal",
       "fireball",
@@ -7603,7 +7537,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "White",
     "Abilities": [
       "heal",
       "fireball",
@@ -7726,7 +7659,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "White",
     "Abilities": [
       "heal",
       "fireball",
@@ -7849,7 +7781,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -7956,7 +7887,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -8063,7 +7993,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -8170,7 +8099,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [
       "heal",
       "fireball",
@@ -8291,7 +8219,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -8398,7 +8325,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -8505,7 +8431,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -8612,7 +8537,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -8719,7 +8643,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Red",
     "Abilities": [
       "heal",
       "fireball",
@@ -8840,7 +8763,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -8947,7 +8869,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -9054,7 +8975,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -9161,7 +9081,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "White",
     "Abilities": [
       "heal",
       "fireball",
@@ -9284,7 +9203,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": "mountaintroll",
@@ -9391,7 +9309,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Red",
     "Abilities": [
       "heal",
       "fireball",
@@ -9513,7 +9430,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": "naga00",
@@ -9620,7 +9536,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Black",
     "Abilities": [
       "heal",
       "fireball",
@@ -9742,7 +9657,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Black",
     "Abilities": [
       "heal",
       "fireball",
@@ -9864,7 +9778,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -9971,7 +9884,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -10078,7 +9990,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -10185,7 +10096,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Black",
     "Abilities": [
       "heal",
       "fireball",
@@ -10307,7 +10217,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "White",
     "Abilities": [
       "heal",
       "fireball"
@@ -10421,7 +10330,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Green",
     "Abilities": [
       "heal",
       "fireball",
@@ -10542,7 +10450,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -10649,7 +10556,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Red",
     "Abilities": [
       "heal",
       "fireball",
@@ -10770,7 +10676,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Red",
     "Abilities": [
       "heal",
       "fireball",
@@ -10891,7 +10796,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -10998,7 +10902,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -11105,7 +11008,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -11212,7 +11114,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -11319,7 +11220,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -11426,7 +11326,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Red",
     "Abilities": [
       "heal",
       "fireball",
@@ -11547,7 +11446,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -11655,7 +11553,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [
       "heal",
       "fireball",
@@ -11777,7 +11674,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Red",
     "Abilities": [
       "teleport",
       "mug",
@@ -11893,7 +11789,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Black",
     "Abilities": [
       "heal",
       "fireball",
@@ -12016,7 +11911,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Black",
     "Abilities": [
       "heal",
       "fireball",
@@ -12139,7 +12033,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Red",
     "Abilities": [
       "heal",
       "fireball",
@@ -12261,7 +12154,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "White",
     "Abilities": [
       "heal",
       "fireball",
@@ -12383,7 +12275,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -12490,7 +12381,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [
       "counter_attack"
     ],
@@ -12599,7 +12489,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Red",
     "Abilities": [
       "heal",
       "fireball",
@@ -12720,7 +12609,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "White",
     "Abilities": [
       "heal",
       "fireball",
@@ -12843,7 +12731,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "White",
     "Abilities": [
       "heal",
       "fireball",
@@ -12967,7 +12854,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -13075,7 +12961,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -13183,7 +13068,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -13290,7 +13174,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Black",
     "Abilities": [
       "heal",
       "fireball",
@@ -13410,7 +13293,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": "slime00",
@@ -13515,7 +13397,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": "slime01",
@@ -13620,7 +13501,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -13725,7 +13605,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -13832,7 +13711,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -13939,7 +13817,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -14046,7 +13923,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -14153,7 +14029,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -14260,7 +14135,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [
       "heal",
       "fireball",
@@ -14381,7 +14255,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -14488,7 +14361,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -14595,7 +14467,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -14702,7 +14573,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -14809,7 +14679,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -14916,7 +14785,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Red",
     "Abilities": [
       "heal",
       "fireball",
@@ -15037,7 +14905,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Red",
     "Abilities": [
       "heal",
       "fireball",
@@ -15159,7 +15026,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -15267,7 +15133,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Red",
     "Abilities": [
       "heal",
       "fireball",
@@ -15388,7 +15253,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Red",
     "Abilities": [
       "heal",
       "fireball",
@@ -15509,7 +15373,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -15616,7 +15479,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -15723,7 +15585,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -15830,7 +15691,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [
       "heal",
       "fireball",
@@ -15951,7 +15811,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -16058,7 +15917,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -16165,7 +16023,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -16272,7 +16129,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -16379,7 +16235,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -16486,7 +16341,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -16593,7 +16447,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Black",
     "Abilities": [
       "heal",
       "fireball",
@@ -16715,7 +16568,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [
       "heal",
       "fireball",
@@ -16836,7 +16688,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -16946,7 +16797,6 @@
     "Resistances": {
       "Poison": 0.0
     },
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": "treegolem00",
@@ -17060,7 +16910,6 @@
     "Resistances": {
       "Poison": 0.0
     },
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -17174,7 +17023,6 @@
     "Resistances": {
       "Poison": 0.0
     },
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -17288,7 +17136,6 @@
     "Resistances": {
       "Poison": 0.0
     },
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -17402,7 +17249,6 @@
     "Resistances": {
       "Poison": 0.0
     },
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -17516,7 +17362,6 @@
     "Resistances": {
       "Poison": 0.0
     },
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -17627,7 +17472,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": "undead00",
@@ -17734,7 +17578,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": "undead01",
@@ -17841,7 +17684,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -17948,7 +17790,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -18057,7 +17898,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Black",
     "Abilities": [
       "heal",
       "fireball",
@@ -18180,7 +18020,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -18287,7 +18126,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Red",
     "Abilities": [
       "heal",
       "fireball",
@@ -18409,7 +18247,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": "werewolf00",
@@ -18516,7 +18353,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "White",
     "Abilities": [
       "heal",
       "fireball",
@@ -18641,7 +18477,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "White",
     "Abilities": [
       "heal",
       "fireball",
@@ -18765,7 +18600,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Green",
     "Abilities": [
       "heal",
       "fireball",
@@ -18886,7 +18720,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": "wolf00",
@@ -18993,7 +18826,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": "wolf01",
@@ -19100,7 +18932,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -19207,7 +19038,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
@@ -19314,7 +19144,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [
       "heal",
       "fireball",
@@ -19437,7 +19266,6 @@
       }
     ],
     "Resistances": {},
-    "ColorAffinity": "Blue",
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,

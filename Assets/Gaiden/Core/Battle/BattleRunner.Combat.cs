@@ -170,8 +170,8 @@ namespace Gaiden.Core.Battle
 
             if (team == Team.Hero)
             {
-                foreach (var attacker in new[] { p.A, p.B }) if (attacker.Alive) MintOrb(attacker.Color, attacker.Id, "pincer");
-                foreach (var sup in supporters) if (sup.Alive) MintOrb(sup.Color, sup.Id, "support");
+                foreach (var attacker in new[] { p.A, p.B }) if (attacker.Alive) MintOrb(attacker.Id, "pincer");
+                foreach (var sup in supporters) if (sup.Alive) MintOrb(sup.Id, "support");
             }
         }
 
@@ -200,7 +200,7 @@ namespace Gaiden.Core.Battle
             Emit(new AttackEvent { AttackerId = attacker.Id, TargetId = target.Id, IsSupport = support });
             var roll = Formulas.Physical(attacker, target, S.Rng, mult);
             Damage(target, roll.Damage, attacker, roll.Hit, DamageType.Physical);
-            if (roll.Hit == HitKind.Critical && attacker.IsHero) MintOrb(ManaColor.Colorless, attacker.Id, "critical");
+            if (roll.Hit == HitKind.Critical && attacker.IsHero) MintOrb(attacker.Id, "critical");
             if (roll.Hit != HitKind.Miss) MaybeCounter(target, attacker);
         }
 
@@ -299,8 +299,7 @@ namespace Gaiden.Core.Battle
                 Announce("Interrupted!", caster.Id);
                 if (cast.CasterTeam == Team.Enemy)
                 {
-                    var a = C.TryAbility(cast.AbilityId);
-                    if (a != null) MintOrb(ColorOf(a), caster.Id, "interrupt");
+                    MintOrb(caster.Id, "interrupt");
                 }
             }
         }

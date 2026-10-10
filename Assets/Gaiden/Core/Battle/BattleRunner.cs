@@ -139,30 +139,10 @@ namespace Gaiden.Core.Battle
         // Mana
         // ─────────────────────────────────────────────────────────────────────────────
 
-        private void MintOrb(ManaColor color, int sourceId, string reason)
+        private void MintOrb(int sourceId, string reason)
         {
-            bool landed = S.Bank.Add(color, 1) == 1;
-            Emit(new OrbMintedEvent { Color = color, SourceUnitId = sourceId, Landed = landed, Reason = reason });
-        }
-
-        private static readonly ManaColor[] Wubrg = { ManaColor.White, ManaColor.Blue, ManaColor.Black, ManaColor.Red, ManaColor.Green };
-
-        private ManaColor RandomColor() => Wubrg[S.Rng.Range(0, Wubrg.Length)];
-
-        private static ManaColor ColorOf(AbilityDef a)
-        {
-            var cost = ManaBank.ParseCost(a.Cost);
-            if (cost.Count > 0) return cost[0];
-            switch (a.DamageType)
-            {
-                case DamageType.Fire: return ManaColor.Red;
-                case DamageType.Ice: return ManaColor.Blue;
-                case DamageType.Lightning: return ManaColor.Red;
-                case DamageType.Poison: return ManaColor.Green;
-                case DamageType.Holy: return ManaColor.White;
-                case DamageType.Dark: return ManaColor.Black;
-                default: return ManaColor.Blue;
-            }
+            bool landed = S.Bank.Add(1) == 1;
+            Emit(new OrbMintedEvent { SourceUnitId = sourceId, Landed = landed, Reason = reason });
         }
 
         // ─────────────────────────────────────────────────────────────────────────────

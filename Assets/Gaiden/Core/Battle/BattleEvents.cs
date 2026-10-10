@@ -94,14 +94,14 @@ namespace Gaiden.Core.Battle
 
     public sealed class OrbMintedEvent : BattleEvent
     {
-        public ManaColor Color; public int SourceUnitId; public bool Landed; public string Reason;
-        public override string ToString() => $"Orb {Color} from {SourceUnitId} {(Landed ? "landed" : "overflow")} ({Reason})";
+        public int SourceUnitId; public bool Landed; public string Reason;
+        public override string ToString() => $"Orb from {SourceUnitId} {(Landed ? "landed" : "overflow")} ({Reason})";
     }
 
     public sealed class OrbsSpentEvent : BattleEvent
     {
-        public List<ManaColor> Colors = new List<ManaColor>();
-        public override string ToString() => $"OrbsSpent {string.Join("", Colors)}";
+        public int Count;
+        public override string ToString() => $"OrbsSpent {Count}";
     }
 
     public sealed class TimelineAdvancedEvent : BattleEvent

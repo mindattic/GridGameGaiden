@@ -130,7 +130,7 @@ def main():
         check("bot suggested a move", False, str(sug))
 
     # ── Targeting + ability card + cancel ─────────────────────────────────
-    h.call("givemana", colors="RRRRWWWW")
+    h.call("givemana", n=8)
     b = battle_state()
     hero = next(u for u in b["units"] if u["team"] == "Hero")
     hx, hy = h.tile(hero["x"], hero["y"])
@@ -147,16 +147,13 @@ def main():
     else:
         check("slot tap enters targeting (or auto-casts)", st["results"]["ActionsTaken"] >= 2, str(st["targeting"]))
 
-    # ── Orb letters + colorblind tint (US-081) ────────────────────────────
-    t = texts()
-    check("orbs carry their color letter", sum(1 for x in t if x in ("R", "W")) >= 4)
-    normal = h.call("style", name="orb0")["tint"]
-    h.call("setting", key="colorblind", value=1); time.sleep(0.3)
-    h.call("givemana", colors="")  # forces an orb resync
-    cb = h.call("style", name="orb0")["tint"]
-    check("colorblind palette changes the red orb tint", normal != cb, f"{normal} vs {cb}")
-    h.call("setting", key="colorblind", value=0)
-    h.call("givemana", colors="")
+    # ── Generic mana orbs: filled vs empty slots read at a glance ─────────
+    h.call("givemana", n=0)  # forces an orb resync
+    bank = battle_state()["bank"]
+    have = int(bank.split("/")[0])
+    filled = h.call("style", name="orb0")["tint"]
+    empty = h.call("style", name=f"orb{min(have, 11)}")["tint"] if have < 12 else filled
+    check("orb line shows the bank count in one orb color", have >= 1 and (have >= 12 or filled != empty), f"{bank} {filled} vs {empty}")
 
     # ── Buff pips with timer ring (US-155/156) ───────────────────────────
     b = battle_state()

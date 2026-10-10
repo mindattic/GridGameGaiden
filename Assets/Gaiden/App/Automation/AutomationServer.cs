@@ -254,7 +254,7 @@ namespace Gaiden.App.Automation
                     return new { ok = true };
                 }
                 case "givemana":
-                    if (app.Router.Current is BattleScreen gm) { gm.DevGiveMana(q["colors"] ?? "RRWWUU"); return new { ok = true }; }
+                    if (app.Router.Current is BattleScreen gm) { gm.DevGiveMana(int.TryParse(q["n"], out var gn) ? gn : 6); return new { ok = true }; }
                     return new { error = "not in battle" };
                 case "suggest":
                 {

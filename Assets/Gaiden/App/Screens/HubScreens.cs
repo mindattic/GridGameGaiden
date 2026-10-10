@@ -186,9 +186,6 @@ namespace Gaiden.App
             void Stat(string n, float v) { var r = Ui.El("row", stats); Ui.Text(n, "small dim", r).style.width = 120; Ui.Text($"{v:0}", "h2", r); }
             Stat("STR", e.Strength); Stat("VIT", e.Vitality); Stat("AGI", e.Agility); Stat("SPD", e.Speed);
             Stat("INT", e.Intelligence); Stat("WIS", e.Wisdom); Stat("LCK", e.Luck);
-            var pip = Ui.El("row", stats); pip.style.marginTop = 12;
-            Ui.Text("Mana", "small dim", pip).style.width = 120;
-            Ui.CostPips(ManaBank.Letter(def.ColorAffinity).ToString(), pip, 44);
 
             var gear = Ui.El("col", w); gear.style.marginTop = 16;
             void G(string slot, string id, int dur = -1)
@@ -310,7 +307,7 @@ namespace Gaiden.App
                     var a = C.TryAbility(id);
                     if (a == null) continue;
                     var row = Ui.MenuRow(a.Name, KindLabel(a), () => Done(Abilities.Assign(C, S, h, slot, a.Id)), list, Art.Icon(a.Icon), slot < unlocked);
-                    if (!string.IsNullOrEmpty(a.Cost)) Ui.CostPips(a.Cost, row);
+                    if (a.Cost > 0) Ui.CostPips(a.Cost, row);
                     Describe(a, list);
                 }
             }

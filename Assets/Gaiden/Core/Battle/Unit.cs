@@ -84,7 +84,6 @@ namespace Gaiden.Core.Battle
         public bool IsSnakeSegment => SnakeHeadId >= 0 && SnakeIndex > 0;
         public bool IsSnakeMember => SnakeHeadId >= 0;
         public string Name => Def.Name;
-        public ManaColor Color => Def.ColorAffinity;
         public bool IsHumanoid => Team == Team.Hero || Def.HasTag("Humanoid");
         public bool IsRanged => Def.AttackRange > 1;
 

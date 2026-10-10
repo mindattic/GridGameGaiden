@@ -130,10 +130,10 @@ namespace Gaiden.Core.Battle
         private int pendingBankBonus;
         private readonly List<int> startProtected = new List<int>();
 
-        /// <summary>Gear with BattleStartManaOrbs (Mage/Wizard Robe) seeds random WUBRG orbs, capped by the bank (§24.8).</summary>
+        /// <summary>Gear with BattleStartManaOrbs (Mage/Wizard Robe) seeds orbs, capped by the bank (§24.8).</summary>
         private void ApplyBattleStartOrbs()
         {
-            for (int i = 0; i < pendingStartOrbs; i++) MintOrb(RandomColor(), -1, "battle start");
+            for (int i = 0; i < pendingStartOrbs; i++) MintOrb(-1, "battle start");
             pendingStartOrbs = 0;
         }
 

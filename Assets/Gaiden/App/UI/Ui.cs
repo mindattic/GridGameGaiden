@@ -171,15 +171,14 @@ namespace Gaiden.App
             return t;
         }
 
-        /// <summary>Mana cost as colored pips: "RRU" → (R)(R)(U).</summary>
-        public static VisualElement CostPips(string cost, VisualElement parent, float size = 34)
+        /// <summary>Mana cost as orb pips: 3 → three orbs.</summary>
+        public static VisualElement CostPips(int cost, VisualElement parent, float size = 34)
         {
             var row = El("row", parent);
             row.pickingMode = PickingMode.Ignore;
-            foreach (var c in ManaBank.ParseCost(cost))
+            for (int i = 0; i < cost; i++)
             {
-                char letter = ManaBank.Letter(c);
-                var p = Text(letter.ToString(), "pip pip--" + letter, row);
+                var p = Text("", "pip pip--mana", row);
                 p.style.width = size; p.style.height = size; p.style.borderTopLeftRadius = p.style.borderTopRightRadius = p.style.borderBottomLeftRadius = p.style.borderBottomRightRadius = size / 2;
                 p.style.fontSize = size * 0.6f;
             }

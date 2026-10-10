@@ -101,14 +101,14 @@ namespace Gaiden.Core.Battle
             return a.Id < b.Id;
         }
 
-        /// <summary>Time-banked orbs (§3.1.8): drag-timer seconds left at the last drop convert to Blue orbs at the enemy handoff.</summary>
+        /// <summary>Time-banked orbs (§3.1.8): drag-timer seconds left at the last drop convert to orbs at the enemy handoff.</summary>
         private void MintTimeBank()
         {
             if (S.PendingTimeBankSeconds <= 0f) return;
             int n = Math.Min(BattleConfig.MaxTimeBankOrbs, (int)(S.PendingTimeBankSeconds / BattleConfig.SecondsPerTimeBankOrb));
             S.PendingTimeBankSeconds = 0f;
             if (n <= 0) return;
-            for (int i = 0; i < n; i++) MintOrb(ManaColor.Blue, -1, "time bank");
+            for (int i = 0; i < n; i++) MintOrb(-1, "time bank");
             Announce($"Banked {n} mana");
         }
     }

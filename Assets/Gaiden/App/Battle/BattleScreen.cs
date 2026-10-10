@@ -424,14 +424,14 @@ namespace Gaiden.App
 
         private void SyncOrbs()
         {
-            var orbs = State.Bank.Orbs;
+            int filled = State.Bank.Count;
             for (int i = 0; i < orbViews.Count; i++)
             {
                 var o = (Label)orbViews[i];
-                if (i < orbs.Count)
+                if (i < filled)
                 {
-                    o.style.unityBackgroundImageTintColor = Art.ManaColorOf(orbs[i], Colorblind);
-                    o.text = ManaBank.Letter(orbs[i]).ToString();
+                    o.style.unityBackgroundImageTintColor = Art.Mana;
+                    o.text = "";
                     o.style.opacity = 1f;
                 }
                 else
@@ -554,7 +554,7 @@ namespace Gaiden.App
             var col = Ui.El("col grow", row);
             var top = Ui.El("row", col);
             Ui.Text(a.Name, "h2 grow", top);
-            if (!string.IsNullOrEmpty(a.Cost)) Ui.CostPips(a.Cost, top, 40);
+            if (a.Cost > 0) Ui.CostPips(a.Cost, top, 40);
             string timing = a.Kind == AbilityKind.Skill ? (a.CooldownTurns > 0 ? $"Skill · recharges in {a.CooldownTurns} turns" : "Skill") : a.CastTime > 0 ? $"Cast time {a.CastTime:0.#}s — rides the timeline" : "Instant";
             Ui.Text(timing, "small gold", col);
             var d = Ui.Text(a.Description ?? "", "small", col);
@@ -569,9 +569,9 @@ namespace Gaiden.App
         public bool CanCommand() => !playing && !ended && !State.IsOver;
 
         /// <summary>Dev/automation helper: add orbs to the bank (cheat — development builds only call this).</summary>
-        public void DevGiveMana(string letters)
+        public void DevGiveMana(int n)
         {
-            foreach (var c in ManaBank.ParseCost(letters)) State.Bank.Add(c);
+            State.Bank.Add(n);
             SyncOrbs();
             SyncBar();
         }

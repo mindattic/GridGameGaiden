@@ -61,7 +61,7 @@ namespace Gaiden.Tests
             var (s, _) = Battle(db, Stage(("tank", 2, 2)), ("knight", 5, 7), ("mage", 4, 7));
             var m = Hero(s, "mage");
             m.Bar[0] = new AbilitySlot { AbilityId = "fireball" };
-            s.Bank.Add(ManaColor.Red, 4);
+            s.Bank.Add(4);
             var tank = Enemy(s, "tank");
             tank.Buffs.Add(new BuffInstance { Def = db.Buffs["burning"], Remaining = 1 });
             var ev = BattleEngine.Apply(s, new UseSlotCommand { HeroId = m.Id, Slot = 0, Target = tank.Pos });
@@ -148,27 +148,11 @@ namespace Gaiden.Tests
             Assert.Equal(0, save.Count(weapons[1].Id));
         }
 
-        [Fact] // orb economy: every color has something to spend on
-        public void Every_mana_color_pays_for_at_least_one_hero_spell()
+        [Fact] // generic mana: every hero spell is payable from a full bank
+        public void Every_hero_spell_costs_between_one_orb_and_a_full_bank()
         {
-            var c = Real;
-            foreach (var color in new[] { 'W', 'U', 'B', 'R', 'G' })
-                Assert.Contains(c.Abilities.Values, a => Gaiden.Meta.Abilities.IsHeroUsable(a) && a.Kind == AbilityKind.Spell && a.Cost.Contains(color));
-        }
-
-        [Fact]
-        public void Default_kit_classes_now_have_color_matched_kits()
-        {
-            var c = Real;
-            var heroes = c.Classes.Values.Where(x => x.Team == Team.Hero).ToList();
-            Assert.True(heroes.Count(h => h.ColorAffinity == ManaColor.Blue) < 20, "most heroes should no longer default to Blue");
-            foreach (var h in heroes)
-            {
-                // Every hero can learn (class list) or already carries a spell its own orb color pays for.
-                char letter = ManaBank.Letter(h.ColorAffinity);
-                var pool = h.Abilities.Concat(h.DefaultLoadout).Select(c.TryAbility).Where(a => a != null && a.Kind == AbilityKind.Spell);
-                Assert.True(pool.Any(a => a.Cost.Contains(letter)), $"{h.Id} ({h.ColorAffinity}) has no spell its own color can pay for");
-            }
+            foreach (var a in Real.Abilities.Values.Where(x => Gaiden.Meta.Abilities.IsHeroUsable(x) && x.Kind == AbilityKind.Spell))
+                Assert.InRange(a.Cost, 1, ManaBank.DefaultCapacity);
         }
     }
 }

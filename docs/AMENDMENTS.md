@@ -89,7 +89,7 @@ updated: 2026-10-09
 - **Charges: fixed 2.5 s (not stat-scaled); single-target charges follow the hero; a charging enemy
   still moves/attacks on later turns.** *Why:* telegraphs read the same every time; dodging is by
   interrupting.
-- **Charge cancel orb color = first cost letter, else damage-type color.** *Why:* charges carry no cost.
+- ~~**Charge cancel orb color = first cost letter, else damage-type color.**~~ (moot since generic mana, 2026-10-10)
 - **Fire on a Frozen target thaws it and steams off the resulting Wet in the same hit.** *Why:*
   falls out of running the expire chain before the Wet check; reads as "melted and evaporated".
 - **Frozen (timeline-halting) ticks at the shared turn boundary; hero turn buffs and skill cooldowns
@@ -185,7 +185,7 @@ updated: 2026-10-09
 ## 2026-10-10 — design decisions taken (owner may overrule; each is one constant or flag)
 
 - **Spells never miss but can crit** (§13.1.2 backlog closed): crit chance = ½ the caster's physical crit %,
-  ×1.6 damage, a hero spell crit mints a wild orb like a pincer crit. `BattleConfig.SpellCrit*`.
+  ×1.6 damage, a hero spell crit mints a bonus orb like a pincer crit. `BattleConfig.SpellCrit*`.
 - **Inventory: no global cap** (§29 #19 closed): items stack to `MaxStack`; battle loot beyond it is
   auto-sold at the merchant price and reported on the results screen.
 - **Per-instance durability** (§24.5 closed): unequipped worn gear keeps its durability and repair count
@@ -199,4 +199,13 @@ updated: 2026-10-09
   unsourced defeat track). `tools/check_assets.py` fails the gate if any cue or track is missing.
 - **VFX are procedural UI Toolkit effects per element** (fire, ice, lightning, poison, holy, dark, arcane,
   heal) plus status auras, replacing the old prefab VFX library.
+
+## 2026-10-10 — generic mana (owner direction)
+
+- **Owner:** "The colored mana system doesn't add anything, just make them generic mana orbs that can be
+  globally spent on actions."
+- `ManaBank` is now a capped count; every orb is identical; spell costs are integers (the former letter
+  counts, 1–3). Removed: `ManaColor`, `ClassDef.ColorAffinity`, color-matched spending, the Colorless
+  wild orb (crits now mint a plain bonus orb), per-source orb colors, orb letters and the colorblind
+  orb tint. GG-LAW-6 (one shared, visible, capped pool) still holds. Bible §3.1 rewritten.
 

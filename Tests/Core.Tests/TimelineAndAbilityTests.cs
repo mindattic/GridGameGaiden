@@ -89,10 +89,9 @@ namespace Gaiden.Tests
             var (s, _) = Battle(db, Stage(("tank", 2, 0)), ("knight", 5, 7), ("cleric", 4, 7));
             var k = Hero(s, "knight");
             k.Bar[0] = new AbilitySlot { AbilityId = "fireball" };
-            s.Bank.Add(ManaColor.Red, 2);
-            s.Bank.Add(ManaColor.Blue, 1);
+            s.Bank.Add(3);
             var ev = BattleEngine.Apply(s, new UseSlotCommand { HeroId = k.Id, Slot = 0, Target = new Coord(2, 0) });
-            Assert.Equal("U", s.Bank.ToString().Replace("C", ""));
+            Assert.Equal(1 + ev.OfType<OrbMintedEvent>().Count(o => o.Landed), s.Bank.Count);
             Assert.Contains(ev, e => e is DamagedEvent d && d.Amount == 18);
             Assert.Contains(ev, e => e is BuffAppliedEvent b && b.BuffId == "burning");
         }
@@ -104,7 +103,7 @@ namespace Gaiden.Tests
             var (s, _) = Battle(db, Stage(("tank", 2, 0)), ("knight", 5, 7), ("cleric", 4, 7));
             var k = Hero(s, "knight");
             k.Bar[0] = new AbilitySlot { AbilityId = "fireball" };
-            s.Bank.Add(ManaColor.Red, 1);
+            s.Bank.Add(1);
             long clock = s.Clock;
             var ev = BattleEngine.Apply(s, new UseSlotCommand { HeroId = k.Id, Slot = 0, Target = new Coord(2, 0) });
             Assert.Contains(ev, e => e is AbilityRefusedEvent);
@@ -113,22 +112,25 @@ namespace Gaiden.Tests
         }
 
         [Fact]
-        public void Colorless_wild_orb_covers_a_colored_shortfall()
+        public void Any_orbs_pay_for_any_spell()
         {
             var bank = new ManaBank();
-            bank.Add(ManaColor.Red); bank.Add(ManaColor.Colorless); bank.Add(ManaColor.Blue);
-            Assert.True(bank.CanAfford("RR"));
-            bank.Spend("RR");
-            Assert.Equal("U", bank.ToString());
-            Assert.False(bank.CanAfford("C"));
+            bank.Add(3);
+            Assert.True(bank.CanAfford(2));
+            Assert.True(bank.Spend(2));
+            Assert.Equal(1, bank.Count);
+            Assert.False(bank.CanAfford(2));
+            Assert.False(bank.Spend(2));
+            Assert.Equal(1, bank.Count);
         }
 
         [Fact]
         public void Bank_overflow_fades_extra_orbs()
         {
             var bank = new ManaBank();
-            Assert.Equal(12, bank.Add(ManaColor.White, 15));
-            Assert.Equal(0, bank.Add(ManaColor.Red));
+            Assert.Equal(12, bank.Add(15));
+            Assert.Equal(0, bank.Add(1));
+            Assert.Equal(12, bank.Count);
         }
 
         [Fact]
@@ -138,7 +140,7 @@ namespace Gaiden.Tests
             var (s, _) = Battle(db, Stage(("tank", 2, 0)), ("knight", 5, 7), ("mage", 4, 7));
             var m = Hero(s, "mage");
             m.Bar[0] = new AbilitySlot { AbilityId = "meteor" };
-            s.Bank.Add(ManaColor.Red, 2);
+            s.Bank.Add(2);
             var ev = BattleEngine.Apply(s, new UseSlotCommand { HeroId = m.Id, Slot = 0, Target = new Coord(2, 0) });
             Assert.Contains(ev, e => e is CastQueuedEvent);
             Assert.Equal(0, s.Bank.Count); // orbs spent at cast start
@@ -161,7 +163,7 @@ namespace Gaiden.Tests
             for (int i = 0; i < 4; i++)
                 s.Timeline.Add(new TimelineEntry { Id = 900 + i, Kind = TimelineKind.Cast, OwnerId = m.Id, CasterTeam = Team.Hero, AbilityId = "meteor", RemainingTicks = 999, TotalCastTicks = 999 });
             m.Bar[0] = new AbilitySlot { AbilityId = "meteor" };
-            s.Bank.Add(ManaColor.Red, 2);
+            s.Bank.Add(2);
             Assert.Equal(SlotStatus.CastCapReached, BattleEngine.GetSlotStatus(s, m.Id, 0));
         }
 
@@ -172,7 +174,7 @@ namespace Gaiden.Tests
             var (s, _) = Battle(db, Stage(("tank", 2, 2)), ("knight", 5, 7), ("mage", 4, 7));
             var m = Hero(s, "mage");
             m.Bar[0] = new AbilitySlot { AbilityId = "frost" };
-            s.Bank.Add(ManaColor.Blue, 2);
+            s.Bank.Add(2);
             var tank = s.Units.Single(u => u.Def.Id == "tank");
             var ev = BattleEngine.Apply(s, new UseSlotCommand { HeroId = m.Id, Slot = 0, Target = new Coord(2, 2) });
             Assert.Contains(ev, e => e is BuffAppliedEvent b && b.BuffId == "frozen");
@@ -186,7 +188,7 @@ namespace Gaiden.Tests
         public void Lightning_on_wet_hits_harder_and_fire_on_wet_makes_steam()
         {
             var db = Mini();
-            db.Abilities["bolt"] = new AbilityDef { Id = "bolt", Name = "Bolt", Kind = AbilityKind.Spell, Cost = "", BaseDamage = 14, DamageType = DamageType.Lightning, Shape = TargetShape.SingleActor, Mode = TargetMode.PickActor };
+            db.Abilities["bolt"] = new AbilityDef { Id = "bolt", Name = "Bolt", Kind = AbilityKind.Spell, Cost = 0, BaseDamage = 14, DamageType = DamageType.Lightning, Shape = TargetShape.SingleActor, Mode = TargetMode.PickActor };
             var (s, _) = Battle(db, Stage(("tank", 2, 2)), ("knight", 5, 7), ("mage", 4, 7));
             var m = Hero(s, "mage");
             var tank = s.Units.Single(u => u.Def.Id == "tank");
@@ -196,7 +198,7 @@ namespace Gaiden.Tests
             Assert.Contains(ev, e => e is DamagedEvent d && d.Amount == 21);
 
             m.Bar[1] = new AbilitySlot { AbilityId = "fireball" };
-            s.Bank.Add(ManaColor.Red, 2);
+            s.Bank.Add(2);
             tank.Buffs.RemoveAll(b => b.Def.Id == "wet");
             tank.Buffs.Add(new BuffInstance { Def = db.Buffs["wet"], Remaining = 6 });
             ev = BattleEngine.Apply(s, new UseSlotCommand { HeroId = m.Id, Slot = 1, Target = tank.Pos });
@@ -237,7 +239,7 @@ namespace Gaiden.Tests
             var (s, _) = Battle(db, Stage(("tank", 2, 0)), ("knight", 5, 7), ("mage", 4, 7));
             var m = Hero(s, "mage");
             m.Bar[0] = new AbilitySlot { AbilityId = "quicken" };
-            s.Bank.Add(ManaColor.Blue, 1);
+            s.Bank.Add(1);
             var tank = s.Units.Single(u => u.Def.Id == "tank");
             s.TurnEntryOf(tank.Id).Ip = 0;
             var ev = BattleEngine.Apply(s, new UseSlotCommand { HeroId = m.Id, Slot = 0, Target = tank.Pos });

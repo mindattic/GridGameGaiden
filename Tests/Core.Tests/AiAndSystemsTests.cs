@@ -102,7 +102,7 @@ namespace Gaiden.Tests
                 setup.Party.Add(new HeroSpec { ClassId = "mage", Start = new Coord(3, 7), Bar = new List<string> { "meteor" } });
                 setup.Party.Add(new HeroSpec { ClassId = "knight", Start = new Coord(0, 0) });
                 var s = BattleEngine.Create(db, setup, new List<BattleEvent>());
-                s.Bank.Add(ManaColor.Red, 2);
+                s.Bank.Add(2);
                 var mage = Hero(s, "mage");
                 BattleEngine.Apply(s, new UseSlotCommand { HeroId = mage.Id, Slot = 0, Target = new Coord(3, 5) });
                 if (s.CastEntryOf(mage.Id) == null) continue;
@@ -221,7 +221,7 @@ namespace Gaiden.Tests
             var (s, _) = Battle(db, Stage(("tank", 2, 2)), ("knight", 5, 7), ("mage", 4, 7));
             var m = Hero(s, "mage");
             m.Bar[0] = new AbilitySlot { AbilityId = "frost" };
-            s.Bank.Add(ManaColor.Blue, 2);
+            s.Bank.Add(2);
             var tank = Enemy(s, "tank");
             BattleEngine.Apply(s, new UseSlotCommand { HeroId = m.Id, Slot = 0, Target = new Coord(2, 2) });
             Assert.True(tank.HasBuff("frozen"), "still frozen after the casting action");

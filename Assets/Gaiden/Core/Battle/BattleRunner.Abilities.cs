@@ -104,8 +104,8 @@ namespace Gaiden.Core.Battle
             }
             else
             {
-                var spent = S.Bank.Spend(a.Cost) ?? new List<ManaColor>();
-                Emit(new OrbsSpentEvent { Colors = spent });
+                S.Bank.Spend(a.Cost);
+                Emit(new OrbsSpentEvent { Count = a.Cost });
                 if (a.CastTime > 0f)
                 {
                     int ticks = Formulas.SecondsToTicks(Formulas.CastTime(a.CastTime, hero.Effective));
@@ -189,7 +189,7 @@ namespace Gaiden.Core.Battle
             if (a.GrantsOrbs > 0)
             {
                 Emit(new AbilityResolvedEvent { CasterId = caster.Id, AbilityId = a.Id, Anchor = caster.Pos, Targets = { caster.Id } });
-                for (int i = 0; i < a.GrantsOrbs; i++) MintOrb(RandomColor(), caster.Id, "item");
+                for (int i = 0; i < a.GrantsOrbs; i++) MintOrb(caster.Id, "item");
                 return;
             }
 
@@ -227,7 +227,7 @@ namespace Gaiden.Core.Battle
                 {
                     var cs = caster.Effective;
                     float chance = Math.Max(0f, Math.Min(1f, (cs.Luck + 0.5f * cs.Agility) / BattleConfig.StealDivisor));
-                    if (S.Rng.Chance(chance)) { MintOrb(RandomColor(), t.Id, "steal"); Announce("Steal!", t.Id); }
+                    if (S.Rng.Chance(chance)) { MintOrb(t.Id, "steal"); Announce("Steal!", t.Id); }
                     else Announce("Missed!", t.Id);
                     // Mug = Steal + its BaseDamage physical hit, handled by the damage step below.
                 }
@@ -240,7 +240,7 @@ namespace Gaiden.Core.Battle
                     bool crit = dmg > 0 && S.Rng.Chance(Formulas.CritPercent(caster.Effective) / 100f * BattleConfig.SpellCritFraction);
                     if (crit) dmg = (int)Math.Round(dmg * BattleConfig.SpellCritMultiplier);
                     Damage(t, dmg, caster, crit ? HitKind.Critical : HitKind.Normal, a.DamageType, wet ? "Shock!" : null);
-                    if (crit && caster.IsHero) MintOrb(ManaColor.Colorless, caster.Id, "critical");
+                    if (crit && caster.IsHero) MintOrb(caster.Id, "critical");
                     if (t.Alive && a.DamageType == DamageType.Lightning && S.Rng.Chance(BattleConfig.LightningBlindChance))
                     {
                         var blind = C.TryBuff("blinded");

@@ -94,17 +94,17 @@ test for every rule. 4. A harness step for anything visible. 5. Glyph check gree
 | ID | Story | § | Status | Evidence |
 |---|---|---|---|---|
 | US-070 | One shared 12-orb bank; overflow fades | §3.1.4 | ✅ | `Bank_overflow_fades_extra_orbs` |
-| US-071 | Each pincer attacker mints its class color | §3.1.2 | ✅ | `Worked_example_1_4_slide_then_pincer` (2 pincer orbs) |
-| US-072 | Each supporter mints its own color | §3.1.2 | ✅ | `Supporters_join_and_mint_their_own_orb` |
-| US-073 | Colorless wild covers a colored shortfall; explicit C only by C | §3.1.6 | ✅ | `Colorless_wild_orb_covers_a_colored_shortfall` |
-| US-074 | Spend takes the leftmost orb of each color | §3.1.5 | ✅ | `Instant_spell_spends_exact_orbs_damages_and_applies_buff` |
-| US-075 | Hero critical hit mints a Colorless orb | §3.1.2 | ✅ | `Hero_crit_mints_a_wild_orb` |
-| US-076 | Steal/Mug roll (LCK + ½AGI)/50 → random orb | §3.1.2 | ✅ | `Steal_with_high_luck_always_mints_an_orb` |
-| US-077 | Cancelling an enemy charge mints the charge's color | §13.4 | ✅ | `Stagger_accumulates_and_cancelling_a_charge_mints_its_color` |
+| US-071 | Each pincer attacker mints an orb | §3.1.2 | ✅ | `Worked_example_1_4_slide_then_pincer` (2 pincer orbs) |
+| US-072 | Each supporter mints an orb | §3.1.2 | ✅ | `Supporters_join_and_mint_their_own_orb` |
+| US-073 | Any orbs pay for any spell (generic mana, amended 2026-10-10) | §3.1.6 | ✅ | `Any_orbs_pay_for_any_spell` |
+| US-074 | Spend removes exactly the cost or nothing | §3.1.5 | ✅ | `Instant_spell_spends_exact_orbs_damages_and_applies_buff`, `Any_orbs_pay_for_any_spell` |
+| US-075 | Hero critical hit mints a bonus orb | §3.1.2 | ✅ | `Hero_crit_mints_a_bonus_orb` |
+| US-076 | Steal/Mug roll (LCK + ½AGI)/50 → orb | §3.1.2 | ✅ | `Steal_with_high_luck_always_mints_an_orb` |
+| US-077 | Cancelling an enemy charge mints an orb | §13.4 | ✅ | `Stagger_accumulates_and_cancelling_a_charge_mints_an_orb` |
 | US-078 | Battle-start orbs from Mage Robes (2) / Wizard Robe (3) | §24.8 | ✅ | `Mage_robe_seeds_battle_start_orbs_and_gear_resistance_applies` |
 | US-079 | Time-banked orbs: 1 Blue per 1.25 s left on the drag timer, max 3, at the next enemy turn | §3.1.8 | ✅ | `Drag_timer_remainder_banks_blue_orbs_at_the_enemy_handoff`, `Time_bank_carries_until_the_next_enemy_turn` |
 | US-080 | Mana Potion / Ether / Hi-Ether grant 2 / 3 / 6 orbs | §4.3 | ✅ | `Every_consumable_has_a_working_battle_effect_or_is_camp_only` (asserts an orb mint) |
-| US-081 | Orb letters + colorblind tint | §31.1 | ✅ | `tools/uicheck.py` (orb letters; colorblind changes the red tint) |
+| US-081 | Orb line reads at a glance (one mana color, filled vs empty) | §31.1 | ✅ | `tools/uicheck.py` (filled vs empty orb tint) |
 | US-082 | Bank capacity bonus gear knob | §3.1.4 | ✅ | `Bank_capacity_bonus_gear_widens_the_orb_line` |
 
 ## Abilities & spells
@@ -117,7 +117,7 @@ test for every rule. 4. A harness step for anything visible. 5. Glyph check gree
 | US-093 | Spell orbs spent at cast start; no refund on interrupt | §4.4 | ✅ | `Cast_time_spell_rides_timeline_then_resolves` (bank 0 after queue) |
 | US-094 | Cast-time spells ride the timeline and resolve on arrival (WIS+INT scaling) | §2.6, §13.1.4 | ✅ | `Cast_time_spell_rides_timeline_then_resolves` (scaling not asserted) |
 | US-095 | Cast cap: 4 hero casts in flight | §2.6 | ✅ | `Fifth_hero_cast_is_refused_by_cast_cap` |
-| US-096 | Cast stagger: WIS shrug`, `STR/WIS delay`, `cancel at ≥ cast time | §13.4 | ✅ | `Stagger_accumulates_and_cancelling_a_charge_mints_its_color` |
+| US-096 | Cast stagger: WIS shrug`, `STR/WIS delay`, `cancel at ≥ cast time | §13.4 | ✅ | `Stagger_accumulates_and_cancelling_a_charge_mints_an_orb` |
 | US-097 | Clutch (LCK/200, cap 20%) resolves a hero cast on the spot | §13.4 | ✅ | `Clutch_instantly_resolves_a_hero_cast_when_rolled` |
 | US-098 | Skills are free and lock for CooldownTurns (ticked per action) | §4.1.1 | ✅ | `Teleport_relocates_and_fires_pincer_then_goes_on_cooldown` (set; ticking not asserted) |
 | US-099 | Item stacks draw from inventory; uses deducted at commit (all outcomes) | §4.3 | ✅ | `Potion_item_heals_and_consumes_a_charge`, `Smoke_bomb_escapes_and_keeps_wounds` |
@@ -136,7 +136,7 @@ test for every rule. 4. A harness step for anything visible. 5. Glyph check gree
 | US-112 | Ability card in the actor panel while targeting | §4.5 | ✅ | `tools/uicheck.py` (ability card while targeting) |
 | US-113 | Long-press ability tooltips + radial cooldown sweep | §4.5 | ✅ | `tools/uicheck.py` (long-press card) ; radial sweep → US-156 |
 | US-114 | Distinct Homing / Spiral / Twist / Strike projectile curves | §6.1 | ✅ | `BattleScreen.ProjectilePoint` (Straight/Bezier/Homing/Spiral/Twist/Strike) |
-| US-115 | Spell damage unified with the hit/crit roll | §13.1.2 | ✅ | `Spells_never_miss_and_can_crit_for_a_wild_orb` (decision: never miss, crit at ½ chance ×1.6, wild orb) |
+| US-115 | Spell damage unified with the hit/crit roll | §13.1.2 | ✅ | `Spells_never_miss_and_can_crit_for_a_bonus_orb` (decision: never miss, crit at ½ chance ×1.6, bonus orb) |
 | US-116 | Ability-bar weapon swap | §24.5 | ✅ | `Bar_weapon_swap_changes_the_weapon_and_the_save_follows` |
 | US-117 | Distinct kits + colors for the 55 default-kit hero classes | §23.2.2 | ✅ | `Default_kit_classes_now_have_color_matched_kits`, `Every_mana_color_pays_for_at_least_one_hero_spell` |
 

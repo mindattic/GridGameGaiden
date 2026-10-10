@@ -7,7 +7,6 @@ namespace Gaiden.Core.Content
 
     public enum Team { Hero, Enemy }
 
-    public enum ManaColor { White, Blue, Black, Red, Green, Colorless }
 
     public enum DamageType { Physical, Fire, Ice, Lightning, Poison, Holy, Dark, Arcane }
 
@@ -122,7 +121,6 @@ namespace Gaiden.Core.Content
         public Stats Growth = new Stats();
         public List<MilestoneGrowth> Milestones = new List<MilestoneGrowth>();
         public Dictionary<DamageType, float> Resistances = new Dictionary<DamageType, float>();
-        public ManaColor ColorAffinity = ManaColor.Blue;
         /// <summary>Abilities this class can learn/use (hero) or uses (enemy charge / trap).</summary>
         public List<string> Abilities = new List<string>();
         /// <summary>Default ability bar preset (ability ids; items as "item:id").</summary>
@@ -152,8 +150,8 @@ namespace Gaiden.Core.Content
         public string Name;
         public string Description;
         public AbilityKind Kind;
-        /// <summary>Mana cost as letters, e.g. "RRU" (W U B R G C). Empty for skills/items.</summary>
-        public string Cost = "";
+        /// <summary>Mana cost in generic orbs (0 for skills/items).</summary>
+        public int Cost;
         public float CastTime;
         public int CooldownTurns;
         public TargetShape Shape = TargetShape.SingleActor;

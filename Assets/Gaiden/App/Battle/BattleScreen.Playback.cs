@@ -300,7 +300,7 @@ namespace Gaiden.App
             orb.style.position = Position.Absolute;
             orb.style.width = orb.style.height = 60;
             orb.style.backgroundImage = new StyleBackground(Art.Orb);
-            orb.style.unityBackgroundImageTintColor = Art.ManaColorOf(o.Color, Colorblind);
+            orb.style.unityBackgroundImageTintColor = Art.Mana;
             App.Overlay.Add(orb);
             Vector2 from = src != null && board.Units.TryGetValue(src.Id, out var v)
                 ? new Vector2(BoardLeft, BoardTop) + BoardView.CenterOf(v.Tile) : new Vector2(585, 1200);

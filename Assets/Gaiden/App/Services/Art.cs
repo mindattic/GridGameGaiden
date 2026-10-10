@@ -179,18 +179,8 @@ namespace Gaiden.App
             return t;
         }
 
-        public static Color ManaColorOf(ManaColor c, bool colorblind = false)
-        {
-            switch (c)
-            {
-                case ManaColor.White: return new Color(0.98f, 0.96f, 0.86f);
-                case ManaColor.Blue: return new Color(0.27f, 0.55f, 1f);
-                case ManaColor.Black: return new Color(0.5f, 0.3f, 0.68f);
-                case ManaColor.Red: return colorblind ? new Color(0.84f, 0.37f, 0f) : new Color(0.93f, 0.25f, 0.2f);
-                case ManaColor.Green: return colorblind ? new Color(0f, 0.62f, 0.45f) : new Color(0.25f, 0.75f, 0.35f);
-                default: return new Color(0.8f, 0.8f, 0.84f);
-            }
-        }
+        /// <summary>The one mana orb color (generic mana, AMENDMENTS 2026-10-10).</summary>
+        public static readonly Color Mana = new Color(0.42f, 0.78f, 1f);
 
         public static Color HexColor(string hex, Color fallback)
         {

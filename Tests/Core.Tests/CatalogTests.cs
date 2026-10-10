@@ -32,7 +32,7 @@ namespace Gaiden.Tests
             setup.Party.Add(new HeroSpec { ClassId = hero.Id, Level = 5, Start = new Coord(2, 3), Bar = new List<string> { a.Id } });
             setup.Party.Add(new HeroSpec { ClassId = hero.Id == "cleric" ? "paladin" : "cleric", Level = 5, Start = new Coord(4, 4) });
             var s = BattleEngine.Create(c, setup, new List<BattleEvent>());
-            s.Bank.Add(ManaColor.Colorless, 12); // wilds pay any colored cost
+            s.Bank.Add(12); // wilds pay any colored cost
             var h = s.Units.First(u => u.IsHero);
             h.Hp = h.MaxHp / 2; // so heals have something to do
             var status = BattleEngine.GetSlotStatus(s, h.Id, 0);

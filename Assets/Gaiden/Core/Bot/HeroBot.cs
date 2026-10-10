@@ -153,7 +153,7 @@ namespace Gaiden.Core.Bot
                     if (a.BaseDamage > 0 || (a.ApplyBuff != null && s.Content.TryBuff(a.ApplyBuff)?.Kind == BuffKind.Debuff)) score -= 20f;
                 }
             }
-            if (a.Kind == AbilityKind.Spell) score -= ManaBank.ParseCost(a.Cost).Count * 1.5f;
+            if (a.Kind == AbilityKind.Spell) score -= a.Cost * 1.5f;
             if (a.Kind == AbilityKind.Item) score -= 4f;
             return score;
         }

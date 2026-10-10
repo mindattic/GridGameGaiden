@@ -37,9 +37,9 @@ namespace Gaiden.Tests
             var db = new ContentDb();
             Stats S(float str, float vit, float spd, float lck = 0, float intl = 10, float wis = 0) =>
                 new Stats { Strength = str, Vitality = vit, Agility = 10, Speed = spd, Luck = lck, Intelligence = intl, Wisdom = wis };
-            db.Classes["knight"] = new ClassDef { Id = "knight", Name = "Knight", Team = Team.Hero, Tags = { "Humanoid" }, BaseStats = S(20, 10, 10), ColorAffinity = ManaColor.Red };
-            db.Classes["cleric"] = new ClassDef { Id = "cleric", Name = "Cleric", Team = Team.Hero, Tags = { "Humanoid" }, BaseStats = S(20, 10, 10), ColorAffinity = ManaColor.White };
-            db.Classes["mage"] = new ClassDef { Id = "mage", Name = "Mage", Team = Team.Hero, Tags = { "Humanoid" }, BaseStats = S(10, 10, 10), ColorAffinity = ManaColor.Blue };
+            db.Classes["knight"] = new ClassDef { Id = "knight", Name = "Knight", Team = Team.Hero, Tags = { "Humanoid" }, BaseStats = S(20, 10, 10) };
+            db.Classes["cleric"] = new ClassDef { Id = "cleric", Name = "Cleric", Team = Team.Hero, Tags = { "Humanoid" }, BaseStats = S(20, 10, 10) };
+            db.Classes["mage"] = new ClassDef { Id = "mage", Name = "Mage", Team = Team.Hero, Tags = { "Humanoid" }, BaseStats = S(10, 10, 10) };
             db.Classes["goblin"] = new ClassDef { Id = "goblin", Name = "Goblin", Team = Team.Enemy, Tags = { "Humanoid" }, BaseStats = S(5, 2, 10), MoveRange = 0, DropTable = "goblin" };
             db.Classes["wolf"] = new ClassDef { Id = "wolf", Name = "Wolf", Team = Team.Enemy, Tags = { "Beast" }, BaseStats = S(5, 2, 10), MoveRange = 1 };
             db.Classes["tank"] = new ClassDef { Id = "tank", Name = "Tank", Team = Team.Enemy, Tags = { "Beast" }, BaseStats = S(1, 200, 1), MoveRange = 0 };
@@ -49,13 +49,13 @@ namespace Gaiden.Tests
             db.Items["fang"] = new ItemDef { Id = "fang", Name = "Fang", Type = ItemType.CraftingMaterial, BaseCost = 4 };
             db.Items["potion"] = new ItemDef { Id = "potion", Name = "Potion", Type = ItemType.Consumable, BaseHealing = 30, MaxStack = 9, BaseCost = 25 };
             db.Items["sword"] = new ItemDef { Id = "sword", Name = "Sword", Type = ItemType.Equipment, Slot = EquipmentSlot.Weapon, Durability = 2, BaseDamage = 3, Stats = new Stats { Strength = 3 } };
-            db.Abilities["fireball"] = new AbilityDef { Id = "fireball", Name = "Fireball", Kind = AbilityKind.Spell, Cost = "RR", BaseDamage = 18, DamageType = DamageType.Fire, ApplyBuff = "burning", Shape = TargetShape.SingleActor, Mode = TargetMode.PickActor, Filter = TargetFilter.EnemyOnly };
-            db.Abilities["meteor"] = new AbilityDef { Id = "meteor", Name = "Meteor", Kind = AbilityKind.Spell, Cost = "RR", CastTime = 3f, BaseDamage = 22, DamageType = DamageType.Fire, Shape = TargetShape.Diamond, Radius = 2, Mode = TargetMode.PickTile, Filter = TargetFilter.EnemyOnly };
-            db.Abilities["heal"] = new AbilityDef { Id = "heal", Name = "Heal", Kind = AbilityKind.Spell, Cost = "W", BaseHeal = 25, Shape = TargetShape.SingleActor, Mode = TargetMode.PickActor, Filter = TargetFilter.AllyOnly };
-            db.Abilities["frost"] = new AbilityDef { Id = "frost", Name = "Frost", Kind = AbilityKind.Spell, Cost = "UU", BaseDamage = 10, DamageType = DamageType.Ice, ApplyBuff = "frozen", Shape = TargetShape.Square, Radius = 1, Mode = TargetMode.PickTile, Filter = TargetFilter.EnemyOnly };
+            db.Abilities["fireball"] = new AbilityDef { Id = "fireball", Name = "Fireball", Kind = AbilityKind.Spell, Cost = 2, BaseDamage = 18, DamageType = DamageType.Fire, ApplyBuff = "burning", Shape = TargetShape.SingleActor, Mode = TargetMode.PickActor, Filter = TargetFilter.EnemyOnly };
+            db.Abilities["meteor"] = new AbilityDef { Id = "meteor", Name = "Meteor", Kind = AbilityKind.Spell, Cost = 2, CastTime = 3f, BaseDamage = 22, DamageType = DamageType.Fire, Shape = TargetShape.Diamond, Radius = 2, Mode = TargetMode.PickTile, Filter = TargetFilter.EnemyOnly };
+            db.Abilities["heal"] = new AbilityDef { Id = "heal", Name = "Heal", Kind = AbilityKind.Spell, Cost = 1, BaseHeal = 25, Shape = TargetShape.SingleActor, Mode = TargetMode.PickActor, Filter = TargetFilter.AllyOnly };
+            db.Abilities["frost"] = new AbilityDef { Id = "frost", Name = "Frost", Kind = AbilityKind.Spell, Cost = 2, BaseDamage = 10, DamageType = DamageType.Ice, ApplyBuff = "frozen", Shape = TargetShape.Square, Radius = 1, Mode = TargetMode.PickTile, Filter = TargetFilter.EnemyOnly };
             db.Abilities["teleport"] = new AbilityDef { Id = "teleport", Name = "Teleport", Kind = AbilityKind.Skill, CooldownTurns = 3, IsTeleport = true, Shape = TargetShape.SingleTile, Mode = TargetMode.PickTile, Filter = TargetFilter.EmptyOnly };
             db.Abilities["steal"] = new AbilityDef { Id = "steal", Name = "Steal", Kind = AbilityKind.Skill, CooldownTurns = 3, StealsMana = true, Shape = TargetShape.Cross, Radius = 1, Mode = TargetMode.Auto, Filter = TargetFilter.EnemyOnly };
-            db.Abilities["quicken"] = new AbilityDef { Id = "quicken", Name = "Quicken", Kind = AbilityKind.Spell, Cost = "U", HastenU = 0.3f, Shape = TargetShape.SingleActor, Mode = TargetMode.PickActor, Filter = TargetFilter.Any };
+            db.Abilities["quicken"] = new AbilityDef { Id = "quicken", Name = "Quicken", Kind = AbilityKind.Spell, Cost = 1, HastenU = 0.3f, Shape = TargetShape.SingleActor, Mode = TargetMode.PickActor, Filter = TargetFilter.Any };
             db.Abilities["charge_bolt"] = new AbilityDef { Id = "charge_bolt", Name = "Dark Bolt", Kind = AbilityKind.Spell, CastTime = 2.5f, DamageType = DamageType.Dark, Shape = TargetShape.SingleActor };
             db.Buffs["burning"] = new BuffDef { Id = "burning", Name = "Burning", Unit = DurationUnit.Ticks, Duration = 5, DamagePerTick = 4, OnExpireApply = "warm" };
             db.Buffs["warm"] = new BuffDef { Id = "warm", Name = "Warm", Unit = DurationUnit.Ticks, Duration = 3 };

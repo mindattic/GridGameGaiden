@@ -216,7 +216,7 @@ namespace Gaiden.Tests
             s.Timeline.Add(new TimelineEntry { Id = 500, Kind = TimelineKind.Cast, OwnerId = m.Id, CasterTeam = Team.Hero, AbilityId = "meteor", RemainingTicks = 200, TotalCastTicks = 200, TargetTile = new Coord(2, 0) });
             var k = Hero(s, "knight");
             k.Bar[0] = new AbilitySlot { AbilityId = "quicken" };
-            s.Bank.Add(ManaColor.Blue, 1);
+            s.Bank.Add(1);
             var ev = BattleEngine.Apply(s, new UseSlotCommand { HeroId = k.Id, Slot = 0, Target = m.Pos });
             Assert.Contains(ev, e => e is HastenedEvent h && h.EntryId == 500);
         }
@@ -247,7 +247,7 @@ namespace Gaiden.Tests
         // ── Mana ────────────────────────────────────────────────────────────────
 
         [Fact] // US-075
-        public void Hero_crit_mints_a_wild_orb()
+        public void Hero_crit_mints_a_bonus_orb()
         {
             var db = Mini();
             db.Classes["knight"].BaseStats.Luck = 200; // crit% caps at 50: some strikes crit
@@ -279,10 +279,10 @@ namespace Gaiden.Tests
         }
 
         [Fact] // US-077 / US-096
-        public void Stagger_accumulates_and_cancelling_a_charge_mints_its_color()
+        public void Stagger_accumulates_and_cancelling_a_charge_mints_an_orb()
         {
             var db = Mini();
-            db.Abilities["charge_bolt"].Cost = "B";
+            db.Abilities["charge_bolt"].Cost = 1;
             db.Classes["witch"].BaseStats.Wisdom = 0;
             db.Classes["knight"].BaseStats.Strength = 400;
             db.Classes["cleric"].BaseStats.Strength = 400;
@@ -293,7 +293,7 @@ namespace Gaiden.Tests
             var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = Hero(s, "cleric").Id, Path = P((3, 0)) });
             Assert.Contains(ev, e => e is CastStaggeredEvent st && st.DelayTicks > 0);
             Assert.Contains(ev, e => e is CastCancelledEvent c && c.Reason == "interrupted");
-            Assert.Contains(ev, e => e is OrbMintedEvent o && o.Reason == "interrupt" && o.Color == ManaColor.Black);
+            Assert.Contains(ev, e => e is OrbMintedEvent o && o.Reason == "interrupt");
         }
 
         [Fact] // US-091
@@ -313,7 +313,7 @@ namespace Gaiden.Tests
             Assert.Equal(SlotStatus.Locked, BattleEngine.GetSlotStatus(s, k.Id, 4));
             k.Cooldowns["teleport"] = 2;
             Assert.Equal(SlotStatus.Cooldown, BattleEngine.GetSlotStatus(s, k.Id, 1));
-            s.Bank.Add(ManaColor.Red, 2);
+            s.Bank.Add(2);
             k.Buffs.Add(new BuffInstance { Def = db.Buffs["silenced"], Remaining = 2 });
             Assert.Equal(SlotStatus.Silenced, BattleEngine.GetSlotStatus(s, k.Id, 0));
             k.Buffs.Add(new BuffInstance { Def = db.Buffs["sleep"], Remaining = 2 });
@@ -356,7 +356,7 @@ namespace Gaiden.Tests
             var m = Hero(s, "mage");
             m.Bar[0] = new AbilitySlot { AbilityId = "fireball" };
             var tank = Enemy(s, "tank");
-            s.Bank.Add(ManaColor.Red, 4);
+            s.Bank.Add(4);
             BattleEngine.Apply(s, new UseSlotCommand { HeroId = m.Id, Slot = 0, Target = tank.Pos });
             var first = tank.Buffs.First(b => b.Def.Id == "burning").Remaining;
             BattleEngine.Apply(s, new UseSlotCommand { HeroId = m.Id, Slot = 0, Target = tank.Pos });
@@ -402,7 +402,7 @@ namespace Gaiden.Tests
             tank.Buffs.Add(new BuffInstance { Def = db.Buffs["frozen"], Remaining = 1 });
             var m = Hero(s, "mage");
             m.Bar[0] = new AbilitySlot { AbilityId = "fireball" };
-            s.Bank.Add(ManaColor.Red, 2);
+            s.Bank.Add(2);
             var ev = BattleEngine.Apply(s, new UseSlotCommand { HeroId = m.Id, Slot = 0, Target = tank.Pos });
             Assert.Contains(ev, e => e is BuffRemovedEvent r && r.BuffId == "frozen");
             Assert.Contains(ev, e => e is BuffRemovedEvent r && r.BuffId == "wet" && r.Reason == "steam");
@@ -566,7 +566,7 @@ namespace Gaiden.Tests
         }
 
         [Fact] // US-115
-        public void Spells_never_miss_and_can_crit_for_a_wild_orb()
+        public void Spells_never_miss_and_can_crit_for_a_bonus_orb()
         {
             var db = Mini();
             db.Classes["mage"].BaseStats.Luck = 200;
@@ -577,7 +577,7 @@ namespace Gaiden.Tests
                 setup.Party.Add(new HeroSpec { ClassId = "mage", Start = new Coord(4, 7), Bar = new List<string> { "fireball" } });
                 setup.Party.Add(new HeroSpec { ClassId = "knight", Start = new Coord(5, 7) });
                 var s = BattleEngine.Create(db, setup, new List<BattleEvent>());
-                s.Bank.Add(ManaColor.Red, 2);
+                s.Bank.Add(2);
                 var ev = BattleEngine.Apply(s, new UseSlotCommand { HeroId = Hero(s, "mage").Id, Slot = 0, Target = new Coord(2, 2) });
                 var d = ev.OfType<DamagedEvent>().First(x => x.SourceId == Hero(s, "mage").Id);
                 if (d.Hit == HitKind.Miss) misses++;

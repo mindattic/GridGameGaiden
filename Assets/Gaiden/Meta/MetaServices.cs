@@ -603,7 +603,7 @@ namespace Gaiden.Meta
         public static bool IsHeroUsable(AbilityDef a) => a.Kind != AbilityKind.Passive &&
             (a.Kind == AbilityKind.Spell || a.Kind == AbilityKind.Skill) && !a.Id.StartsWith("charge_") && a.Id != "enrage";
 
-        public static int Price(AbilityDef a) => a.Kind == AbilityKind.Skill ? 300 : 120 + 80 * ManaBank.ParseCost(a.Cost).Count;
+        public static int Price(AbilityDef a) => a.Kind == AbilityKind.Skill ? 300 : 120 + 80 * a.Cost;
 
         public static Result Learn(ContentDb c, SaveData s, HeroSave h, string abilityId)
         {
