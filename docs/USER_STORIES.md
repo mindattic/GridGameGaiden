@@ -294,6 +294,9 @@ test for every rule. 4. A harness step for anything visible. 5. Glyph check gree
 | US-339 | Frozen / asleep / stunned units show a debuff badge on their timeline circle (sprite dimmed) and a pip on their tile, so it is clear why they are not moving | §8.5 | ✅ | `tools/uicheck.py` (frozen badge on circle + tile pip) |
 | US-340 | Casts ride the same line from 0 (cast start) to 1 (lands) over their own cast time, so quick spells visibly overtake older icons | §2.6 | ✅ | `TimelineEntry.U` (cast), `BattleEngine.UPerTick`; 157 sim tests |
 | US-341 | Pending spells draw a radial countdown around the target's frame in the spell's own colour, with the spell icon chip; several pending spells on one unit cycle every 1.2 s; cast/resolve banners say who casts what on whom and when it lands | §2.6 | ✅ | `tools/uicheck.py` (ring + chip on target, two spells cycle colours); `CastRing`, `Art.SpellColor` |
+| US-351 | Every status, ability, item and the cursor is a pixel-art icon from open-licence silhouettes (game-icons.net, CC BY 3.0) | §11 | ✅ | `tools/make_icons.py` + `tools/icons.json` (218 icons); `tools/check_assets.py`; `tools/uicheck.py` (status pips are pixel icons) |
+| US-352 | Combat presentation: FF VI billboard, accumulating damage tally that bursts into the total, cut-in modes (sweep + supporter strip, chain pop-up cards, caster slide) | §6.2 | ✅ | probe run: cut-in 0.81 s, billboard 0.89 s, tally 2.05 s, burst 2.66 s (artifacts/show); `tools/uicheck.py` (pincer names itself on the billboard) |
+| US-353 | Shield Bash knockback (crash into units, slam into stone/edge) and movable tiles (amplifier pushed like an actor, nothing spawns on it) | §6.6, §1.1.2 | ✅ | `Shield_bash_*`, `Bashing_into_a_unit_crashes_both_and_into_stone_slams_hard`, `The_amplifier_is_a_movable_tile_heroes_push_and_nothing_spawns_on` |
 | US-305 | HD art pass | §7 (V2) | ⬜ | V2 scope per RFC 0002 (never part of the V1 claim); current art is the original GridGame illustration set |
 
 ## Platform & ship
@@ -344,9 +347,9 @@ test for every rule. 4. A harness step for anything visible. 5. Glyph check gree
 | Bosses (7) | 7 | 0 | 0 |
 | Meta & Camp services (37) | 37 | 0 | 0 |
 | UI screens (35) | 35 | 0 | 0 |
-| Audio & VFX (15) | 14 | 0 | 1 |
+| Audio & VFX (18) | 17 | 0 | 1 |
 | Platform & ship (13) | 12 | 0 | 1 |
-| Production roadmap (owner direction, 2026-10-10) (9) | 3 | 0 | 6 |
-| **Total (239)** | **231** | **0** | **8** |
+| Production roadmap (owner direction, 2026-10-10) (9) | 5 | 0 | 4 |
+| **Total (242)** | **236** | **0** | **6** |
 
 Open design questions that gate future stories live in [BIBLE §29](BIBLE.md#29-open-design-questions).

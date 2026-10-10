@@ -81,7 +81,7 @@ namespace Gaiden.App
                 case DisplacedEvent d: return StepAnim(d.UnitId, d.To, 0.14f, "slide");
                 case TeleportedEvent t: return TeleportAnim(t);
 
-                case PincerFormedEvent p: return PincerAnim(p);
+                case PincerFormedEvent p: FlushTallies(); return PincerAnim(p);
                 case RespiteEvent rs: return RespiteAnim(rs);
                 case AttackEvent at: return AttackAnim(at);
                 case DamagedEvent dm: return DamageAnim(dm);
@@ -91,20 +91,20 @@ namespace Gaiden.App
                 case AmplifierSpawnedEvent asp: return AmpSpawnAnim(asp);
                 case AmplifierMovedEvent am: return AmpMoveAnim(am);
                 case AmplifierUsedEvent au: return AmpUsedAnim(au);
-                case OrbMintedEvent o: return OrbAnim(o);
+                case OrbMintedEvent o: if (o.Reason == "pincer") FlushTallies(); return OrbAnim(o);
                 case OrbsSpentEvent _: SyncOrbs(); App.Audio.Sfx("cast", 0.6f); return Tween.Wait(0.12f);
 
-                case TimelineAdvancedEvent ta: return TimelineAnim(ta);
+                case TimelineAdvancedEvent ta: FlushTallies(); return TimelineAnim(ta);
                 case PushedBackEvent pb: return PushAnim(pb);
                 case HastenedEvent hs: return HastenAnim(hs);
-                case TurnStartedEvent ts: return TurnAnim(ts);
+                case TurnStartedEvent ts: FlushTallies(); return TurnAnim(ts);
                 case TurnSkippedEvent sk: return FloatText(sk.UnitId, sk.Reason == "asleep" ? "Zzz…" : "…", new Color(0.7f, 0.8f, 1f), 0.35f);
 
                 case CastQueuedEvent cq: return CastQueuedAnim(cq);
                 case CastStaggeredEvent cs: return FloatText(cs.CasterId, cs.Resisted ? "Steady!" : "Stagger!", new Color(1f, 0.85f, 0.4f), 0.25f);
                 case CastCancelledEvent cc: SyncTimeline(null); board.Lines.ClearLines(); board.ClearMarks(); return FloatText(cc.CasterId, cc.Reason == "interrupted" ? "Interrupted!" : "Fizzled", new Color(1f, 0.6f, 0.3f), 0.35f);
                 case ClutchEvent cl: return ClutchAnim(cl);
-                case AbilityResolvedEvent ar: return AbilityAnim(ar);
+                case AbilityResolvedEvent ar: FlushTallies(); return AbilityAnim(ar);
                 case AbilityRefusedEvent rf: App.Audio.Sfx("ui.error"); ShowBanner(rf.Reason); return null;
                 case ItemUsedEvent iu: ShowBanner($"{App.Content.TryItem(iu.ItemId)?.Name} ({iu.ChargesLeft} left)"); return Tween.Wait(0.1f);
 
@@ -121,10 +121,10 @@ namespace Gaiden.App
                 case WeaponSwappedEvent sw: App.Audio.Sfx("dash"); SyncBar(); return FloatText(sw.UnitId, "⭾ " + (App.Content.TryItem(sw.ToWeapon)?.Name ?? "Swap"), new Color(0.85f, 0.9f, 1f), 0.3f, 54);
                 case BossPhaseEvent bp: return BossAnim(bp);
                 case WaveStartedEvent wv: return WaveAnim(wv);
-                case WaveClearedEvent wc: ShowBanner("Wave cleared!"); return Tween.Wait(0.4f);
+                case WaveClearedEvent wc: FlushTallies(); ShowBanner("Wave cleared!"); return Tween.Wait(0.4f);
                 case BattleEndedEvent be: ShowBanner(be.Victory ? "VICTORY!" : be.Escaped ? "ESCAPED" : "DEFEAT"); App.Audio.Sfx(be.Victory ? "victory" : be.Escaped ? "dash" : "defeat"); return Tween.Wait(1.0f);
                 case RevivedEvent rv: return ReviveAnim(rv);
-                case PlayerControlEvent _: ShowBanner(""); SyncAll(); return null;
+                case PlayerControlEvent _: FlushTallies(); ShowBanner(""); SyncAll(); return null;
             }
             return null;
         }
@@ -175,16 +175,26 @@ namespace Gaiden.App
                 if (k >= 0.6f) foreach (var (la, lb) in links) board.Lines.Add(la, Vector2.Lerp(la, lb, (k - 0.6f) / 0.4f), new Color(0.4f, 0.8f, 1f, 0.95f), 12f);
             }));
             App.Audio.Sfx("pincer", 1f, 1f + 0.08f * (chainCount - 1));
+            tallying = true;
             string label = p.Team == Team.Hero ? (chainCount > 1 ? $"CHAIN ×{chainCount}!" : "PINCER!") : "Enemy pincer!";
+            Billboard($"{a.Name} & {b.Name} — {(chainCount > 1 ? $"Chain ×{chainCount}" : "Pincer")}", null, p.Team == Team.Hero ? new Color(1f, 0.9f, 0.5f) : new Color(1f, 0.55f, 0.5f));
+            var supporters = p.Supporters.Select(State.UnitById).Where(x => x != null).ToList();
+            if (supporters.Count > 0) Billboard("Support: " + string.Join(", ", supporters.Select(x => x.Name)), null, new Color(0.6f, 0.85f, 1f));
             ShowBanner(label);
             var mid = (BoardView.CenterOf(a.Pos) + BoardView.CenterOf(b.Pos)) / 2f;
             var f = board.Float(label, mid, color, 96);
             App.StartCoroutine(FloatAway(f, 0.7f));
             if (board.Units.TryGetValue(a.Id, out var av)) App.StartCoroutine(Tween.Pop(av.Root, 1.15f, 0.2f));
             if (board.Units.TryGetValue(b.Id, out var bv)) App.StartCoroutine(Tween.Pop(bv.Root, 1.15f, 0.2f));
-            // The close-up plays on the first link of an action; chained links keep the quick beat.
-            if (chainCount == 1 && CutInsEnabled && !ReduceMotion) yield return PincerCutIn(a, b, p.Team);
-            else yield return Tween.Wait(0.32f);
+            // Cut-in modes keep a multi-attacker frenzy readable: the full sweep on the first link (with the supporters
+            // sliding up from the bottom), quick pop-up cards beside the attackers on every chained link.
+            if (!CutInsEnabled || ReduceMotion) yield return Tween.Wait(0.32f);
+            else if (chainCount == 1)
+            {
+                if (supporters.Count > 0) App.StartCoroutine(SupporterStrip(supporters, p.Team));
+                yield return PincerCutIn(a, b, p.Team);
+            }
+            else yield return PopUpCards(new[] { a, b }, p.Team);
         }
 
         // ── Pincer cut-in (ported from GridGame2026 PortraitManager / Portrait2DInstance, US-145) ──
@@ -393,7 +403,8 @@ namespace Gaiden.App
             }
             string text = d.Note == "Armored!" ? "ARMORED" : (crit ? $"{d.Amount}!" : d.Amount.ToString());
             var color = d.Note == "Armored!" ? new Color(0.7f, 0.7f, 0.75f) : crit ? new Color(1f, 0.85f, 0.2f) : t.IsHero ? new Color(1f, 0.5f, 0.45f) : Color.white;
-            App.StartCoroutine(FloatAway(board.Float(text, at, color, crit ? 100 : 72), 0.75f));
+            if (tallying && d.SourceId >= 0 && d.Note != "Armored!") AddToTally(t, at, d.Amount, crit, d.Note);
+            else App.StartCoroutine(FloatAway(board.Float(text, at, color, crit ? 100 : 72), 0.75f));
             v.SetHp(d.HpAfter, t.MaxHp);
             v.Frame.style.unityBackgroundImageTintColor = new Color(1f, 0.4f, 0.4f);
             v.Art.style.unityBackgroundImageTintColor = new Color(1f, 0.55f, 0.55f);
@@ -488,10 +499,169 @@ namespace Gaiden.App
         {
             var at = BoardView.CenterOf(e.At);
             App.Audio.Sfx("crit", 0.9f);
+            Billboard("Power Amplifier ×1.75", null, new Color(1f, 0.85f, 0.35f));
+            ampTally = true;
             yield return Tween.Run(0.3f, k => { board.Lines.Rings.Clear(); board.Lines.Ring(at, 40f + 160f * k, new Color(1f, 0.8f, 0.3f, 1f - k), 12f); });
             board.Lines.Rings.Clear(); board.Lines.MarkDirtyRepaint();
             board.SyncAmplifier(null);
             yield return FloatText(e.HeroId, "AMPLIFIED!", new Color(1f, 0.85f, 0.3f), 0.2f, 70);
+        }
+
+        // ── Damage tally (owner direction 2026-10-10): hits within a pincer stack up, then explode into the total ──
+
+        private sealed class Tally { public Label El; public List<string> Terms = new List<string>(); public int Total; public bool Crit; public Vector2 At; public int UnitId; }
+        private readonly Dictionary<int, Tally> tallies = new Dictionary<int, Tally>();
+        private bool tallying, ampTally;
+        public int TalliesBurst { get; private set; }
+
+        private void AddToTally(Unit t, Vector2 at, int amount, bool crit, string note)
+        {
+            if (!tallies.TryGetValue(t.Id, out var tl))
+            {
+                tl = new Tally { At = at, UnitId = t.Id };
+                tl.El = board.Float("", at + new Vector2(0, -BoardView.Tile * 0.62f), Color.white, 50);
+                tl.El.name = "tally-" + t.Id;
+                tl.El.style.unityTextOutlineColor = Color.black; tl.El.style.unityTextOutlineWidth = 2f;
+                tallies[t.Id] = tl;
+            }
+            tl.Terms.Add(crit ? amount + "!" : amount.ToString());
+            if (ampTally && tl.Terms.Count == 1) tl.Terms.Add("AMP");
+            tl.Total += amount; tl.Crit |= crit;
+            tl.El.text = string.Join(" + ", tl.Terms).Replace("+ AMP", "×AMP");
+            tl.El.style.color = tl.Crit ? new Color(1f, 0.9f, 0.4f) : Color.white;
+            App.StartCoroutine(Tween.Pop(tl.El, 1.25f, 0.12f));
+        }
+
+        /// <summary>Each target's stacked terms collapse into one big number that bursts and floats away.</summary>
+        private void FlushTallies()
+        {
+            tallying = false; ampTally = false;
+            if (tallies.Count == 0) return;
+            foreach (var tl in tallies.Values.ToList()) App.StartCoroutine(BurstTally(tl));
+            tallies.Clear();
+        }
+
+        private IEnumerator BurstTally(Tally tl)
+        {
+            int realTerms = tl.Terms.Count(x => x != "AMP");
+            if (realTerms <= 1)
+            {
+                tl.El.text = tl.Terms.Count > 0 ? tl.Terms[0] : "";
+                yield return FloatAway(tl.El, 0.6f);
+                yield break;
+            }
+            TalliesBurst++;
+            yield return Tween.Run(0.16f, k => { tl.El.style.scale = new Scale(Vector2.one * (1f - 0.5f * k)); tl.El.style.opacity = 1f - 0.6f * k; });
+            tl.El.RemoveFromHierarchy();
+            var total = board.Float(tl.Crit ? tl.Total + "!" : tl.Total.ToString(), tl.At, tl.Crit ? new Color(1f, 0.85f, 0.2f) : new Color(1f, 0.95f, 0.8f), 120);
+            total.name = "tally-total";
+            App.Audio.Sfx("crit", 0.7f, 0.9f);
+            App.StartCoroutine(Tween.Shake(shake, 10f * Fx, 0.18f));
+            yield return Tween.Run(0.18f, k => total.style.scale = new Scale(Vector2.one * (1.7f - 0.7f * Tween.EaseOut(k))));
+            yield return FloatAway(total, 0.9f);
+        }
+
+        // ── Billboard (FF VI-style spell window) ──
+
+        private VisualElement billboard;
+        public int BillboardLines => billboard?.childCount ?? 0;
+
+        /// <summary>A top-of-board window naming every spell, ability and combo as it happens; lines fade after 1.6 s.</summary>
+        private void Billboard(string text, Texture2D icon, Color color)
+        {
+            if (string.IsNullOrEmpty(text)) return;
+            if (billboard == null)
+            {
+                billboard = Ui.Window(null, App.Overlay, "window--compact");
+                billboard.name = "billboard";
+                billboard.pickingMode = PickingMode.Ignore;
+                billboard.style.position = Position.Absolute;
+                billboard.style.left = 120; billboard.style.right = 120; billboard.style.top = BoardTop - 30;
+                billboard.style.paddingTop = billboard.style.paddingBottom = 10;
+                billboard.style.alignItems = Align.Center;
+            }
+            billboard.style.display = DisplayStyle.Flex;
+            billboard.BringToFront();
+            var row = Ui.El("row", billboard);
+            row.pickingMode = PickingMode.Ignore;
+            if (icon != null)
+            {
+                var ic = Ui.El("", row);
+                ic.style.width = ic.style.height = 56; ic.style.marginRight = 14;
+                ic.style.backgroundImage = new StyleBackground(icon);
+                ic.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Contain);
+            }
+            var l = Ui.Text(text, "h2 shadow", row);
+            l.style.color = color;
+            l.style.fontSize = text.Length > 30 ? 36 : 44;
+            while (billboard.childCount > 3) billboard[0].RemoveFromHierarchy();
+            App.StartCoroutine(Tween.Pop(row, 1.12f, 0.12f));
+            billboard.schedule.Execute(() =>
+            {
+                row.RemoveFromHierarchy();
+                if (billboard.childCount == 0) billboard.style.display = DisplayStyle.None;
+            }).ExecuteLater((long)(1600 / Mathf.Max(0.5f, Tween.Speed)));
+        }
+
+        // ── Cut-in modes ──
+
+        private VisualElement PortraitCard(Unit u, float h, Team team)
+        {
+            var card = new VisualElement { name = "cutin-card-" + u.Id, pickingMode = PickingMode.Ignore };
+            card.style.position = Position.Absolute;
+            card.style.width = h * 0.62f; card.style.height = h;
+            card.style.backgroundImage = new StyleBackground(Art.Portrait(u.Def.Id));
+            card.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Contain);
+            card.style.unityBackgroundImageTintColor = team == Team.Hero ? Color.white : new Color(1f, 0.8f, 0.8f);
+            App.Overlay.Add(card);
+            return card;
+        }
+
+        /// <summary>Chained links: each attacker's card pops up beside its tile, bounces, and drops away.</summary>
+        private IEnumerator PopUpCards(Unit[] attackers, Team team)
+        {
+            CutInsShown++;
+            var cards = new List<(VisualElement el, Vector2 at)>();
+            foreach (var u in attackers)
+            {
+                var c = BoardView.CenterOf(u.Pos, u.W, u.H) + new Vector2(BoardLeft, BoardTop);
+                var card = PortraitCard(u, 420f, team);
+                float x = Mathf.Clamp(c.x - 130f, 10f, 1170f - 270f);
+                card.style.left = x; card.style.top = c.y - 470f;
+                card.style.scale = new Scale(Vector2.zero);
+                cards.Add((card, c));
+            }
+            App.Audio.Sfx("dash", 0.7f, 1.15f);
+            yield return Tween.Run(0.16f, k => { foreach (var (el, _) in cards) el.style.scale = new Scale(Vector2.one * Mathf.LerpUnclamped(0f, 1f, 1f + 0.25f * Mathf.Sin(k * Mathf.PI) - (1f - k))); });
+            yield return Tween.Wait(0.22f);
+            yield return Tween.Run(0.14f, k => { foreach (var (el, _) in cards) { el.style.opacity = 1f - k; el.style.translate = new Translate(0, 60f * k); } });
+            foreach (var (el, _) in cards) el.RemoveFromHierarchy();
+        }
+
+        /// <summary>First link with supporters: their portraits slide up in a row from the bottom edge, then sink away.</summary>
+        private IEnumerator SupporterStrip(List<Unit> supporters, Team team)
+        {
+            var cards = supporters.Take(4).Select(u => PortraitCard(u, 360f, team)).ToList();
+            float total = cards.Count * 240f, x0 = (1170f - total) / 2f;
+            for (int i = 0; i < cards.Count; i++) { cards[i].style.left = x0 + i * 240f; cards[i].style.top = 2532f; }
+            yield return Tween.Run(0.22f, k => { for (int i = 0; i < cards.Count; i++) cards[i].style.top = Mathf.Lerp(2532f, 2532f - 420f, Tween.EaseOut(Mathf.Clamp01(k * 1.3f - i * 0.1f))); });
+            yield return Tween.Wait(0.6f);
+            yield return Tween.Run(0.2f, k => { foreach (var c in cards) c.style.top = Mathf.Lerp(2532f - 420f, 2532f, k); });
+            foreach (var c in cards) c.RemoveFromHierarchy();
+        }
+
+        /// <summary>A spell: the caster's portrait slides in from its side and out again while the billboard names the spell.</summary>
+        private IEnumerator CasterSlide(Unit caster)
+        {
+            var card = PortraitCard(caster, 620f, caster.Team);
+            bool fromLeft = caster.IsHero;
+            float y = BoardTop + 120f, w = 620f * 0.62f;
+            float off = fromLeft ? -w : 1170f, on = fromLeft ? 40f : 1170f - w - 40f;
+            card.style.top = y; card.style.left = off;
+            yield return Tween.Run(0.16f, k => card.style.left = Mathf.Lerp(off, on, Tween.EaseOut(k)));
+            yield return Tween.Wait(0.32f);
+            yield return Tween.Run(0.16f, k => { card.style.left = Mathf.Lerp(on, off, k * k); card.style.opacity = 1f - k; });
+            card.RemoveFromHierarchy();
         }
 
         /// <summary>Gold shown on the HUD: the party's purse plus what this battle has dropped so far.</summary>
@@ -673,6 +843,7 @@ namespace Gaiden.App
             string on = target != null ? $" on {target.Name}" : cq.LineTiles != null ? " down a line" : "";
             float secs = cq.Ticks / (float)BattleConfig.TicksPerSecond;
             ShowBanner($"{caster?.Name} {(cq.IsCharge ? "charges" : "casts")} {what}{on} — lands in {secs:0.#}s");
+            Billboard($"{caster?.Name}: {what}{on}", Art.AbilityIcon(App.Content.TryAbility(cq.AbilityId)), caster != null && caster.IsHero ? Color.white : new Color(1f, 0.7f, 0.65f));
             if (caster != null) yield return Gather(caster, Art.SpellColor(cq.AbilityId));
             yield return FloatText(cq.CasterId, cq.IsCharge ? "Charging…" : "Casting…", new Color(0.6f, 0.85f, 1f), 0.3f, 50);
         }
@@ -695,6 +866,8 @@ namespace Gaiden.App
             var hit = ar.Targets.Select(State.UnitById).Where(u => u != null).Select(u => u.Name).Distinct().ToList();
             string who = hit.Count == 0 ? "" : hit.Count <= 2 ? " → " + string.Join(" & ", hit) : $" → {hit.Count} targets";
             ShowBanner(a == null ? "" : caster != null ? $"{caster.Name}: {a.Name}{who}" : a.Name + who);
+            if (a != null && a.Kind != AbilityKind.Passive) Billboard(a.Name + who, Art.AbilityIcon(a), Color.white);
+            if (a != null && caster != null && a.Kind == AbilityKind.Spell && CutInsEnabled && !ReduceMotion) App.StartCoroutine(CasterSlide(caster));
             board.ClearMarks();
             Color c = a == null ? Color.white : a.BaseHeal > 0 ? new Color(0.4f, 1f, 0.55f) : ColorFor(a.DamageType);
             foreach (var t in ar.Tiles) board.Mark(t, c, 0.45f);

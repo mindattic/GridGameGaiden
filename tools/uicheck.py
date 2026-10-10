@@ -143,6 +143,8 @@ def main():
         h.call("release")
         st = wait_idle(400)["battle"]
         check("drop commits one action", st["results"]["ActionsTaken"] == 1, str(st["results"]))
+        if sug["pincers"] > 0:
+            check("a pincer names itself on the billboard", has_text("Pincer") or has_text("Chain"), str(texts()[:12]))
         tut = [x for x in texts() if x.startswith("Tutorial ")]
         check("the tutorial advances after the first move", any(x in ("Tutorial 2/4", "Tutorial 3/4") for x in tut), f"tutorial texts={tut} panel={[x for x in texts()][-8:]}")
         h.call("click", name="tutorial-skip"); time.sleep(0.4)
