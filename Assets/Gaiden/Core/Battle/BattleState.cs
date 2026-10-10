@@ -42,6 +42,10 @@ namespace Gaiden.Core.Battle
         public int RecommendedLevel = 1;
         /// <summary>New Game+ cycle (0 = first playthrough): enemies +10 levels and coins +50% per cycle.</summary>
         public int NewGamePlus;
+        /// <summary>Orbs carried over from the previous battle of an expedition (§22.5).</summary>
+        public int StartOrbs;
+        /// <summary>Guest classes that must not appear (already recruited, or lost forever).</summary>
+        public HashSet<string> ExcludedGuests = new HashSet<string>();
     }
 
     /// <summary>Totals the meta layer commits after the battle (XP, coins, drops, kills, bestiary).</summary>

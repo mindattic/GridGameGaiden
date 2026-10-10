@@ -1490,6 +1490,18 @@ Campaign (`campaign.json`): Green Valley, Sandsea Reaches, Mireholt Fens, Frostm
 
 ---
 
+
+### 22.5 Expeditions (added 2026-10-10, owner direction)
+
+Owner: "the game should be grouped in sets of battles, where a battle has X battles to fight and each battle has Y waves, so there is a survival element and a reason to hold onto consumables and use mana sparingly because the challenge is going to get bigger."
+
+- Each campaign **theme is an expedition**: its stages are the battles (3 each), fought **in order**; each battle has its waves. `SaveData.Expedition` (`ExpeditionSave`: theme, next battle, carried orbs, coins) tracks the one under way.
+- **Starting:** an expedition starts on its theme's first battle (`Expeditions.CanLaunch` / `Begin`); only one at a time; battles 2+ open only as the next step.
+- **Between battles:** wounds carry (as always), **leftover mana orbs carry** into the next battle's bank (`BattleSetup.StartOrbs`, minted as "carried"), consumables spent are gone. The caravan's merchant, blacksmith and alchemist stay open — that is why the shops are always there — but the **inn is closed on the road** (`Inn.Rest` refuses; Tents still work).
+- **Finishing:** the last battle won completes the expedition: **+50% of its coins as a bonus**, the caravan makes camp and the party rests (full HP), the next expedition unlocks.
+- **Failing:** a defeat ends the expedition (the party falls back and recovers); it restarts from battle 1. **Abandon** (Adventure) or escaping also ends it, wounds kept.
+- UI: Adventure groups battles under "<Theme> Expedition" headers with status ("Battle 2/3 · 4 orbs carried", "★ Completed"); results show "Expedition: battle 1 of 3 won — 4 orbs carry over" and **Next battle ›**; camp shows the expedition strip and "Inn — On the road".
+- *(Tests: `An_expedition_runs_its_battles_in_order_carrying_mana_with_the_inn_closed`, `Finishing_an_expedition_pays_a_bonus_and_rests_the_party_while_defeat_restarts_it`.)*
 ## 23. Character Classes
 
 All classes share `classes.json`; `Team` separates heroes (62) from enemies (110). **Amended 2026-10-09:** the spawn side decides the team — a hero class placed in a stage wave fights as an enemy (the Vampire Lord is the `vampire` class, which is also recruitable).
@@ -1703,6 +1715,17 @@ Every Camp screen follows the same skeleton — header (‹ back, title, gold), 
 
 ---
 
+
+### 25.11 Guest allies (added 2026-10-10, owner direction)
+
+Owner: "guest characters that you meet in battle that act as allies — you rescue them and get them to join you, unless they die in the fight, then you've lost them forever."
+
+- `WaveDef.Guests` places a hero class into a wave (`GuestJoinedEvent`, billboard "X joins the fight! Keep them alive to recruit them."). The guest is hero-team and **player-controlled** for that battle — drag it, pincer and support with it — at the stage's recommended level, with its class loadout. A green keyline and a GUEST tag mark it.
+- **Survive a victory** → the guest joins the roster (and the party if there's room) at its battle level; results: "X joins the caravan!".
+- **Fall at any point** → **lost forever**: `SaveData.LostGuests`; it never appears again and leaves the Summon Circle's pool; results: "X fell in battle — Lost forever".
+- Guests already recruited (or lost) are skipped (`BattleSetup.ExcludedGuests`). A guest still standing keeps the battle going if the party falls.
+- Content: Dervish (Sandsea Reaches II), Drifter (Mireholt Fens II), Lancer (Frostmaw Caverns II), Machinist (first city ruin).
+- *(Tests: `A_guest_who_survives_a_victory_joins_the_roster`, `A_guest_who_falls_is_lost_forever`.)*
 ## 26. Responsive Design & Aspect Ratio
 
 ### 26.1 Reference resolution

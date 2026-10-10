@@ -89,6 +89,7 @@ namespace Gaiden.App
                 case DiedEvent d: return DeathAnim(d);
                 case LootEvent l: return LootAnim(l);
                 case RemainsLeftEvent rl: return RemainsAnim(rl.RemainsId, false);
+                case GuestJoinedEvent gj: return GuestAnim(gj);
                 case RoseAgainEvent ra: return RiseAnim(ra);
                 case AmplifierSpawnedEvent asp: return AmpSpawnAnim(asp);
                 case AmplifierMovedEvent am: return AmpMoveAnim(am);
@@ -477,6 +478,21 @@ namespace Gaiden.App
             }
             App.Audio.Sfx("ui.buy", 0.6f);
             yield return Tween.Wait(0.08f);
+        }
+
+        /// <summary>A guest ally steps onto the board (§25.11).</summary>
+        private IEnumerator GuestAnim(GuestJoinedEvent e)
+        {
+            var u = State.UnitById(e.UnitId);
+            if (u == null) yield break;
+            var v = board.Units.TryGetValue(u.Id, out var ex) ? ex : board.Add(u);
+            board.Place(v, u.Pos);
+            v.SetHp(u.Hp, u.MaxHp);
+            App.Audio.Sfx("pickup", 0.9f);
+            Billboard($"{u.Name} joins the fight! Keep them alive to recruit them.", null, new Color(0.6f, 1f, 0.75f));
+            v.Root.style.scale = new Scale(Vector2.zero);
+            yield return Tween.Run(0.25f, k => v.Root.style.scale = new Scale(Vector2.one * (k < 0.7f ? k / 0.7f * 1.15f : 1.15f - 0.15f * (k - 0.7f) / 0.3f)));
+            v.Root.style.scale = new Scale(Vector2.one);
         }
 
         /// <summary>Remains drop onto the fallen undead's tile with a thud (§14.5).</summary>

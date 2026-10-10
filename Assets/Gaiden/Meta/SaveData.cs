@@ -7,6 +7,18 @@ namespace Gaiden.Meta
     /// One save slot (bible §15). Plain data, JSON-serialized by the app's save store.
     /// Bump <see cref="CurrentVersion"/> and add a step to <see cref="SaveMigrations"/> when the shape changes.
     /// </summary>
+    /// <summary>An expedition in progress: a theme's battles fought in order, wounds and mana carried between them (§22.5).</summary>
+    public sealed class ExpeditionSave
+    {
+        public string ThemeId;
+        /// <summary>Index (into the theme's stages) of the next battle.</summary>
+        public int Next;
+        /// <summary>Orbs left in the bank at the end of the last battle; they start the next one.</summary>
+        public int CarriedOrbs;
+        /// <summary>Coins earned so far on this expedition (the completion bonus is a share of it).</summary>
+        public int Coins;
+    }
+
     public sealed class SaveData
     {
         public const int CurrentVersion = 1;
@@ -29,12 +41,16 @@ namespace Gaiden.Meta
         public List<string> Party = new List<string>();
         public Dictionary<string, int> Inventory = new Dictionary<string, int>();
         public int Recruits;
+        /// <summary>Guest allies who died in the battle they were met in — gone for good (§25.11).</summary>
+        public HashSet<string> LostGuests = new HashSet<string>();
         /// <summary>Spare equipment that has been used: item id → its worn copies (per-instance durability, US-246).</summary>
         public Dictionary<string, List<WornGear>> Worn = new Dictionary<string, List<WornGear>>();
         public bool TutorialDone;
         /// <summary>New Game+ cycle (0 = first run). Unlocked by clearing the last campaign stage (US-332).</summary>
         public int NewGamePlus;
 
+        /// <summary>The expedition under way (null = at the caravan between expeditions) — §22.5.</summary>
+        public ExpeditionSave Expedition;
         public BountySave Bounty = new BountySave();
         public Dictionary<string, BestiaryEntry> Bestiary = new Dictionary<string, BestiaryEntry>();
         public SettingsSave Settings = new SettingsSave();

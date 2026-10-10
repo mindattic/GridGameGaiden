@@ -86,6 +86,8 @@ namespace Gaiden.Core.Battle
         /// <summary>For remains: the class and level that rise when its turn arrives.</summary>
         public string RisesAs;
         public int RisesLevel;
+        /// <summary>A guest ally (§25.11), hero-team and player-controlled for this battle only.</summary>
+        public bool IsGuest;
         /// <summary>A risen undead drops nothing the second time.</summary>
         public bool NoLoot;
         public bool IsSnakeSegment => SnakeHeadId >= 0 && SnakeIndex > 0;

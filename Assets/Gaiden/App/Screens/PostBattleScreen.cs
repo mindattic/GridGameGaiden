@@ -48,25 +48,50 @@ namespace Gaiden.App
                 if (report.NewSlots > 0) Ui.MenuRow("Ability slot unlocked!", $"+{report.NewSlots}", null, list).Q<Label>("label").AddToClassList("good");
                 if (report.BountyProgress != null) Ui.MenuRow("Bounty", report.BountyProgress, null, list);
                 if (report.AutoSold > 0) Ui.MenuRow("Bag full — sold extras", $"{report.AutoSold} items", null, list);
+                foreach (var g in report.GuestsJoined)
+                    Ui.MenuRow($"{c.Class(g).Name} joins the caravan!", "New hero", null, list).Q<Label>("label").AddToClassList("good");
                 if (report.CampaignComplete) Ui.MenuRow("Campaign complete!", "New Game+ unlocked at camp", null, list).Q<Label>("label").AddToClassList("gold");
+                if (report.ExpeditionComplete)
+                {
+                    Ui.MenuRow($"{report.ExpeditionName} expedition complete!", "+" + Ui.Gold(report.ExpeditionBonus), null, list).Q<Label>("label").AddToClassList("gold");
+                    Ui.Text("The caravan makes camp — everyone rests.", "small good", list);
+                }
+                else if (report.ExpeditionName != null)
+                {
+                    var er = Ui.MenuRow($"Expedition: battle {report.ExpeditionStep} of {report.ExpeditionLength} won", $"{report.CarriedOrbs} orbs carry over", null, list);
+                    er.name = "expedition-progress";
+                    Ui.Text("Wounds carry to the next battle; the inn stays closed until the expedition ends.", "tiny dim", list).style.whiteSpace = WhiteSpace.Normal;
+                }
             }
             else
             {
-                var t = Ui.Text(report.Escaped ? "The party slips away in the smoke. Wounds remain; no rewards." : "The party retreats to camp and recovers. No rewards this time — but the stage is yours to retry.", "h2", list);
+                var t = Ui.Text(report.Escaped ? "The party slips away in the smoke. Wounds remain; no rewards." :
+                    report.ExpeditionFailed ? $"The {report.ExpeditionName} expedition has failed. The party falls back to the caravan and recovers — the expedition restarts from battle 1." :
+                    "The party retreats to camp and recovers. No rewards this time — but the stage is yours to retry.", "h2", list);
                 t.style.whiteSpace = WhiteSpace.Normal;
             }
 
+            foreach (var g in report.GuestsLost)
+                Ui.MenuRow($"{c.Class(g).Name} fell in battle", "Lost forever", null, list).Q<Label>("label").AddToClassList("bad");
             var row = Ui.El("row", col);
             row.style.justifyContent = Justify.Center;
-            if (!report.Victory) Ui.Button("Retry", () => App.Router.Replace(new BattleScreen(stageId)), null, row);
+            if (!report.Victory)
+            {
+                // A failed expedition restarts from its first battle.
+                var theme = c.ThemeOf(stageId);
+                string retryId = report.ExpeditionFailed && theme != null ? theme.Stages[0] : stageId;
+                Ui.Button("Retry", () => StageLauncher.Launch(retryId, true), null, row);
+            }
             var cont = Ui.Button("Continue", () => App.Router.ResetTo(new HubScreen()), "btn--primary", row);
             cont.name = "continue";
-            if (report.Victory)
+            if (report.Victory && report.NextStageId != null)
+                Ui.Button("Next battle ›", () => StageLauncher.Launch(report.NextStageId, true), "btn--primary", row).name = "next";
+            else if (report.Victory)
             {
                 var stages = c.CampaignStages();
                 int idx = stages.FindIndex(s => s.Id == stageId);
-                if (idx >= 0 && idx + 1 < stages.Count && Progression.IsStageUnlocked(App.Save, idx + 1))
-                    Ui.Button("Next stage ›", () => StageLauncher.Launch(stages[idx + 1].Id, true), null, row).name = "next";
+                if (idx >= 0 && idx + 1 < stages.Count && Progression.IsStageUnlocked(App.Save, idx + 1) && Expeditions.CanLaunch(c, App.Save, stages[idx + 1].Id, out _))
+                    Ui.Button("Next expedition ›", () => StageLauncher.Launch(stages[idx + 1].Id, true), null, row).name = "next";
             }
         }
     }

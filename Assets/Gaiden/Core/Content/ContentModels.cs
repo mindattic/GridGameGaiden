@@ -325,6 +325,8 @@ namespace Gaiden.Core.Content
     public sealed class WaveDef
     {
         public List<SpawnDef> Enemies = new List<SpawnDef>();
+        /// <summary>Guest allies met in this wave (§25.11): fight with you; survive and they join, fall and they're gone for good.</summary>
+        public List<SpawnDef> Guests = new List<SpawnDef>();
     }
 
     public sealed class StageDef

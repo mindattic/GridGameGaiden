@@ -124,6 +124,101 @@ namespace Gaiden.Meta
         /// <summary>Loot past an item's stack limit is sold on the spot (inventory policy, US-245).</summary>
         public int AutoSold;
         public bool CampaignComplete;
+        // Expedition (§22.5)
+        public string ExpeditionName;
+        public int ExpeditionStep;      // battles won so far on this expedition
+        public int ExpeditionLength;
+        public bool ExpeditionComplete;
+        public bool ExpeditionFailed;
+        public int ExpeditionBonus;
+        public int CarriedOrbs;
+        public string NextStageId;
+        // Guests (§25.11)
+        public List<string> GuestsJoined = new List<string>();
+        public List<string> GuestsLost = new List<string>();
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // Expeditions (§22.5): a theme's battles in order; wounds and mana carry; no inn until it ends
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    public static class Expeditions
+    {
+        /// <summary>Share of the expedition's coins paid as a completion bonus.</summary>
+        public const float CompletionBonus = 0.5f;
+
+        public static ThemeDef Theme(ContentDb c, string themeId) => c.Campaign.Themes.Find(t => t.Id == themeId);
+
+        public static bool InnOpen(SaveData s) => s.Expedition == null;
+
+        /// <summary>A battle can start if it is the next one of the active expedition, or the first battle of a theme when none is active.</summary>
+        public static bool CanLaunch(ContentDb c, SaveData s, string stageId, out string why)
+        {
+            why = null;
+            var theme = c.ThemeOf(stageId);
+            if (theme == null) return true; // test/standalone stages
+            int idx = theme.Stages.IndexOf(stageId);
+            if (s.Expedition != null)
+            {
+                if (s.Expedition.ThemeId != theme.Id) { why = $"Finish (or abandon) the {Theme(c, s.Expedition.ThemeId)?.Name} expedition first"; return false; }
+                if (idx != s.Expedition.Next) { why = $"Next up: battle {s.Expedition.Next + 1} of {theme.Stages.Count}"; return false; }
+                return true;
+            }
+            if (idx != 0) { why = "Expeditions start at battle 1"; return false; }
+            return true;
+        }
+
+        /// <summary>Called when a battle is launched: starts an expedition on its theme's first battle.</summary>
+        public static void Begin(ContentDb c, SaveData s, string stageId)
+        {
+            var theme = c.ThemeOf(stageId);
+            if (theme == null || s.Expedition != null) return;
+            if (theme.Stages.IndexOf(stageId) == 0) s.Expedition = new ExpeditionSave { ThemeId = theme.Id };
+        }
+
+        public static int StartOrbs(ContentDb c, SaveData s, string stageId)
+        {
+            var theme = c.ThemeOf(stageId);
+            return s.Expedition != null && theme != null && s.Expedition.ThemeId == theme.Id ? s.Expedition.CarriedOrbs : 0;
+        }
+
+        public static Result Abandon(SaveData s)
+        {
+            if (s.Expedition == null) return Result.Fail("No expedition under way");
+            s.Expedition = null;
+            return Result.Success("Expedition abandoned — the caravan turns back");
+        }
+
+        public static void AfterBattle(ContentDb c, SaveData s, BattleReport rep, BattleState battle)
+        {
+            var theme = c.ThemeOf(battle.Stage.Id);
+            if (theme == null || s.Expedition == null || s.Expedition.ThemeId != theme.Id) return;
+            rep.ExpeditionName = theme.Name;
+            rep.ExpeditionLength = theme.Stages.Count;
+            if (!rep.Victory)
+            {
+                rep.ExpeditionFailed = true;
+                rep.ExpeditionStep = s.Expedition.Next;
+                s.Expedition = null;
+                return;
+            }
+            s.Expedition.Next++;
+            s.Expedition.Coins += rep.Gold;
+            s.Expedition.CarriedOrbs = battle.Bank.Count;
+            rep.ExpeditionStep = s.Expedition.Next;
+            rep.CarriedOrbs = battle.Bank.Count;
+            if (s.Expedition.Next >= theme.Stages.Count)
+            {
+                rep.ExpeditionComplete = true;
+                rep.ExpeditionBonus = (int)Math.Round(s.Expedition.Coins * CompletionBonus);
+                s.Gold += rep.ExpeditionBonus;
+                rep.Gold += rep.ExpeditionBonus;
+                foreach (var id in s.Party) { var h = s.Hero(id); if (h != null) h.Hp = 0; } // the caravan makes camp: everyone rests
+                s.Expedition = null;
+                rep.CarriedOrbs = 0;
+            }
+            else rep.NextStageId = theme.Stages[s.Expedition.Next];
+        }
     }
 
     public static class BattleFactory
@@ -149,7 +244,10 @@ namespace Gaiden.Meta
                 UnlockedSlots = Progression.UnlockedSlots(s),
                 RecommendedLevel = index >= 0 ? Progression.RecommendedLevel(index) : 1,
                 NewGamePlus = s.NewGamePlus,
+                StartOrbs = Expeditions.StartOrbs(c, s, stageId),
             };
+            foreach (var h in s.Roster) setup.ExcludedGuests.Add(h.ClassId);
+            foreach (var g in s.LostGuests) setup.ExcludedGuests.Add(g);
             foreach (var id in s.Party)
             {
                 var h = s.Hero(id);
@@ -247,6 +345,19 @@ namespace Gaiden.Meta
             {
                 foreach (var id in s.Party) { var h = s.Hero(id); if (h != null) h.Hp = 0; } // defeat = retry at full (§22.2)
             }
+            // Guests: alive at a victory → they join the caravan; fallen at any point → lost forever.
+            foreach (var g in battle.Units.Where(u => u.IsGuest))
+            {
+                if (!g.Alive) { s.LostGuests.Add(g.Def.Id); rep.GuestsLost.Add(g.Def.Id); continue; }
+                if (!rep.Victory || s.Hero(g.Def.Id) != null) continue;
+                var h = Progression.NewHero(c, g.Def.Id);
+                h.TotalXp = Formulas.TotalXpForLevel(g.Level);
+                h.Hp = g.Hp >= g.MaxHp ? 0 : g.Hp;
+                s.Roster.Add(h);
+                if (s.Party.Count < Progression.MaxPartySize) s.Party.Add(h.ClassId);
+                rep.GuestsJoined.Add(g.Def.Id);
+            }
+            Expeditions.AfterBattle(c, s, rep, battle);
             rep.NewSlots = Progression.UnlockedSlots(s) - slotsBefore;
             s.LastStage = battle.Stage.Id;
             s.UpdatedUtc = DateTime.UtcNow;
@@ -464,6 +575,7 @@ namespace Gaiden.Meta
 
         public static Result Rest(ContentDb c, SaveData s)
         {
+            if (!Expeditions.InnOpen(s)) return Result.Fail("On the road — the caravan's inn opens when the expedition ends");
             int cost = Cost(c, s);
             if (cost == 0) return Result.Fail("Everyone is healthy");
             if (s.Gold < cost) return Result.Fail("Not enough gold");
@@ -668,11 +780,12 @@ namespace Gaiden.Meta
         public static int Price(ContentDb c, SaveData s) => c.Summon.BasePrice + c.Summon.PriceStep * s.Recruits;
 
         public static List<ClassDef> Pool(ContentDb c, SaveData s) =>
-            c.Summon.Pool.Select(c.TryClass).Where(d => d != null).ToList();
+            c.Summon.Pool.Where(id => !s.LostGuests.Contains(id)).Select(c.TryClass).Where(d => d != null).ToList();
 
         public static Result Recruit(ContentDb c, SaveData s, string classId)
         {
             if (!c.Summon.Pool.Contains(classId)) return Result.Fail("Not summonable");
+            if (s.LostGuests.Contains(classId)) return Result.Fail("Lost forever");
             if (s.Hero(classId) != null) return Result.Fail("Already in your roster");
             int price = Price(c, s);
             if (s.Gold < price) return Result.Fail("Not enough gold");

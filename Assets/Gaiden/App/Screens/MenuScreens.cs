@@ -244,7 +244,8 @@ namespace Gaiden.App
             Item("Merchant", () => new ShopScreen());
             Item("Blacksmith", () => new BlacksmithScreen());
             Item("Alchemist", () => new AlchemistScreen());
-            Ui.MenuRow("Inn", Inn.Cost(c, s) > 0 ? Ui.Gold(Inn.Cost(c, s)) : "Rested", Rest, list.contentContainer);
+            if (Expeditions.InnOpen(s)) Ui.MenuRow("Inn", Inn.Cost(c, s) > 0 ? Ui.Gold(Inn.Cost(c, s)) : "Rested", Rest, list.contentContainer);
+            else Ui.MenuRow("Inn", "On the road", null, list.contentContainer, null, false);
             Item("Summon Circle", () => new SummonScreen());
             Item("Bounties", () => new BountyScreen(), Bounties.Active(c, s) != null ? $"{s.Bounty.Progress}/{Bounties.Active(c, s).Kills}" : "");
             Item("Bestiary", () => new BestiaryScreen());
@@ -261,6 +262,16 @@ namespace Gaiden.App
 
             var side = Ui.El("col", lower);
             side.style.width = 330;
+            if (s.Expedition != null)
+            {
+                var ex = Ui.Window(null, side);
+                ex.name = "expedition-strip";
+                var th = Expeditions.Theme(c, s.Expedition.ThemeId);
+                Ui.Text("Expedition", "small dim", ex);
+                Ui.Text(th?.Name ?? "", "small gold", ex).style.whiteSpace = WhiteSpace.Normal;
+                Ui.Text($"Battle {s.Expedition.Next + 1}/{th?.Stages.Count ?? 0}", "small", ex);
+                Ui.Text($"{s.Expedition.CarriedOrbs} orbs carried", "tiny dim", ex);
+            }
             var goldW = Ui.Window(null, side);
             Ui.Text("Gold", "small dim", goldW);
             Ui.Text(Ui.Gold(s.Gold), "h2 gold num", goldW);
@@ -311,22 +322,37 @@ namespace Gaiden.App
             var list = Ui.List(w);
             var stages = C.CampaignStages();
             int locked = 0;
-            for (int i = stages.Count - 1; i >= 0; i--)
+            // Expeditions (§22.5): each theme is a run of battles fought in order with the caravan.
+            for (int ti = C.Campaign.Themes.Count - 1; ti >= 0; ti--)
             {
-                if (!Progression.IsStageUnlocked(S, i)) { locked++; continue; }
-                var st = stages[i];
-                int index = i;
-                bool unlocked = Progression.IsStageUnlocked(S, i);
-                bool cleared = S.ClearedStages.Contains(st.Id);
-                var theme = C.ThemeOf(st.Id);
-                string label = (cleared ? "★ " : unlocked ? "☆ " : "◇ ") + st.Name;
-                var row = Ui.MenuRow(label, $"Lv {Progression.RecommendedLevel(i)}", () => Launch(st, index), list.contentContainer, null, unlocked);
-                var drops = DropsHint(st);
-                if (unlocked && drops.Length > 0)
+                var theme = C.Campaign.Themes[ti];
+                int first = stages.FindIndex(x => theme.Stages.Count > 0 && x.Id == theme.Stages[0]);
+                if (first < 0) continue;
+                if (!Progression.IsStageUnlocked(S, first)) { locked += theme.Stages.Count; continue; }
+                bool onIt = S.Expedition != null && S.Expedition.ThemeId == theme.Id;
+                bool done = theme.Stages.All(id => S.ClearedStages.Contains(id));
+                string status = onIt ? $"Battle {S.Expedition.Next + 1}/{theme.Stages.Count} · {S.Expedition.CarriedOrbs} orbs carried" : done ? "★ Completed" : $"{theme.Stages.Count} battles";
+                var head = Ui.MenuRow((onIt ? "▶ " : "") + theme.Name + " Expedition", status, null, list.contentContainer, null, true);
+                head.Q<Label>("label").AddToClassList("gold");
+                head.name = "expedition-" + theme.Id;
+                for (int k = 0; k < theme.Stages.Count; k++)
                 {
-                    var d = Ui.Text($"{theme?.Name}  ·  {st.Waves.Count} waves  ·  drops: {drops}", "tiny dim", list.contentContainer);
-                    d.style.marginLeft = 70; d.style.marginBottom = 8;
+                    var st = C.TryStage(theme.Stages[k]);
+                    if (st == null) continue;
+                    int index = stages.FindIndex(x => x.Id == st.Id);
+                    bool cleared = S.ClearedStages.Contains(st.Id);
+                    bool can = Expeditions.CanLaunch(C, S, st.Id, out var why) && Progression.IsStageUnlocked(S, index);
+                    string label = (cleared ? "★ " : can ? "☆ " : "◇ ") + st.Name;
+                    var row = Ui.MenuRow(label, can ? $"Lv {Progression.RecommendedLevel(index)} · {st.Waves.Count} waves" : (why ?? "Locked"), () => Launch(st, index), list.contentContainer, null, can);
+                    row.style.marginLeft = 40;
+                    var drops = DropsHint(st);
+                    if (can && drops.Length > 0)
+                    {
+                        var d = Ui.Text($"drops: {drops}", "tiny dim", list.contentContainer);
+                        d.style.marginLeft = 110; d.style.marginBottom = 8;
+                    }
                 }
+                if (onIt) Ui.MenuRow("Abandon expedition", "", () => Confirm.Show("Abandon the expedition? Progress on it is lost; wounds remain.", "Abandon", () => { App.Toast(Expeditions.Abandon(S).Message); App.Persist(); Refresh(); }), list.contentContainer).style.marginLeft = 40;
             }
             if (locked > 0) Ui.MenuRow($"◇ {locked} more stage{(locked == 1 ? "" : "s")} ahead…", "", null, list.contentContainer, null, false);
             Ui.SelectFirst(list.contentContainer);
@@ -348,6 +374,12 @@ namespace Gaiden.App
         public static void Launch(string stageId, bool replaceCurrent)
         {
             var app = GameApp.I;
+            if (app.Save != null)
+            {
+                if (!Expeditions.CanLaunch(app.Content, app.Save, stageId, out var why)) { app.Toast(why); return; }
+                Expeditions.Begin(app.Content, app.Save, stageId);
+                app.Persist();
+            }
             var theme = app.Content.ThemeOf(stageId);
             GameScreen next = new BattleScreen(stageId);
             if (theme != null && !string.IsNullOrEmpty(theme.Crawl) && app.Save != null && !app.Save.SeenCrawls.Contains(theme.Id))

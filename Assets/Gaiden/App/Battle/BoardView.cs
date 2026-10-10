@@ -62,8 +62,17 @@ namespace Gaiden.App
             // Team keyline just inside the white border, so heroes, foes and bosses still read apart.
             Keyline = new VisualElement { name = "keyline", pickingMode = PickingMode.Ignore };
             Keyline.AddToClassList("unit-keyline");
-            Keyline.AddToClassList(u.IsHero ? "unit-keyline--hero" : (u.Def.HasTag("Boss") || u.IsMultiTile) ? "unit-keyline--boss" : "unit-keyline--foe");
+            Keyline.AddToClassList(u.IsGuest ? "unit-keyline--guest" : u.IsHero ? "unit-keyline--hero" : (u.Def.HasTag("Boss") || u.IsMultiTile) ? "unit-keyline--boss" : "unit-keyline--foe");
             Frame.Add(Keyline);
+            if (u.IsGuest)
+            {
+                var tag = new Label("GUEST") { name = "guest-" + u.Id, pickingMode = PickingMode.Ignore };
+                tag.AddToClassList("shadow");
+                tag.style.position = Position.Absolute; tag.style.left = 10; tag.style.top = 6;
+                tag.style.fontSize = 22; tag.style.unityFontStyleAndWeight = FontStyle.Bold;
+                tag.style.color = new Color(0.6f, 1f, 0.75f);
+                Frame.Add(tag);
+            }
 
             Hp = new VisualElement { pickingMode = PickingMode.Ignore };
             Hp.AddToClassList("gauge");

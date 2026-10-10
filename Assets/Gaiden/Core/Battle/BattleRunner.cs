@@ -237,6 +237,7 @@ namespace Gaiden.Core.Battle
             S.Timeline.RemoveAll(e => e.OwnerId == u.Id);
             Emit(new DiedEvent { UnitId = u.Id, Team = u.Team, At = at });
             if (u.IsRemains) { Announce("Laid to rest", u.Id); return; }
+            if (u.IsGuest) Announce($"{u.Name} has fallen — lost forever", u.Id);
             if (u.Team == Team.Enemy && !u.NoLoot) AwardLoot(u);
             if (u.Team == Team.Enemy) LeaveRemains(u, at);
         }

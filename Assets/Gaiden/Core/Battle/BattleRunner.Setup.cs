@@ -13,8 +13,14 @@ namespace Gaiden.Core.Battle
             new Coord(0, 7), new Coord(5, 7),
         };
 
+        private HashSet<string> excludedGuests = new HashSet<string>();
+        private int unlockedSlotsForGuests = 2;
+
         public void Setup(BattleSetup setup)
         {
+            excludedGuests = setup.ExcludedGuests ?? new HashSet<string>();
+            unlockedSlotsForGuests = setup.UnlockedSlots;
+            carriedOrbs = Math.Max(0, setup.StartOrbs);
             int i = 0;
             foreach (var spec in setup.Party)
             {
@@ -29,6 +35,27 @@ namespace Gaiden.Core.Battle
             if (prot != null)
                 foreach (var id in startProtected) { var h = S.UnitById(id); if (h != null) ApplyBuff(h, prot, prot.Duration); }
             SpawnWave(0);
+        }
+
+        /// <summary>Guest allies of a wave join the hero team on their tile (or the nearest free one).</summary>
+        private void SpawnGuests(WaveDef wave)
+        {
+            if (wave.Guests == null) return;
+            foreach (var g in wave.Guests)
+            {
+                var def = C.TryClass(g.Class);
+                if (def == null || def.Team != Team.Hero || excludedGuests.Contains(def.Id)) continue;
+                bool already = false;
+                foreach (var u in S.Units) if (u.Alive && u.IsHero && u.Def.Id == def.Id) already = true;
+                if (already) continue;
+                var at = new Coord(g.X, g.Y);
+                if (!S.FreeForSpawn(at)) { var free = RandomFreeTile(1, 1, 3, BattleConfig.Rows - 1); if (free == null) continue; at = free.Value; }
+                var spec = new HeroSpec { ClassId = def.Id, Level = Math.Max(g.Level, S.RecommendedLevel), Bar = new List<string>(def.DefaultLoadout) };
+                var unit = SpawnHero(spec, at, unlockedSlotsForGuests);
+                unit.IsGuest = true;
+                Emit(new GuestJoinedEvent { UnitId = unit.Id, At = at });
+                Announce($"{unit.Name} joins the fight!", unit.Id);
+            }
         }
 
         private Unit SpawnHero(HeroSpec spec, Coord at, int unlockedSlots)
@@ -127,6 +154,7 @@ namespace Gaiden.Core.Battle
         }
 
         private int pendingStartOrbs;
+        private int carriedOrbs;
         private int pendingBankBonus;
         private readonly List<int> startProtected = new List<int>();
 
@@ -135,6 +163,8 @@ namespace Gaiden.Core.Battle
         {
             for (int i = 0; i < pendingStartOrbs; i++) MintOrb(-1, "battle start");
             pendingStartOrbs = 0;
+            for (int i = 0; i < carriedOrbs; i++) MintOrb(-1, "carried");
+            carriedOrbs = 0;
         }
 
         // ─────────────────────────────────────────────────────────────────────────────
@@ -145,6 +175,7 @@ namespace Gaiden.Core.Battle
         {
             var wave = S.Stage.Waves[index];
             var started = new WaveStartedEvent { Wave = index, TotalWaves = S.Stage.Waves.Count };
+            SpawnGuests(wave);
             foreach (var sp in wave.Enemies)
             {
                 var def = C.TryClass(sp.Class);

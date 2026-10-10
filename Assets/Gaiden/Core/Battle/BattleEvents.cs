@@ -311,4 +311,10 @@ namespace Gaiden.Core.Battle
         public int RemainsId; public int UnitId; public Coord At;
         public override string ToString() => $"Unit {UnitId} rose from remains {RemainsId} at {At}";
     }
+
+    public sealed class GuestJoinedEvent : BattleEvent
+    {
+        public int UnitId; public Coord At;
+        public override string ToString() => $"Guest {UnitId} joins at {At}";
+    }
 }

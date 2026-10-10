@@ -47,6 +47,8 @@ namespace Gaiden.Core.Content
             return list;
         }
 
+        public StageDef TryStage(string id) => id != null && Stages.TryGetValue(id, out var st) ? st : null;
+
         public ThemeDef ThemeOf(string stageId)
         {
             foreach (var t in Campaign.Themes)
