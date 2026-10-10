@@ -409,7 +409,7 @@ namespace Gaiden.App
                 SetBorder(icon, 14, 5, Art.SpellColor(e.AbilityId));
                 icon.style.backgroundColor = e.CasterTeam == Team.Hero ? new Color(0.08f, 0.14f, 0.36f, 1f) : new Color(0.3f, 0.06f, 0.1f, 1f);
                 icon.style.overflow = Overflow.Hidden;
-                var tex = Art.Icon(a?.Icon);
+                var tex = Art.AbilityIcon(a);
                 if (tex != null) { icon.style.backgroundImage = new StyleBackground(tex); icon.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Contain); }
             }
             return icon;
@@ -480,34 +480,31 @@ namespace Gaiden.App
                 var status = owner == null ? null : StatusOf(owner, e);
                 var art = icon.Q("px") ?? icon.Q("thumb");
                 if (status == null) { badge?.RemoveFromHierarchy(); if (art != null) art.style.opacity = 1f; continue; }
+                if (badge != null && badge.viewDataKey != status.Value.icon) { badge.RemoveFromHierarchy(); badge = null; }
                 if (badge == null)
                 {
-                    badge = new Label { name = "tl-status-" + e.Id, pickingMode = PickingMode.Ignore };
-                    badge.AddToClassList("pip");
+                    badge = Ui.StatusPip(status.Value.icon, status.Value.letter, status.Value.color, 40, timelineIcons);
+                    badge.name = "tl-status-" + e.Id;
+                    badge.AddToClassList("tl-status");
                     badge.style.position = Position.Absolute;
-                    badge.style.width = badge.style.height = 38;
-                    badge.style.fontSize = 22;
-                    timelineIcons.Add(badge);
                 }
-                ((Label)badge).text = status.Value.letter;
-                badge.style.backgroundColor = status.Value.color;
                 badge.style.left = icon.style.left.value.value + TurnIcon - 30f;
                 badge.style.top = icon.style.top.value.value + TurnIcon - 30f;
                 badge.BringToFront();
                 if (art != null) art.style.opacity = 0.55f; // dimmed: it isn't moving
             }
-            foreach (var b in timelineIcons.Query<VisualElement>(className: "pip").ToList())
+            foreach (var b in timelineIcons.Query<VisualElement>(className: "tl-status").ToList())
                 if (b.name != null && b.name.StartsWith("tl-status-") && !State.Timeline.Any(e => "tl-status-" + e.Id == b.name && State.UnitById(e.OwnerId) is Unit o && o.Alive && StatusOf(o, e) != null))
                     b.RemoveFromHierarchy();
         }
 
         /// <summary>The effect that stops this unit's clock or turn, if any: buffs that halt/immobilise, else pushback stun.</summary>
-        private static (string letter, Color color, string name)? StatusOf(Unit u, TimelineEntry turn)
+        private static (string icon, string letter, Color color, string name)? StatusOf(Unit u, TimelineEntry turn)
         {
             foreach (var b in u.Buffs)
                 if (b.Def.HaltsTimeline || b.Def.Immobile)
-                    return (string.IsNullOrEmpty(b.Def.Letter) ? b.Def.Name.Substring(0, 1) : b.Def.Letter, Art.HexColor(b.Def.Color, new Color(0.6f, 0.85f, 1f)), b.Def.Name);
-            if (turn != null && turn.StunTicks > 0) return ("!", new Color(1f, 0.85f, 0.3f), "Stunned");
+                    return (b.Def.Id, string.IsNullOrEmpty(b.Def.Letter) ? b.Def.Name.Substring(0, 1) : b.Def.Letter, Art.HexColor(b.Def.Color, new Color(0.6f, 0.85f, 1f)), b.Def.Name);
+            if (turn != null && turn.StunTicks > 0) return ("stunned", "!", new Color(1f, 0.85f, 0.3f), "Stunned");
             return null;
         }
 
@@ -546,7 +543,7 @@ namespace Gaiden.App
                 if (targeted.TryGetValue(kv.Key, out var tl))
                 {
                     var (c, a) = tl[castCycle % tl.Count];
-                    kv.Value.SetCastChip(c, string.IsNullOrEmpty(a?.Icon) ? null : Art.Icon(a.Icon), a?.Name);
+                    kv.Value.SetCastChip(c, Art.AbilityIcon(a), a?.Name);
                 }
                 else kv.Value.SetCastChip(null, null, null);
             }
@@ -635,19 +632,19 @@ namespace Gaiden.App
                         var w = App.Content.TryItem(sl.WeaponId);
                         name.text = $"⭾ {w?.Name}";
                         border = new Color(0.8f, 0.8f, 0.9f);
-                        icon.style.backgroundImage = new StyleBackground(Art.Orb);
+                        icon.style.backgroundImage = new StyleBackground(Art.ItemIcon(sl.WeaponId) ?? Art.Orb);
                     }
                     else if (sl.IsItem)
                     {
                         var item = App.Content.TryItem(sl.ItemId);
                         name.text = $"{item?.Name}\n{sl.Charges}/{sl.MaxCharges}";
                         border = new Color(0.86f, 0.62f, 0.36f);
-                        icon.style.backgroundImage = new StyleBackground(Art.Icon(a?.Icon) ?? Art.Orb);
+                        icon.style.backgroundImage = new StyleBackground(Art.ItemIcon(sl.ItemId) ?? Art.AbilityIcon(a) ?? Art.Orb);
                     }
                     else if (a != null)
                     {
                         name.text = a.Name;
-                        icon.style.backgroundImage = new StyleBackground(Art.Icon(a.Icon) ?? Art.Orb);
+                        icon.style.backgroundImage = new StyleBackground(Art.AbilityIcon(a) ?? Art.Orb);
                         if (a.Kind == AbilityKind.Skill)
                         {
                             border = new Color(0.4f, 0.9f, 0.5f);
@@ -705,19 +702,18 @@ namespace Gaiden.App
             }
             // What the flashing status slot on the tile means, one line per effect.
             var statusTurn = State.TurnEntryOf(u.Id);
-            if (statusTurn != null && statusTurn.StunTicks > 0) StatusRow(col, "!", new Color(1f, 0.85f, 0.3f), "Stunned", "knocked back on the timeline — its turn icon is held");
+            if (statusTurn != null && statusTurn.StunTicks > 0) StatusRow(col, "stunned", "!", new Color(1f, 0.85f, 0.3f), "Stunned", "knocked back on the timeline — its turn icon is held");
             foreach (var b in u.Buffs)
-                StatusRow(col, string.IsNullOrEmpty(b.Def.Letter) ? b.Def.Name.Substring(0, 1) : b.Def.Letter,
+                StatusRow(col, b.Def.Id, string.IsNullOrEmpty(b.Def.Letter) ? b.Def.Name.Substring(0, 1) : b.Def.Letter,
                     Art.HexColor(b.Def.Color, b.Def.Kind == BuffKind.Buff ? new Color(0.4f, 0.8f, 1f) : new Color(0.8f, 0.4f, 0.9f)),
                     b.Def.Name, $"{Ui.BuffEffect(b.Def)} ({b.Remaining} {(b.Def.Unit == Gaiden.Core.Content.DurationUnit.Turns ? "turns" : "s")} left)");
         }
 
-        private static void StatusRow(VisualElement parent, string letter, Color color, string name, string what)
+        private static void StatusRow(VisualElement parent, string icon, string letter, Color color, string name, string what)
         {
             var row = Ui.El("row", parent);
-            var pip = Ui.Text(letter, "pip", row);
-            pip.style.backgroundColor = color;
-            pip.style.width = pip.style.height = 34; pip.style.fontSize = 20; pip.style.marginRight = 10;
+            var pip = Ui.StatusPip(icon, letter, color, 40, row);
+            pip.style.marginRight = 10;
             var t = Ui.Text($"{name} — {what}", "tiny", row);
             t.style.whiteSpace = WhiteSpace.Normal; t.style.flexShrink = 1;
         }
@@ -727,7 +723,7 @@ namespace Gaiden.App
             var row = Ui.El("row", panel);
             var icon = Ui.El("menu-icon", row);
             icon.style.width = icon.style.height = 120;
-            icon.style.backgroundImage = new StyleBackground(Art.Icon(a.Icon) ?? Art.Orb);
+            icon.style.backgroundImage = new StyleBackground(Art.AbilityIcon(a) ?? Art.Orb);
             var col = Ui.El("col grow", row);
             var top = Ui.El("row", col);
             Ui.Text(a.Name, "h2 grow", top);

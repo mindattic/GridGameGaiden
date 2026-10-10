@@ -162,7 +162,7 @@ namespace Gaiden.Core.Battle
         {
             if (a.IsTeleport)
             {
-                if (!S.Walkable(anchor) || S.UnitAt(anchor) != null) { Announce("Blocked", caster.Id); return; }
+                if (!S.FreeForSpawn(anchor)) { Announce("Blocked", caster.Id); return; }
                 var from = caster.Pos;
                 caster.Pos = anchor;
                 Emit(new AbilityResolvedEvent { CasterId = caster.Id, AbilityId = a.Id, Anchor = anchor, Tiles = { anchor } });
@@ -247,6 +247,8 @@ namespace Gaiden.Core.Battle
                         if (blind != null) ApplyBuff(t, blind, blind.Duration);
                     }
                 }
+
+                if (a.Knockback > 0 && t.Alive && t.Team != caster.Team) Knockback(caster, t, a.Knockback, a.BaseDamage);
 
                 if (a.BaseHeal > 0 && t.Alive) Heal(t, a.BaseHeal, caster);
 

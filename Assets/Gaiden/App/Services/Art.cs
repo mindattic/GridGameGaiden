@@ -59,6 +59,29 @@ namespace Gaiden.App
         }
         public static Texture2D Portrait(string classId) => Load("Portraits/" + classId);
         /// <summary>The board tile for a campaign theme (tools/make_tiles.py); the original slate tile when a theme has none.</summary>
+        private static Texture2D Pixelled(string folder, string id)
+        {
+            if (string.IsNullOrEmpty(id)) return null;
+            string path = folder + "/" + id;
+            if (cache.TryGetValue(path, out var t)) return t;
+            return cache[path] = Resources.Load<Texture2D>(path);
+        }
+
+        /// <summary>An ability's pixel icon (AbilityIcons/&lt;id&gt;), else its legacy icon, else null.</summary>
+        public static Texture2D AbilityIcon(AbilityDef a) => a == null ? null : Pixelled("AbilityIcons", a.Id) ?? (string.IsNullOrEmpty(a.Icon) ? null : Icon(a.Icon));
+
+        /// <summary>An item's pixel icon (ItemIcons/&lt;id&gt;), or null.</summary>
+        public static Texture2D ItemIcon(string itemId) => Pixelled("ItemIcons", itemId);
+
+        /// <summary>Pixel-art status icon (tools/make_status_icons.py) for a buff id or "stunned"; null when none exists.</summary>
+        public static Texture2D StatusIcon(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return null;
+            string path = "StatusIcons/" + id;
+            if (cache.TryGetValue(path, out var t)) return t;
+            return cache[path] = Resources.Load<Texture2D>(path);
+        }
+
         public static Texture2D BoardTile(string theme) => !string.IsNullOrEmpty(theme) && Exists("Tiles/" + theme) ? Load("Tiles/" + theme) : Load("Tiles/tile");
         public static Texture2D Icon(string key) => string.IsNullOrEmpty(key) ? null : Load("Icons/" + key);
 
@@ -79,7 +102,8 @@ namespace Gaiden.App
         public static Texture2D Window => window ??= Gradient(new Color32(44, 70, 170, 255), new Color32(10, 18, 70, 255), "window");
         public static Texture2D WindowDark => windowDark ??= Gradient(new Color32(30, 36, 80, 255), new Color32(6, 8, 30, 255), "window-dark");
 
-        public static Texture2D Cursor => cursor ??= MakeCursor();
+        /// <summary>The pointing-glove cursor (tools/make_icons.py, UI/cursor); the generated one if it's missing.</summary>
+        public static Texture2D Cursor => cursor ??= (Resources.Load<Texture2D>("UI/cursor") ?? MakeCursor());
         public static Texture2D Glow => glow ??= MakeGlow();
         public static Texture2D Orb => orb ??= MakeOrb();
 

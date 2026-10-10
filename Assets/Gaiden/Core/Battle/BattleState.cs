@@ -83,6 +83,16 @@ namespace Gaiden.Core.Battle
         }
     }
 
+    public enum MovableKind { Amplifier }
+
+    /// <summary>A pushable board object (§1.1.2). Occupies its tile; displaced like an actor; never an attacker or a target.</summary>
+    public sealed class MovableTile
+    {
+        public MovableKind Kind;
+        public Coord Pos;
+        public MovableTile Clone() => (MovableTile)MemberwiseClone();
+    }
+
     public sealed class BattleState
     {
         public ContentDb Content;
@@ -93,8 +103,33 @@ namespace Gaiden.Core.Battle
         public List<Unit> Units = new List<Unit>();
         public List<TimelineEntry> Timeline = new List<TimelineEntry>();
         public List<Trap> Traps = new List<Trap>();
-        /// <summary>The Power Amplifier's tile, if one is on the board (§1.2.6). Walkable; not an occupant.</summary>
-        public Coord? Amplifier;
+        /// <summary>
+        /// Movable tile objects (§1.1.2): they occupy a tile like an actor — nothing spawns or lands on them — but anyone
+        /// can push them around exactly like an actor. Physical blocks (<see cref="Blocks"/>) are the immovable kind.
+        /// </summary>
+        public List<MovableTile> Movables = new List<MovableTile>();
+
+        public MovableTile MovableAt(Coord c)
+        {
+            foreach (var m in Movables) if (m.Pos == c) return m;
+            return null;
+        }
+
+        /// <summary>The Power Amplifier's tile, if one is on the board (§1.2.6). Setting it places/moves/removes it.</summary>
+        public Coord? Amplifier
+        {
+            get { foreach (var m in Movables) if (m.Kind == MovableKind.Amplifier) return m.Pos; return null; }
+            set
+            {
+                var amp = Movables.Find(m => m.Kind == MovableKind.Amplifier);
+                if (!value.HasValue) { if (amp != null) Movables.Remove(amp); return; }
+                if (amp == null) Movables.Add(new MovableTile { Kind = MovableKind.Amplifier, Pos = value.Value });
+                else amp.Pos = value.Value;
+            }
+        }
+
+        /// <summary>Free for something new to appear (spawn, reinforcement, trap, teleport landing): walkable, no unit, no movable tile.</summary>
+        public bool FreeForSpawn(Coord c) => Walkable(c) && UnitAt(c) == null && MovableAt(c) == null;
         public ManaBank Bank = new ManaBank();
         public int Wave;
         public BattlePhase Phase = BattlePhase.PlayerInput;
@@ -177,6 +212,8 @@ namespace Gaiden.Core.Battle
             foreach (var u in Units) s.Units.Add(u.Clone());
             s.Timeline = new List<TimelineEntry>(Timeline.Count);
             foreach (var e in Timeline) s.Timeline.Add(e.Clone());
+            s.Movables = new List<MovableTile>(Movables.Count);
+            foreach (var m in Movables) s.Movables.Add(m.Clone());
             s.Traps = new List<Trap>(Traps.Count);
             foreach (var t in Traps) s.Traps.Add(t.Clone());
             s.Bank = Bank.Clone();

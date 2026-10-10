@@ -19,3 +19,9 @@ Noto Sans, Noto Sans Symbols 2 — SIL Open Font License 1.1
 
 Inspired by the pincer battles of Terra Battle and the timeline of Grandia II.
 Built with Unity.
+
+ICONS
+Status, ability, item and cursor icons are pixel-art renditions of silhouettes from game-icons.net
+(https://game-icons.net) by Lorc, Delapouite, Carl Olsen, Zeromancer, Skoll, sbed, darkzaitzev, faithtoken
+and contributors, licensed CC BY 3.0 (https://creativecommons.org/licenses/by/3.0/).
+

@@ -115,7 +115,7 @@ namespace Gaiden.App
             HpFill.EnableInClassList("gauge-fill--low", f <= 0.25f);
         }
 
-        private readonly List<(string letter, Color color, float frac)> statuses = new List<(string, Color, float)>();
+        private readonly List<(string icon, string letter, Color color, float frac)> statuses = new List<(string, string, Color, float)>();
         private int statusBeat;
 
         /// <summary>
@@ -125,9 +125,9 @@ namespace Gaiden.App
         public void SetBuffs(Unit u, bool colorblind, bool stunned = false)
         {
             statuses.Clear();
-            if (stunned) statuses.Add(("!", new Color(1f, 0.85f, 0.3f), 1f)); // pushback stun isn't a buff, but it's why it isn't moving
+            if (stunned) statuses.Add(("stunned", "!", new Color(1f, 0.85f, 0.3f), 1f)); // pushback stun isn't a buff, but it's why it isn't moving
             foreach (var b in u.Buffs)
-                statuses.Add((string.IsNullOrEmpty(b.Def.Letter) ? b.Def.Name.Substring(0, 1) : b.Def.Letter,
+                statuses.Add((b.Def.Id, string.IsNullOrEmpty(b.Def.Letter) ? b.Def.Name.Substring(0, 1) : b.Def.Letter,
                     App.Art.HexColor(b.Def.Color, b.Def.Kind == BuffKind.Buff ? new Color(0.4f, 0.8f, 1f) : new Color(0.8f, 0.4f, 0.9f)),
                     Mathf.Clamp01(b.Remaining / (float)Mathf.Max(1, b.Def.Duration))));
             ShowStatus();
@@ -144,12 +144,9 @@ namespace Gaiden.App
         {
             Buffs.Clear();
             if (statuses.Count == 0) return;
-            var (letter, color, frac) = statuses[statusBeat % statuses.Count];
-            var pip = new Label(letter) { name = "statuspip-" + Id, pickingMode = PickingMode.Ignore };
-            pip.AddToClassList("pip");
-            pip.style.width = pip.style.height = 44;
-            pip.style.fontSize = 26;
-            pip.style.backgroundColor = color;
+            var (icon, letter, color, frac) = statuses[statusBeat % statuses.Count];
+            var pip = Ui.StatusPip(icon, letter, color, 50);
+            pip.name = "statuspip-" + Id;
             pip.Add(new RingTimer(frac) { pickingMode = PickingMode.Ignore });
             Buffs.Add(pip);
             if (statuses.Count > 1)

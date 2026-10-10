@@ -4151,7 +4151,8 @@
       "antidote",
       "silence",
       "scan",
-      "sleep"
+      "sleep",
+      "shield_bash"
     ],
     "DefaultLoadout": [
       "heal",
@@ -7663,7 +7664,8 @@
       "antidote",
       "silence",
       "scan",
-      "sleep"
+      "sleep",
+      "shield_bash"
     ],
     "DefaultLoadout": [
       "heal",
@@ -10388,11 +10390,13 @@
     "Resistances": {},
     "Abilities": [
       "heal",
-      "fireball"
+      "fireball",
+      "shield_bash"
     ],
     "DefaultLoadout": [
       "heal",
       "fireball",
+      "shield_bash",
       "item:healing_potion_basic"
     ],
     "DropTable": null,

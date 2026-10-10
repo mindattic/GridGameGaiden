@@ -88,9 +88,15 @@ namespace Gaiden.Core.Battle
                     return false;
                 }
                 var from = hero.Pos;
+                var pushed = S.MovableAt(next);
                 hero.Pos = next;
                 Emit(new SteppedEvent { UnitId = hero.Id, From = from, To = next });
                 taken.Add(next);
+                if (pushed != null)
+                {
+                    pushed.Pos = from; // a movable tile swaps into the tile just left, like any displaced actor
+                    Emit(new AmplifierMovedEvent { From = next, To = from, ByUnitId = hero.Id });
+                }
                 if (occ != null)
                 {
                     occ.Pos = from;
@@ -157,7 +163,7 @@ namespace Gaiden.Core.Battle
             Unit amplified = null;
             if (team == Team.Hero && S.Amplifier.HasValue)
                 foreach (var attacker in new[] { p.A, p.B })
-                    if (amplified == null && attacker.Alive && attacker.Occupies(S.Amplifier.Value)) amplified = attacker;
+                    if (amplified == null && attacker.Alive && TouchesTile(attacker, S.Amplifier.Value)) amplified = attacker;
             if (amplified != null)
             {
                 Emit(new AmplifierUsedEvent { At = S.Amplifier.Value, HeroId = amplified.Id });
@@ -222,6 +228,57 @@ namespace Gaiden.Core.Battle
             Damage(target, roll.Damage, attacker, roll.Hit, DamageType.Physical);
             if (roll.Hit == HitKind.Critical && attacker.IsHero) MintOrb(attacker.Id, "critical");
             if (roll.Hit != HitKind.Miss) { AfterLandedHit(attacker, target, before - target.Hp); MaybeCounter(target, attacker); }
+        }
+
+        /// <summary>Is <paramref name="c"/> cardinally next to any tile of <paramref name="u"/>?</summary>
+        private static bool TouchesTile(Unit u, Coord c)
+        {
+            foreach (var d in Coord.Cardinals) if (u.Occupies(c + d) && !u.Occupies(c)) return true;
+            return false;
+        }
+
+        // ── Knockback (§6.3): shield bash and friends ──
+
+        /// <summary>
+        /// Shove <paramref name="t"/> up to <paramref name="tiles"/> straight away from the caster. Hitting another unit is
+        /// a crash (both take damage); hitting stone or the board edge is a slam (heavy damage). Bosses and snakes don't budge.
+        /// </summary>
+        private void Knockback(Unit caster, Unit t, int tiles, int baseDamage)
+        {
+            if (!t.Alive || t.IsMultiTile || t.IsSnakeMember) return;
+            var d = new Coord(t.Pos.X - caster.Pos.X, t.Pos.Y - caster.Pos.Y);
+            var dir = Math.Abs(d.X) >= Math.Abs(d.Y) ? new Coord(Math.Sign(d.X), 0) : new Coord(0, Math.Sign(d.Y));
+            if (dir.X == 0 && dir.Y == 0) return;
+            for (int i = 0; i < tiles && t.Alive && !S.IsOver; i++)
+            {
+                var next = t.Pos + dir;
+                if (!S.Walkable(next))
+                {
+                    Announce("Slam!", t.Id);
+                    Damage(t, BattleConfig.KnockbackSlamDamage + baseDamage, caster, HitKind.Normal, DamageType.Physical, "Slam!", canPush: false);
+                    return;
+                }
+                var other = S.UnitAt(next);
+                if (other != null)
+                {
+                    Announce("Crash!", t.Id);
+                    int crash = BattleConfig.KnockbackCrashDamage + baseDamage / 2;
+                    Damage(t, crash, caster, HitKind.Normal, DamageType.Physical, "Crash!", canPush: false);
+                    if (other.Alive && other.Team != caster.Team) Damage(other, crash, caster, HitKind.Normal, DamageType.Physical, "Crash!", canPush: false);
+                    return;
+                }
+                if (S.MovableAt(next) is MovableTile mv)
+                {
+                    var beyond = next + dir;
+                    if (!S.FreeForSpawn(beyond)) { Damage(t, BattleConfig.KnockbackCrashDamage, caster, HitKind.Normal, DamageType.Physical, "Crash!", canPush: false); return; }
+                    mv.Pos = beyond;
+                    Emit(new AmplifierMovedEvent { From = next, To = beyond, ByUnitId = t.Id });
+                }
+                var from = t.Pos;
+                t.Pos = next;
+                Emit(new DisplacedEvent { UnitId = t.Id, From = from, To = next, ByUnitId = caster.Id });
+                if (t.IsHero) TriggerTrap(t);
+            }
         }
 
         // ── Enemy kits (§14.4): passives and on-hit effects shared by every enemy attack ──

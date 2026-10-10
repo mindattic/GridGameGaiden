@@ -5032,5 +5032,38 @@
     "Resistances": {},
     "SoldByVendor": false,
     "Icon": null
+  },
+  {
+    "Id": "cons_grenade",
+    "Name": "Hand Grenade",
+    "Description": "Lob it: a 3×3 fire blast for 28.",
+    "Type": "Consumable",
+    "Rarity": "Uncommon",
+    "Slot": "None",
+    "WeaponType": null,
+    "BaseCost": 90,
+    "SellValue": -1,
+    "MaxStack": 10,
+    "Durability": 0,
+    "BaseHealing": 0,
+    "BaseDamage": 0,
+    "Stats": {
+      "Strength": 0,
+      "Vitality": 0,
+      "Agility": 0,
+      "Speed": 0,
+      "Stamina": 0,
+      "Intelligence": 0,
+      "Wisdom": 0,
+      "Luck": 0
+    },
+    "BattleStartManaOrbs": 0,
+    "OnUseAbility": "grenade_blast",
+    "Resistances": {},
+    "SoldByVendor": true,
+    "Icon": null,
+    "DamageType": "Fire",
+    "BonusVsTag": null,
+    "BonusMultiplier": 1.0
   }
 ]

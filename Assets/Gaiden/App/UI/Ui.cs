@@ -232,5 +232,39 @@ namespace Gaiden.App
             if (d.ImmuneBuffs != null && d.ImmuneBuffs.Count > 0) t.Add("immune to " + string.Join("/", d.ImmuneBuffs));
             return t.Count == 0 ? "" : char.ToUpper(t[0][0]) + string.Join(" · ", t).Substring(1);
         }
+
+        /// <summary>
+        /// A status pip: the pixel-art icon (flame, snowflake, poison bottle …) on a dark disc ringed in the status colour.
+        /// Falls back to the letter only when an effect has no icon yet.
+        /// </summary>
+        public static VisualElement StatusPip(string iconId, string letter, Color color, float size, VisualElement parent = null)
+        {
+            var pip = new VisualElement { pickingMode = PickingMode.Ignore, viewDataKey = iconId };
+            pip.style.width = pip.style.height = size;
+            pip.style.flexShrink = 0;
+            pip.style.borderTopLeftRadius = pip.style.borderTopRightRadius = pip.style.borderBottomLeftRadius = pip.style.borderBottomRightRadius = size / 2f;
+            pip.style.borderTopWidth = pip.style.borderBottomWidth = pip.style.borderLeftWidth = pip.style.borderRightWidth = 3;
+            pip.style.borderTopColor = pip.style.borderBottomColor = pip.style.borderLeftColor = pip.style.borderRightColor = color;
+            pip.style.backgroundColor = new Color(0.05f, 0.06f, 0.14f, 0.95f);
+            var tex = Art.StatusIcon(iconId);
+            if (tex != null)
+            {
+                var img = new VisualElement { pickingMode = PickingMode.Ignore };
+                img.style.position = Position.Absolute;
+                img.style.left = img.style.top = img.style.right = img.style.bottom = 1;
+                img.style.backgroundImage = new StyleBackground(tex);
+                img.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Contain);
+                pip.Add(img);
+            }
+            else
+            {
+                var l = new Label(letter) { pickingMode = PickingMode.Ignore };
+                l.style.flexGrow = 1; l.style.unityTextAlign = TextAnchor.MiddleCenter;
+                l.style.fontSize = size * 0.55f; l.style.color = color; l.style.unityFontStyleAndWeight = FontStyle.Bold;
+                pip.Add(l);
+            }
+            parent?.Add(pip);
+            return pip;
+        }
     }
 }

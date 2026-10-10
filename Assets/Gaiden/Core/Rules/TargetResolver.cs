@@ -79,6 +79,7 @@ namespace Gaiden.Core.Rules
             var occ = s.UnitAt(target);
             if (a.Mode == TargetMode.Auto) return true;
             if (a.Filter == TargetFilter.EmptyOnly) return occ == null && s.TrapAt(target) == null;
+            if (a.AdjacentOnly && (occ == null || !caster.IsAdjacentTo(occ))) return false;
             if (a.Mode == TargetMode.PickActor) return occ != null && Passes(a.Filter, caster, occ);
             // PickTile: any in-bounds tile whose shape catches at least one valid unit.
             return Collect(s, a, caster, target).Count > 0;

@@ -181,6 +181,10 @@ namespace Gaiden.Core.Content
         public bool StealsMana;
         public float HastenU;
         public bool IsTeleport;
+        /// <summary>Tiles the target is shoved straight away from the caster (shield bash) — §6.3.</summary>
+        public int Knockback;
+        /// <summary>The pick must be cardinally adjacent to the caster (melee skills).</summary>
+        public bool AdjacentOnly;
         public bool IsScan;
         /// <summary>Random WUBRG orbs added to the bank on resolve (ethers).</summary>
         public int GrantsOrbs;

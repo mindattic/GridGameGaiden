@@ -273,7 +273,7 @@ namespace Gaiden.App.Automation
                     if (e == null) return new { error = "not found" };
                     var rs = e.resolvedStyle;
                     string Hex(Color c) => "#" + ColorUtility.ToHtmlStringRGBA(c);
-                    return new { border = Hex(rs.borderTopColor), borderWidth = rs.borderTopWidth, background = Hex(rs.backgroundColor), tint = Hex(rs.unityBackgroundImageTintColor), rs.opacity, rs.width, rs.height, children = e.childCount, text = (e as TextElement)?.text };
+                    return new { border = Hex(rs.borderTopColor), borderWidth = rs.borderTopWidth, background = Hex(rs.backgroundColor), tint = Hex(rs.unityBackgroundImageTintColor), rs.opacity, rs.width, rs.height, children = e.childCount, text = (e as TextElement)?.text, key = e.viewDataKey };
                 }
                 case "child_style":
                 {

@@ -1,3 +1,4 @@
+using System.Linq;
 using System;
 using System.Collections.Generic;
 using Gaiden.Core.Content;
@@ -52,7 +53,7 @@ namespace Gaiden.Core.Battle
         private void LeaveTrail(Unit enemy, Coord from)
         {
             if (string.IsNullOrEmpty(enemy.Def.Trail) || !C.Traps.ContainsKey(enemy.Def.Trail)) return;
-            if (!S.Walkable(from) || S.UnitAt(from) != null || S.TrapAt(from) != null) return;
+            if (!S.FreeForSpawn(from) || S.TrapAt(from) != null) return;
             var mine = S.Traps.FindAll(t => t.OwnerId == enemy.Id);
             if (mine.Count >= 3) S.Traps.Remove(mine[0]);
             S.Traps.Add(new Trap { At = from, TrapId = enemy.Def.Trail, OwnerId = enemy.Id });
@@ -116,7 +117,7 @@ namespace Gaiden.Core.Battle
             foreach (var d in Coord.Cardinals)
             {
                 var c = enemy.Pos + d;
-                if (S.Walkable(c) && S.UnitAt(c) == null && S.TrapAt(c) == null) spots.Add(c);
+                if (S.FreeForSpawn(c) && S.TrapAt(c) == null) spots.Add(c);
             }
             if (spots.Count == 0) return false;
             var at = spots[S.Rng.Range(0, spots.Count)];
@@ -149,8 +150,9 @@ namespace Gaiden.Core.Battle
                     }
                 enemy.Pos = dest;
                 Emit(new SteppedEvent { UnitId = enemy.Id, From = from, To = dest });
-                if (S.Amplifier.HasValue && enemy.Occupies(S.Amplifier.Value) && !OccupiedBefore(enemy, from, S.Amplifier.Value))
-                    ShoveAmplifier(enemy, VacatedTile(enemy, from, delta, S.Amplifier.Value));
+                foreach (var mv in S.Movables.ToArray())
+                    if (enemy.Occupies(mv.Pos) && !OccupiedBefore(enemy, from, mv.Pos))
+                        ShoveMovable(mv, VacatedTile(enemy, from, delta, mv.Pos), enemy);
                 foreach (var (hero, to) in shoves)
                 {
                     var hf = hero.Pos;
@@ -165,20 +167,20 @@ namespace Gaiden.Core.Battle
             if (S.UnitAt(dest) != null || !S.Walkable(dest)) return false;
             enemy.Pos = dest;
             Emit(new SteppedEvent { UnitId = enemy.Id, From = from, To = dest });
-            if (S.Amplifier == dest) ShoveAmplifier(enemy, from); // enemies can't use it, but walking through drags it along
+            if (S.MovableAt(dest) is MovableTile pushedTile) ShoveMovable(pushedTile, from, enemy); // pushed like an actor: into the tile just left
             LeaveTrail(enemy, from);
 
             if (enemy.SnakeHeadId == enemy.Id) FollowSnake(enemy, from);
             return true;
         }
 
-        /// <summary>Enemies can't use the amplifier; stepping onto it pushes it to the tile they came from (§1.2.6).</summary>
-        private void ShoveAmplifier(Unit enemy, Coord to)
+        /// <summary>A movable tile is displaced like an actor: it takes the tile its pusher just left (§1.1.2).</summary>
+        private void ShoveMovable(MovableTile mv, Coord to, Unit by)
         {
-            var from = S.Amplifier.Value;
+            var from = mv.Pos;
             if (!S.Walkable(to) || from == to) return;
-            S.Amplifier = to;
-            Emit(new AmplifierMovedEvent { From = from, To = to, ByUnitId = enemy.Id });
+            mv.Pos = to;
+            Emit(new AmplifierMovedEvent { From = from, To = to, ByUnitId = by?.Id ?? -1 });
         }
 
         private static bool OccupiedBefore(Unit u, Coord anchor, Coord c) =>

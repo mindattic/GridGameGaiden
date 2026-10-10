@@ -362,7 +362,7 @@ namespace Gaiden.Tests
             {
                 var db = Mini();
                 var (s, _) = Battle(db, Stage(("goblin", 3, 3), ("goblin", 4, 3)), ("cleric", 2, 3), ("knight", 5, 3));
-                if (amp) s.Amplifier = new Coord(4, 3); // the knight's destination
+                if (amp) s.Amplifier = new Coord(4, 4); // next to the knight's destination (aligned with attacker 2)
                 var knight = Hero(s, "knight");
                 var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = knight.Id, Path = P((4, 3)) });
                 if (amp)
@@ -390,6 +390,68 @@ namespace Gaiden.Tests
             Assert.Equal(new Coord(2, 3), moved.From);
             Assert.Equal(new Coord(2, 2), moved.To);
             Assert.DoesNotContain(ev, e => e is AmplifierUsedEvent);
+        }
+
+        [Fact]
+        public void The_amplifier_is_a_movable_tile_heroes_push_and_nothing_spawns_on()
+        {
+            var db = Mini();
+            var (s, _) = Battle(db, Stage(("tank", 5, 0)), ("knight", 0, 3), ("cleric", 5, 7));
+            s.Amplifier = new Coord(1, 3);
+            var knight = Hero(s, "knight");
+            var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = knight.Id, Path = P((1, 3)) });
+            Assert.Contains(ev, e => e is AmplifierMovedEvent m && m.From == new Coord(1, 3) && m.To == new Coord(0, 3));
+            Assert.Equal(new Coord(1, 3), knight.Pos);
+            Assert.False(s.FreeForSpawn(s.Amplifier.Value));
+        }
+
+        // ── Knockback (§6.3) ──
+
+        private static (BattleState s, Unit knight) Bash(ContentDb db, StageDef stage)
+        {
+            db.Abilities["shield_bash"] = new AbilityDef { Id = "shield_bash", Name = "Shield Bash", Kind = AbilityKind.Skill, CooldownTurns = 2, BaseDamage = 12, Knockback = 2, AdjacentOnly = true, DamageType = DamageType.Physical, Shape = TargetShape.SingleActor, Mode = TargetMode.PickActor, Filter = TargetFilter.EnemyOnly };
+            var (s, _) = Battle(db, stage, ("knight", 2, 4), ("cleric", 5, 7));
+            var k = Hero(s, "knight");
+            k.Bar[0] = new AbilitySlot { AbilityId = "shield_bash" };
+            return (s, k);
+        }
+
+        [Fact]
+        public void Shield_bash_shoves_the_target_two_tiles_away()
+        {
+            var (s, k) = Bash(Mini(), Stage(("tank", 2, 3)));
+            var tank = Enemy(s, "tank");
+            BattleEngine.Apply(s, new UseSlotCommand { HeroId = k.Id, Slot = 0, Target = tank.Pos });
+            Assert.Equal(new Coord(2, 1), tank.Pos);
+        }
+
+        [Fact]
+        public void Bashing_into_a_unit_crashes_both_and_into_stone_slams_hard()
+        {
+            int Taken(StageDef st, out int other)
+            {
+                var (s, k) = Bash(Mini(), st);
+                var tank = s.Units.First(u => u.Alive && u.Pos == new Coord(2, 3));
+                var second = s.Units.FirstOrDefault(u => u.Alive && !u.IsHero && u != tank);
+                int hp0 = tank.Hp, hp1 = second?.Hp ?? 0;
+                BattleEngine.Apply(s, new UseSlotCommand { HeroId = k.Id, Slot = 0, Target = tank.Pos });
+                other = second == null ? 0 : hp1 - second.Hp;
+                return hp0 - tank.Hp;
+            }
+            int free = Taken(Stage(("tank", 2, 3)), out _);
+            int crash = Taken(Stage(("tank", 2, 3), ("tank", 2, 2)), out int otherHurt);
+            var stone = Stage(("tank", 2, 3)); stone.Blocks.Add(new Coord(2, 2));
+            int slam = Taken(stone, out _);
+            Assert.True(crash > free, $"crash {crash} vs free {free}");
+            Assert.True(otherHurt > 0, "the unit it crashed into is hurt too");
+            Assert.True(slam > crash, $"slam {slam} vs crash {crash}");
+        }
+
+        [Fact]
+        public void Shield_bash_needs_an_adjacent_target()
+        {
+            var (s, k) = Bash(Mini(), Stage(("tank", 2, 1)));
+            Assert.False(TargetResolver.IsValidPick(s, s.Content.Abilities["shield_bash"], k, new Coord(2, 1)));
         }
     }
 }

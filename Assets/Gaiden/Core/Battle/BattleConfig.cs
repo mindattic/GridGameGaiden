@@ -88,5 +88,10 @@ namespace Gaiden.Core.Battle
         public const float AmplifierMaxChance = 0.45f;
         /// <summary>A pincer attacker standing on the amplifier strikes this much harder (and mints a bonus orb).</summary>
         public const float AmplifierDamageMultiplier = 1.75f;
+
+        /// <summary>Knockback into another unit: both take this (+ half the blow).</summary>
+        public const int KnockbackCrashDamage = 8;
+        /// <summary>Knockback into stone or the board edge: the target takes this (+ the full blow).</summary>
+        public const int KnockbackSlamDamage = 18;
     }
 }

@@ -60,7 +60,8 @@ namespace Gaiden.App
         /// <summary>Standard item row: glyph · rarity-colored name · right value.</summary>
         public static VisualElement Row(ItemDef i, string value, Action onClick, VisualElement parent, bool enabled = true)
         {
-            var row = Ui.MenuRow($"{Glyph(i)}  {i.Name}", value, onClick, parent, null, enabled);
+            var icon = Art.ItemIcon(i.Id);
+            var row = Ui.MenuRow(icon != null ? i.Name : $"{Glyph(i)}  {i.Name}", value, onClick, parent, icon, enabled);
             row.Q<Label>("label").AddToClassList(Ui.RarityClass(i.Rarity));
             return row;
         }
@@ -306,7 +307,7 @@ namespace Gaiden.App
                 {
                     var a = C.TryAbility(id);
                     if (a == null) continue;
-                    var row = Ui.MenuRow(a.Name, KindLabel(a), () => Done(Abilities.Assign(C, S, h, slot, a.Id)), list, Art.Icon(a.Icon), slot < unlocked);
+                    var row = Ui.MenuRow(a.Name, KindLabel(a), () => Done(Abilities.Assign(C, S, h, slot, a.Id)), list, Art.AbilityIcon(a), slot < unlocked);
                     if (a.Cost > 0) Ui.CostPips(a.Cost, row);
                     Describe(a, list);
                 }
@@ -328,7 +329,7 @@ namespace Gaiden.App
                 {
                     var ab = a;
                     int price = Abilities.Price(a);
-                    var row = Ui.MenuRow(a.Name, Ui.Gold(price), () => Confirm.Show($"Teach {C.Class(h.ClassId).Name} {ab.Name} for {Ui.Gold(price)}?", "Learn", () => Done(Abilities.Learn(C, S, h, ab.Id))), list, Art.Icon(a.Icon), S.Gold >= price);
+                    var row = Ui.MenuRow(a.Name, Ui.Gold(price), () => Confirm.Show($"Teach {C.Class(h.ClassId).Name} {ab.Name} for {Ui.Gold(price)}?", "Learn", () => Done(Abilities.Learn(C, S, h, ab.Id))), list, Art.AbilityIcon(a), S.Gold >= price);
                     Describe(a, list);
                 }
             }
@@ -352,8 +353,10 @@ namespace Gaiden.App
 
         private Texture2D EntryIcon(string entry)
         {
-            if (entry == null || entry.StartsWith("item:") || entry.StartsWith("weapon:")) return null;
-            return Art.Icon(C.TryAbility(entry)?.Icon);
+            if (entry == null) return null;
+            if (entry.StartsWith("item:")) return Art.ItemIcon(entry.Substring(5));
+            if (entry.StartsWith("weapon:")) return Art.ItemIcon(entry.Substring(7));
+            return Art.AbilityIcon(C.TryAbility(entry));
         }
     }
 

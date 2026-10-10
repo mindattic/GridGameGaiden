@@ -207,8 +207,10 @@ def main():
     check("statuses share one slot on the tile", st.get("children", 0) == 1, str(st))
     seen = set()
     for _ in range(4):
-        seen.add(h.call("style", name=f"statuspip-{target['Id']}").get("text")); time.sleep(0.65)
+        seen.add(h.call("style", name=f"statuspip-{target['Id']}").get("key")); time.sleep(0.65)
     check("the status slot flashes through every buff/debuff", len(seen - {None}) >= 2, str(seen))
+    names_now = h.call("names", prefix="statuspip-")
+    check("status pips are pixel icons (flame, snowflake…)", any(h.call("style", name=n).get("children", 0) >= 1 for n in names_now), str(names_now))
     disc = h.call("style", name=next((n for n in h.call("names", prefix="tl-") if n[3:].isdigit()), "tl-1"))
     check("timeline circles are opaque (the line never shows through)", disc.get("background", "").upper().endswith("FF"), str(disc))
 
