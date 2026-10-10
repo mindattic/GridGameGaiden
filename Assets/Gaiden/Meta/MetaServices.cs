@@ -74,6 +74,23 @@ namespace Gaiden.Meta
 
         public static int RecommendedLevel(int campaignIndex) => campaignIndex + 1;
 
+        public static bool CanStartNewGamePlus(ContentDb c, SaveData s)
+        {
+            var all = c.CampaignStages();
+            return all.Count > 0 && s.HighestClearedStage >= all.Count - 1;
+        }
+
+        /// <summary>New Game+ (US-332): replay the campaign from the start with everything you own; enemies +10 levels per cycle.</summary>
+        public static Result StartNewGamePlus(ContentDb c, SaveData s)
+        {
+            if (!CanStartNewGamePlus(c, s)) return Result.Fail("Clear the whole campaign first");
+            s.NewGamePlus++;
+            s.HighestClearedStage = -1;
+            s.ClearedStages.Clear();
+            s.SeenCrawls.Clear();
+            return Result.Success($"New Game+ {s.NewGamePlus} — enemies grow stronger");
+        }
+
         public static Unit Preview(ContentDb c, HeroSave h)
         {
             var spec = BattleFactory.SpecFor(c, h);
@@ -104,6 +121,9 @@ namespace Gaiden.Meta
         public string UnlockedStage;
         public int NewSlots;
         public string BountyProgress;
+        /// <summary>Loot past an item's stack limit is sold on the spot (inventory policy, US-245).</summary>
+        public int AutoSold;
+        public bool CampaignComplete;
     }
 
     public static class BattleFactory
@@ -128,6 +148,7 @@ namespace Gaiden.Meta
                 Seed = seed,
                 UnlockedSlots = Progression.UnlockedSlots(s),
                 RecommendedLevel = index >= 0 ? Progression.RecommendedLevel(index) : 1,
+                NewGamePlus = s.NewGamePlus,
             };
             foreach (var id in s.Party)
             {
@@ -156,7 +177,14 @@ namespace Gaiden.Meta
                 rep.Gold = r.Coins;
                 s.Gold += r.Coins;
                 s.LifetimeCoins += r.Coins;
-                foreach (var kv in r.Items) { s.AddItem(kv.Key, kv.Value); rep.Items[kv.Key] = kv.Value; }
+                foreach (var kv in r.Items)
+                {
+                    var def = c.TryItem(kv.Key);
+                    int room = def == null ? kv.Value : Math.Max(0, def.MaxStack - s.Count(kv.Key));
+                    int keep = Math.Min(room, kv.Value), extra = kv.Value - keep;
+                    if (keep > 0) { s.AddItem(kv.Key, keep); rep.Items[kv.Key] = keep; }
+                    if (extra > 0 && def != null) { int g = extra * Shop.SellPrice(def); s.Gold += g; rep.Gold += g; rep.AutoSold += extra; }
+                }
                 foreach (var kv in r.Kills) Entry(s, kv.Key).Defeated += kv.Value;
 
                 var heroes = battle.Units.Where(u => u.IsHero).ToList();
@@ -196,6 +224,8 @@ namespace Gaiden.Meta
 
                 int index = c.CampaignStages().FindIndex(x => x.Id == battle.Stage.Id);
                 rep.FirstClear = s.ClearedStages.Add(battle.Stage.Id);
+                var all = c.CampaignStages();
+                rep.CampaignComplete = all.Count > 0 && index == all.Count - 1;
                 if (index > s.HighestClearedStage)
                 {
                     s.HighestClearedStage = index;
@@ -478,11 +508,13 @@ namespace Gaiden.Meta
             if (!Fits(item, slot)) return Result.Fail("That doesn't go there");
             if (s.Count(itemId) < 1) return Result.Fail("You don't own that");
             Unequip(c, s, h, slot);
+            // Fresh copies first; otherwise the best of the worn ones (per-instance durability, US-246).
+            var copy = TakeCopy(s, item);
             s.AddItem(itemId, -1);
             switch (slot)
             {
-                case EquipmentSlot.Weapon: h.WeaponId = itemId; h.WeaponDurability = item.Durability; h.WeaponRepairs = 0; break;
-                case EquipmentSlot.Armor: h.ArmorId = itemId; h.ArmorDurability = item.Durability; h.ArmorRepairs = 0; break;
+                case EquipmentSlot.Weapon: h.WeaponId = itemId; h.WeaponDurability = copy.Durability; h.WeaponRepairs = copy.Repairs; break;
+                case EquipmentSlot.Armor: h.ArmorId = itemId; h.ArmorDurability = copy.Durability; h.ArmorRepairs = copy.Repairs; break;
                 case EquipmentSlot.Relic1: h.Relics[0] = itemId; break;
                 case EquipmentSlot.Relic2: h.Relics[1] = itemId; break;
                 case EquipmentSlot.Relic3: h.Relics[2] = itemId; break;
@@ -490,12 +522,32 @@ namespace Gaiden.Meta
             return Result.Success($"Equipped {item.Name}");
         }
 
-        /// <summary>Returns the piece to the bag. Durability is per equipped instance, so a re-equip starts fresh (known simplification).</summary>
+        private static WornGear TakeCopy(SaveData s, ItemDef item)
+        {
+            s.Worn.TryGetValue(item.Id, out var worn);
+            int fresh = s.Count(item.Id) - (worn?.Count ?? 0);
+            if (fresh > 0 || worn == null || worn.Count == 0) return new WornGear { Durability = item.Durability, Repairs = 0 };
+            worn.Sort((a, b) => b.Durability.CompareTo(a.Durability));
+            var best = worn[0];
+            worn.RemoveAt(0);
+            if (worn.Count == 0) s.Worn.Remove(item.Id);
+            return best;
+        }
+
+        /// <summary>Returns the piece to the bag, remembering its wear and repairs if it isn't factory-fresh.</summary>
         public static Result Unequip(ContentDb c, SaveData s, HeroSave h, EquipmentSlot slot)
         {
             var id = Equipped(h, slot);
             if (id == null) return Result.Fail("Nothing equipped");
+            var item = c.TryItem(id);
+            int dur = slot == EquipmentSlot.Weapon ? h.WeaponDurability : slot == EquipmentSlot.Armor ? h.ArmorDurability : 0;
+            int reps = slot == EquipmentSlot.Weapon ? h.WeaponRepairs : slot == EquipmentSlot.Armor ? h.ArmorRepairs : 0;
             s.AddItem(id, 1);
+            if (item != null && item.Durability > 0 && (dur < item.Durability || reps > 0))
+            {
+                if (!s.Worn.TryGetValue(id, out var list)) s.Worn[id] = list = new List<WornGear>();
+                list.Add(new WornGear { Durability = dur, Repairs = reps });
+            }
             switch (slot)
             {
                 case EquipmentSlot.Weapon: h.WeaponId = null; h.WeaponDurability = 0; h.WeaponRepairs = 0; break;

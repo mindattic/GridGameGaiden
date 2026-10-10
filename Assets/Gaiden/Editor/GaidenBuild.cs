@@ -51,10 +51,13 @@ namespace Gaiden.EditorTools
         {
             PlayerSettings.SetApplicationIdentifier(UnityEditor.Build.NamedBuildTarget.Android, "com.mindattic.gridgamegaiden");
             PlayerSettings.SetScriptingBackend(UnityEditor.Build.NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);
-            PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
+            PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64 | AndroidArchitecture.X86_64;
             PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel26;
             EditorUserBuildSettings.buildAppBundle = false;
-            Build(BuildTarget.Android, "Build/Android/GridGameGaiden.apk", true);
+            // -vulkan: Vulkan-only test build (diagnostics); default keeps Unity's automatic API list.
+            PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.Android, !CommandLine("-vulkan"));
+            if (CommandLine("-vulkan")) PlayerSettings.SetGraphicsAPIs(BuildTarget.Android, new[] { UnityEngine.Rendering.GraphicsDeviceType.Vulkan });
+            Build(BuildTarget.Android, CommandLine("-vulkan") ? "Build/Android/GridGameGaiden-vulkan.apk" : "Build/Android/GridGameGaiden.apk", true);
         }
 
         public static void BuildWebGL()

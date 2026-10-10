@@ -29,6 +29,11 @@ namespace Gaiden.Meta
         public List<string> Party = new List<string>();
         public Dictionary<string, int> Inventory = new Dictionary<string, int>();
         public int Recruits;
+        /// <summary>Spare equipment that has been used: item id → its worn copies (per-instance durability, US-246).</summary>
+        public Dictionary<string, List<WornGear>> Worn = new Dictionary<string, List<WornGear>>();
+        public bool TutorialDone;
+        /// <summary>New Game+ cycle (0 = first run). Unlocked by clearing the last campaign stage (US-332).</summary>
+        public int NewGamePlus;
 
         public BountySave Bounty = new BountySave();
         public Dictionary<string, BestiaryEntry> Bestiary = new Dictionary<string, BestiaryEntry>();
@@ -43,6 +48,13 @@ namespace Gaiden.Meta
             if (itemId == null || n == 0) return;
             int v = Count(itemId) + n;
             if (v <= 0) Inventory.Remove(itemId); else Inventory[itemId] = v;
+            // Worn copies can't outnumber owned copies; when copies leave the bag the most-worn go first.
+            if (Worn.TryGetValue(itemId, out var worn))
+            {
+                worn.Sort((a, b) => b.Durability.CompareTo(a.Durability));
+                while (worn.Count > Count(itemId)) worn.RemoveAt(worn.Count - 1);
+                if (worn.Count == 0) Worn.Remove(itemId);
+            }
         }
     }
 
@@ -63,6 +75,12 @@ namespace Gaiden.Meta
         public int ArmorDurability;
         public int ArmorRepairs;
         public List<string> Relics = new List<string> { null, null, null };
+    }
+
+    public sealed class WornGear
+    {
+        public int Durability;
+        public int Repairs;
     }
 
     public sealed class BountySave
@@ -102,6 +120,7 @@ namespace Gaiden.Meta
             if (s.Version > SaveData.CurrentVersion) throw new InvalidOperationException($"Save version {s.Version} is newer than this build");
             // v1 is the first shape; future steps go here: if (s.Version == 1) { ...; s.Version = 2; }
             s.Bounty ??= new BountySave();
+            s.Worn ??= new Dictionary<string, List<WornGear>>();
             s.Settings ??= new SettingsSave();
             foreach (var h in s.Roster)
             {

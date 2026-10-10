@@ -307,10 +307,12 @@ namespace Gaiden.App
         public struct Seg { public Vector2 A, B; public Color Color; public float Width; }
         public readonly List<Seg> Segs = new List<Seg>();
         public readonly List<(Vector2 c, float r, Color color)> Dots = new List<(Vector2, float, Color)>();
+        public readonly List<(Vector2 c, float r, Color color, float w)> Rings = new List<(Vector2, float, Color, float)>();
 
         public LineLayer() { generateVisualContent += Draw; }
 
-        public void ClearLines() { Segs.Clear(); Dots.Clear(); MarkDirtyRepaint(); }
+        public void ClearLines() { Segs.Clear(); Dots.Clear(); Rings.Clear(); MarkDirtyRepaint(); }
+        public void Ring(Vector2 c, float r, Color color, float w) { Rings.Add((c, r, color, w)); MarkDirtyRepaint(); }
         public void Add(Vector2 a, Vector2 b, Color c, float w) { Segs.Add(new Seg { A = a, B = b, Color = c, Width = w }); MarkDirtyRepaint(); }
         public void Dot(Vector2 c, float r, Color color) { Dots.Add((c, r, color)); MarkDirtyRepaint(); }
 
@@ -325,6 +327,14 @@ namespace Gaiden.App
                 p.BeginPath();
                 p.MoveTo(s.A);
                 p.LineTo(s.B);
+                p.Stroke();
+            }
+            foreach (var (c, r, color, w) in Rings)
+            {
+                p.strokeColor = color;
+                p.lineWidth = w;
+                p.BeginPath();
+                p.Arc(c, r, Angle.Degrees(0f), Angle.Degrees(360f));
                 p.Stroke();
             }
             foreach (var (c, r, color) in Dots)

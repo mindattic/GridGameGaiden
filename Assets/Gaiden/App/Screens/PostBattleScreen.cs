@@ -12,7 +12,7 @@ namespace Gaiden.App
         private readonly string stageId;
         public PostBattleScreen(BattleReport report, string stageId) { this.report = report; this.stageId = stageId; }
         public override string Id => "postbattle";
-        public override string Music => report.Victory ? "Triumph" : "MelancholyLull";
+        public override string Music => report.Victory ? "HeroicAge" : "Heartbreaking";
 
         protected override void Build(VisualElement root)
         {
@@ -47,6 +47,8 @@ namespace Gaiden.App
                 if (report.UnlockedStage != null) Ui.MenuRow("New stage unlocked", report.UnlockedStage, null, list).Q<Label>("value").AddToClassList("gold");
                 if (report.NewSlots > 0) Ui.MenuRow("Ability slot unlocked!", $"+{report.NewSlots}", null, list).Q<Label>("label").AddToClassList("good");
                 if (report.BountyProgress != null) Ui.MenuRow("Bounty", report.BountyProgress, null, list);
+                if (report.AutoSold > 0) Ui.MenuRow("Bag full — sold extras", $"{report.AutoSold} items", null, list);
+                if (report.CampaignComplete) Ui.MenuRow("Campaign complete!", "New Game+ unlocked at camp", null, list).Q<Label>("label").AddToClassList("gold");
             }
             else
             {

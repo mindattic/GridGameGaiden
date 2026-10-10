@@ -224,6 +224,7 @@ namespace Gaiden.Core.Battle
                     if (S.Rng.Chance(entry.Chance))
                         loot.Items.Add(new ItemCount { Item = entry.Item, Count = S.Rng.Range(entry.Min, entry.Max + 1) });
             }
+            if (S.NewGamePlus > 0) loot.Coins = (int)Math.Round(loot.Coins * (1f + BattleConfig.NgPlusCoinBonus * S.NewGamePlus));
             S.Results.Coins += loot.Coins;
             S.Results.Xp += loot.Xp;
             foreach (var ic in loot.Items) Add(S.Results.Items, ic.Item, ic.Count);

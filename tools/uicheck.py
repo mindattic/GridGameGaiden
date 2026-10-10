@@ -76,6 +76,10 @@ def main():
         h.call("clicktext", text="Skip"); time.sleep(1.5)
     check("battle screen", h.call("state")["screen"] == "battle")
     time.sleep(1.0)
+    check("first battle starts the guided tutorial", has_text("Tutorial 1/4"))
+    time.sleep(1.0)
+    check("tutorial shows the suggested move right away", (h.call("banner")["text"] or "").startswith(("Hint", "Tip")))
+
     check("battle music", h.call("music")["track"] == "Crusade")
 
     # ── HUD ────────────────────────────────────────────────────────────────
@@ -114,10 +118,14 @@ def main():
         h.call("release")
         st = wait_idle(400)["battle"]
         check("drop commits one action", st["results"]["ActionsTaken"] == 1, str(st["results"]))
+        check("the tutorial advances after the first move", has_text("Tutorial 2/4") or has_text("Tutorial 3/4"))
+        h.call("click", name="tutorial-skip"); time.sleep(0.4)
+        check("tutorial can be skipped", not any(x.startswith("Tutorial ") for x in texts()))
         cues = h.call("cues")
         check("pick-up and every step are voiced", "pickup" in cues and cues.count("move") >= len(sug["path"]), ",".join(cues[:20]))
         if sug["pincers"] > 0:
             check("pincer and hits are voiced", "pincer" in cues and any(c in cues for c in ("hit", "crit", "miss")), ",".join(cues[:30]))
+    # Every cue the game can play resolves to a bundled clip (no silent events).
     else:
         check("bot suggested a move", False, str(sug))
 
@@ -188,7 +196,7 @@ def main():
         if s["screen"] != "battle":
             break
     check("battle finishes with colorblind + reduce motion + ×3 speed", h.call("state")["screen"] == "postbattle")
-    check("results music", h.call("music")["track"] in ("Triumph", "MelancholyLull"))
+    check("results music", h.call("music")["track"] in ("HeroicAge", "Heartbreaking"))
     h.shot("results")
     h.call("setting", key="colorblind", value=0)
     h.call("setting", key="reducemotion", value=0)
@@ -231,6 +239,20 @@ def main():
     logs = h.call("logs")
     errs = [l for l in logs if l.startswith(("Error", "Exception")) and "first mouse position" not in l]
     check("no errors or exceptions logged", not errs, " | ".join(e[:160] for e in errs[:5]))
+
+    # ── Safe area (US-287): simulate a 120 px notch + 80 px home bar on a 585×1266 window ─────
+    try:
+        h.call("quit", timeout=3)
+    except Exception:
+        pass
+    time.sleep(1.5)
+    h.launch("uicheck-safearea", fresh=True, extra=("-safeArea", "120,80"))
+    time.sleep(1.0)
+    el = h.call("element", name="screens")
+    # 120 screen px at 585 px wide = 240 design px; the stage fills the window exactly.
+    check("safe-area insets push content below the notch and above the home bar",
+          abs(el["y"] - 240) < 6 and abs((2532 - (el["y"] + el["h"])) - 160) < 6, str(el))
+    h.shot("safearea-title")
 
     passed = sum(1 for r in results if r["ok"])
     report = {"passed": passed, "failed": len(results) - passed, "results": results}

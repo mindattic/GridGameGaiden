@@ -239,6 +239,13 @@ namespace Gaiden.App
             Item("Bounties", () => new BountyScreen(), Bounties.Active(c, s) != null ? $"{s.Bounty.Progress}/{Bounties.Active(c, s).Kills}" : "");
             Item("Bestiary", () => new BestiaryScreen());
             Item("Settings", () => new SettingsScreen());
+            if (Progression.CanStartNewGamePlus(c, s))
+                Ui.MenuRow($"New Game+ {s.NewGamePlus + 1}", "", () => Confirm.Show("Start New Game+? Keep your heroes, gear and gold; the campaign restarts with enemies 10 levels stronger.", "Begin", () =>
+                {
+                    var r = Progression.StartNewGamePlus(App.Content, App.Save);
+                    App.Toast(r.Message);
+                    if (r.Ok) { App.Persist(); Refresh(); }
+                }), list.contentContainer).Q<Label>("label").AddToClassList("gold");
             Ui.MenuRow("Save & Quit", "", () => { App.Persist(); App.Save = null; App.Slot = -1; App.Router.ResetTo(new TitleScreen()); }, list.contentContainer);
             Ui.Select(list.contentContainer[0]);
 
@@ -249,6 +256,7 @@ namespace Gaiden.App
             Ui.Text(Ui.Gold(s.Gold), "h2 gold num", goldW);
             Ui.Text("Time", "small dim", goldW).style.marginTop = 16;
             Ui.Text(TimeSpan.FromSeconds(s.PlaySeconds).ToString(@"h\:mm\:ss"), "h2 num", goldW);
+            if (s.NewGamePlus > 0) Ui.Text($"New Game+ {s.NewGamePlus}", "h2 gold", goldW).style.marginTop = 16;
             Ui.Text("Cleared", "small dim", goldW).style.marginTop = 16;
             Ui.Text($"{s.ClearedStages.Count(id => c.Stages.ContainsKey(id) && !c.Stage(id).IsTest)}/{c.CampaignStages().Count}", "h2 num", goldW);
         }

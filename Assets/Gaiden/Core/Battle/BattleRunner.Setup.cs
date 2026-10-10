@@ -149,7 +149,7 @@ namespace Gaiden.Core.Battle
             {
                 var def = C.TryClass(sp.Class);
                 if (def == null) continue;
-                int level = S.Stage.IsTest ? sp.Level : Math.Max(sp.Level, S.RecommendedLevel);
+                int level = S.Stage.IsTest ? sp.Level : Math.Max(sp.Level, S.RecommendedLevel) + S.NewGamePlus * BattleConfig.NgPlusLevelStep;
                 var u = SpawnEnemy(def, level, sp.X, sp.Y);
                 if (u == null) continue;
                 started.Spawned.Add(u.Id);

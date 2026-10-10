@@ -40,6 +40,8 @@ namespace Gaiden.Core.Battle
         public int UnlockedSlots = 2;
         /// <summary>Enemy levels are floored to this (campaign difficulty curve, §22.3).</summary>
         public int RecommendedLevel = 1;
+        /// <summary>New Game+ cycle (0 = first playthrough): enemies +10 levels and coins +50% per cycle.</summary>
+        public int NewGamePlus;
     }
 
     /// <summary>Totals the meta layer commits after the battle (XP, coins, drops, kills, bestiary).</summary>
@@ -86,6 +88,7 @@ namespace Gaiden.Core.Battle
         public ContentDb Content;
         public StageDef Stage;
         public int RecommendedLevel = 1;
+        public int NewGamePlus;
         public Rng Rng;
         public List<Unit> Units = new List<Unit>();
         public List<TimelineEntry> Timeline = new List<TimelineEntry>();

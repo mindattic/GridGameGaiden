@@ -540,20 +540,87 @@ namespace Gaiden.Tests
             foreach (var ic in recipe.Inputs) Assert.Equal(Math.Max(1, ic.Count / 2), save.Count(ic.Item));
         }
 
-        [Fact] // US-230
-        public void Unequipping_returns_the_piece_and_resets_durability()
+        [Fact] // US-230 / US-246
+        public void Unequipped_gear_remembers_its_wear_and_fresh_copies_are_used_first()
         {
             var c = Real;
             var save = Progression.NewGame(c, "U");
-            var weapon = c.Items.Values.First(i => i.Slot == EquipmentSlot.Weapon && i.Durability > 1);
+            var weapon = c.Items.Values.First(i => i.Slot == EquipmentSlot.Weapon && i.Durability > 2);
             save.AddItem(weapon.Id, 1);
             var h = save.Hero("paladin");
             Assert.True(Equipment.Equip(c, save, h, EquipmentSlot.Weapon, weapon.Id).Ok);
-            h.WeaponDurability = 1;
+            h.WeaponDurability = 1; h.WeaponRepairs = 2;
             Assert.True(Equipment.Unequip(c, save, h, EquipmentSlot.Weapon).Ok);
             Assert.Equal(1, save.Count(weapon.Id));
+            Assert.Single(save.Worn[weapon.Id]);
+            // Buy a fresh one: equipping takes the fresh copy first...
+            save.AddItem(weapon.Id, 1);
             Assert.True(Equipment.Equip(c, save, h, EquipmentSlot.Weapon, weapon.Id).Ok);
             Assert.Equal(weapon.Durability, h.WeaponDurability);
+            // ...and the worn one comes back with its wear and repair history.
+            var other = save.Hero("barbarian");
+            Assert.True(Equipment.Equip(c, save, other, EquipmentSlot.Weapon, weapon.Id).Ok);
+            Assert.Equal(1, other.WeaponDurability);
+            Assert.Equal(2, other.WeaponRepairs);
+            Assert.False(save.Worn.ContainsKey(weapon.Id));
+        }
+
+        [Fact] // US-115
+        public void Spells_never_miss_and_can_crit_for_a_wild_orb()
+        {
+            var db = Mini();
+            db.Classes["mage"].BaseStats.Luck = 200;
+            int crits = 0, misses = 0;
+            for (int seed = 1; seed <= 60; seed++)
+            {
+                var setup = new BattleSetup { Stage = Stage(("tank", 2, 2)), Seed = seed, UnlockedSlots = 2 };
+                setup.Party.Add(new HeroSpec { ClassId = "mage", Start = new Coord(4, 7), Bar = new List<string> { "fireball" } });
+                setup.Party.Add(new HeroSpec { ClassId = "knight", Start = new Coord(5, 7) });
+                var s = BattleEngine.Create(db, setup, new List<BattleEvent>());
+                s.Bank.Add(ManaColor.Red, 2);
+                var ev = BattleEngine.Apply(s, new UseSlotCommand { HeroId = Hero(s, "mage").Id, Slot = 0, Target = new Coord(2, 2) });
+                var d = ev.OfType<DamagedEvent>().First(x => x.SourceId == Hero(s, "mage").Id);
+                if (d.Hit == HitKind.Miss) misses++;
+                if (d.Hit == HitKind.Critical) { crits++; Assert.Equal(29, d.Amount); Assert.Contains(ev, e => e is OrbMintedEvent o && o.Reason == "critical"); }
+            }
+            Assert.Equal(0, misses);
+            Assert.InRange(crits, 5, 30); // 50% physical crit cap × 0.5 → ~25%
+        }
+
+        [Fact] // US-245
+        public void Loot_past_the_stack_limit_is_auto_sold()
+        {
+            var c = Real;
+            var save = Progression.NewGame(c, "Stack");
+            var setup = BattleFactory.Build(c, save, c.CampaignStages()[0].Id, 5);
+            var st = Gaiden.Core.Bot.BotRunner.Play(c, setup, new Gaiden.Core.Bot.HeroBot(2), 300);
+            Assert.Equal(BattlePhase.Victory, st.Phase);
+            var item = st.Results.Items.Keys.FirstOrDefault();
+            if (item == null) return;
+            var def = c.Item(item);
+            save.Inventory[item] = def.MaxStack; // bag already full of it
+            int gold = save.Gold;
+            var rep = BattleFactory.Commit(c, save, st);
+            Assert.Equal(def.MaxStack, save.Count(item));
+            Assert.True(rep.AutoSold > 0);
+            Assert.True(save.Gold > gold + st.Results.Coins - 1);
+        }
+
+        [Fact] // US-332
+        public void New_game_plus_restarts_the_campaign_with_stronger_enemies()
+        {
+            var c = Real;
+            var save = Progression.NewGame(c, "NG");
+            Assert.False(Progression.StartNewGamePlus(c, save).Ok);
+            save.HighestClearedStage = c.CampaignStages().Count - 1;
+            save.Hero("paladin").TotalXp = 5000;
+            Assert.True(Progression.StartNewGamePlus(c, save).Ok);
+            Assert.Equal(1, save.NewGamePlus);
+            Assert.Equal(-1, save.HighestClearedStage);
+            Assert.Equal(5000, save.Hero("paladin").TotalXp);
+            var setup = BattleFactory.Build(c, save, c.CampaignStages()[0].Id, 1);
+            var s = BattleEngine.Create(c, setup, new List<BattleEvent>());
+            Assert.All(s.Units.Where(u => !u.IsHero), u => Assert.True(u.Level >= 11));
         }
 
         [Fact] // US-235

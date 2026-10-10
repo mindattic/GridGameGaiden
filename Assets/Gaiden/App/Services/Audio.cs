@@ -83,36 +83,13 @@ namespace Gaiden.App
         {
             switch (key)
             {
-                case "ui.click": return "Click";
-                case "ui.select": return "Select";
-                case "ui.back": return "Click";
-                case "ui.buy": return "SFX_Pick_Up";
-                case "ui.error": return "Rumble";
-                case "move": return "Move0" + Random.Range(0, 6);
-                case "slide": return "Slide";
-                case "pickup": return "Portrait";
-                case "pincer": return "Vefects_SFX_Charge_01";
-                case "hit": return "Slash0" + Random.Range(0, 7);
-                case "crit": return "Vefects_SFX_Impact_01";
-                case "miss": return "Vefects_SFX_Dust_Puff_01";
-                case "death": return "Death";
-                case "heal": return "SFX_Heal_Cast";
-                case "orb": return "SFX_Pick_Up";
-                case "turn": return "NextTurn";
-                case "fire": return "SFX_FireBall_Hit";
-                case "ice": return "SFX_Explosion_Ice";
-                case "lightning": return "SFX_Lightning_Hit";
-                case "poison": return "Vefects_SFX_Poison_Puff_01";
-                case "magic": return "Vefects_SFX_Explosion_Magic_01";
-                case "cast": return "SFX_Buff_Cast";
-                case "explosion": return "Vefects_SFX_Explosion_Classic";
-                case "shatter": return "Vefects_SFX_Shrapnel_01";
-                case "debuff": return "SFX_Debuff_Cast";
-                case "dash": return "SFX_Dash";
-                case "trap": return "Vefects_SFX_Poison_Puff_01";
-                case "victory": return "Victory";
-                case "defeat": return "Defeat";
-                default: return key;
+                case "ui.click": case "ui.back": return "ui_click";
+                case "ui.select": return "ui_select";
+                case "ui.buy": return "ui_coin";
+                case "ui.error": return "ui_error";
+                case "move": return "move_" + Random.Range(0, 6);
+                case "hit": return "hit_" + Random.Range(0, 7);
+                default: return key; // every other cue has a same-named file (tools/make_sfx.py)
             }
         }
     }

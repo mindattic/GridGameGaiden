@@ -182,3 +182,21 @@ updated: 2026-10-09
   (heroes never take boss styling).
 - **Respite** restored (§13.1.1): a later link whose whole line already fell spins and shows "Respite".
 
+## 2026-10-10 — design decisions taken (owner may overrule; each is one constant or flag)
+
+- **Spells never miss but can crit** (§13.1.2 backlog closed): crit chance = ½ the caster's physical crit %,
+  ×1.6 damage, a hero spell crit mints a wild orb like a pincer crit. `BattleConfig.SpellCrit*`.
+- **Inventory: no global cap** (§29 #19 closed): items stack to `MaxStack`; battle loot beyond it is
+  auto-sold at the merchant price and reported on the results screen.
+- **Per-instance durability** (§24.5 closed): unequipped worn gear keeps its durability and repair count
+  (`SaveData.Worn`); equipping takes a fresh copy first, else the least-worn.
+- **Guided first battle** (§29 #6 closed): the first battle of a new save shows a 4-step coach card
+  (drag → pincer → spell → timeline) with immediate move hints; skippable; `SaveData.TutorialDone`.
+- **No permadeath; New Game+** (§29 #1 closed): after clearing the final stage, camp offers New Game+:
+  progress resets, roster/gear/gold kept, enemies +10 levels and coins +50% per cycle.
+- **Audio is fully licensed**: every SFX is original (synthesized by `tools/make_sfx.py`); all music is
+  Kevin MacLeod CC-BY 4.0 ("Heroic Age" replaces the Pixabay victory track, "Heartbreaking" replaces the
+  unsourced defeat track). `tools/check_assets.py` fails the gate if any cue or track is missing.
+- **VFX are procedural UI Toolkit effects per element** (fire, ice, lightning, poison, holy, dark, arcane,
+  heal) plus status auras, replacing the old prefab VFX library.
+

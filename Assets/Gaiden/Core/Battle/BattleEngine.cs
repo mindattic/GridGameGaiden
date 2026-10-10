@@ -29,6 +29,7 @@ namespace Gaiden.Core.Battle
                 Content = content,
                 Stage = setup.Stage,
                 RecommendedLevel = setup.RecommendedLevel,
+                NewGamePlus = setup.NewGamePlus,
                 Rng = new Rng(setup.Seed),
             }, events);
             r.Setup(setup);

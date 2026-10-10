@@ -287,6 +287,24 @@ namespace Gaiden.App.Automation
                 case "buff":
                     if (app.Router.Current is BattleScreen bb) return new { ok = bb.DevBuff((int)F(q["unit"]), q["id"]) };
                     return new { error = "not in battle" };
+                case "gfx":
+                    return new
+                    {
+                        api = SystemInfo.graphicsDeviceType.ToString(), SystemInfo.graphicsDeviceName, SystemInfo.graphicsShaderLevel,
+                        colorSpace = QualitySettings.activeColorSpace.ToString(),
+                        clear = app.Document.panelSettings.clearColor, camera = Camera.allCamerasCount,
+                        uiShader = Shader.Find("Hidden/UIElements/Runtime") != null || Shader.Find("Hidden/UIE-Runtime") != null,
+                        panelTarget = app.Document.panelSettings.targetTexture != null,
+                    };
+                case "shaders":
+                    return Resources.FindObjectsOfTypeAll<Shader>().Where(sh => sh.name.Contains("UI") || sh.name.Contains("UIE") || sh.name.Contains("Text"))
+                        .Select(sh => sh.name + (sh.isSupported ? "" : " [UNSUPPORTED]")).Distinct().ToList();
+                case "panelclear":
+                    app.Document.panelSettings.clearColor = q["on"] == "1";
+                    return new { ok = true };
+                case "camera":
+                    foreach (var cam in Camera.allCameras) cam.enabled = q["on"] == "1";
+                    return new { ok = true };
                 case "banner":
                     return new { text = (app.Router.Current as BattleScreen)?.BannerText };
                 case "press":

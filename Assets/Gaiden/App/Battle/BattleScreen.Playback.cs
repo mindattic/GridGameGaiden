@@ -214,7 +214,11 @@ namespace Gaiden.App
             App.Audio.Sfx(d.SourceId < 0 ? "debuff" : crit ? "crit" : SfxFor(d.Type));
             var src = State.UnitById(d.SourceId);
             Feed($"{(d.SourceId < 0 ? "☠" : "†")} {(src != null ? src.Name + " → " : "")}{t.Name}: {d.Amount}{(crit ? " CRIT" : "")}{(d.Note != null ? " (" + d.Note + ")" : "")}", t.IsHero ? new Color(1f, 0.65f, 0.6f) : new Color(1f, 1f, 1f, 0.9f));
-            if (d.Amount > 0 && !ReduceMotion) Sparks(at, crit ? 12 : 7, crit ? new Color(1f, 0.85f, 0.3f) : (d.Type == DamageType.Physical ? new Color(1f, 0.95f, 0.85f) : ColorFor(d.Type)));
+            if (d.Amount > 0 && !ReduceMotion)
+            {
+                if (d.Type == DamageType.Physical || d.SourceId < 0) Sparks(at, crit ? 12 : 7, crit ? new Color(1f, 0.85f, 0.3f) : new Color(1f, 0.95f, 0.85f));
+                else App.StartCoroutine(ElementBurst(at, d.Type, crit));
+            }
             string text = d.Note == "Armored!" ? "ARMORED" : (crit ? $"{d.Amount}!" : d.Amount.ToString());
             var color = d.Note == "Armored!" ? new Color(0.7f, 0.7f, 0.75f) : crit ? new Color(1f, 0.85f, 0.2f) : t.IsHero ? new Color(1f, 0.5f, 0.45f) : Color.white;
             App.StartCoroutine(FloatAway(board.Float(text, at, color, crit ? 100 : 72), 0.75f));
@@ -246,6 +250,7 @@ namespace Gaiden.App
             if (t == null || !board.Units.TryGetValue(t.Id, out var v)) yield break;
             Feed($"✚ {t.Name} +{h.Amount} HP", new Color(0.5f, 1f, 0.6f));
             App.Audio.Sfx("heal");
+            if (!ReduceMotion) App.StartCoroutine(HealBurst(BoardView.CenterOf(v.Tile, v.W, v.H)));
             v.SetHp(h.HpAfter, t.MaxHp);
             v.SetGlow(new Color(0.4f, 1f, 0.5f), 0.8f);
             App.StartCoroutine(FloatAway(board.Float("+" + h.Amount, BoardView.CenterOf(v.Tile), new Color(0.45f, 1f, 0.55f), 72), 0.8f));
@@ -523,6 +528,123 @@ namespace Gaiden.App
             App.Audio.Sfx("heal");
             yield return Tween.Run(0.35f, k => { v.Root.style.opacity = k; v.Root.style.scale = new Scale(Vector2.one * (0.6f + 0.4f * k)); });
             yield return FloatText(u.Id, "Revived!", new Color(1f, 0.95f, 0.6f), 0.2f, 70);
+        }
+
+        private VisualElement Particle(float size, Color c)
+        {
+            var p = new VisualElement { pickingMode = PickingMode.Ignore };
+            p.style.position = Position.Absolute;
+            p.style.width = p.style.height = size;
+            p.style.backgroundImage = new StyleBackground(Art.Glow);
+            p.style.unityBackgroundImageTintColor = c;
+            board.FxLayer.Add(p);
+            return p;
+        }
+
+        /// <summary>Element-specific impact effects (bible §6.2) drawn with UI Toolkit — no particle system needed.</summary>
+        private IEnumerator ElementBurst(Vector2 at, DamageType type, bool crit)
+        {
+            var c = ColorFor(type);
+            float scale = crit ? 1.4f : 1f;
+            switch (type)
+            {
+                case DamageType.Fire:
+                    for (int i = 0; i < 12; i++)
+                    {
+                        var p = Particle(Random.Range(18f, 34f) * scale, Color.Lerp(new Color(1f, 0.85f, 0.3f), new Color(1f, 0.25f, 0.05f), Random.value));
+                        float x0 = Random.Range(-60f, 60f), rise = Random.Range(90f, 200f) * scale, wob = Random.Range(0f, 6.28f);
+                        App.StartCoroutine(Tween.Run(Random.Range(0.35f, 0.6f), k =>
+                        {
+                            p.style.left = at.x + x0 + Mathf.Sin(wob + k * 9f) * 14f - 15; p.style.top = at.y + 40 - rise * k - 15;
+                            p.style.opacity = 1f - k; if (k >= 1f) p.RemoveFromHierarchy();
+                        }));
+                    }
+                    break;
+                case DamageType.Ice:
+                    for (int i = 0; i < 8; i++)
+                    {
+                        var p = Particle(16f * scale, new Color(0.8f, 0.95f, 1f));
+                        float ang = i * Mathf.PI / 4f;
+                        App.StartCoroutine(Tween.Run(0.3f, k =>
+                        {
+                            var pos = at + new Vector2(Mathf.Cos(ang), Mathf.Sin(ang)) * (130f * scale * Tween.EaseOut(k));
+                            p.style.left = pos.x - 8; p.style.top = pos.y - 8; p.style.opacity = 1f - k; if (k >= 1f) p.RemoveFromHierarchy();
+                        }));
+                    }
+                    yield return Tween.Run(0.35f, k => { board.Lines.Rings.Clear(); board.Lines.Ring(at, 30f + 110f * scale * k, new Color(0.7f, 0.9f, 1f, 1f - k), 8f); });
+                    break;
+                case DamageType.Lightning:
+                {
+                    var pts = new List<Vector2> { at + new Vector2(Random.Range(-30f, 30f), -560f) };
+                    while (pts[pts.Count - 1].y < at.y - 40) pts.Add(new Vector2(at.x + Random.Range(-46f, 46f), pts[pts.Count - 1].y + Random.Range(60f, 110f)));
+                    pts.Add(at);
+                    for (int flash = 0; flash < 2; flash++)
+                    {
+                        board.Lines.ClearLines();
+                        for (int i = 1; i < pts.Count; i++) { board.Lines.Add(pts[i - 1], pts[i], new Color(1f, 1f, 0.75f, 0.95f), 10f * scale); board.Lines.Add(pts[i - 1], pts[i], new Color(1f, 1f, 1f, 1f), 4f); }
+                        yield return Tween.Wait(0.06f);
+                        board.Lines.ClearLines();
+                        yield return Tween.Wait(0.04f);
+                    }
+                    Sparks(at, 8, new Color(1f, 1f, 0.6f));
+                    break;
+                }
+                case DamageType.Poison:
+                    for (int i = 0; i < 9; i++)
+                    {
+                        var p = Particle(Random.Range(14f, 26f), new Color(0.55f, 1f, 0.35f));
+                        float x0 = Random.Range(-70f, 70f), delay = Random.Range(0f, 0.25f), rise = Random.Range(60f, 130f);
+                        App.StartCoroutine(Tween.Run(0.7f, k =>
+                        {
+                            float kk = Mathf.Clamp01((k - delay) / (1f - delay));
+                            float s2 = 0.6f + kk * 0.8f;
+                            p.style.scale = new Scale(Vector2.one * s2);
+                            p.style.left = at.x + x0 - 10; p.style.top = at.y + 30 - rise * kk - 10;
+                            p.style.opacity = kk <= 0f ? 0f : 1f - kk; if (k >= 1f) p.RemoveFromHierarchy();
+                        }));
+                    }
+                    break;
+                case DamageType.Holy:
+                    yield return Tween.Run(0.4f, k =>
+                    {
+                        board.Lines.ClearLines();
+                        board.Lines.Ring(at, 40f + 120f * k, new Color(1f, 0.95f, 0.6f, 1f - k), 10f);
+                        for (int i = 0; i < 8; i++) { float ang = i * Mathf.PI / 4f + k; var dir = new Vector2(Mathf.Cos(ang), Mathf.Sin(ang)); board.Lines.Add(at + dir * 30f, at + dir * (60f + 120f * k), new Color(1f, 1f, 0.8f, 0.8f * (1f - k)), 6f); }
+                    });
+                    board.Lines.ClearLines();
+                    break;
+                case DamageType.Dark:
+                    for (int i = 0; i < 12; i++)
+                    {
+                        var p = Particle(22f, new Color(0.6f, 0.25f, 0.95f));
+                        float ang = Random.Range(0f, 6.28f), dist = Random.Range(120f, 190f);
+                        App.StartCoroutine(Tween.Run(0.35f, k =>
+                        {
+                            var pos = at + new Vector2(Mathf.Cos(ang), Mathf.Sin(ang)) * dist * (1f - Tween.EaseInOut(k));
+                            p.style.left = pos.x - 11; p.style.top = pos.y - 11; p.style.opacity = 0.3f + 0.7f * k; if (k >= 1f) p.RemoveFromHierarchy();
+                        }));
+                    }
+                    break;
+                default:
+                    yield return Tween.Run(0.35f, k => { board.Lines.Rings.Clear(); board.Lines.Ring(at, 20f + 120f * k, new Color(c.r, c.g, c.b, 1f - k), 9f); });
+                    break;
+            }
+            if (board.Lines.Rings.Count > 0) { board.Lines.Rings.Clear(); board.Lines.MarkDirtyRepaint(); }
+        }
+
+        private IEnumerator HealBurst(Vector2 at)
+        {
+            for (int i = 0; i < 7; i++)
+            {
+                var p = Particle(Random.Range(16f, 26f), new Color(0.5f, 1f, 0.6f));
+                float x0 = Random.Range(-60f, 60f), rise = Random.Range(70f, 140f);
+                App.StartCoroutine(Tween.Run(0.6f, k =>
+                {
+                    p.style.left = at.x + x0 - 10; p.style.top = at.y + 20 - rise * Tween.EaseOut(k) - 10;
+                    p.style.opacity = 1f - k; if (k >= 1f) p.RemoveFromHierarchy();
+                }));
+            }
+            yield break;
         }
 
         /// <summary>Little particles radiating from a hit (UI Toolkit, no particle system needed).</summary>

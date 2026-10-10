@@ -136,7 +136,7 @@ test for every rule. 4. A harness step for anything visible. 5. Glyph check gree
 | US-112 | Ability card in the actor panel while targeting | §4.5 | ✅ | `tools/uicheck.py` (ability card while targeting) |
 | US-113 | Long-press ability tooltips + radial cooldown sweep | §4.5 | ✅ | `tools/uicheck.py` (long-press card) ; radial sweep → US-156 |
 | US-114 | Distinct Homing / Spiral / Twist / Strike projectile curves | §6.1 | ✅ | `BattleScreen.ProjectilePoint` (Straight/Bezier/Homing/Spiral/Twist/Strike) |
-| US-115 | Spell damage unified with the hit/crit roll | §13.1.2 | ⬜ | none |
+| US-115 | Spell damage unified with the hit/crit roll | §13.1.2 | ✅ | `Spells_never_miss_and_can_crit_for_a_wild_orb` (decision: never miss, crit at ½ chance ×1.6, wild orb) |
 | US-116 | Ability-bar weapon swap | §24.5 | ✅ | `Bar_weapon_swap_changes_the_weapon_and_the_save_follows` |
 | US-117 | Distinct kits + colors for the 55 default-kit hero classes | §23.2.2 | ✅ | `Default_kit_classes_now_have_color_matched_kits`, `Every_mana_color_pays_for_at_least_one_hero_spell` |
 
@@ -233,8 +233,8 @@ test for every rule. 4. A harness step for anything visible. 5. Glyph check gree
 | US-242 | Camp auto-manage routine (repair`, `rest`, `forge`, `equip`, `learn`, `slot`, `restock) | §25 | ✅ | `Camp_routine_rests_and_restocks`, `BalanceReport` |
 | US-243 | Armor wears in battle | §24.5 | ✅ | `Armor_wears_per_enemy_hit_and_breaks_at_zero` |
 | US-244 | Relic / Epic+ named passives | §24.1.1 | ✅ | `Relic_passives_boost_pincers_regen_and_protect` (Bloodstone, Jade, Sunfire, Phantom, Stars) |
-| US-245 | Inventory cap | §29 | ⬜ | open question |
-| US-246 | Per-instance equipment durability | §24.5 | ⬜ | open question |
+| US-245 | Inventory cap | §29 | ✅ | `Loot_past_the_stack_limit_is_auto_sold` (decision: no global cap; per-item MaxStack, overflow auto-sells) |
+| US-246 | Per-instance equipment durability | §24.5 | ✅ | `Unequipped_gear_remembers_its_wear_and_fresh_copies_are_used_first` |
 
 ## UI screens
 
@@ -267,7 +267,7 @@ test for every rule. 4. A harness step for anything visible. 5. Glyph check gree
 | US-284 | Credits screen | §12.0 | ✅ | sweep |
 | US-285 | Back / Escape pops screens; battle Back cancels targeting then pauses | §11.3 | ✅ | sweep (`back` after every screen) |
 | US-286 | Letterbox fit: never stretch | §26.3 | ✅ | `tools/uicheck.py` (1280×720 window: aspect kept, centered) |
-| US-287 | Safe-area insets | §26.5 | 🟡 | `GameApp.ApplySafeArea` built; needs a notched device |
+| US-287 | Safe-area insets | §26.5 | ✅ | `tools/uicheck.py` with `-safeArea 120,80` (content insets below the notch / above the home bar) |
 | US-288 | Colorblind palette | §31.1 | ✅ | `tools/uicheck.py` (battle completes in colorblind mode) |
 | US-289 | Reduce motion | §31.2 | ✅ | `tools/uicheck.py` (battle completes with reduce motion) |
 | US-290 | Battle speed ×1 / 1.5 / 2 / 3 | §12.0.2 | ✅ | `tools/uicheck.py` (battle completes at ×3) |
@@ -282,10 +282,10 @@ test for every rule. 4. A harness step for anything visible. 5. Glyph check gree
 |---|---|---|---|---|
 | US-300 | Music per screen (title, camp, battle, victory, defeat) | §12.0 | ✅ | `tools/uicheck.py` (title, camp, battle, results tracks) |
 | US-301 | Every battle event has an SFX cue | §12.0 | ✅ | `tools/uicheck.py` (pick-up, every step, pincer, hits voiced) |
-| US-302 | Credits attribution for every track and pack | §12.0 | 🟡 | sweep renders Credits; "Melancholy Lull" + SFX packs origin unverified |
+| US-302 | Credits attribution for every track and pack | §12.0 | ✅ | Credits.txt lists every asset; all music Kevin MacLeod CC-BY 4.0; all SFX original (`tools/make_sfx.py`) |
 | US-303 | Effect cadence: every event is an awaited beat; watchdog | §12.0.2 | ✅ | `tools/uicheck.py` + `BattleScreen.Safe`/watchdog; zero errors across the run |
-| US-304 | Particle VFX per spell (cast / projectile / impact / linger) | §6.2 | 🟡 | UI Toolkit hit sparks + projectile dots; no per-spell art |
-| US-305 | HD art pass | §7 (V2) | ⬜ | none |
+| US-304 | Particle VFX per spell (cast / projectile / impact / linger) | §6.2 | ✅ | Per-element UI Toolkit VFX (`ElementBurst`: fire embers, ice shards + ring, lightning bolt, poison bubbles, holy rays, dark implosion, arcane ring; heal sparkles; status auras); screenshots in artifacts/vfx |
+| US-305 | HD art pass | §7 (V2) | ⬜ | V2 scope per RFC 0002 (never part of the V1 claim); current art is the original GridGame illustration set |
 
 ## Platform & ship
 
@@ -296,14 +296,14 @@ test for every rule. 4. A harness step for anything visible. 5. Glyph check gree
 | US-322 | Bot soak over every stage; soft-lock detection | §6 | ✅ | `Bots_play_every_stage_without_breaking_invariants` |
 | US-323 | Automation server (input injection, state, screenshots, layout audit) | §6 | ✅ | smoke, sweep |
 | US-324 | Windows development build | §11.4 | ✅ | `Build/Windows/GridGameGaiden.exe` launched by smoke |
-| US-325 | Windows release / Android / WebGL builds | §11.4 | 🟡 | Windows dev ✅ (`tools/uicheck.py`); WebGL ✅ in Chromium (`tools/webcheck.mjs`: boot, saves survive reload, mouse drag commits); Android APK builds but is unrun on a device |
+| US-325 | Windows release / Android / WebGL builds | §11.4 | ✅ | Windows (`tools/uicheck.py` 45/45), WebGL in Chromium (`tools/webcheck.mjs` 4/4), Android APK on an API 34 emulator (`tools/androidcheck.py` 7/7: boot, touch → camp, battle to results, save). Emulator GL translator draws no UI Toolkit pixels — confirm visuals on a physical phone |
 | US-326 | Unity batchmode compile check | §17.3 | ✅ | `tools/build.ps1` compiles + builds clean each pass |
 | US-327 | 60 fps target pinned; fps reported by automation `state` | §30 | ✅ | `tools/uicheck.py` (fps ≥ 50 in battle) |
-| US-328 | On-device profiling pass | §30.5 | ⬜ | none |
+| US-328 | On-device profiling pass | §30.5 | ⬜ | Needs a physical mid-tier phone (emulator is software-rendered: 18 fps is not representative); Windows/WebGL hold ≥ 50 fps |
 | US-329 | Portrait orientation, no splash, version from `VERSION` | §11.4 | ✅ | `tools/uicheck.py` (ProjectSettings portrait, splash off, version.txt) |
-| US-330 | Verify or replace unverified audio before release | §12.0 | ⬜ | none |
-| US-331 | Guided tutorial | §29 | ⬜ | open question (hints are US-270) |
-| US-332 | Permadeath / NG+ | §29 | ⬜ | open question |
+| US-330 | Verify or replace unverified audio before release | §12.0 | ✅ | Unverified audio removed: SFX regenerated from scratch, Triumph/Melancholy Lull replaced by CC-BY tracks; `tools/check_assets.py` gates every cue/track |
+| US-331 | Guided tutorial | §29 | ✅ | `tools/uicheck.py` (first battle starts tutorial, suggests a move, advances after the first move, skippable) |
+| US-332 | Permadeath / NG+ | §29 | ✅ | `New_game_plus_restarts_the_campaign_with_stronger_enemies` (decision: no permadeath; NG+ after the campaign, +10 enemy levels, +50% coins per cycle) |
 
 ---
 
@@ -314,14 +314,14 @@ test for every rule. 4. A harness step for anything visible. 5. Glyph check gree
 | Battle core (board, slide, pincer, combat) (32) | 32 | 0 | 0 |
 | Timeline (18) | 18 | 0 | 0 |
 | Mana (13) | 13 | 0 | 0 |
-| Abilities & spells (28) | 27 | 0 | 1 |
+| Abilities & spells (28) | 28 | 0 | 0 |
 | Buffs (19) | 19 | 0 | 0 |
 | AI (13) | 13 | 0 | 0 |
 | Bosses (7) | 7 | 0 | 0 |
-| Meta & Camp services (37) | 35 | 0 | 2 |
-| UI screens (35) | 34 | 1 | 0 |
-| Audio & VFX (6) | 3 | 2 | 1 |
-| Platform & ship (13) | 8 | 1 | 4 |
-| **Total (221)** | **209** | **4** | **8** |
+| Meta & Camp services (37) | 37 | 0 | 0 |
+| UI screens (35) | 35 | 0 | 0 |
+| Audio & VFX (6) | 5 | 0 | 1 |
+| Platform & ship (13) | 12 | 0 | 1 |
+| **Total (221)** | **219** | **0** | **2** |
 
 Open design questions that gate future stories live in [BIBLE §29](BIBLE.md#29-open-design-questions).

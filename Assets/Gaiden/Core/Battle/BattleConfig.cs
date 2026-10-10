@@ -39,6 +39,9 @@ namespace Gaiden.Core.Battle
         public const float LightningWhenWetMultiplier = 1.5f;
         public const float SleepWhenWarmMultiplier = 1.5f;
         public const float LightningBlindChance = 0.30f;
+        /// <summary>Spells never miss but crit at this fraction of the caster's physical crit chance (US-115 decision).</summary>
+        public const float SpellCritFraction = 0.5f;
+        public const float SpellCritMultiplier = 1.6f;
 
         // ── Casting (§2.6 / §13.4) ─────────────────────────────────────────────────
         public const int MaxHeroCastsInFlight = 4;
@@ -57,6 +60,9 @@ namespace Gaiden.Core.Battle
         // ── Shield (§2.5) ───────────────────────────────────────────────────────────
         public const string ShieldBuffId = "protection";
         public const int MaxBankCapacityBonus = 4;
+        /// <summary>New Game+: enemy levels rise by this per cycle; coin rewards scale by NgPlusCoinBonus per cycle.</summary>
+        public const int NgPlusLevelStep = 10;
+        public const float NgPlusCoinBonus = 0.5f;
 
         // ── Time bank (§3.1.8, act-advanced amendment: drag-timer remainder) ────────
         public const float DragTimerSeconds = 4f;

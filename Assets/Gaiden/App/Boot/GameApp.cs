@@ -152,7 +152,7 @@ namespace Gaiden.App
         private void FitStage()
         {
             var screen = new Vector2(Screen.width, Screen.height);
-            if (screen == lastScreen) return;
+            if (screen == lastScreen && Stage.Q("screens") != null) return;
             lastScreen = screen;
             float designAspect = DesignWidth / (float)DesignHeight;
             float screenAspect = screen.x / Mathf.Max(1f, screen.y);
@@ -170,6 +170,14 @@ namespace Gaiden.App
         {
             var safe = Screen.safeArea;
             if (Screen.width <= 0 || Screen.height <= 0) return;
+            // Test override: -safeArea <topPx>,<bottomPx> simulates a notch / home bar on desktop.
+            var ov = CommandLine.Value("-safeArea");
+            if (!string.IsNullOrEmpty(ov))
+            {
+                var parts = ov.Split(',');
+                if (parts.Length == 2 && float.TryParse(parts[0], out var top) && float.TryParse(parts[1], out var bottom))
+                    safe = new Rect(0, bottom, Screen.width, Screen.height - top - bottom);
+            }
             float k = logicalH / Screen.height;
             float stageTop = (logicalH - DesignHeight) / 2f, stageBottom = stageTop + DesignHeight;
             float safeTop = (Screen.height - safe.yMax) * k, safeBottom = logicalH - safe.yMin * k;

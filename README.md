@@ -33,6 +33,8 @@ python tools/harness.py sweep    # screenshot + layout-audit every menu screen
 python tools/uicheck.py          # 40 behavioral UI assertions against the running player
 pwsh tools/build.ps1 -Target WebGL; node tools/webcheck.mjs   # browser build + Playwright check
 pwsh tools/build.ps1 -Target Android                          # APK → Build/Android
+python tools/androidcheck.py     # play a session on a device/emulator (adb forward tcp:7777, launch with -automation 7777)
+python tools/make_sfx.py         # regenerate the original sound effects
 python tools/import_art.py       # regenerate art/audio from the GridGame2026 reference project
 ```
 

@@ -54,6 +54,61 @@ namespace Gaiden.App
         private const float HintDelay = 5f;
         private bool HintsEnabled => App.Save == null || App.Save.HighestClearedStage < 2;
 
+        // Guided first battle (US-331): a coach card walks through drag → pincer → spell → timeline.
+        public int TutorialStep { get; private set; } = -1;
+        private int tutorialActions;
+        private bool TutorialActive => TutorialStep >= 0;
+        private static readonly string[] TutorialText =
+        {
+            "Drag a hero across the board. Anyone in the way swaps into the tile you just left — moving never hurts.",
+            "Trap an enemy between two heroes in a straight line to PINCER it. Allies touching the attackers join in.",
+            "Pincers fill your orb line. Tap a hero, then a lit spell below, then a target.",
+            "The number on each enemy is how many moves until it acts. Hit an enemy inside the orange zone to push it back. GUARD skips ahead safely.",
+        };
+
+        public void SkipTutorial() => FinishTutorial();
+
+        private void FinishTutorial()
+        {
+            TutorialStep = -1;
+            if (App.Save != null) { App.Save.TutorialDone = true; App.Persist(); }
+            SyncPanel();
+        }
+
+        private void AdvanceTutorial(int to)
+        {
+            if (!TutorialActive || to <= TutorialStep) return;
+            TutorialStep = Mathf.Min(to, TutorialText.Length - 1);
+            tutorialActions = 0;
+            hintShown = false; idle = 0f;
+            App.Audio.Sfx("ui.select", 0.6f);
+            SyncPanel();
+        }
+
+        private void TutorialAfterCommit(BattleCommand cmd, List<BattleEvent> events)
+        {
+            if (!TutorialActive) return;
+            if (TutorialStep == 0 && cmd is MoveCommand) AdvanceTutorial(1);
+            if (TutorialStep <= 1 && events.Exists(e => e is PincerFormedEvent p && p.Team == Team.Hero)) AdvanceTutorial(2);
+            else if (TutorialStep == 2)
+            {
+                tutorialActions++;
+                if (events.Exists(e => e is AbilityResolvedEvent r && State.UnitById(r.CasterId)?.IsHero == true) || tutorialActions >= 4) AdvanceTutorial(3);
+            }
+        }
+
+        private void TutorialCard()
+        {
+            var row = Ui.El("row", panel);
+            var col = Ui.El("col grow", row);
+            Ui.Text($"Tutorial {TutorialStep + 1}/{TutorialText.Length}", "small gold", col).name = "tutorial-title";
+            var t = Ui.Text(TutorialText[TutorialStep], "small", col);
+            t.style.whiteSpace = WhiteSpace.Normal;
+            var btns = Ui.El("col", row);
+            if (TutorialStep == TutorialText.Length - 1) Ui.Button("Got it", FinishTutorial, "btn--small btn--primary", btns).name = "tutorial-done";
+            Ui.Button("Skip", FinishTutorial, "btn--small", btns).name = "tutorial-skip";
+        }
+
         private int slotPress = -1;
         private float slotPressTime;
         private bool slotInfoShown;
@@ -124,6 +179,7 @@ namespace Gaiden.App
 
             foreach (var u in State.Units) if (u.Alive) board.Add(u);
             SelectedHeroId = State.Units.FirstOrDefault(u => u.IsHero && u.Alive)?.Id ?? -1;
+            if (setupOverride == null && App.Save != null && !App.Save.TutorialDone && App.Save.HighestClearedStage < 0 && !CommandLine.Has("-autoplay")) TutorialStep = 0;
             SyncAll();
             App.StartCoroutine(Play(initial, false));
             if (CommandLine.Has("-autoplay")) AutoPlay = true;
@@ -258,7 +314,10 @@ namespace Gaiden.App
                 v.SetBuffs(u, Colorblind);
                 v.SetCountdown(u.IsHero ? -1 : BattleEngine.ActionsUntilTurn(State, u.Id));
                 bool sel = u.Id == SelectedHeroId;
-                v.SetGlow(sel ? new Color(1f, 0.9f, 0.5f) : Color.white, sel ? 0.65f : 0f);
+                var aura = AuraFor(u);
+                if (sel) v.SetGlow(new Color(1f, 0.9f, 0.5f), 0.65f);
+                else if (aura.a > 0f && !ReduceMotion) v.SetGlow(aura, 0.45f);
+                else v.SetGlow(Color.white, 0f);
             }
             board.SyncTraps(State);
             SyncTimeline(null);
@@ -268,6 +327,21 @@ namespace Gaiden.App
             int wave = Math.Min(State.Wave + 1, State.Stage.Waves.Count);
             waveLabel.text = $"Wave {wave}/{State.Stage.Waves.Count}";
             coinLabel.text = $"{State.Results.Coins} G";
+        }
+
+        /// <summary>Linger effect (bible §6.2 stage 4): units carrying a strong status glow its color.</summary>
+        private static Color AuraFor(Unit u)
+        {
+            foreach (var b in u.Buffs)
+                switch (b.Def.Id)
+                {
+                    case "burning": return new Color(1f, 0.45f, 0.1f, 1f);
+                    case "frozen": return new Color(0.6f, 0.9f, 1f, 1f);
+                    case "poisoned": return new Color(0.5f, 1f, 0.3f, 1f);
+                    case "regen": return new Color(0.4f, 1f, 0.6f, 1f);
+                    case "sleep": return new Color(0.7f, 0.7f, 1f, 1f);
+                }
+            return new Color(0, 0, 0, 0);
         }
 
         private void SyncTimeline(Dictionary<int, float> uOverride)
@@ -441,6 +515,7 @@ namespace Gaiden.App
         private void SyncPanel()
         {
             panel.Clear();
+            if (TutorialActive && TargetingSlot < 0 && panelUnitId < 0) { TutorialCard(); return; }
             if (TargetingSlot >= 0 && State.UnitById(SelectedHeroId) is Unit caster)
             {
                 var ab = BattleEngine.SlotAbility(State, caster, TargetingSlot);
@@ -521,6 +596,7 @@ namespace Gaiden.App
             CancelTargeting();
             var events = BattleEngine.Apply(State, cmd);
             Debug.Log($"[Battle] {cmd} → {events.Count} events, clock {State.Clock}");
+            TutorialAfterCommit(cmd, events);
             App.StartCoroutine(Play(events, skipMovePrefix));
         }
 
@@ -640,7 +716,7 @@ namespace Gaiden.App
             if (!AutoPlay && CanCommand() && !pressing && TargetingSlot < 0 && HintsEnabled)
             {
                 idle += dt;
-                if (idle > HintDelay && !hintShown) ShowHint();
+                if (idle > (TutorialActive && TutorialStep <= 1 ? 0.8f : HintDelay) && !hintShown) ShowHint();
             }
             else ClearHint();
 
