@@ -134,6 +134,9 @@ namespace Gaiden.App.Automation
                 case "state": return StateDump();
                 case "logs":
                     lock (logs) { var copy = logs.ToList(); if (q["clear"] == "1") logs.Clear(); return copy; }
+                case "record":
+                    StartCoroutine(Record(q["name"] ?? "rec", (int)F(q["frames"], 60), Math.Max(1, (int)F(q["every"], 1)), F(q["step"], 1f / 30f), reply));
+                    return Pending;
                 case "screenshot":
                     StartCoroutine(Screenshot(q["name"] ?? DateTime.Now.ToString("HHmmss"), reply));
                     return Pending;
@@ -249,6 +252,7 @@ namespace Gaiden.App.Automation
                         case "mutemusic": st.MuteMusic = on; break;
                         case "mutesfx": st.MuteSfx = on; break;
                         case "cutins": st.PincerCutIns = on; break;
+                        case "confirm": st.ConfirmActions = on; break;
                         default: return new { error = "unknown key" };
                     }
                     app.ApplySettings();
@@ -260,7 +264,7 @@ namespace Gaiden.App.Automation
                 case "suggest":
                 {
                     if (!(app.Router.Current is BattleScreen sb2)) return new { error = "not in battle" };
-                    var cmd = new Gaiden.Core.Bot.HeroBot(5).Decide(sb2.State) as MoveCommand;
+                    var cmd = new Gaiden.Core.Bot.HeroBot(5).BestMove(sb2.State);
                     if (cmd == null) return new { error = "no move" };
                     var pv = BattleEngine.PreviewMove(sb2.State, cmd.HeroId, cmd.Path);
                     var hero = sb2.State.UnitById(cmd.HeroId);
@@ -293,8 +297,14 @@ namespace Gaiden.App.Automation
                 case "devamp":
                     if (app.Router.Current is BattleScreen dab) { dab.State.Amplifier = new Coord((int)F(q["x"]), (int)F(q["y"])); dab.SyncAll(); return new { ok = true }; }
                     return new { error = "not in battle" };
+                case "democaster":
+                    if (app.Router.Current is BattleScreen democ) { democ.DemoCaster(); return new { ok = true }; }
+                    return new { error = "not in battle" };
                 case "democutin":
                     if (app.Router.Current is BattleScreen dc) { dc.DemoCutIn(); return new { ok = true }; }
+                    return new { error = "not in battle" };
+                case "setbar":
+                    if (app.Router.Current is BattleScreen setb) return new { ok = setb.DevSetBar((int)F(q["unit"]), (int)F(q["slot"]), q["entry"]) };
                     return new { error = "not in battle" };
                 case "buff":
                     if (app.Router.Current is BattleScreen bb) return new { ok = bb.DevBuff((int)F(q["unit"]), q["id"]) };
@@ -434,6 +444,32 @@ namespace Gaiden.App.Automation
             reply(StateDump());
         }
 
+        /// <summary>
+        /// Frame recorder for art review: animations step a fixed amount per rendered frame (Tween.FixedStep) while every
+        /// Nth frame is written to artifacts/&lt;name&gt;/f###.png, so slow PNG encoding never skips a beat.
+        /// </summary>
+        private IEnumerator Record(string name, int frames, int every, float step, Action<object> reply)
+        {
+            var dir = Path.Combine(artifacts, name);
+            Directory.CreateDirectory(dir);
+            foreach (var old in Directory.GetFiles(dir, "f*.png")) File.Delete(old);
+            Tween.FixedStep = step;
+            int written = 0;
+            try
+            {
+                for (int i = 0; i < frames; i++)
+                {
+                    yield return new WaitForEndOfFrame();
+                    if (i % every != 0) continue;
+                    var tex = ScreenCapture.CaptureScreenshotAsTexture();
+                    File.WriteAllBytes(Path.Combine(dir, $"f{written++:000}.png"), tex.EncodeToPNG());
+                    Destroy(tex);
+                }
+            }
+            finally { Tween.FixedStep = 0f; }
+            reply(new { dir, written });
+        }
+
         private IEnumerator Screenshot(string name, Action<object> reply)
         {
             yield return new WaitForEndOfFrame();
@@ -463,7 +499,7 @@ namespace Gaiden.App.Automation
                 var s = b.State;
                 dump["battle"] = new
                 {
-                    phase = s.Phase.ToString(), wave = s.Wave, clock = s.Clock, busy = b.Busy, selected = b.SelectedHeroId, targeting = b.TargetingSlot,
+                    phase = s.Phase.ToString(), wave = s.Wave, clock = s.Clock, busy = b.Busy, selected = b.SelectedHeroId, targeting = b.TargetingSlot, confirming = b.Confirming,
                     bank = s.Bank.ToString(), cutins = b.CutInsShown, coinsShown = b.CoinsShown, tallies = b.TalliesBurst, billboard = b.BillboardLines, amplifier = s.Amplifier.HasValue ? new[] { s.Amplifier.Value.X, s.Amplifier.Value.Y } : null,
                     units = s.Units.Where(u => u.Alive).Select(u => new
                     {

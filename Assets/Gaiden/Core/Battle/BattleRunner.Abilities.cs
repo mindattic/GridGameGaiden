@@ -123,7 +123,7 @@ namespace Gaiden.Core.Battle
                         RemainingTicks = ticks,
                     };
                     S.Timeline.Add(entry);
-                    Emit(new CastQueuedEvent { EntryId = entry.Id, CasterId = hero.Id, AbilityId = a.Id, Ticks = ticks });
+                    Emit(new CastQueuedEvent { EntryId = entry.Id, CasterId = hero.Id, AbilityId = a.Id, Ticks = ticks, TargetUnitId = entry.TargetUnitId, TargetTile = anchor });
                 }
                 else
                 {
@@ -236,11 +236,12 @@ namespace Gaiden.Core.Battle
                 {
                     bool wet = a.DamageType == DamageType.Lightning && t.HasBuff("wet");
                     int dmg = Formulas.SpellDamage(a, t, wet);
+                    if (a.Kind != AbilityKind.Item) dmg = (int)Math.Round(dmg * Formulas.CasterPower(a, caster) * caster.OutgoingDamageMultiplier);
                     if (a.BonusVsTag != null && t.Def.HasTag(a.BonusVsTag)) dmg = (int)Math.Round(dmg * a.BonusMultiplier);
                     bool crit = dmg > 0 && S.Rng.Chance(Formulas.CritPercent(caster.Effective) / 100f * BattleConfig.SpellCritFraction);
                     if (crit) dmg = (int)Math.Round(dmg * BattleConfig.SpellCritMultiplier);
                     Damage(t, dmg, caster, crit ? HitKind.Critical : HitKind.Normal, a.DamageType, wet ? "Shock!" : null);
-                    if (crit && caster.IsHero) MintOrb(caster.Id, "critical");
+                    if (crit && caster.IsHero) AddCharge(BattleConfig.CritCharge, caster.Id, "critical");
                     if (t.Alive && a.DamageType == DamageType.Lightning && S.Rng.Chance(BattleConfig.LightningBlindChance))
                     {
                         var blind = C.TryBuff("blinded");
@@ -250,7 +251,7 @@ namespace Gaiden.Core.Battle
 
                 if (a.Knockback > 0 && t.Alive && t.Team != caster.Team) Knockback(caster, t, a.Knockback, a.BaseDamage);
 
-                if (a.BaseHeal > 0 && t.Alive) Heal(t, a.BaseHeal, caster);
+                if (a.BaseHeal > 0 && t.Alive) Heal(t, a.Kind == AbilityKind.Item ? a.BaseHeal : Math.Max(1, (int)Math.Round(a.BaseHeal * Formulas.HealPower(caster))), caster);
 
                 if (a.HastenU > 0f && t.Alive) Hasten(t, a.HastenU);
 

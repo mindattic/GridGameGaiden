@@ -178,6 +178,11 @@ namespace Gaiden.App
             var stats = Ui.El("col grow", top);
             stats.style.marginLeft = 20;
             int hp = h.Hp > 0 ? Math.Min(h.Hp, u.MaxHp) : u.MaxHp;
+            var roleRow = Ui.El("row", stats);
+            roleRow.style.marginBottom = 10;
+            Ui.RoleBadge(def.Role, roleRow, 30).style.marginLeft = 0;
+            var blurb = Ui.Text(Ui.RoleBlurb(def.Role), "tiny dim", roleRow);
+            blurb.style.whiteSpace = WhiteSpace.Normal; blurb.style.flexShrink = 1;
             Ui.Text($"HP  {hp} / {u.MaxHp}", "h2", stats);
             Ui.Gauge(hp / (float)u.MaxHp, stats).style.marginBottom = 18;
             var (lvl, into) = Gaiden.Core.Rules.Formulas.LevelFromTotalXp(h.TotalXp);
@@ -292,9 +297,18 @@ namespace Gaiden.App
                 if (icon != null) { var ic = Ui.El("menu-icon", cell); ic.style.backgroundImage = new StyleBackground(icon); ic.style.marginRight = 0; }
                 var t = Ui.Text(label ?? "Empty", "tiny" + (label == null ? " dim" : ""), cell);
                 t.style.unityTextAlign = TextAnchor.MiddleCenter; t.style.whiteSpace = WhiteSpace.Normal;
-                cell.RegisterCallback<ClickEvent>(_ => { slot = idx; App.Audio.Sfx("ui.click"); Refresh(); });
+                cell.AddToClassList("card-tap");
+                Ui.Tappable(cell, () => { slot = idx; Refresh(); });
             }
-            Ui.Text("Pick a slot, then choose what goes in it.", "tiny dim", barW).style.marginTop = 10;
+            var tools = Ui.El("row", barW);
+            tools.style.marginTop = 10; tools.style.alignItems = Align.Center;
+            Ui.Text("Pick a slot, then choose what goes in it — or move it along the bar.", "tiny dim grow", tools).style.whiteSpace = WhiteSpace.Normal;
+            var left = Ui.Button("‹ Move", () => { var r = Abilities.Swap(S, h, slot, slot - 1); if (r.Ok) slot--; Done(r); }, "btn--small", tools);
+            left.name = "bar-move-left";
+            Ui.SetEnabled(left, slot > 0 && slot < unlocked);
+            var right = Ui.Button("Move ›", () => { var r = Abilities.Swap(S, h, slot, slot + 1); if (r.Ok) slot++; Done(r); }, "btn--small", tools);
+            right.name = "bar-move-right";
+            Ui.SetEnabled(right, slot + 1 < unlocked);
 
             Ui.Tabs(new[] { "Known", "Items", "Learn" }, tab, i => { tab = i; Refresh(); }, body);
             var w = Ui.Window(null, body);
@@ -380,10 +394,13 @@ namespace Gaiden.App
                 var card = Ui.El("card" + (active ? " card--selected" : ""), list);
                 Ui.Thumb(h.ClassId, card, 132);
                 var col = Ui.El("col grow", card);
-                Ui.Text(C.Class(h.ClassId).Name, "h2", col);
+                var nameRow = Ui.El("row", col);
+                Ui.Text(C.Class(h.ClassId).Name, "h2", nameRow);
+                Ui.RoleBadge(C.Class(h.ClassId).Role, nameRow);
                 Ui.Text($"Lv {u.Level}   HP {u.MaxHp}   {(active ? "<color=#78EC96>Active</color>" : "Reserve")}", "small", col);
                 Ui.Text(C.Class(h.ClassId).Card ?? "", "tiny dim", col).style.whiteSpace = WhiteSpace.Normal;
-                card.RegisterCallback<ClickEvent>(_ => Done(Party.Toggle(S, hero.ClassId)));
+                card.AddToClassList("card-tap");
+                Ui.Tappable(card, () => Done(Party.Toggle(S, hero.ClassId)), "ui.select");
             }
         }
     }
@@ -732,7 +749,8 @@ namespace Gaiden.App
                 var t = Ui.Thumb(e.Id, grid, 160);
                 t.style.marginRight = 8; t.style.marginBottom = 8;
                 if (entry == null || !entry.Seen) { t.style.unityBackgroundImageTintColor = new Color(0, 0, 0, 0.92f); }
-                t.RegisterCallback<ClickEvent>(_ => { selected = def.Id; Show(detail, def, entry); });
+                t.AddToClassList("card-tap");
+                Ui.Tappable(t, () => { selected = def.Id; Show(detail, def, entry); });
             }
             if (selected != null) Show(detail, C.Class(selected), S.Bestiary.TryGetValue(selected, out var se) ? se : null);
             else Ui.Text("Tap a creature.", "small dim", detail);
@@ -783,6 +801,7 @@ namespace Gaiden.App
             Toggle("Drag timer (4 s)", st.DragTimer, v => st.DragTimer = v);
             Toggle("Colorblind palette", st.ColorblindMode, v => st.ColorblindMode = v);
             Toggle("Pincer close-ups", st.PincerCutIns, v => st.PincerCutIns = v);
+            Toggle("Confirm before acting", st.ConfirmActions, v => st.ConfirmActions = v);
             Toggle("Reduce motion", st.ReduceMotion, v => st.ReduceMotion = v);
             var help = Ui.Window("How to play", body);
             var t = Ui.Text(
@@ -792,6 +811,9 @@ namespace Gaiden.App
                 "• Time moves only when you act. Enemies attack when their icon reaches the right end of the timeline.\n" +
                 "• Hit an enemy in the shaded zone to push its turn back.\n" +
                 "• Pincers fill your mana orbs. Spend them on spells; skills and items cost a turn.\n" +
+                "• Pick a slot, then a target, then Confirm. Spells charge on the timeline before they land.\n" +
+                "• Roles need each other: Tanks Taunt so enemies leave your casters alone, Healers mend (WIS), Mages hit hardest with spells (INT), Strikers swing Cleave and War Cry (STR).\n" +
+                "• Fallen enemies sometimes drop a pickup. Walk a hero over it before it fades.\n" +
                 "• The shield skips to the next enemy turn and guards everyone.", "small", help);
             t.style.whiteSpace = WhiteSpace.Normal;
         }

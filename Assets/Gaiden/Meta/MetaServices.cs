@@ -769,6 +769,17 @@ namespace Gaiden.Meta
             return Result.Success($"Learned {a.Name}");
         }
 
+        /// <summary>Reorder the bar (owner direction 2026-10-11: organise your abilities): swap two unlocked slots.</summary>
+        public static Result Swap(SaveData s, HeroSave h, int a, int b)
+        {
+            int unlocked = Progression.UnlockedSlots(s);
+            if (a < 0 || b < 0 || a >= unlocked || b >= unlocked) return Result.Fail("Slot locked");
+            if (a == b) return Result.Fail("Same slot");
+            while (h.Bar.Count < Progression.MaxBarSlots) h.Bar.Add(null);
+            var t = h.Bar[a]; h.Bar[a] = h.Bar[b]; h.Bar[b] = t;
+            return Result.Success("Moved");
+        }
+
         public static Result Assign(ContentDb c, SaveData s, HeroSave h, int slot, string entry)
         {
             if (slot < 0 || slot >= Progression.MaxBarSlots) return Result.Fail("No such slot");

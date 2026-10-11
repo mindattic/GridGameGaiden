@@ -9,6 +9,12 @@ namespace Gaiden.App
     public static class Tween
     {
         public static float Speed = 1f;
+        /// <summary>
+        /// Frame recorder (automation "record"): when &gt; 0 every animation advances exactly this much per rendered
+        /// frame, however long the frame took, so a frame-by-frame capture shows every beat.
+        /// </summary>
+        public static float FixedStep;
+        public static float Dt => FixedStep > 0f ? FixedStep : Time.unscaledDeltaTime;
 
         public static float EaseOut(float t) => 1f - (1f - t) * (1f - t);
         public static float EaseInOut(float t) => t < 0.5f ? 2f * t * t : 1f - Mathf.Pow(-2f * t + 2f, 2f) / 2f;
@@ -23,7 +29,7 @@ namespace Gaiden.App
                 float k = t / d;
                 step(ease != null ? ease(k) : k);
                 yield return null;
-                t += Time.unscaledDeltaTime;
+                t += Dt;
             }
             step(1f);
         }
@@ -32,7 +38,7 @@ namespace Gaiden.App
         {
             float d = seconds / Mathf.Max(0.1f, Speed);
             float t = 0f;
-            while (t < d) { yield return null; t += Time.unscaledDeltaTime; }
+            while (t < d) { yield return null; t += Dt; }
         }
 
         public static IEnumerator Move(VisualElement e, Vector2 from, Vector2 to, float seconds, Func<float, float> ease = null)

@@ -1,0 +1,242 @@
+using System.Collections.Generic;
+using System.Linq;
+using Gaiden.Core;
+using Gaiden.Core.Battle;
+using Gaiden.Core.Content;
+using Gaiden.Core.Rules;
+using Gaiden.Meta;
+using Xunit;
+using static Gaiden.Tests.TestKit;
+
+namespace Gaiden.Tests
+{
+    /// <summary>Roles that need each other (§25.13): taunt, caster power, empowered strikes and battle pickups (§13.3.1).</summary>
+    public class SynergyTests
+    {
+        private static ContentDb WithRoleKit()
+        {
+            var db = Mini();
+            db.Buffs["taunting"] = new BuffDef { Id = "taunting", Name = "Taunting", Kind = BuffKind.Buff, Unit = DurationUnit.Turns, Duration = 2, IncomingDamageMultiplier = 0.75f, Taunts = true };
+            db.Buffs["empowered"] = new BuffDef { Id = "empowered", Name = "Empowered", Kind = BuffKind.Buff, Unit = DurationUnit.Turns, Duration = 2, OutgoingDamageMultiplier = 1.3f };
+            db.Abilities["taunt"] = new AbilityDef { Id = "taunt", Name = "Taunt", Kind = AbilityKind.Skill, CooldownTurns = 3, Shape = TargetShape.Self, Mode = TargetMode.Auto, Filter = TargetFilter.AllyOnly, ApplyBuff = "taunting" };
+            db.Abilities["war_cry"] = new AbilityDef { Id = "war_cry", Name = "War Cry", Kind = AbilityKind.Skill, CooldownTurns = 4, Shape = TargetShape.AllAllies, Mode = TargetMode.Auto, Filter = TargetFilter.AllyOnly, ApplyBuff = "empowered" };
+            return db;
+        }
+
+        [Fact]
+        public void A_taunting_hero_draws_every_enemy_that_can_choose()
+        {
+            var db = WithRoleKit();
+            db.Classes["goblin"].Targeting = Targeting.Weakest;
+            var (s, _) = Battle(db, Stage(("goblin", 2, 2)), ("knight", 2, 7), ("mage", 3, 3));
+            var gob = s.Units.Single(u => u.Def.Id == "goblin");
+            var knight = Hero(s, "knight");
+            var mage = Hero(s, "mage");
+            mage.Hp = 3; // the weakest, and right next to it
+            Assert.Same(mage, EnemyPlanner.PickTarget(s, gob));
+
+            knight.Bar[0] = new AbilitySlot { AbilityId = "taunt" };
+            var ev = BattleEngine.Apply(s, new UseSlotCommand { HeroId = knight.Id, Slot = 0 });
+            Assert.Contains(ev, e => e is BuffAppliedEvent b && b.BuffId == "taunting" && b.UnitId == knight.Id);
+            Assert.True(knight.IsTaunting);
+            Assert.Same(knight, EnemyPlanner.PickTarget(s, gob));
+            Assert.Equal(3, knight.Cooldowns["taunt"] + 1); // started at 3, ticked once at control return
+        }
+
+        [Fact]
+        public void Taunt_only_overrides_among_heroes_in_reach()
+        {
+            var db = WithRoleKit();
+            var (s, _) = Battle(db, Stage(("goblin", 2, 2)), ("knight", 5, 7), ("mage", 2, 3));
+            var gob = s.Units.Single(u => u.Def.Id == "goblin");
+            Hero(s, "knight").Buffs.Add(new BuffInstance { Def = db.Buffs["taunting"], Remaining = 2 });
+            // In melee only the mage is adjacent: the taunter can't be hit from here, so the mage still takes the blow.
+            Assert.Same(Hero(s, "mage"), EnemyPlanner.PickFrom(s, gob, new List<Unit> { Hero(s, "mage") }));
+            Assert.Same(Hero(s, "knight"), EnemyPlanner.PickTarget(s, gob));
+        }
+
+        [Fact]
+        public void Caster_power_makes_a_mage_out_hit_a_fighter_and_a_sage_out_heal()
+        {
+            var c = Real;
+            var fire = c.Abilities["fireball"];
+            var mage = new Unit { Def = c.Classes["redmage"], Team = Team.Hero, LevelStats = c.Classes["redmage"].BaseStats.Clone() };
+            var fighter = new Unit { Def = c.Classes["fighter"], Team = Team.Hero, LevelStats = c.Classes["fighter"].BaseStats.Clone() };
+            Assert.True(Formulas.CasterPower(fire, mage) > 1.2f);
+            Assert.True(Formulas.CasterPower(fire, fighter) < 1f);
+            var cleave = c.Abilities["cleave"];
+            Assert.True(Formulas.CasterPower(cleave, fighter) > Formulas.CasterPower(cleave, mage), "physical skills scale with STR");
+            var sage = new Unit { Def = c.Classes["sage"], Team = Team.Hero, LevelStats = c.Classes["sage"].BaseStats.Clone() };
+            Assert.True(Formulas.HealPower(sage) > Formulas.HealPower(fighter));
+            var enemy = new Unit { Def = c.Classes["hag00"], Team = Team.Enemy, LevelStats = c.Classes["hag00"].BaseStats.Clone() };
+            Assert.Equal(1f, Formulas.CasterPower(fire, enemy)); // enemy kits keep their tuned numbers
+        }
+
+        [Fact]
+        public void War_cry_empowers_every_ally_and_their_pincers_hit_harder()
+        {
+            var db = WithRoleKit();
+            int Pincer(bool empowered)
+            {
+                var (s, _) = Battle(db, Stage(("tank", 2, 3)), ("knight", 1, 3), ("cleric", 3, 4), ("mage", 5, 7));
+                if (empowered)
+                {
+                    var m = Hero(s, "mage");
+                    m.Bar[0] = new AbilitySlot { AbilityId = "war_cry" };
+                    var ev0 = BattleEngine.Apply(s, new UseSlotCommand { HeroId = m.Id, Slot = 0 });
+                    Assert.Equal(3, ev0.OfType<BuffAppliedEvent>().Count(b => b.BuffId == "empowered"));
+                }
+                var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = Hero(s, "cleric").Id, Path = P((3, 3)) });
+                return ev.OfType<DamagedEvent>().Where(d => d.SourceId == Hero(s, "knight").Id && d.Hit != HitKind.Miss).Sum(d => d.Amount);
+            }
+            int plain = Pincer(false), loud = Pincer(true);
+            Assert.True(plain > 0);
+            Assert.True(loud > plain, $"empowered {loud} should beat {plain}");
+        }
+
+        private static ContentDb WithPickups(float heal = 0.5f, int orbs = 0)
+        {
+            var db = WithRoleKit();
+            db.Pickups["pk"] = new PickupDef { Id = "pk", Name = "Tonic", Weight = 1, HealFraction = heal, Orbs = orbs };
+            return db;
+        }
+
+        [Fact]
+        public void Stepping_on_a_pickup_collects_it_and_heals()
+        {
+            var db = WithPickups();
+            var (s, _) = Battle(db, Stage(("tank", 0, 0)), ("knight", 3, 6), ("cleric", 5, 7));
+            var k = Hero(s, "knight");
+            k.Hp = 5;
+            s.Pickups.Add(new Pickup { Id = 1, PickupId = "pk", At = new Coord(3, 5), ActionsLeft = 4 });
+            var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = k.Id, Path = P((3, 5)) });
+            Assert.Contains(ev, e => e is PickupCollectedEvent pc && pc.UnitId == k.Id);
+            Assert.Contains(ev, e => e is HealedEvent h && h.TargetId == k.Id);
+            Assert.Empty(s.Pickups);
+        }
+
+        [Fact]
+        public void A_round_trip_drag_that_only_grabs_a_pickup_still_counts_as_a_move()
+        {
+            var db = WithPickups(0f, 2);
+            var (s, _) = Battle(db, Stage(("tank", 0, 0)), ("knight", 3, 6), ("cleric", 5, 7));
+            var k = Hero(s, "knight");
+            s.Pickups.Add(new Pickup { Id = 1, PickupId = "pk", At = new Coord(3, 5), ActionsLeft = 4 });
+            int before = s.Bank.Count;
+            var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = k.Id, Path = P((3, 5), (3, 6)) });
+            Assert.DoesNotContain(ev, e => e is AbilityRefusedEvent);
+            Assert.True(s.Bank.Count >= before + 2);
+        }
+
+        [Fact]
+        public void Pickups_fade_after_their_lifetime()
+        {
+            var db = WithPickups();
+            var (s, _) = Battle(db, Stage(("tank", 0, 0)), ("knight", 3, 6), ("cleric", 5, 7));
+            s.Pickups.Add(new Pickup { Id = 1, PickupId = "pk", At = new Coord(0, 5), ActionsLeft = 2 });
+            var k = Hero(s, "knight");
+            BattleEngine.Apply(s, new MoveCommand { HeroId = k.Id, Path = P((2, 6)) });
+            Assert.Single(s.Pickups);
+            var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = k.Id, Path = P((3, 6)) });
+            Assert.Contains(ev, e => e is PickupExpiredEvent);
+            Assert.Empty(s.Pickups);
+        }
+
+        [Fact]
+        public void Fallen_enemies_sometimes_leave_pickups()
+        {
+            var db = WithPickups();
+            int drops = 0;
+            for (int seed = 1; seed <= 80; seed++)
+            {
+                var setup = new BattleSetup { Stage = Stage(("goblin", 2, 3), ("tank", 0, 0)), Seed = seed, UnlockedSlots = 2 };
+                setup.Party.Add(new HeroSpec { ClassId = "knight", Start = new Coord(1, 3) });
+                setup.Party.Add(new HeroSpec { ClassId = "cleric", Start = new Coord(3, 4) });
+                var s = BattleEngine.Create(db, setup, new List<BattleEvent>());
+                var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = Hero(s, "cleric").Id, Path = P((3, 3)) });
+                if (ev.Any(e => e is PickupDroppedEvent)) { drops++; Assert.Single(s.Pickups); AssertInvariants(s); }
+            }
+            Assert.InRange(drops, 6, 40); // 20% base
+        }
+
+        [Fact]
+        public void Every_hero_has_a_role_and_kits_match_it()
+        {
+            var c = Real;
+            Assert.Empty(ContentLoader.Validate(c));
+            foreach (var h in c.Classes.Values.Where(x => x.Team == Team.Hero))
+            {
+                var bar = h.DefaultLoadout.Where(x => !x.StartsWith("item:")).ToList();
+                switch (h.Role)
+                {
+                    case "Tank": Assert.Contains("taunt", bar); break;
+                    case "Healer": Assert.Contains("heal", bar); break;
+                    case "Mage": Assert.True(bar.Count(x => c.Abilities[x].Kind == AbilityKind.Spell && c.Abilities[x].BaseDamage > 0) >= 2, h.Id); break;
+                    case "Striker": Assert.Contains("cleave", bar); break;
+                    case "Support": Assert.True(bar.Contains("quicken") || bar.Contains("regen"), h.Id); break;
+                }
+                foreach (var a in bar) Assert.Contains(a, h.Abilities);
+            }
+        }
+    
+        [Fact]
+        public void The_bar_can_be_reordered_within_unlocked_slots()
+        {
+            var c = Real; var save = Progression.NewGame(c, "Org");
+            var h = save.Hero("paladin");
+            var first = h.Bar[0]; var second = h.Bar[1];
+            Assert.True(Abilities.Swap(save, h, 0, 1).Ok);
+            Assert.Equal(second, h.Bar[0]);
+            Assert.Equal(first, h.Bar[1]);
+            Assert.False(Abilities.Swap(save, h, 1, 4).Ok, "slot 5 is locked on a fresh save");
+        }
+    
+        // ── Mana charge (§3.1.9) ──
+
+        [Fact]
+        public void More_heroes_in_a_pincer_earn_less_mana_per_hp_taken()
+        {
+            var db = Mini();
+            db.Classes["tank"].BaseStats.Vitality = 30;
+            (int amount, float share) Run(bool withSupporter)
+            {
+                var heroes = new List<(string, int, int)> { ("knight", 1, 3), ("cleric", 3, 4) };
+                if (withSupporter) heroes.Add(("mage", 1, 4));
+                var (s, _) = Battle(db, Stage(("tank", 2, 3)), heroes.ToArray());
+                var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = Hero(s, "cleric").Id, Path = P((3, 3)) });
+                var tank = s.Units.Single(u => u.Def.Id == "tank");
+                return (ev.OfType<ManaChargedEvent>().Single(c => c.Reason == "pincer").Amount, (tank.MaxHp - tank.Hp) / (float)tank.MaxHp);
+            }
+            var lean = Run(false); var crowd = Run(true);
+            Assert.True(crowd.share >= lean.share, "the supporter adds damage…");
+            Assert.True(crowd.amount / crowd.share < lean.amount / lean.share, "…but each point of HP taken charges less");
+        }
+
+        [Fact]
+        public void Charge_rolls_over_into_orbs_and_keeps_the_remainder()
+        {
+            var db = Mini();
+            var (s, _) = Battle(db, Stage(("goblin", 2, 3)), ("knight", 1, 3), ("cleric", 3, 4));
+            s.ManaCharge = BattleConfig.ManaChargePerOrb - 1;
+            int before = s.Bank.Count;
+            var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = Hero(s, "cleric").Id, Path = P((3, 3)) });
+            var c = ev.OfType<ManaChargedEvent>().First(x => x.Reason == "pincer");
+            Assert.Contains(ev, e => e is OrbMintedEvent o && o.Reason == "pincer");
+            Assert.True(s.Bank.Count >= before + 1);
+            Assert.InRange(s.ManaCharge, 0, BattleConfig.ManaChargePerOrb - 1);
+            Assert.Equal((BattleConfig.ManaChargePerOrb - 1 + c.Amount) % BattleConfig.ManaChargePerOrb, c.Total);
+        }
+
+        [Fact]
+        public void A_killing_pincer_earns_mana_by_hp_taken_not_per_hero()
+        {
+            var db = Mini();
+            var (s, _) = Battle(db, Stage(("goblin", 2, 3)), ("knight", 1, 3), ("cleric", 3, 4));
+            var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = Hero(s, "cleric").Id, Path = P((3, 3)) });
+            Assert.Contains(ev, e => e is DiedEvent);
+            var charge = ev.OfType<ManaChargedEvent>().Single(c => c.Reason == "pincer");
+            Assert.Equal((int)System.Math.Round(BattleConfig.PincerChargePerHp), charge.Amount); // the whole foe: share 1, two heroes ×1
+            Assert.Equal(charge.Amount / BattleConfig.ManaChargePerOrb, ev.OfType<OrbMintedEvent>().Count(o => o.Reason == "pincer")); // one per 100, not one per hero
+        }
+    }
+}

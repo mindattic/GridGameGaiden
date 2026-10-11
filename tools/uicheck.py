@@ -180,12 +180,42 @@ def main():
     st = battle_state()
     if st["targeting"] == 0:
         check("slot tap enters targeting", True)
-        check("ability card shows while targeting", has_text("Tap a highlighted tile"))
+        check("ability card shows while targeting (or the confirm card for a self skill)", has_text("Tap a highlighted tile") or st.get("confirming"))
         h.shot("targeting")
         h.call("tap", x=slot0[0], y=slot0[1]); time.sleep(0.4)
         check("re-tapping the slot cancels", battle_state()["targeting"] == -1)
     else:
         check("slot tap enters targeting (or auto-casts)", st["results"]["ActionsTaken"] >= 2, str(st["targeting"]))
+
+    # ── Select → confirm → act (owner direction 2026-10-11) ───────────────
+    b = battle_state()
+    acted = b["results"]["ActionsTaken"]
+    h.call("tap", x=hx, y=hy); time.sleep(0.3)
+    h.call("tap", x=slot0[0], y=slot0[1]); time.sleep(0.4)
+    if not battle_state().get("confirming"):
+        # a pick ability: aim at the first legal enemy/ally tile by trying each unit
+        for u in battle_state()["units"]:
+            h.call("tap", x=h.tile(u["x"], u["y"])[0], y=h.tile(u["x"], u["y"])[1]); time.sleep(0.3)
+            if battle_state().get("confirming"):
+                break
+    st = battle_state()
+    check("a pick waits for confirmation (nothing spent yet)", st.get("confirming") and st["results"]["ActionsTaken"] == acted, str(st.get("confirming")))
+    names = h.call("names")
+    check("the confirm card offers Cast/Use/Go and Cancel", isinstance(names, list) and "confirm-action" in names and "confirm-cancel" in names)
+    h.shot("confirm-card")
+    h.call("click", name="confirm-cancel"); time.sleep(0.4)
+    check("Cancel backs out without acting", battle_state()["targeting"] == -1 and battle_state()["results"]["ActionsTaken"] == acted)
+    h.call("tap", x=hx, y=hy); time.sleep(0.3)
+    h.call("tap", x=slot0[0], y=slot0[1]); time.sleep(0.4)
+    if not battle_state().get("confirming"):
+        for u in battle_state()["units"]:
+            h.call("tap", x=h.tile(u["x"], u["y"])[0], y=h.tile(u["x"], u["y"])[1]); time.sleep(0.3)
+            if battle_state().get("confirming"):
+                break
+    h.call("click", name="confirm-action"); h.call("wait", ms=500)
+    cues = h.call("cues")
+    check("Confirm acts, with a confirmation chime", battle_state()["results"]["ActionsTaken"] == acted + 1 and "ui.confirm" in cues, str(battle_state()["results"]["ActionsTaken"]))
+    check("every press is voiced (press tick)", "ui.press" in cues)
 
     # ── Generic mana orbs: filled vs empty slots read at a glance ─────────
     h.call("givemana", n=0)  # forces an orb resync

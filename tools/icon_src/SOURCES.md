@@ -8,6 +8,7 @@ Authors: carl-olsen, darkzaitzev, delapouite, faithtoken, lorc, sbed, skoll, zer
 - darkzaitzev/robber-hand
 - darkzaitzev/smoke-bomb
 - delapouite/animal-hide
+- delapouite/biceps
 - delapouite/bow-arrow
 - delapouite/dart
 - delapouite/elf-ear
@@ -32,6 +33,7 @@ Authors: carl-olsen, darkzaitzev, delapouite, faithtoken, lorc, sbed, skoll, zer
 - delapouite/warhammer
 - faithtoken/ore
 - lorc/aura
+- lorc/axe-swing
 - lorc/battle-axe
 - lorc/beams-aura
 - lorc/boots
@@ -42,6 +44,7 @@ Authors: carl-olsen, darkzaitzev, delapouite, faithtoken, lorc, sbed, skoll, zer
 - lorc/crossed-swords
 - lorc/crown
 - lorc/crystal-cluster
+- lorc/crystal-growth
 - lorc/drop
 - lorc/droplets
 - lorc/fairy-wand
@@ -68,8 +71,10 @@ Authors: carl-olsen, darkzaitzev, delapouite, faithtoken, lorc, sbed, skoll, zer
 - lorc/quake-stomp
 - lorc/robe
 - lorc/round-bottom-flask
+- lorc/rune-stone
 - lorc/screaming
 - lorc/shield-reflect
+- lorc/shouting
 - lorc/silence
 - lorc/snail
 - lorc/snowflake-2
@@ -81,6 +86,7 @@ Authors: carl-olsen, darkzaitzev, delapouite, faithtoken, lorc, sbed, skoll, zer
 - lorc/teleport
 - lorc/thunderball
 - lorc/visored-helm
+- lorc/winged-emblem
 - lorc/wizard-staff
 - lorc/wolf-head
 - sbed/regeneration

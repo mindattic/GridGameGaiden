@@ -269,3 +269,31 @@ updated: 2026-10-09
   thinking is free (decision: keep the clock act-advanced; recorded here so the owner can overrule).
 - "Up to six party members need to be visible" → `MaxPartySize` 4 → 6; Camp party is a 2-column grid.
 
+
+## 2026-10-11 — synergy, staging, press feel, scarcer mana (owner)
+
+- "it all needs to synergize … a healer should need to heal, a magician should have ranged spells, a tank should be
+  able to taunt enemies, powerups should sometimes drop, money should accumulate on kills" → hero **roles** with
+  matching kits (§25.13), **Taunt** (§14.1.1), **caster power** — INT/STR/WIS now scale hero spells, skills and heals
+  (§13.1.5), **Cleave / War Cry** for strikers, **pickups** (§13.3.1). Gold on kills already existed (coin burst).
+  Calls the owner may overrule: spells stay unlimited-range (the mage's identity is INT damage, not reach); existing
+  saves keep their bars, only new heroes get the role kits.
+- "button presses need feedback like depress, or confirmation screens when deciding to cast a spell … standardized"
+  → `Ui.Pressable` on everything tappable (§11.5); select → confirm → act with a confirm card (§4.4.1), switchable
+  in Settings.
+- "if I clicked poison and an icon just appeared on an enemy it would feel meaningless … particle effects around the
+  actor, a loading bar fills (while game is in motion), cast splash, a projectile on a curve, a splash attack, then a
+  bubbly green poison effect which coincides with the poison debuff" → staging (§6.2). **Deviation:** the 2026-10-10
+  ring that *shrinks* on the caster stays; a charging bar that *fills* is added beside it.
+- "mana needs to be a more rare resource … the number of participants in the attack increases the multiplier needed
+  to earn a mana bubble" → the mana charge meter (§3.1.9). Tuned with `BalanceReport`: greedy bot clears the
+  campaign 4/4; casual+camp bot 2/4 (was 1/4 at the start of the day). To keep Mireholt Fens II fair under scarcer
+  mana, its second wave drops the second lurker (hag + naga only). Mana Shard pickup gives 1 orb.
+- "portrait slides … action packed … supporters pop in and out" → action cut-ins (§9).
+- "the tiles transparency contrast is too high … the background needs to be clearly visible" → lighter, lower-contrast
+  tiles; the stage background is dimmed less.
+- "take screenshots and then examine them for artistic integrity" → `tools/artreview.py` + the automation `record`
+  endpoint (fixed-step frame recorder: `Tween.FixedStep`), producing per-scenario contact sheets. First review pass
+  fixed: flat cut-in band → feathered band + bust window + dimmed stage; opaque area slabs → soft bloom; dot
+  projectile → glowing orb with comet tail; status text in the status colour; bolder taunt rings; item icon on the
+  confirm card; billboard dodges top-row action.

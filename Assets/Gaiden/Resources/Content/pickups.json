@@ -1,0 +1,38 @@
+[
+  {
+    "Id": "pk_potion",
+    "Name": "Heart Tonic",
+    "Description": "Restores 25% of max HP to the hero who grabs it.",
+    "Weight": 4,
+    "HealFraction": 0.25,
+    "Color": "#FF5A78",
+    "Icon": "pk_potion"
+  },
+  {
+    "Id": "pk_mana",
+    "Name": "Mana Shard",
+    "Description": "An orb flows into the mana pool.",
+    "Weight": 4,
+    "Orbs": 1,
+    "Color": "#5AB4FF",
+    "Icon": "pk_mana"
+  },
+  {
+    "Id": "pk_haste",
+    "Name": "Quicksilver",
+    "Description": "The collector's next turn comes sooner.",
+    "Weight": 2,
+    "HastenU": 0.3,
+    "Color": "#C8F0FF",
+    "Icon": "pk_haste"
+  },
+  {
+    "Id": "pk_might",
+    "Name": "Might Rune",
+    "Description": "The collector strikes 30% harder for two turns.",
+    "Weight": 2,
+    "ApplyBuff": "empowered",
+    "Color": "#FFB03A",
+    "Icon": "pk_might"
+  }
+]

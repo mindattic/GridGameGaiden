@@ -2,6 +2,7 @@ using System.Linq;
 using Gaiden.Core;
 using Gaiden.Core.Battle;
 using Gaiden.Core.Content;
+using Gaiden.Core.Rules;
 using Xunit;
 using static Gaiden.Tests.TestKit;
 
@@ -92,7 +93,8 @@ namespace Gaiden.Tests
             s.Bank.Add(3);
             var ev = BattleEngine.Apply(s, new UseSlotCommand { HeroId = k.Id, Slot = 0, Target = new Coord(2, 0) });
             Assert.Equal(1 + ev.OfType<OrbMintedEvent>().Count(o => o.Landed), s.Bank.Count);
-            Assert.Contains(ev, e => e is DamagedEvent d && d.Amount == 18);
+            int expected = (int)System.Math.Round(18 * Formulas.CasterPower(db.Abilities["fireball"], k)); // §13.1.5: INT scales it
+            Assert.Contains(ev, e => e is DamagedEvent d && d.Amount == expected);
             Assert.Contains(ev, e => e is BuffAppliedEvent b && b.BuffId == "burning");
         }
 
@@ -195,7 +197,8 @@ namespace Gaiden.Tests
             tank.Buffs.Add(new BuffInstance { Def = db.Buffs["wet"], Remaining = 6 });
             m.Bar[0] = new AbilitySlot { AbilityId = "bolt" };
             var ev = BattleEngine.Apply(s, new UseSlotCommand { HeroId = m.Id, Slot = 0, Target = new Coord(2, 2) });
-            Assert.Contains(ev, e => e is DamagedEvent d && d.Amount == 21);
+            int shock = (int)System.Math.Round(21 * Formulas.CasterPower(db.Abilities["bolt"], m)); // 14 × 1.5 wet, × INT power
+            Assert.Contains(ev, e => e is DamagedEvent d && d.Amount == shock);
 
             m.Bar[1] = new AbilitySlot { AbilityId = "fireball" };
             s.Bank.Add(2);

@@ -89,6 +89,16 @@ namespace Gaiden.Core.Battle
 
     public enum MovableKind { Amplifier }
 
+    /// <summary>A pickup lying on a tile (§13.3.1). Doesn't block; the first hero to enter the tile collects it.</summary>
+    public sealed class Pickup
+    {
+        public int Id;
+        public string PickupId;
+        public Coord At;
+        public int ActionsLeft;
+        public Pickup Clone() => (Pickup)MemberwiseClone();
+    }
+
     /// <summary>A pushable board object (§1.1.2). Occupies its tile; displaced like an actor; never an attacker or a target.</summary>
     public sealed class MovableTile
     {
@@ -107,6 +117,14 @@ namespace Gaiden.Core.Battle
         public List<Unit> Units = new List<Unit>();
         public List<TimelineEntry> Timeline = new List<TimelineEntry>();
         public List<Trap> Traps = new List<Trap>();
+        public List<Pickup> Pickups = new List<Pickup>();
+        public int NextPickupId = 1;
+
+        public Pickup PickupAt(Coord c)
+        {
+            foreach (var p in Pickups) if (p.At == c) return p;
+            return null;
+        }
         /// <summary>
         /// Movable tile objects (§1.1.2): they occupy a tile like an actor — nothing spawns or lands on them — but anyone
         /// can push them around exactly like an actor. Physical blocks (<see cref="Blocks"/>) are the immovable kind.
@@ -135,6 +153,8 @@ namespace Gaiden.Core.Battle
         /// <summary>Free for something new to appear (spawn, reinforcement, trap, teleport landing): walkable, no unit, no movable tile.</summary>
         public bool FreeForSpawn(Coord c) => Walkable(c) && UnitAt(c) == null && MovableAt(c) == null;
         public ManaBank Bank = new ManaBank();
+        /// <summary>Progress toward the next orb, 0..ManaChargePerOrb-1 (§3.1.9).</summary>
+        public int ManaCharge;
         public int Wave;
         public BattlePhase Phase = BattlePhase.PlayerInput;
         public int NextUnitId = 1;
@@ -220,6 +240,8 @@ namespace Gaiden.Core.Battle
             foreach (var m in Movables) s.Movables.Add(m.Clone());
             s.Traps = new List<Trap>(Traps.Count);
             foreach (var t in Traps) s.Traps.Add(t.Clone());
+            s.Pickups = new List<Pickup>(Pickups.Count);
+            foreach (var p in Pickups) s.Pickups.Add(p.Clone());
             s.Bank = Bank.Clone();
             s.Results = Results.Clone();
             return s;

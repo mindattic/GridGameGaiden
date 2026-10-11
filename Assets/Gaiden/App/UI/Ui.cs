@@ -53,8 +53,55 @@ namespace Gaiden.App
             }) { text = text };
             b.AddToClassList("btn");
             AddClasses(b, classes);
+            Pressable(b);
             parent?.Add(b);
             return b;
+        }
+
+        /// <summary>
+        /// The one press feel every tappable thing shares (owner direction 2026-10-11): on touch it sinks — drops a few
+        /// pixels onto its lip, shrinks, darkens — with a soft press tick; on release it springs back. Disabled things
+        /// don't sink. Styling lives in Theme.uss (.pressable / .is-pressed); this only toggles the state.
+        /// </summary>
+        public static T Pressable<T>(T e, bool sound = true) where T : VisualElement
+        {
+            if (e.ClassListContains("pressable")) return e;
+            e.AddToClassList("pressable");
+            void Release()
+            {
+                if (!e.ClassListContains("is-pressed")) return;
+                e.RemoveFromClassList("is-pressed");
+                e.AddToClassList("is-released");
+                e.schedule.Execute(() => e.RemoveFromClassList("is-released")).StartingIn(140);
+            }
+            e.RegisterCallback<PointerDownEvent>(_ =>
+            {
+                if (!e.enabledInHierarchy || e.ClassListContains("btn--disabled") || e.ClassListContains("menu-row--disabled")) return;
+                e.RemoveFromClassList("is-released");
+                e.AddToClassList("is-pressed");
+                if (sound) GameApp.I?.Audio?.Sfx("ui.press", 0.55f);
+            }, TrickleDown.TrickleDown);
+            e.RegisterCallback<PointerUpEvent>(_ => Release(), TrickleDown.TrickleDown);
+            e.RegisterCallback<PointerLeaveEvent>(_ => Release());
+            e.RegisterCallback<PointerCancelEvent>(_ => Release());
+            e.RegisterCallback<PointerCaptureOutEvent>(_ => Release());
+            return e;
+        }
+
+        /// <summary>A tappable card/cell (party card, bestiary thumb, bar cell): the shared press feel plus a click handler.</summary>
+        public static T Tappable<T>(T e, Action onClick, string sfx = "ui.click") where T : VisualElement
+        {
+            Pressable(e);
+            e.RegisterCallback<ClickEvent>(_ =>
+            {
+                try
+                {
+                    if (sfx != null) GameApp.I?.Audio?.Sfx(sfx);
+                    onClick?.Invoke();
+                }
+                catch (Exception ex) { Debug.LogException(ex); }
+            });
+            return e;
         }
 
         public static void SetEnabled(Button b, bool enabled)
@@ -91,6 +138,7 @@ namespace Gaiden.App
             var v = Text(value ?? "", "menu-value", row);
             v.name = "value";
             row.EnableInClassList("menu-row--disabled", !enabled);
+            Pressable(row);
             row.RegisterCallback<PointerEnterEvent>(_ => Select(row));
             row.RegisterCallback<ClickEvent>(_ =>
             {
@@ -138,7 +186,7 @@ namespace Gaiden.App
                 int idx = i;
                 var t = Text(names[i], "tab" + (i == active ? " tab--active" : ""), bar);
                 t.pickingMode = PickingMode.Position;
-                t.RegisterCallback<ClickEvent>(_ => { GameApp.I?.Audio?.Sfx("ui.click"); onPick(idx); });
+                Tappable(t, () => onPick(idx));
             }
             return bar;
         }
@@ -186,6 +234,44 @@ namespace Gaiden.App
         }
 
         public static string RarityClass(ItemRarity r) => "rarity-" + r;
+
+        public static Color RoleColor(string role)
+        {
+            switch (role)
+            {
+                case "Tank": return new Color(0.95f, 0.36f, 0.3f);
+                case "Healer": return new Color(0.4f, 0.9f, 0.5f);
+                case "Mage": return new Color(0.55f, 0.6f, 1f);
+                case "Striker": return new Color(1f, 0.66f, 0.25f);
+                case "Support": return new Color(0.35f, 0.85f, 0.85f);
+                default: return new Color(0.8f, 0.8f, 0.85f);
+            }
+        }
+
+        /// <summary>What each role brings to the party (§25.13), one line.</summary>
+        public static string RoleBlurb(string role)
+        {
+            switch (role)
+            {
+                case "Tank": return "Taunts enemies onto itself and takes the hits, so casters can finish their spells.";
+                case "Healer": return "Mends and cleanses. Heals grow with WIS.";
+                case "Mage": return "Ranged elemental spells. Damage grows with INT.";
+                case "Striker": return "Pincer damage, Cleave and War Cry. Grows with STR.";
+                case "Support": return "Bends the timeline: Quicken allies, Slow foes, rally the party.";
+                default: return "";
+            }
+        }
+
+        /// <summary>A small coloured pill naming a hero's role.</summary>
+        public static Label RoleBadge(string role, VisualElement parent, float size = 26)
+        {
+            var c = RoleColor(role);
+            var l = Text((role ?? "").ToUpperInvariant(), "role-badge", parent);
+            l.style.fontSize = size;
+            l.style.color = c;
+            l.style.borderTopColor = l.style.borderBottomColor = l.style.borderLeftColor = l.style.borderRightColor = c;
+            return l;
+        }
 
         public static string StatLine(Stats s) =>
             $"STR {s.Strength:0}  VIT {s.Vitality:0}  AGI {s.Agility:0}  SPD {s.Speed:0}\nINT {s.Intelligence:0}  WIS {s.Wisdom:0}  LCK {s.Luck:0}";

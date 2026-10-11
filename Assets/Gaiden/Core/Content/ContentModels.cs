@@ -155,6 +155,8 @@ namespace Gaiden.Core.Content
         public string Trap;
         /// <summary>Snake body segments grown behind this head at spawn (0 = not a snake).</summary>
         public int SnakeSegments;
+        /// <summary>Hero role (§25.13): Tank, Healer, Mage, Striker or Support — what the class is for in a party.</summary>
+        public string Role;
 
         public bool HasTag(string tag) => Tags != null && Tags.Contains(tag);
     }
@@ -224,6 +226,10 @@ namespace Gaiden.Core.Content
         public float TimelineSpeedMultiplier = 1f;
         public float AccuracyMultiplier = 1f;
         public bool BlocksSpells;
+        /// <summary>Taunt (§14.1.1): while any hero carries this, enemies may only pick taunting heroes.</summary>
+        public bool Taunts;
+        /// <summary>Damage the bearer deals is scaled by this (War Cry / Might pickup → Empowered).</summary>
+        public float OutgoingDamageMultiplier = 1f;
         public string OnExpireApply;
         public BuffStacking Stacking = BuffStacking.Refresh;
         /// <summary>Cap for Stack buffs (0 = unlimited). Burning stacks to 3.</summary>
@@ -370,6 +376,29 @@ namespace Gaiden.Core.Content
     public sealed class CampaignDef
     {
         public List<ThemeDef> Themes = new List<ThemeDef>();
+    }
+
+    /// <summary>
+    /// A battle pickup (§13.3.1): a fallen enemy sometimes leaves one on the board; the first hero to step on it
+    /// collects it. It fades after <see cref="BattleConfig.PickupLifetimeActions"/> player actions.
+    /// </summary>
+    public sealed class PickupDef
+    {
+        public string Id;
+        public string Name;
+        public string Description;
+        /// <summary>Relative chance among pickups when one drops.</summary>
+        public int Weight = 1;
+        /// <summary>Heals the collector by this fraction of its max HP.</summary>
+        public float HealFraction;
+        /// <summary>Orbs minted into the bank.</summary>
+        public int Orbs;
+        /// <summary>Timeline hasten for the collector (u).</summary>
+        public float HastenU;
+        /// <summary>Buff applied to the collector.</summary>
+        public string ApplyBuff;
+        public string Color;
+        public string Icon;
     }
 
     public sealed class TrapDef

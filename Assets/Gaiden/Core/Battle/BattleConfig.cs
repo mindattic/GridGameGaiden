@@ -89,6 +89,39 @@ namespace Gaiden.Core.Battle
         /// <summary>A pincer attacker standing on the amplifier strikes this much harder (and mints a bonus orb).</summary>
         public const float AmplifierDamageMultiplier = 1.75f;
 
+        // ── Mana charge (§3.1.9, owner direction 2026-10-11: "mana needs to be a more rare resource … the number of
+        //    participants in the attack increases the multiplier needed to earn a mana bubble") ─────────────────────
+        /// <summary>Charge that makes one orb ("mana bubble").</summary>
+        public const int ManaChargePerOrb = 100;
+        /// <summary>Charge for a pincer that takes away a whole enemy's worth of HP (scaled by the share removed).</summary>
+        public const float PincerChargePerHp = 120f;
+        /// <summary>Each participant beyond the two attackers raises the divisor by this much (2 heroes ×1, 4 heroes ×2).</summary>
+        public const float ChargeParticipantPenalty = 0.5f;
+        /// <summary>Each link deeper in a chain earns this much more (chain ×2 → ×1.25, ×3 → ×1.5).</summary>
+        public const float ChargeChainBonus = 0.25f;
+        /// <summary>Any pincer that lands at least this much (chip damage on a giant still counts for something).</summary>
+        public const int MinPincerCharge = 2;
+        public const int CritCharge = 12;
+        public const int InterruptCharge = 25;
+        public const int AmplifierCharge = 30;
+
+        // ── Role identity (§13.1.5) ─────────────────────────────────────────────────
+        public const float CasterPowerPerPoint = 0.035f;
+        public const float CasterPowerMin = 0.7f;
+        public const float CasterPowerMax = 1.6f;
+
+        // ── Pickups (§13.3.1) ──────────────────────────────────────────────────────
+        /// <summary>Chance a fallen enemy leaves a pickup…</summary>
+        public const float PickupDropChance = 0.2f;
+        /// <summary>…plus this per point of the killer's Luck…</summary>
+        public const float PickupDropChancePerLuck = 0.004f;
+        /// <summary>…capped here.</summary>
+        public const float PickupMaxChance = 0.4f;
+        /// <summary>Player actions a pickup stays on the board before it fades.</summary>
+        public const int PickupLifetimeActions = 4;
+        /// <summary>Never more than this many pickups on the board at once.</summary>
+        public const int MaxPickups = 3;
+
         /// <summary>Knockback into another unit: both take this (+ half the blow).</summary>
         public const int KnockbackCrashDamage = 8;
         /// <summary>Knockback into stone or the board edge: the target takes this (+ the full blow).</summary>

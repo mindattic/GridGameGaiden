@@ -42,7 +42,7 @@ test for every rule. 4. A harness step for anything visible. 5. Glyph check gree
 | US-007 | Pincer geometry: row/col, contiguous, ally-free, ≥1 opponent | §1.2 | ✅ | `Worked_example_1_4_slide_then_pincer`, `Gap_or_ally_in_line_breaks_pincer` |
 | US-008 | Board-wide scan; dropped hero's pair first, then chains, then nearest | §1.2.2 | ✅ | `Chain_pincers_resolve_in_order` |
 | US-009 | Both attackers strike every trapped opponent | §1.2.4 | ✅ | `Both_attackers_strike_every_trapped_opponent` |
-| US-010 | Supporters = allies adjacent to an attacker; join and mint own orb | §1.2.3 | ✅ | `Supporters_join_and_mint_their_own_orb` |
+| US-010 | Supporters = allies adjacent to an attacker; join and mint own orb | §1.2.3 | ✅ | `Supporters_join_but_dilute_the_mana_charge` |
 | US-011 | Supporters strike at 50% damage | §1.2.3 | ✅ | `Supporter_strikes_at_about_half_damage` |
 | US-012 | Only Humanoid 1×1 units are pincer attackers | §1.3 | ✅ | `Beasts_never_form_pincers` |
 | US-013 | Worked example §1.4 end-to-end | §1.4 | ✅ | `Worked_example_1_4_slide_then_pincer` |
@@ -95,12 +95,12 @@ test for every rule. 4. A harness step for anything visible. 5. Glyph check gree
 |---|---|---|---|---|
 | US-070 | One shared 12-orb bank; overflow fades | §3.1.4 | ✅ | `Bank_overflow_fades_extra_orbs` |
 | US-071 | Each pincer attacker mints an orb | §3.1.2 | ✅ | `Worked_example_1_4_slide_then_pincer` (2 pincer orbs) |
-| US-072 | Each supporter mints an orb | §3.1.2 | ✅ | `Supporters_join_and_mint_their_own_orb` |
+| US-072 | Each supporter mints an orb | §3.1.2 | ✅ | `Supporters_join_but_dilute_the_mana_charge` |
 | US-073 | Any orbs pay for any spell (generic mana, amended 2026-10-10) | §3.1.6 | ✅ | `Any_orbs_pay_for_any_spell` |
 | US-074 | Spend removes exactly the cost or nothing | §3.1.5 | ✅ | `Instant_spell_spends_exact_orbs_damages_and_applies_buff`, `Any_orbs_pay_for_any_spell` |
-| US-075 | Hero critical hit mints a bonus orb | §3.1.2 | ✅ | `Hero_crit_mints_a_bonus_orb` |
+| US-075 | Hero critical hit mints a bonus orb | §3.1.2 | ✅ | `Hero_crit_adds_mana_charge` |
 | US-076 | Steal/Mug roll (LCK + ½AGI)/50 → orb | §3.1.2 | ✅ | `Steal_with_high_luck_always_mints_an_orb` |
-| US-077 | Cancelling an enemy charge mints an orb | §13.4 | ✅ | `Stagger_accumulates_and_cancelling_a_charge_mints_an_orb` |
+| US-077 | Cancelling an enemy charge earns mana (an orb before 2026-10-11; now +25 charge, §3.1.9) | §13.4 | ✅ | `Stagger_accumulates_and_cancelling_a_charge_mints_an_orb` |
 | US-078 | Battle-start orbs from Mage Robes (2) / Wizard Robe (3) | §24.8 | ✅ | `Mage_robe_seeds_battle_start_orbs_and_gear_resistance_applies` |
 | US-079 | Time-banked orbs: 1 Blue per 1.25 s left on the drag timer, max 3, at the next enemy turn | §3.1.8 | ✅ | `Drag_timer_remainder_banks_blue_orbs_at_the_enemy_handoff`, `Time_bank_carries_until_the_next_enemy_turn` |
 | US-080 | Mana Potion / Ether / Hi-Ether grant 2 / 3 / 6 orbs | §4.3 | ✅ | `Every_consumable_has_a_working_battle_effect_or_is_camp_only` (asserts an orb mint) |
@@ -325,7 +325,7 @@ test for every rule. 4. A harness step for anything visible. 5. Glyph check gree
 
 | ID | Story | § | Status | Evidence |
 |---|---|---|---|---|
-| US-342 | Power Amplifier (Terra Battle): spawns on a luck-modified random schedule; a pincer attacker aligned with it gets an enhanced attack; enemies cannot use it but can walk through it to shove it away and break amplified combos | §1.2 | ✅ | `Amplifier_chance_grows_with_party_luck_and_caps`, `An_attacker_on_the_amplifier_strikes_harder_mints_a_bonus_orb_and_uses_it_up`, `Enemies_cannot_use_the_amplifier_but_stepping_on_it_shoves_it_back`; `tools/uicheck.py` (marker on its tile) |
+| US-342 | Power Amplifier (Terra Battle): spawns on a luck-modified random schedule; a pincer attacker aligned with it gets an enhanced attack; enemies cannot use it but can walk through it to shove it away and break amplified combos | §1.2 | ✅ | `Amplifier_chance_grows_with_party_luck_and_caps`, `An_attacker_on_the_amplifier_strikes_harder_adds_mana_charge_and_uses_it_up`, `Enemies_cannot_use_the_amplifier_but_stepping_on_it_shoves_it_back`; `tools/uicheck.py` (marker on its tile) |
 | US-343 | Defeated enemies burst into gold coins that fly to the gold counter (top right), as in GridGame2026 | §13 | ✅ | `CoinBurst` (coins burst, bounce, fly to the counter, which counts up); counter = purse + battle coins; screenshot artifacts/vfx |
 | US-344 | Pincer group outline: a line draws itself around the whole Hero–foe…–Hero cluster (no line across the art); short connectors join heroes to their supporters | §6.2 | ✅ | `LineLayer.Outline` + `BoardView.GroupRect/EdgeLink` (preview + resolve); screenshots artifacts/pincer |
 | US-345 | Every enemy family gets its own kit (behaviour, spells, traps — slime trail, poison cloud …) matched to how it looks | §14 | ✅ | 39 families kitted (bible §14.4); `Every_enemy_charge_telegraphs_and_resolves` (incl. Howl/Rally/Mend/Poison Cloud); bot soak on every stage; `tools/uicheck.py` (enemy card describes its kit) |
@@ -334,6 +334,26 @@ test for every rule. 4. A harness step for anything visible. 5. Glyph check gree
 | US-348 | Caravan story: the party travels with a merchant caravan through dangerous lands (why shops are always open between battles); story beats per expedition | §27 | 🟡 | framing built (caravan = the shops between battles; Camp → Caravan; expeditions); story text is lorem ipsum by owner request (2026-10-10) |
 | US-349 | Guest allies met in battle: rescue them and they join the roster; if they die in that fight they are lost forever | §25 | ✅ | `A_guest_who_survives_a_victory_joins_the_roster`, `A_guest_who_falls_is_lost_forever`; 4 stages carry a guest |
 | US-350 | Upgrades and long-run progression (gear tiers, ability ranks, caravan upgrades) with a meaningful power curve | §21 | ✅ | caravan upgrades (bible §25.12) on top of gear tiers/enchants/levels/slot unlocks; `Caravan_upgrades_cost_gold_and_change_how_expeditions_play`; `tools/uicheck.py` (camp menu has Caravan) |
+
+## Gameplay synergy & feel (owner direction, 2026-10-11)
+
+| ID | Story | § | Status | Evidence |
+|---|---|---|---|---|
+| US-351 | Hero roles: Tank / Healer / Mage / Striker / Support with kits that match, so a party needs each other | §25.13 | ✅ | `Every_hero_has_a_role_and_kits_match_it`; role badges (screenshot artifacts/smoke/02-hub.png) |
+| US-352 | A tank can taunt: enemies in reach must go for it, keeping casters' spells from being staggered | §14.1.1 | ✅ | `A_taunting_hero_draws_every_enemy_that_can_choose`, `Taunt_only_overrides_among_heroes_in_reach`; artreview taunt sheet |
+| US-353 | Stats give roles meaning: INT scales spells, STR physical skills, WIS heals | §13.1.5 | ✅ | `Caster_power_makes_a_mage_out_hit_a_fighter_and_a_sage_out_heal` |
+| US-354 | Strikers get Cleave and War Cry (party Empowered) | §25.13 | ✅ | `War_cry_empowers_every_ally_and_their_pincers_hit_harder` |
+| US-355 | Powerups sometimes drop from fallen enemies; walk over them before they fade | §13.3.1 | ✅ | `Fallen_enemies_sometimes_leave_pickups`, `Stepping_on_a_pickup_collects_it_and_heals`, `Pickups_fade_after_their_lifetime` |
+| US-356 | Every press has a standard depress + sound; one look and feel | §11.5 | ✅ | `Ui.Pressable`; `tools/uicheck.py` (every press is voiced) |
+| US-357 | Select → confirm → act for every ability and item (confirm card, Cancel, setting) | §4.4.1 | ✅ | `tools/uicheck.py` (a pick waits for confirmation; Cancel backs out; Confirm acts with a chime) |
+| US-358 | Spells are staged: wind-up, filling charge bar while time moves, cast splash, curved projectile, splash, status effect then its icon, lingering status visuals | §6.2 | ✅ | `tools/artreview.py poison fireball` contact sheets |
+| US-359 | Potions are drunk, bottles are thrown and shatter | §6.2 | ✅ | `tools/artreview.py potion` |
+| US-360 | Reorder the ability bar | §25.6 | ✅ | `The_bar_can_be_reordered_within_unlocked_slots` |
+| US-361 | Mana is scarce and earned by lean, chained pincers (participants divide the charge) | §3.1.9 | ✅ | `More_heroes_in_a_pincer_earn_less_mana_per_hp_taken`, `Charge_rolls_over_into_orbs_and_keeps_the_remainder`, `A_killing_pincer_earns_mana_by_hp_taken_not_per_hero`; BalanceReport |
+| US-362 | Action cut-ins that twist and zoom; supporters pop in as they strike | §9 | ✅ | `tools/artreview.py caster sweep` |
+| US-363 | Art review loop: record frames of any moment and review them | — | ✅ | `tools/artreview.py`, automation `record` |
+| US-364 | Full tutorial with explanations and examples; the first battle has 5 waves of rising difficulty | §9 | ⬜ | next |
+| US-365 | Every enemy unit has its own distinct AI | §14 | ⬜ | next |
 
 ## Tally
 
@@ -351,6 +371,7 @@ test for every rule. 4. A harness step for anything visible. 5. Glyph check gree
 | Audio & VFX (19) | 18 | 0 | 1 |
 | Platform & ship (13) | 12 | 0 | 1 |
 | Production roadmap (owner direction, 2026-10-10) (9) | 8 | 1 | 0 |
-| **Total (243)** | **240** | **1** | **2** |
+| Gameplay synergy & feel (owner direction, 2026-10-11) (15) | 13 | 0 | 2 |
+| **Total (258)** | **253** | **1** | **4** |
 
 Open design questions that gate future stories live in [BIBLE §29](BIBLE.md#29-open-design-questions).

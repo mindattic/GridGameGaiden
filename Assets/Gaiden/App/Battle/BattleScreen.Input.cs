@@ -85,13 +85,14 @@ namespace Gaiden.App
                 var t = board.TileAt(evt.localPosition);
                 var hero = State.UnitById(SelectedHeroId);
                 var a = hero == null ? null : BattleEngine.SlotAbility(State, hero, TargetingSlot);
-                if (hero != null && a != null && TargetResolver.IsValidPick(State, a, hero, t))
-                    Commit(new UseSlotCommand { HeroId = hero.Id, Slot = TargetingSlot, Target = t });
+                bool legal = hero != null && a != null && a.Mode != TargetMode.Auto && TargetResolver.IsValidPick(State, a, hero, t);
+                if (legal && (!ConfirmActions || AutoPlay)) Commit(new UseSlotCommand { HeroId = hero.Id, Slot = TargetingSlot, Target = t });
+                else if (legal && PendingTarget == t) ConfirmPending(); // a second tap on the same pick confirms
+                else if (legal) SetPending(t);
                 else
                 {
-                    App.Audio.Sfx("ui.error");
-                    board.ClearMarks();
-                    foreach (var vt in BattleEngine.ValidTargets(State, SelectedHeroId, TargetingSlot)) board.Mark(vt, new Color(1f, 0.82f, 0.3f), 0.35f);
+                    if (a == null || a.Mode != TargetMode.Auto) App.Audio.Sfx("ui.error");
+                    RedrawTargeting();
                 }
                 return;
             }
@@ -217,7 +218,7 @@ namespace Gaiden.App
         {
             var hero = State.UnitById(SelectedHeroId);
             var a = hero == null ? null : BattleEngine.SlotAbility(State, hero, TargetingSlot);
-            if (a == null) return;
+            if (a == null || a.Mode == TargetMode.Auto) return;
             board.ClearMarks();
             foreach (var vt in BattleEngine.ValidTargets(State, hero.Id, TargetingSlot)) board.Mark(vt, new Color(1f, 0.82f, 0.3f), 0.25f);
             if (!TargetResolver.IsValidPick(State, a, hero, tile)) return;

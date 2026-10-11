@@ -1,130 +1,551 @@
 {
   "palettes": {
-    "fire": ["#ffe27a", "#ff7a1e", "#a8200c"],
-    "ice": ["#f0fcff", "#86d8ff", "#2a6fb8"],
-    "water": ["#c8ecff", "#3b9ae8", "#1d4a9a"],
-    "sun": ["#fff6b8", "#ffb43a", "#c25c10"],
-    "sleep": ["#f3ecff", "#ab9dff", "#5b4bb5"],
-    "poison": ["#e2ffaa", "#72d63c", "#2c7a1c"],
-    "earth": ["#ffeab0", "#cfa552", "#6e5426"],
-    "pink": ["#ffd6ea", "#e464a6", "#8a2a5a"],
-    "gray": ["#f6f6f6", "#a4a4b4", "#4a4a5c"],
-    "green": ["#dcffe4", "#5fd27e", "#24703a"],
-    "heal": ["#e0ffd6", "#52e27e", "#1f8a3e"],
-    "gold": ["#fffab8", "#ffd23a", "#a87808"],
-    "silver": ["#ffffff", "#c8d0e0", "#5a6478"],
-    "steel": ["#f4f8ff", "#a8b8d0", "#465670"],
-    "iron": ["#d8dce4", "#8a909c", "#3c4048"],
-    "rust": ["#f0c49a", "#b0643a", "#5a2a14"],
-    "bronze": ["#ffe0a8", "#d08a3a", "#6e4012"],
-    "wood": ["#f0d8a8", "#a8743c", "#5a3a18"],
-    "leather": ["#e8c8a0", "#9a6a40", "#4a2e18"],
-    "cloth": ["#f4ecdc", "#c4b090", "#6a5a40"],
-    "arcane": ["#f0dcff", "#b06aff", "#5a2aa8"],
-    "shadow": ["#d8c8f0", "#6a4a9a", "#241838"],
-    "holy": ["#fffce0", "#ffe27a", "#c08a1a"],
-    "spark": ["#ffffd0", "#fff04a", "#c8a00a"],
-    "crimson": ["#ffc8c8", "#e0384a", "#6a0e1a"],
-    "jade": ["#d8ffe8", "#3ac88a", "#14603e"],
-    "teal": ["#d0fff8", "#3ad0c0", "#14605a"],
-    "bone": ["#fffaf0", "#ddd2b8", "#7a6e58"],
-    "glove": ["#ffffff", "#e8ecf4", "#9aa2b4"]
+    "fire": [
+      "#ffe27a",
+      "#ff7a1e",
+      "#a8200c"
+    ],
+    "ice": [
+      "#f0fcff",
+      "#86d8ff",
+      "#2a6fb8"
+    ],
+    "water": [
+      "#c8ecff",
+      "#3b9ae8",
+      "#1d4a9a"
+    ],
+    "sun": [
+      "#fff6b8",
+      "#ffb43a",
+      "#c25c10"
+    ],
+    "sleep": [
+      "#f3ecff",
+      "#ab9dff",
+      "#5b4bb5"
+    ],
+    "poison": [
+      "#e2ffaa",
+      "#72d63c",
+      "#2c7a1c"
+    ],
+    "earth": [
+      "#ffeab0",
+      "#cfa552",
+      "#6e5426"
+    ],
+    "pink": [
+      "#ffd6ea",
+      "#e464a6",
+      "#8a2a5a"
+    ],
+    "gray": [
+      "#f6f6f6",
+      "#a4a4b4",
+      "#4a4a5c"
+    ],
+    "green": [
+      "#dcffe4",
+      "#5fd27e",
+      "#24703a"
+    ],
+    "heal": [
+      "#e0ffd6",
+      "#52e27e",
+      "#1f8a3e"
+    ],
+    "gold": [
+      "#fffab8",
+      "#ffd23a",
+      "#a87808"
+    ],
+    "silver": [
+      "#ffffff",
+      "#c8d0e0",
+      "#5a6478"
+    ],
+    "steel": [
+      "#f4f8ff",
+      "#a8b8d0",
+      "#465670"
+    ],
+    "iron": [
+      "#d8dce4",
+      "#8a909c",
+      "#3c4048"
+    ],
+    "rust": [
+      "#f0c49a",
+      "#b0643a",
+      "#5a2a14"
+    ],
+    "bronze": [
+      "#ffe0a8",
+      "#d08a3a",
+      "#6e4012"
+    ],
+    "wood": [
+      "#f0d8a8",
+      "#a8743c",
+      "#5a3a18"
+    ],
+    "leather": [
+      "#e8c8a0",
+      "#9a6a40",
+      "#4a2e18"
+    ],
+    "cloth": [
+      "#f4ecdc",
+      "#c4b090",
+      "#6a5a40"
+    ],
+    "arcane": [
+      "#f0dcff",
+      "#b06aff",
+      "#5a2aa8"
+    ],
+    "shadow": [
+      "#d8c8f0",
+      "#6a4a9a",
+      "#241838"
+    ],
+    "holy": [
+      "#fffce0",
+      "#ffe27a",
+      "#c08a1a"
+    ],
+    "spark": [
+      "#ffffd0",
+      "#fff04a",
+      "#c8a00a"
+    ],
+    "crimson": [
+      "#ffc8c8",
+      "#e0384a",
+      "#6a0e1a"
+    ],
+    "jade": [
+      "#d8ffe8",
+      "#3ac88a",
+      "#14603e"
+    ],
+    "teal": [
+      "#d0fff8",
+      "#3ad0c0",
+      "#14605a"
+    ],
+    "bone": [
+      "#fffaf0",
+      "#ddd2b8",
+      "#7a6e58"
+    ],
+    "glove": [
+      "#ffffff",
+      "#e8ecf4",
+      "#9aa2b4"
+    ]
   },
   "status": {
-    "burning": ["carl-olsen/flame", "fire"],
-    "frozen": ["lorc/snowflake-2", "ice"],
-    "wet": ["lorc/drop", "water"],
-    "warm": ["lorc/sun", "sun"],
-    "sleep": ["delapouite/night-sleep", "sleep"],
-    "poisoned": ["lorc/poison-bottle", "poison"],
-    "slowed": ["lorc/snail", "earth"],
-    "silenced": ["lorc/silence", "pink"],
-    "blinded": ["delapouite/eyelashes", "gray"],
-    "protection": ["lorc/checked-shield", "green"],
-    "regen": ["zeromancer/heart-plus", "heal"],
-    "stunned": ["delapouite/stars-stack", "gold"]
+    "burning": [
+      "carl-olsen/flame",
+      "fire"
+    ],
+    "frozen": [
+      "lorc/snowflake-2",
+      "ice"
+    ],
+    "wet": [
+      "lorc/drop",
+      "water"
+    ],
+    "warm": [
+      "lorc/sun",
+      "sun"
+    ],
+    "sleep": [
+      "delapouite/night-sleep",
+      "sleep"
+    ],
+    "poisoned": [
+      "lorc/poison-bottle",
+      "poison"
+    ],
+    "slowed": [
+      "lorc/snail",
+      "earth"
+    ],
+    "silenced": [
+      "lorc/silence",
+      "pink"
+    ],
+    "blinded": [
+      "delapouite/eyelashes",
+      "gray"
+    ],
+    "protection": [
+      "lorc/checked-shield",
+      "green"
+    ],
+    "regen": [
+      "zeromancer/heart-plus",
+      "heal"
+    ],
+    "stunned": [
+      "delapouite/stars-stack",
+      "gold"
+    ],
+    "taunting": [
+      "lorc/shouting",
+      "crimson"
+    ],
+    "empowered": [
+      "delapouite/biceps",
+      "gold"
+    ]
   },
   "ability": {
-    "fireball": ["lorc/fireball", "fire"],
-    "frost": ["lorc/ice-bolt", "ice"],
-    "bolt": ["lorc/focused-lightning", "spark"],
-    "poison": ["lorc/poison-gas", "poison"],
-    "sleep": ["delapouite/night-sleep", "sleep"],
-    "slow": ["lorc/snail", "earth"],
-    "quicken": ["lorc/sprint", "gold"],
-    "silence": ["lorc/silence", "pink"],
-    "heal": ["delapouite/healing", "heal"],
-    "mass_heal": ["lorc/aura", "heal"],
-    "antidote": ["sbed/vial", "poison"],
-    "scan": ["lorc/magnifying-glass", "silver"],
-    "meteor": ["lorc/meteor-impact", "fire"],
-    "shock_wave": ["lorc/quake-stomp", "earth"],
-    "cross_hit": ["lorc/crossed-swords", "steel"],
-    "steal": ["darkzaitzev/robber-hand", "gold"],
-    "mug": ["lorc/punch", "crimson"],
-    "teleport": ["lorc/teleport", "arcane"],
-    "charge_fireball": ["lorc/fireball", "fire"],
-    "charge_ice": ["lorc/frozen-orb", "ice"],
-    "charge_thunder": ["lorc/thunderball", "spark"],
-    "charge_smite": ["lorc/beams-aura", "holy"],
-    "double_attack": ["lorc/sword-clash", "steel"],
-    "counter_attack": ["lorc/shield-reflect", "silver"],
-    "enrage": ["lorc/screaming", "crimson"],
-    "regen": ["sbed/regeneration", "heal"],
-    "rejuvenate": ["lorc/heart-bottle", "heal"],
-    "charge_howl": ["lorc/wolf-head", "silver"],
-    "charge_rally": ["delapouite/swords-power", "gold"],
-    "charge_mend": ["delapouite/healing", "heal"],
-    "charge_miasma": ["lorc/poison-gas", "poison"],
-    "lifesteal": ["delapouite/vampire-dracula", "crimson"],
-    "tough_hide": ["delapouite/animal-hide", "earth"],
-    "berserk": ["lorc/fist", "crimson"],
-    "regenerate": ["sbed/regeneration", "green"],
-    "shield_bash": ["delapouite/shield-bash", "silver"],
-    "grenade_blast": ["lorc/grenade", "iron"]
+    "fireball": [
+      "lorc/fireball",
+      "fire"
+    ],
+    "frost": [
+      "lorc/ice-bolt",
+      "ice"
+    ],
+    "bolt": [
+      "lorc/focused-lightning",
+      "spark"
+    ],
+    "poison": [
+      "lorc/poison-gas",
+      "poison"
+    ],
+    "sleep": [
+      "delapouite/night-sleep",
+      "sleep"
+    ],
+    "slow": [
+      "lorc/snail",
+      "earth"
+    ],
+    "quicken": [
+      "lorc/sprint",
+      "gold"
+    ],
+    "silence": [
+      "lorc/silence",
+      "pink"
+    ],
+    "heal": [
+      "delapouite/healing",
+      "heal"
+    ],
+    "mass_heal": [
+      "lorc/aura",
+      "heal"
+    ],
+    "antidote": [
+      "sbed/vial",
+      "poison"
+    ],
+    "scan": [
+      "lorc/magnifying-glass",
+      "silver"
+    ],
+    "meteor": [
+      "lorc/meteor-impact",
+      "fire"
+    ],
+    "shock_wave": [
+      "lorc/quake-stomp",
+      "earth"
+    ],
+    "cross_hit": [
+      "lorc/crossed-swords",
+      "steel"
+    ],
+    "steal": [
+      "darkzaitzev/robber-hand",
+      "gold"
+    ],
+    "mug": [
+      "lorc/punch",
+      "crimson"
+    ],
+    "teleport": [
+      "lorc/teleport",
+      "arcane"
+    ],
+    "charge_fireball": [
+      "lorc/fireball",
+      "fire"
+    ],
+    "charge_ice": [
+      "lorc/frozen-orb",
+      "ice"
+    ],
+    "charge_thunder": [
+      "lorc/thunderball",
+      "spark"
+    ],
+    "charge_smite": [
+      "lorc/beams-aura",
+      "holy"
+    ],
+    "double_attack": [
+      "lorc/sword-clash",
+      "steel"
+    ],
+    "counter_attack": [
+      "lorc/shield-reflect",
+      "silver"
+    ],
+    "enrage": [
+      "lorc/screaming",
+      "crimson"
+    ],
+    "regen": [
+      "sbed/regeneration",
+      "heal"
+    ],
+    "rejuvenate": [
+      "lorc/heart-bottle",
+      "heal"
+    ],
+    "charge_howl": [
+      "lorc/wolf-head",
+      "silver"
+    ],
+    "charge_rally": [
+      "delapouite/swords-power",
+      "gold"
+    ],
+    "charge_mend": [
+      "delapouite/healing",
+      "heal"
+    ],
+    "charge_miasma": [
+      "lorc/poison-gas",
+      "poison"
+    ],
+    "lifesteal": [
+      "delapouite/vampire-dracula",
+      "crimson"
+    ],
+    "tough_hide": [
+      "delapouite/animal-hide",
+      "earth"
+    ],
+    "berserk": [
+      "lorc/fist",
+      "crimson"
+    ],
+    "regenerate": [
+      "sbed/regeneration",
+      "green"
+    ],
+    "shield_bash": [
+      "delapouite/shield-bash",
+      "silver"
+    ],
+    "grenade_blast": [
+      "lorc/grenade",
+      "iron"
+    ],
+    "taunt": [
+      "lorc/shouting",
+      "crimson"
+    ],
+    "war_cry": [
+      "lorc/screaming",
+      "gold"
+    ],
+    "cleave": [
+      "lorc/axe-swing",
+      "steel"
+    ]
   },
   "item": {
-    "healing_potion_basic": ["delapouite/health-potion", "crimson"],
-    "hi_potion": ["delapouite/health-potion", "pink"],
-    "x_potion": ["lorc/heart-bottle", "gold"],
-    "mana_potion_basic": ["delapouite/magic-potion", "water"],
-    "ether": ["delapouite/magic-potion", "arcane"],
-    "hi_ether": ["delapouite/magic-potion", "shadow"],
-    "phoenix_down": ["lorc/feather", "fire"],
-    "antidote": ["sbed/vial", "poison"],
-    "eye_drops": ["lorc/droplets", "water"],
-    "remedy": ["lorc/round-bottom-flask", "gold"],
-    "smoke_bomb": ["darkzaitzev/smoke-bomb", "gray"],
-    "tent": ["delapouite/sleeping-bag", "wood"],
-    "cons_sleep_dart": ["delapouite/dart", "sleep"],
-    "holy_water": ["delapouite/holy-water", "holy"],
-    "flame_oil": ["lorc/round-bottom-flask", "fire"],
-    "cons_grenade": ["lorc/grenade", "iron"],
-    "mat_broken_blade": ["lorc/sword-wound", "iron"],
-    "mat_cracked_fang": ["skoll/fangs", "bone"],
-    "mat_tattered_cloth": ["delapouite/rolled-cloth", "gray"],
-    "mat_iron_ore": ["faithtoken/ore", "iron"],
-    "mat_leather": ["delapouite/animal-hide", "leather"],
-    "mat_cloth": ["delapouite/rolled-cloth", "cloth"],
-    "mat_wood_plank": ["delapouite/log", "wood"],
-    "mat_slime_gel": ["delapouite/slime", "poison"],
-    "mat_wolf_pelt": ["delapouite/animal-hide", "gray"],
-    "mat_goblin_ear": ["delapouite/elf-ear", "jade"],
-    "mat_arcane_dust": ["lorc/powder", "arcane"],
-    "mat_undead_bone": ["lorc/crossed-bones", "bone"],
-    "mat_enchanted_feather": ["lorc/feather", "teal"],
-    "mat_troll_hide": ["delapouite/animal-hide", "green"],
-    "mat_naga_scale": ["lorc/crystal-cluster", "teal"],
-    "mat_werewolf_fang": ["skoll/fangs", "crimson"],
-    "mat_demon_shard": ["lorc/crystal-cluster", "crimson"],
-    "mat_ghost_ectoplasm": ["lorc/ghost", "teal"],
-    "mat_dragon_scale": ["lorc/crystal-cluster", "fire"],
-    "mat_essence_flame": ["delapouite/sparkles", "fire"],
-    "mat_essence_frost": ["delapouite/sparkles", "ice"],
-    "mat_essence_spark": ["delapouite/sparkles", "spark"],
-    "mat_essence_shadow": ["delapouite/sparkles", "shadow"]
+    "healing_potion_basic": [
+      "delapouite/health-potion",
+      "crimson"
+    ],
+    "hi_potion": [
+      "delapouite/health-potion",
+      "pink"
+    ],
+    "x_potion": [
+      "lorc/heart-bottle",
+      "gold"
+    ],
+    "mana_potion_basic": [
+      "delapouite/magic-potion",
+      "water"
+    ],
+    "ether": [
+      "delapouite/magic-potion",
+      "arcane"
+    ],
+    "hi_ether": [
+      "delapouite/magic-potion",
+      "shadow"
+    ],
+    "phoenix_down": [
+      "lorc/feather",
+      "fire"
+    ],
+    "antidote": [
+      "sbed/vial",
+      "poison"
+    ],
+    "eye_drops": [
+      "lorc/droplets",
+      "water"
+    ],
+    "remedy": [
+      "lorc/round-bottom-flask",
+      "gold"
+    ],
+    "smoke_bomb": [
+      "darkzaitzev/smoke-bomb",
+      "gray"
+    ],
+    "tent": [
+      "delapouite/sleeping-bag",
+      "wood"
+    ],
+    "cons_sleep_dart": [
+      "delapouite/dart",
+      "sleep"
+    ],
+    "holy_water": [
+      "delapouite/holy-water",
+      "holy"
+    ],
+    "flame_oil": [
+      "lorc/round-bottom-flask",
+      "fire"
+    ],
+    "cons_grenade": [
+      "lorc/grenade",
+      "iron"
+    ],
+    "mat_broken_blade": [
+      "lorc/sword-wound",
+      "iron"
+    ],
+    "mat_cracked_fang": [
+      "skoll/fangs",
+      "bone"
+    ],
+    "mat_tattered_cloth": [
+      "delapouite/rolled-cloth",
+      "gray"
+    ],
+    "mat_iron_ore": [
+      "faithtoken/ore",
+      "iron"
+    ],
+    "mat_leather": [
+      "delapouite/animal-hide",
+      "leather"
+    ],
+    "mat_cloth": [
+      "delapouite/rolled-cloth",
+      "cloth"
+    ],
+    "mat_wood_plank": [
+      "delapouite/log",
+      "wood"
+    ],
+    "mat_slime_gel": [
+      "delapouite/slime",
+      "poison"
+    ],
+    "mat_wolf_pelt": [
+      "delapouite/animal-hide",
+      "gray"
+    ],
+    "mat_goblin_ear": [
+      "delapouite/elf-ear",
+      "jade"
+    ],
+    "mat_arcane_dust": [
+      "lorc/powder",
+      "arcane"
+    ],
+    "mat_undead_bone": [
+      "lorc/crossed-bones",
+      "bone"
+    ],
+    "mat_enchanted_feather": [
+      "lorc/feather",
+      "teal"
+    ],
+    "mat_troll_hide": [
+      "delapouite/animal-hide",
+      "green"
+    ],
+    "mat_naga_scale": [
+      "lorc/crystal-cluster",
+      "teal"
+    ],
+    "mat_werewolf_fang": [
+      "skoll/fangs",
+      "crimson"
+    ],
+    "mat_demon_shard": [
+      "lorc/crystal-cluster",
+      "crimson"
+    ],
+    "mat_ghost_ectoplasm": [
+      "lorc/ghost",
+      "teal"
+    ],
+    "mat_dragon_scale": [
+      "lorc/crystal-cluster",
+      "fire"
+    ],
+    "mat_essence_flame": [
+      "delapouite/sparkles",
+      "fire"
+    ],
+    "mat_essence_frost": [
+      "delapouite/sparkles",
+      "ice"
+    ],
+    "mat_essence_spark": [
+      "delapouite/sparkles",
+      "spark"
+    ],
+    "mat_essence_shadow": [
+      "delapouite/sparkles",
+      "shadow"
+    ]
   },
   "ui": {
-    "cursor": ["lorc/pointing", "glove", "rot:-135", "flop"]
+    "cursor": [
+      "lorc/pointing",
+      "glove",
+      "rot:-135",
+      "flop"
+    ],
+    "pk_potion": [
+      "lorc/heart-bottle",
+      "crimson"
+    ],
+    "pk_mana": [
+      "lorc/crystal-growth",
+      "water"
+    ],
+    "pk_haste": [
+      "lorc/winged-emblem",
+      "silver"
+    ],
+    "pk_might": [
+      "lorc/rune-stone",
+      "gold"
+    ]
   }
 }

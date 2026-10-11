@@ -21,6 +21,9 @@ namespace Gaiden.App
         public readonly VisualElement Glow;
         public readonly CastRing Cast;
         public readonly VisualElement CastChip;
+        /// <summary>The charging bar (owner direction 2026-10-11): fills left to right as a cast rides the timeline.</summary>
+        public readonly VisualElement CastBar;
+        private readonly VisualElement castBarFill;
         public Coord Tile;
         public int W = 1, H = 1;
         public bool Dead;
@@ -109,6 +112,21 @@ namespace Gaiden.App
             CastChip[0].style.unityTextAlign = TextAnchor.MiddleCenter; CastChip[0].style.flexGrow = 1;
             Root.Add(CastChip);
 
+            CastBar = new VisualElement { name = "castbar-" + u.Id, pickingMode = PickingMode.Ignore };
+            CastBar.style.position = Position.Absolute;
+            CastBar.style.left = 18; CastBar.style.right = 18; CastBar.style.bottom = 34; CastBar.style.height = 14;
+            CastBar.style.backgroundColor = new Color(0.03f, 0.04f, 0.12f, 0.9f);
+            CastBar.style.borderTopLeftRadius = CastBar.style.borderTopRightRadius = CastBar.style.borderBottomLeftRadius = CastBar.style.borderBottomRightRadius = 7;
+            CastBar.style.borderTopWidth = CastBar.style.borderBottomWidth = CastBar.style.borderLeftWidth = CastBar.style.borderRightWidth = 2;
+            CastBar.style.borderTopColor = CastBar.style.borderBottomColor = CastBar.style.borderLeftColor = CastBar.style.borderRightColor = new Color(1f, 1f, 1f, 0.7f);
+            CastBar.style.overflow = Overflow.Hidden;
+            CastBar.style.display = DisplayStyle.None;
+            castBarFill = new VisualElement { pickingMode = PickingMode.Ignore };
+            castBarFill.style.position = Position.Absolute;
+            castBarFill.style.left = castBarFill.style.top = castBarFill.style.bottom = 0;
+            CastBar.Add(castBarFill);
+            Root.Add(CastBar);
+
             if (u.IsSnakeSegment)
             {
                 Frame.style.borderTopLeftRadius = Frame.style.borderTopRightRadius = Frame.style.borderBottomLeftRadius = Frame.style.borderBottomRightRadius = tile * 0.4f;
@@ -173,6 +191,15 @@ namespace Gaiden.App
         {
             Cast.style.display = color.HasValue ? DisplayStyle.Flex : DisplayStyle.None;
             if (color.HasValue) Cast.Set(color.Value, left);
+        }
+
+        /// <summary>Caster side: the charging bar, <paramref name="filled"/> = fraction of the cast already charged (null hides it).</summary>
+        public void SetCastBar(Color? color, float filled)
+        {
+            CastBar.style.display = color.HasValue ? DisplayStyle.Flex : DisplayStyle.None;
+            if (!color.HasValue) return;
+            castBarFill.style.width = Length.Percent(Mathf.Clamp01(filled) * 100f);
+            castBarFill.style.backgroundColor = Color.Lerp(color.Value, Color.white, 0.15f + 0.25f * Mathf.Clamp01(filled));
         }
 
         /// <summary>Target side: the incoming spell's icon (or initial) in its colour, top-left of the tile.</summary>
@@ -242,7 +269,8 @@ namespace Gaiden.App
                     // GridGame2026's tile art recoloured per biome (tools/make_tiles.py), tinted light/dark for the checkerboard.
                     bool light = (x + y) % 2 == 0;
                     t.style.backgroundImage = new StyleBackground(App.Art.BoardTile(theme));
-                    t.style.unityBackgroundImageTintColor = light ? new Color(1.0f, 1.0f, 1.0f, 0.8f) : new Color(0.42f, 0.46f, 0.56f, 0.6f);
+                    // Owner direction 2026-10-11: lighter and lower-contrast so the stage background reads clearly through the board.
+                    t.style.unityBackgroundImageTintColor = light ? new Color(1.0f, 1.0f, 1.0f, 0.34f) : new Color(0.78f, 0.82f, 0.9f, 0.24f);
                     TileLayer.Add(t);
                     tiles[x, y] = t;
 
@@ -398,6 +426,70 @@ namespace Gaiden.App
             var m = marks[c.X, c.Y];
             m.style.backgroundColor = color;
             m.style.opacity = alpha;
+        }
+
+        // ── Pickups (§13.3.1): a bobbing, glowing token on its tile; a ring shows how long until it fades ──
+        public readonly Dictionary<int, VisualElement> PickupViews = new Dictionary<int, VisualElement>();
+
+        public VisualElement AddPickup(Pickup p, PickupDef def)
+        {
+            var root = new VisualElement { name = "pickup-" + p.Id, pickingMode = PickingMode.Ignore };
+            root.style.position = Position.Absolute;
+            root.style.width = root.style.height = Tile * 0.56f;
+            var c = App.Art.HexColor(def?.Color, new Color(1f, 0.85f, 0.4f));
+            var glow = new VisualElement { pickingMode = PickingMode.Ignore };
+            glow.style.position = Position.Absolute;
+            glow.style.left = glow.style.top = glow.style.right = glow.style.bottom = -36;
+            glow.style.backgroundImage = new StyleBackground(App.Art.Glow);
+            glow.style.unityBackgroundImageTintColor = new Color(c.r, c.g, c.b, 0.85f);
+            root.Add(glow);
+            var disc = new VisualElement { name = "disc", pickingMode = PickingMode.Ignore };
+            disc.style.position = Position.Absolute;
+            disc.style.left = disc.style.top = disc.style.right = disc.style.bottom = 0;
+            SetRadius(disc, Tile * 0.28f);
+            disc.style.backgroundColor = new Color(0.05f, 0.06f, 0.14f, 0.92f);
+            disc.style.borderTopWidth = disc.style.borderBottomWidth = disc.style.borderLeftWidth = disc.style.borderRightWidth = 5;
+            disc.style.borderTopColor = disc.style.borderBottomColor = disc.style.borderLeftColor = disc.style.borderRightColor = c;
+            var icon = new VisualElement { pickingMode = PickingMode.Ignore };
+            icon.style.position = Position.Absolute;
+            icon.style.left = icon.style.top = icon.style.right = icon.style.bottom = 8;
+            var tex = App.Art.UiIcon(def?.Icon);
+            if (tex != null) { icon.style.backgroundImage = new StyleBackground(tex); icon.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Contain); }
+            disc.Add(icon);
+            root.Add(disc);
+            var ring = new RingTimer(Mathf.Clamp01(p.ActionsLeft / (float)BattleConfig.PickupLifetimeActions)) { name = "life", pickingMode = PickingMode.Ignore };
+            root.Add(ring);
+            var centre = CenterOf(p.At);
+            root.style.left = centre.x - Tile * 0.28f;
+            root.style.top = centre.y - Tile * 0.28f;
+            float phase = (p.Id * 1.7f) % 6.28f;
+            root.schedule.Execute(() =>
+            {
+                float t = Time.unscaledTime * 3f + phase;
+                disc.style.translate = new Translate(0, -8f * Mathf.Abs(Mathf.Sin(t)));
+                glow.style.opacity = 0.65f + 0.35f * Mathf.Sin(t * 1.3f);
+            }).Every(33);
+            MarkLayer.Add(root);
+            PickupViews[p.Id] = root;
+            return root;
+        }
+
+        /// <summary>Snap pickup tokens to the state: add missing ones, drop collected/faded ones, refresh fade rings.</summary>
+        public void SyncPickups(BattleState s)
+        {
+            var live = new HashSet<int>();
+            foreach (var p in s.Pickups)
+            {
+                live.Add(p.Id);
+                s.Content.Pickups.TryGetValue(p.PickupId, out var def);
+                if (!PickupViews.TryGetValue(p.Id, out var v)) v = AddPickup(p, def);
+                var old = v.Q("life");
+                old?.RemoveFromHierarchy();
+                v.Add(new RingTimer(Mathf.Clamp01(p.ActionsLeft / (float)BattleConfig.PickupLifetimeActions)) { name = "life", pickingMode = PickingMode.Ignore });
+                v.style.opacity = p.ActionsLeft <= 1 ? 0.6f : 1f;
+            }
+            foreach (var id in new List<int>(PickupViews.Keys))
+                if (!live.Contains(id)) { PickupViews[id].RemoveFromHierarchy(); PickupViews.Remove(id); }
         }
 
         public void SyncTraps(BattleState s)

@@ -18,13 +18,13 @@ namespace Gaiden.Core.Battle
             if (hero.IsImmobile) { Emit(new AbilityRefusedEvent { CasterId = hero.Id, Reason = "Can't move" }); return false; }
 
             var before = SnapshotPositions();
-            int trapsBefore = S.Traps.Count;
+            int trapsBefore = S.Traps.Count, pickupsBefore = S.Pickups.Count;
             int hpBefore = hero.Hp;
             Emit(new ActionBeganEvent { ActorId = hero.Id, Label = "Move" });
             var taken = new List<Coord>();
             WalkPath(hero, m.Path, taken);
             bool nothingHappened = taken.Count == 0
-                || (hero.Alive && hero.Hp == hpBefore && S.Traps.Count == trapsBefore && SamePositions(before));
+                || (hero.Alive && hero.Hp == hpBefore && S.Traps.Count == trapsBefore && S.Pickups.Count == pickupsBefore && SamePositions(before));
             if (nothingHappened)
             {
                 // A drag that changes nothing is a cancel, not a turn (no clock cost).
@@ -113,6 +113,8 @@ namespace Gaiden.Core.Battle
         private void TriggerTrap(Unit u)
         {
             if (!u.Alive || u.Team != Team.Hero) return;
+            CollectPickup(u);
+            if (!u.Alive) return;
             var trap = S.TrapAt(u.Pos);
             if (trap == null) return;
             S.Traps.Remove(trap);
@@ -171,6 +173,9 @@ namespace Gaiden.Core.Battle
                 S.Amplifier = null;
             }
 
+            var hpBefore = new Dictionary<Unit, int>();
+            foreach (var o in p.Opponents) hpBefore[o] = o.Hp;
+
             foreach (var attacker in new[] { p.A, p.B })
             {
                 if (!attacker.Alive) continue;
@@ -194,9 +199,17 @@ namespace Gaiden.Core.Battle
 
             if (team == Team.Hero)
             {
-                foreach (var attacker in new[] { p.A, p.B }) if (attacker.Alive) MintOrb(attacker.Id, "pincer");
-                if (amplified != null && amplified.Alive) MintOrb(amplified.Id, "amplifier");
-                foreach (var sup in supporters) if (sup.Alive) MintOrb(sup.Id, "support");
+                // Mana charge (§3.1.9): the share of enemy HP this pincer took, divided by how many heroes it took to do
+                // it, multiplied up the deeper it sits in a chain. Lean, chained pincers farm mana; dog-piles don't.
+                float share = 0f;
+                foreach (var o in p.Opponents)
+                    if (o.MaxHp > 0) share += Math.Min(1f, Math.Max(0, hpBefore[o] - o.Hp) / (float)o.MaxHp);
+                int participants = 2 + supporters.Count;
+                float divisor = 1f + BattleConfig.ChargeParticipantPenalty * Math.Max(0, participants - 2);
+                float chainMult = 1f + BattleConfig.ChargeChainBonus * chainIndex;
+                if (share > 0f)
+                    AddCharge(Math.Max(BattleConfig.MinPincerCharge, (int)Math.Round(BattleConfig.PincerChargePerHp * share * chainMult / divisor)), p.A.Id, "pincer", participants, chainIndex + 1);
+                if (amplified != null && amplified.Alive) AddCharge(BattleConfig.AmplifierCharge, amplified.Id, "amplifier");
             }
         }
 
@@ -223,10 +236,10 @@ namespace Gaiden.Core.Battle
         private void Strike(Unit attacker, Unit target, float mult, bool support)
         {
             Emit(new AttackEvent { AttackerId = attacker.Id, TargetId = target.Id, IsSupport = support });
-            var roll = Formulas.Physical(attacker, target, S.Rng, mult * KitDamageMultiplier(attacker));
+            var roll = Formulas.Physical(attacker, target, S.Rng, mult * KitDamageMultiplier(attacker) * attacker.OutgoingDamageMultiplier);
             int before = target.Hp;
             Damage(target, roll.Damage, attacker, roll.Hit, DamageType.Physical);
-            if (roll.Hit == HitKind.Critical && attacker.IsHero) MintOrb(attacker.Id, "critical");
+            if (roll.Hit == HitKind.Critical && attacker.IsHero) AddCharge(BattleConfig.CritCharge, attacker.Id, "critical");
             if (roll.Hit != HitKind.Miss) { AfterLandedHit(attacker, target, before - target.Hp); MaybeCounter(target, attacker); }
         }
 
@@ -391,7 +404,7 @@ namespace Gaiden.Core.Battle
                 Announce("Interrupted!", caster.Id);
                 if (cast.CasterTeam == Team.Enemy)
                 {
-                    MintOrb(caster.Id, "interrupt");
+                    AddCharge(BattleConfig.InterruptCharge, caster.Id, "interrupt");
                 }
             }
         }

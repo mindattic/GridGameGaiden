@@ -98,6 +98,7 @@ namespace Gaiden.Core.Battle
         /// <summary>Control returns to the player: hero turn-unit buffs and skill cooldowns tick (§8.3, §4.1.1).</summary>
         private void ReturnControl()
         {
+            AgePickups();
             MaybeSpawnAmplifier();
             foreach (var h in S.LivingList(Team.Hero))
             {
@@ -160,6 +161,17 @@ namespace Gaiden.Core.Battle
         // ─────────────────────────────────────────────────────────────────────────────
         // Mana
         // ─────────────────────────────────────────────────────────────────────────────
+
+        /// <summary>Fill the mana meter; every full ManaChargePerOrb becomes an orb (§3.1.9).</summary>
+        private void AddCharge(int amount, int sourceId, string reason, int participants = 0, int chain = 0)
+        {
+            if (amount <= 0) return;
+            S.ManaCharge += amount;
+            int orbs = 0;
+            while (S.ManaCharge >= BattleConfig.ManaChargePerOrb) { S.ManaCharge -= BattleConfig.ManaChargePerOrb; orbs++; }
+            Emit(new ManaChargedEvent { SourceId = sourceId, Amount = amount, Total = S.ManaCharge, Reason = reason, Participants = participants, Chain = chain });
+            for (int i = 0; i < orbs; i++) MintOrb(sourceId, reason);
+        }
 
         private void MintOrb(int sourceId, string reason)
         {
@@ -240,6 +252,68 @@ namespace Gaiden.Core.Battle
             if (u.IsGuest) Announce($"{u.Name} has fallen — lost forever", u.Id);
             if (u.Team == Team.Enemy && !u.NoLoot) AwardLoot(u);
             if (u.Team == Team.Enemy) LeaveRemains(u, at);
+            if (u.Team == Team.Enemy && !u.NoLoot && !u.IsRemains && !u.IsSnakeSegment) MaybeDropPickup(u, at, killer);
+        }
+
+        // ─────────────────────────────────────────────────────────────────────────────
+        // Pickups (§13.3.1)
+        // ─────────────────────────────────────────────────────────────────────────────
+
+        /// <summary>A fallen enemy sometimes leaves a pickup on its tile (or the nearest free one beside it).</summary>
+        private void MaybeDropPickup(Unit fallen, Coord at, Unit killer)
+        {
+            if (C.Pickups.Count == 0 || S.Pickups.Count >= BattleConfig.MaxPickups || S.IsOver) return;
+            float luck = killer != null && killer.IsHero ? killer.Effective.Luck : 0f;
+            float chance = Math.Min(BattleConfig.PickupMaxChance, BattleConfig.PickupDropChance + luck * BattleConfig.PickupDropChancePerLuck);
+            if (!S.Rng.Chance(chance)) return;
+            Coord? spot = null;
+            if (PickupSpotFree(at)) spot = at;
+            else foreach (var d in Coord.Cardinals) if (spot == null && PickupSpotFree(at + d)) spot = at + d;
+            if (spot == null) return;
+            int total = 0;
+            foreach (var pk in C.Pickups.Values) total += pk.Weight;
+            int roll = S.Rng.Range(0, total);
+            PickupDef def = null;
+            foreach (var pk in C.Pickups.Values) { if (roll < pk.Weight) { def = pk; break; } roll -= pk.Weight; }
+            if (def == null) return;
+            var p = new Pickup { Id = S.NextPickupId++, PickupId = def.Id, At = spot.Value, ActionsLeft = BattleConfig.PickupLifetimeActions };
+            S.Pickups.Add(p);
+            Emit(new PickupDroppedEvent { PickupEntryId = p.Id, PickupId = def.Id, At = p.At, FromUnitId = fallen.Id });
+        }
+
+        private bool PickupSpotFree(Coord c) =>
+            S.Walkable(c) && S.UnitAt(c) == null && S.MovableAt(c) == null && S.TrapAt(c) == null && S.PickupAt(c) == null;
+
+        /// <summary>A hero entered a tile: collect what lies there.</summary>
+        private void CollectPickup(Unit hero)
+        {
+            if (!hero.Alive || !hero.IsHero) return;
+            foreach (var t in new List<Coord>(hero.Tiles()))
+            {
+                var p = S.PickupAt(t);
+                if (p == null) continue;
+                S.Pickups.Remove(p);
+                var def = C.Pickups.TryGetValue(p.PickupId, out var d) ? d : null;
+                Emit(new PickupCollectedEvent { PickupEntryId = p.Id, PickupId = p.PickupId, At = p.At, UnitId = hero.Id });
+                if (def == null) continue;
+                if (def.HealFraction > 0f) Heal(hero, Math.Max(1, (int)Math.Round(hero.MaxHp * def.HealFraction)), hero);
+                for (int i = 0; i < def.Orbs; i++) MintOrb(hero.Id, "pickup");
+                if (def.HastenU > 0f) Hasten(hero, def.HastenU);
+                var buff = C.TryBuff(def.ApplyBuff);
+                if (buff != null) ApplyBuff(hero, buff, buff.Duration);
+            }
+        }
+
+        /// <summary>Each control return, pickups age one action; the stale ones fade.</summary>
+        private void AgePickups()
+        {
+            for (int i = S.Pickups.Count - 1; i >= 0; i--)
+            {
+                var p = S.Pickups[i];
+                if (--p.ActionsLeft > 0) continue;
+                S.Pickups.RemoveAt(i);
+                Emit(new PickupExpiredEvent { PickupEntryId = p.Id, PickupId = p.PickupId, At = p.At });
+            }
         }
 
         /// <summary>Undead leave a solid grave marker on their tile (§14.5); destroy it or they rise again.</summary>

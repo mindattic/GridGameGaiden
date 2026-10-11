@@ -393,7 +393,7 @@ Owner: "Add in the Power Amplifier from the original Terra Battle … if you ali
 - **Use:** a hero **pincer attacker cardinally adjacent to it** (aligned, §1.1.2) when its pincer resolves strikes at **×1.75** and mints a bonus orb ("amplifier"); the amplifier is used up (`AmplifierUsedEvent`). Supporters don't trigger it.
 - **Enemies:** never use it. An enemy stepping into it **pushes it to the tile the enemy just left** (a 2×2 drags it along its lane; `AmplifierMovedEvent`). Clever personalities (Weakest, Threat) seek it out to break an amplified setup (+4 step score).
 - **View:** a pulsing gold diamond on its tile; pops in, slides when shoved, flashes a ring and "AMPLIFIED!" when used.
-- *(Tests: `Amplifier_chance_grows_with_party_luck_and_caps`, `An_attacker_on_the_amplifier_strikes_harder_mints_a_bonus_orb_and_uses_it_up`, `Enemies_cannot_use_the_amplifier_but_stepping_on_it_shoves_it_back`.)*
+- *(Tests: `Amplifier_chance_grows_with_party_luck_and_caps`, `An_attacker_on_the_amplifier_strikes_harder_adds_mana_charge_and_uses_it_up`, `Enemies_cannot_use_the_amplifier_but_stepping_on_it_shoves_it_back`.)*
 
 ### 1.3 Humanoid restriction
 
@@ -560,11 +560,9 @@ A spell's cost is a whole number of orbs (`AbilityDef.Cost`, an int in `abilitie
 
 #### 3.1.2 Harvesting
 
-Orbs mint through `BattleRunner.MintOrb` (event `OrbMintedEvent`, reason string), one orb each:
-- **Pincer** (`pincer`): each living hero attacker mints 1; each living supporter mints 1 (`support`).
-- **Critical hit** (`critical`): a hero's critical strike (physical attacker/supporter, or a spell crit) mints 1 bonus orb.
+**Amended 2026-10-11 (owner: "mana needs to be a more rare resource … the number of participants in the attack increases the multiplier needed to earn a mana bubble"):** pincers, crits, interrupts and the amplifier no longer mint whole orbs — they fill the **mana charge** meter ([§3.1.9](#319-mana-charge)). Orbs still mint whole through `BattleRunner.MintOrb` (event `OrbMintedEvent`, reason string) from:
+- **Mana charge** rolling over 100 (reason = what filled it: `pincer`, `critical`, `interrupt`, `amplifier`).
 - **Steal / Mug** (`steal`): per target, chance `clamp01((LCK + 0.5 × AGI) / 50)` → 1 orb.
-- **Cancelling an enemy charge** (`interrupt`): 1 orb.
 - **Battle-start gear** (`battle start`): `ItemDef.BattleStartManaOrbs` summed over the party's equipped items before wave 1 (Mage Robes 2, Wizard Robe 3).
 - **Time bank** (`time bank`): see [§3.1.8](#318-time-banked-orbs).
 - **Mana items** (`item`): Mana Potion 2, Ether 3, Hi-Ether 6.
@@ -591,14 +589,14 @@ The view flies each orb from its source to its slot in a 0.22 s arc (overflowing
 
 #### 3.1.7 At-a-glance mint cadence
 
-| Event | Orbs |
+| Event | Mana |
 |---|---|
-| 2-hero pincer, no supporters | 2 |
-| Pincer with 2 supporters | 4 |
-| A hero in two chained links | 1 per link |
-| Critical hit (physical or spell) | +1 |
-| Steal/Mug, 3 adjacent enemies, 2 rolls succeed | 2 |
-| Cancel an enemy charge | 1 |
+| 2-hero pincer that takes half a foe's HP | 60 charge (×1) |
+| The same damage with 2 supporters joining | 30 charge (÷2) |
+| Third link of a chain, same damage | 90 charge (×1.5) |
+| Critical hit (physical or spell) | +12 charge |
+| Steal/Mug, 3 adjacent enemies, 2 rolls succeed | 2 orbs |
+| Cancel an enemy charge | +25 charge |
 | Battle start, one Mage Robes equipped | 2 |
 | Drop with ≥ 3.75 s left on the drag timer, then an enemy turn | 3 (cap) |
 
@@ -608,6 +606,16 @@ The view flies each orb from its source to its slot in a 0.22 s arc (overflowing
 - A committed move stores `PendingTimeBankSeconds = clamp(TimeLeftSeconds, 0, 4)` (0 when the timer is off).
 - At the start of the **first enemy turn** during that action's clock advance (`MintTimeBank` in `RunEnemyTurn`), it converts to **1 orb per `SecondsPerTimeBankOrb` = 1.25 s**, max `MaxTimeBankOrbs` = **3**, with a "Banked N mana" announcement.
 - It is cleared at control return and by Shield. Consequence (current truth, tuning watch): a quick drop that is **not** followed by an enemy turn within the same action banks nothing.
+
+#### 3.1.9 Mana charge
+
+Added 2026-10-11 (owner direction). `BattleState.ManaCharge` (0–99) is the forming bubble; the HUD draws it filling the next empty orb from the centre. `AddCharge` emits `ManaChargedEvent` and every full `ManaChargePerOrb` = **100** becomes an orb.
+
+- **Pincer:** `charge = PincerChargePerHp (120) × share × (1 + 0.25 × chainIndex) ÷ (1 + 0.5 × (participants − 2))`, minimum 2 when it lands. `share` = Σ over the trapped foes of `min(1, HP removed by this pincer ÷ MaxHP)`; `participants` = the two attackers + every supporter. So a lean two-hero pincer earns at full rate, a four-hero dog-pile at half, and chaining is the way to farm.
+- **Critical** +12, **interrupt** +25, **amplifier** +30. Kills alone earn nothing.
+- The billboard shows the arithmetic ("Mana +34 · 3 heroes ÷1.5 · chain ×1.25").
+
+*(Tests: `More_heroes_in_a_pincer_earn_less_mana_per_hp_taken`, `Charge_rolls_over_into_orbs_and_keeps_the_remainder`, `A_killing_pincer_earns_mana_by_hp_taken_not_per_hero`, `Supporters_join_but_dilute_the_mana_charge`.)*
 
 ### 3.2 HP and stats
 
@@ -700,6 +708,14 @@ All three go through `UseSlotCommand` → `BattleRunner.DoUseSlot`, which re-che
 - **Item** — spend a charge → resolve its ability immediately.
 - **Skill** — start its cooldown → resolve immediately.
 - **Spell** — `Bank.Spend(cost)` → if `CastTime > 0` queue a cast icon (target unit remembered for PickActor, tile for PickTile), else resolve immediately. Every accepted use is an action (20 ticks).
+
+#### 4.4.1 Select → confirm → act
+
+Added 2026-10-11 (owner: "confirmation screens when deciding to cast a spell"). With Settings → **Confirm before acting** on (default):
+- A pick ability: tap the slot → legal anchors glow gold → tap a tile → the pick **locks**: its area and every unit it would touch glow (red harmful / green helpful / blue teleport), the banner asks "Poison on Wolf? Confirm below", and the actor panel becomes the **confirm card** (icon, name, cost pips, timing, "On Wolf", **Cast/Use/Go** and **Cancel**). Tapping another legal tile re-aims; tapping the same tile again confirms.
+- An Auto ability (Taunt, War Cry, Mass Heal …) goes straight to the confirm card.
+- Nothing is spent until Confirm (`BattleScreen.ConfirmPending`, chime `ui.confirm`); Cancel / slot re-tap / Back play `ui.cancel`.
+- Autoplay and the setting turned off commit on the pick, as before.
 
 ### 4.5 Slot visual states
 
@@ -821,7 +837,20 @@ Invariant: while the event player is busy (`BattleScreen.Busy`) no command can b
 
 ### 6.2 VFX pipeline
 
-⬜ Not yet built. **Amended 2026-10-09:** there are no particle prefabs, no `VisualEffectLibrary` and no Addressables. Feedback today is code-drawn in UI Toolkit: tile marks colored by damage type, the projectile dot, floating text, shakes, pops, glows and a full-screen flash for Clutch. The `CastVfx / ProjectileVfx / ImpactVfx / LingerVfx` keys remain in `abilities.json` for a future pass.
+**Amended 2026-10-11 — staging (owner: "there is a rhythm and tempo to gameplay that does require pauses and transitions … if I clicked poison and an icon just appeared on an enemy it would feel meaningless"):** every action plays as readable beats (`BattleScreen.Fx.cs`, `BattleScreen.CutIns.cs`):
+1. **Wind-up:** motes spiral into the caster in the spell's element colour (`CastColor`: fire orange, poison green, heals green, status spells their status colour).
+2. **Charging:** a channel halo pulses on the caster and motes orbit it; a **charging bar** fills on its tile (plus the existing ring) while the timeline glides. Hero casts queue and land inside one action, so playback tracks them as *cast ghosts* from `CastQueuedEvent` to the resolve.
+3. **Cast splash:** the caster's action cut-in ([§9](#9-the-hud)) — a sequential beat, never covering the flight.
+4. **Projectile:** a glowing orb with a white-hot core and a comet tail of embers on a curve.
+5. **Impact:** a splash ring at every target (status-only spells included); area spells wash over their tiles as a soft bloom wave from the anchor.
+6. **Status lands, then its icon:** each status has its own take-hold effect (bubbling poison, converging frost, falling droplets, rising Z's, slow spiral, blinding smoke, red taunt shockwave with threat lines, rising embers …); only after it does the pip pop in and the status-coloured text float.
+7. **Linger:** while a status lasts the unit keeps showing it (poison bubbles, embers, frost glitter and blue tint, drips, snores, buff sparks); damage-over-time ticks play the element (poison bubbles), not generic sparks.
+- **Items:** the user produces the bottle (rises out of the frame); a potion for self is uncorked, tipped and drunk (`glug`); for someone else, or a damage item, it spins on an arc and shatters (`glass`) into a splash.
+- **Skills:** melee skills (Cleave, Shield Bash) lunge with a slash arc; self/party skills (Taunt, War Cry) rear up with a shockwave.
+- The billboard steps to the foot of the board when the action is in the top two rows.
+- Reduce Motion keeps the beats but drops particles, shakes and camera moves.
+
+Earlier note (2026-10-09, superseded): **Amended 2026-10-09:** there are no particle prefabs, no `VisualEffectLibrary` and no Addressables. Feedback today is code-drawn in UI Toolkit: tile marks colored by damage type, the projectile dot, floating text, shakes, pops, glows and a full-screen flash for Clutch. The `CastVfx / ProjectileVfx / ImpactVfx / LingerVfx` keys remain in `abilities.json` for a future pass.
 
 ### 6.3 Edge cases the dispatcher handles
 
@@ -995,6 +1024,7 @@ Source (spell, item, charge, trap, expire chain, Shield) → `ApplyBuff` (refres
   - **Billboard:** an FF VI–style blue window at the top of the board names everything as it happens — "Paladin & Barbarian — Pincer", "Chain ×2", "Support: Cleric", "Power Amplifier ×1.75", each spell/skill/item with its pixel icon ("Fireball → Slime"), enemy charges ("Witch: Poison Cloud on Paladin"). Up to 3 lines; each fades after 1.6 s (÷ battle speed).
   - **Damage tally:** inside a pincer, every hit on a target adds a term to a tally above it ("10 + 5", crits as "8!", "×AMP" when amplified); when the pincer ends (its orbs mint, the next link starts, or time advances) each tally collapses and **bursts into the total** at 120 px with a screen shake. Single hits keep their normal floating number.
   - **Cut-in modes:** the full sweep on the first link (supporters' portraits slide up in a row from the bottom edge alongside it); chained links get **pop-up portrait cards** beside each attacker (bounce in, drop away); a **spell** slides its caster's portrait in from its side (heroes left, enemies right). All honour Settings → Pincer close-ups and Reduce motion.
+- **Action cut-ins (amended 2026-10-11, owner: "portrait slides … should be action packed just like the board that twists and zooms, and have supporters pop in and out to show their participation bonus"):** every portrait arrives on a feathered team-colour band (bright core, racing light streaks) as a head-and-shoulders bust in a tilted white window, twisting in from an oversized tilt with a flash and an impact shake, then whipping out; the board camera punches toward the action and settles. Spells dim the stage behind the caster's cut-in and print the spell name; chained links pop both attackers with "CHAIN ×n"; each **supporter pops in at the moment it strikes** tagged "SUPPORT" and pops back out. The first-link sweep opens on a white flash with a harder push-in and twist.
 - **Pincer close-up cut-in** (ported from GridGame2026's portrait slide-in, US-145/US-333): on the first pincer of an action, both attackers' portraits sweep past in lanes flanking the attacked line on the old slide curve (fast in → slight overshoot → drift back → fast out, ~1.14 s at ×1), in one of four entry patterns (counter sweep, mirrored, same-side chase, staggered one-two), with Perlin hand-held sway and a slow push-in. The world dims and the board "camera" pushes in 8.5 % on the pincer with its own sway, then settles back over 0.3 s. Chained links keep the quick beat. Off with Settings → "Pincer close-ups" or Reduce motion (`BattleScreen.PincerCutIn`).
 - **Floating text** over units: damage (crit bigger + shake), heals, "Steam!", "Stagger!", "Steady!", "Interrupted!", "CLUTCH!", "SHATTER!", "Snare!", "Trap!", "Zzz…", "Revived!".
 - **Actor panel**: enemy HP and stats show only if the class has been Scanned (this battle or ever); while targeting it shows the ability card ([§4.5](#45-slot-visual-states)).
@@ -1043,6 +1073,8 @@ Title ──▶ SaveSlot (New / Load) ──▶ Camp (HubScreen) ◀────
 `GaidenBuild.EnsureScene` writes `EditorBuildSettings.scenes = [Main.unity]`, portrait orientation, no splash, `bundleVersion` from `VERSION`. New screens need no build-settings change.
 
 ### 11.5 The visual language
+
+**Amended 2026-10-11 — one press feel (owner: "all button presses need feedback like depress … a standardized look and feel"):** every tappable thing goes through `Ui.Pressable` (buttons, menu rows, tabs, cards, bar cells, battle slots). On touch it sinks — buttons stand on a darker lip (thick bottom border) and drop onto it, everything shrinks to 95 % and darkens — with a soft `ui.press` tick; on release it springs back (`ease-out-back`), then the action plays its own cue (`ui.click` / `ui.select` / `ui.confirm` / `ui.cancel`). Disabled things don't sink. Battle tiles are lighter and lower-contrast so the stage background reads through the board.
 
 One Final Fantasy–style language (`Resources/UI/Theme.uss`): deep blue gradient windows (`Art.Window`, generated) with white rounded frames, pointing-cursor menu rows (`Ui.MenuRow`, selected row highlighted), gold numbers, rarity-colored item names, gauges, tabs, primary/danger buttons, toasts on the overlay. **Amended 2026-10-10 (owner):** battle units wear the same frame as menu portraits (`.thumb` → `.unit-frame`: white 4 px rounded border over the window gradient); team reads from a thin inner keyline (hero blue, foe red, boss purple `.unit-keyline--*`). Fonts (`App/Services/Fonts.cs`): **Outfit** body, **Cinzel** display (titles), both with Noto Sans → Noto Sans Symbols 2 fallbacks ([GG-LAW-11](#GG-LAW-11)). **Amended 2026-10-09:** replaces HubTheme / UiFonts / UiKit (Attic + Outfit).
 
@@ -1126,6 +1158,10 @@ dmg   = max(1, floor(dmg × incoming multiplier))     (immune if physical resist
 
 `Formulas.Magic`: same mitigation shape with INT vs WIS, element resistance, variance, the shared hit/crit roll and level scaling; plus the charge's flat `SpellDamage` (0 in content). Can miss.
 
+#### 13.1.5 Caster power (role identity)
+
+Added 2026-10-11. A hero's spell damage scales with **INT** (physical skills with **STR**), heals with **WIS**: `1 + (stat − 12) × 0.035`, clamped 0.7–1.6 (`Formulas.CasterPower / HealPower`). A Red Mage (INT 20) hits ×1.28, a Fighter's Fireball ×0.9. Items and enemy abilities keep their tuned numbers. **Empowered** (War Cry, Might Rune) multiplies all damage the bearer deals by 1.3. *(Test: `Caster_power_makes_a_mage_out_hit_a_fighter_and_a_sage_out_heal`.)*
+
 ### 13.2 HP delta
 
 `BattleRunner.Damage` clamps HP at 0, emits `DamagedEvent` (amount, hit kind, type, HP after, note), credits hero threat (`Unit.DamageDealt`), kills at 0, then applies pushback and cast stagger.
@@ -1139,6 +1175,19 @@ At 0 HP (`Kill`): off board, buffs cleared, every timeline entry it owns removed
 - **Kills** count by class (bounties, bestiary); snake segments don't count.
 
 The view floats "+N G" and item names from the corpse. Totals accumulate in `BattleResults` and are committed by `BattleFactory.Commit` ([§22.1](#221-per-transition-state-contract)).
+
+#### 13.3.1 Pickups
+
+Added 2026-10-11 (owner: "powerups should sometimes drop"). A fallen enemy leaves a pickup with chance `0.20 + 0.004 × killer LCK` (max 0.40), on its tile or a free one beside it, never more than 3 on the board (`pickups.json`, weighted):
+
+| Pickup | Effect |
+|---|---|
+| Heart Tonic | heals the collector 25 % of max HP |
+| Mana Shard | 1 orb |
+| Quicksilver | hastens the collector 0.3 |
+| Might Rune | Empowered (×1.3 damage) for 2 turns |
+
+The first hero to enter the tile collects it (walking, being displaced, or teleporting). A pickup fades after **4** player actions (a ring on the token counts down). It pops out of the fallen enemy with a bounce; collecting flies it to the hero. *(Tests: `Stepping_on_a_pickup_collects_it_and_heals`, `A_round_trip_drag_that_only_grabs_a_pickup_still_counts_as_a_move`, `Pickups_fade_after_their_lifetime`, `Fallen_enemies_sometimes_leave_pickups`.)*
 
 ### 13.4 The interrupt path
 
@@ -1221,6 +1270,10 @@ The −100 sandwich avoidance (two heroes directly on opposite sides) outweighs 
 | Wounded retreat | below `RetreatHpThreshold` 0.30 | flees; flank-avoid still applies |
 
 Constants live in `EnemyPlanner` and `BattleConfig.RetreatHpThreshold`.
+
+#### 14.1.1 Taunt
+
+Added 2026-10-11 (owner: "a tank should be able to taunt enemies"). While any hero carries a buff with `Taunts` (Taunting, 2 turns, −25 % damage taken), `EnemyPlanner.PickFrom` only considers taunting heroes among those in reach — so walking, charging and ranged foes all go for the tank, and a taunter out of reach doesn't save an adjacent ally. Synergy: a hit staggers a hero's cast, so a taunting tank keeps the mages' spells charging. *(Tests: `A_taunting_hero_draws_every_enemy_that_can_choose`, `Taunt_only_overrides_among_heroes_in_reach`.)*
 
 ### 14.2 Enemy archetypes (design palette)
 
@@ -1740,6 +1793,20 @@ The caravan is the party's moving base — its wagons are the shops between batt
 | Scouts | 300 | Adventure lists each battle's foes |
 
 *(Test: `Caravan_upgrades_cost_gold_and_change_how_expeditions_play`.)*
+### 25.13 Roles (added 2026-10-11, owner direction: "a healer should need to heal, a magician should have ranged spells, a tank should be able to taunt")
+
+Every hero class has a `Role` (validated): **Tank** (9), **Healer** (8), **Mage** (6), **Striker** (31), **Support** (8). The role sets the default bar and the learn list; caster power (§13.1.5) makes the stats matter.
+
+| Role | Default bar | Job |
+|---|---|---|
+| Tank | Taunt, Shield Bash, potion, Scan, Silence | draw the enemies, protect casters |
+| Healer | Heal, Mass Heal, potion, Antidote, Regen | mend and cleanse (WIS) |
+| Mage | Fireball, Frost, potion, Bolt, Meteor (dark mages: Poison/Sleep) | ranged elemental damage (INT) |
+| Striker | Cleave, War Cry, potion, Mug, Steal (ninjas: Teleport; thieves: Poison) | pincer damage, Cleave (24, adjacent, CD 2), War Cry (party Empowered, CD 4) (STR) |
+| Support | Quicken, Slow, potion, War Cry, Scan (or Regen kits) | tempo |
+
+The starting trio is a full triangle: Paladin (Tank), Barbarian (Striker), Cleric (Healer). Role badges show on the Camp cards, Party, Status (with a one-line "what it's for") and the battle panel. The Abilities screen can **move** a slot along the bar (`Abilities.Swap`). *(Tests: `Every_hero_has_a_role_and_kits_match_it`, `The_bar_can_be_reordered_within_unlocked_slots`.)*
+
 ## 26. Responsive Design & Aspect Ratio
 
 ### 26.1 Reference resolution

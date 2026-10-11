@@ -145,6 +145,8 @@ namespace Gaiden.Core.Battle
     {
         public int EntryId; public int CasterId; public string AbilityId; public int Ticks; public bool IsCharge;
         public List<Coord> LineTiles;
+        /// <summary>Who/where it will land (presentation: the target chip and the charging bar while it rides).</summary>
+        public int TargetUnitId = -1; public Coord TargetTile;
         public override string ToString() => $"CastQueued {CasterId} {AbilityId} {Ticks}t{(IsCharge ? " charge" : "")}";
     }
 
@@ -316,5 +318,31 @@ namespace Gaiden.Core.Battle
     {
         public int UnitId; public Coord At;
         public override string ToString() => $"Guest {UnitId} joins at {At}";
+    }
+
+    /// <summary>Mana charge gained (§3.1.9). <see cref="Total"/> is the meter afterwards; whole orbs it made follow as OrbMinted.</summary>
+    public sealed class ManaChargedEvent : BattleEvent
+    {
+        public int SourceId; public int Amount; public int Total; public string Reason; public int Participants; public int Chain;
+        public override string ToString() => $"ManaCharged +{Amount} ({Reason}) -> {Total}";
+    }
+
+    /// <summary>A fallen enemy left a pickup on the board (§13.3.1).</summary>
+    public sealed class PickupDroppedEvent : BattleEvent
+    {
+        public int PickupEntryId; public string PickupId; public Coord At; public int FromUnitId;
+        public override string ToString() => $"Pickup {PickupId} dropped at {At} by {FromUnitId}";
+    }
+
+    public sealed class PickupCollectedEvent : BattleEvent
+    {
+        public int PickupEntryId; public string PickupId; public Coord At; public int UnitId;
+        public override string ToString() => $"Pickup {PickupId} collected by {UnitId} at {At}";
+    }
+
+    public sealed class PickupExpiredEvent : BattleEvent
+    {
+        public int PickupEntryId; public string PickupId; public Coord At;
+        public override string ToString() => $"Pickup {PickupId} faded at {At}";
     }
 }

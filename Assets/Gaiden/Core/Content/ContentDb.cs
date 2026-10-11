@@ -14,6 +14,7 @@ namespace Gaiden.Core.Content
         public readonly Dictionary<string, DropTableDef> DropTables = new Dictionary<string, DropTableDef>(StringComparer.OrdinalIgnoreCase);
         public readonly Dictionary<string, StageDef> Stages = new Dictionary<string, StageDef>(StringComparer.OrdinalIgnoreCase);
         public readonly Dictionary<string, TrapDef> Traps = new Dictionary<string, TrapDef>(StringComparer.OrdinalIgnoreCase);
+        public readonly Dictionary<string, PickupDef> Pickups = new Dictionary<string, PickupDef>(StringComparer.OrdinalIgnoreCase);
         public readonly Dictionary<string, BountyDef> Bounties = new Dictionary<string, BountyDef>(StringComparer.OrdinalIgnoreCase);
         public readonly Dictionary<string, EnchantDef> Enchants = new Dictionary<string, EnchantDef>(StringComparer.OrdinalIgnoreCase);
         public readonly List<StageDef> StageOrder = new List<StageDef>();

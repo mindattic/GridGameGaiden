@@ -129,6 +129,14 @@ namespace Gaiden.Core.Battle
         }
 
         /// <summary>The ability a slot will fire (items resolve to their on-use ability or a synthesized heal/damage).</summary>
+        /// <summary>The ability behind an id as events report it: a content ability, or "item:&lt;id&gt;" for a consumable's synthesized effect.</summary>
+        public static AbilityDef ResolveAbilityId(ContentDb c, string id)
+        {
+            if (string.IsNullOrEmpty(id)) return null;
+            if (id.StartsWith("item:")) return BattleRunner.ItemAbility(c, c.TryItem(id.Substring(5)));
+            return c.TryAbility(id);
+        }
+
         public static AbilityDef SlotAbility(BattleState s, Unit hero, int slot)
         {
             if (slot < 0 || slot >= hero.Bar.Count) return null;

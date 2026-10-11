@@ -356,7 +356,7 @@ namespace Gaiden.Tests
         }
 
         [Fact]
-        public void An_attacker_on_the_amplifier_strikes_harder_mints_a_bonus_orb_and_uses_it_up()
+        public void An_attacker_on_the_amplifier_strikes_harder_adds_mana_charge_and_uses_it_up()
         {
             int Hit(bool amp)
             {
@@ -368,7 +368,7 @@ namespace Gaiden.Tests
                 if (amp)
                 {
                     Assert.Single(ev.OfType<AmplifierUsedEvent>());
-                    Assert.Contains(ev, e => e is OrbMintedEvent o && o.Reason == "amplifier");
+                    Assert.Contains(ev, e => e is ManaChargedEvent o && o.Reason == "amplifier" && o.Amount == BattleConfig.AmplifierCharge);
                     Assert.True(s.Amplifier == null || ev.OfType<AmplifierSpawnedEvent>().Any());
                 }
                 return ev.OfType<DamagedEvent>().Where(d => d.SourceId == knight.Id).Sum(d => d.Amount);

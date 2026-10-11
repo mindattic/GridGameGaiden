@@ -132,6 +132,24 @@ namespace Gaiden.Core.Rules
             return (int)final;
         }
 
+        /// <summary>
+        /// Role identity (§13.1.5): a hero's spell lands harder the higher its INT (physical skills: STR), and its heals
+        /// mend more the higher its WIS — so a Red Mage's Fireball outclasses a Fighter's. 12 is par; ±3.5% per point.
+        /// </summary>
+        public static float CasterPower(AbilityDef a, Unit caster)
+        {
+            if (caster == null || !caster.IsHero || a == null) return 1f;
+            var s = caster.Effective;
+            float stat = a.DamageType == DamageType.Physical ? s.Strength : s.Intelligence;
+            return Clamp(1f + (stat - 12f) * BattleConfig.CasterPowerPerPoint, BattleConfig.CasterPowerMin, BattleConfig.CasterPowerMax);
+        }
+
+        public static float HealPower(Unit caster)
+        {
+            if (caster == null || !caster.IsHero) return 1f;
+            return Clamp(1f + (caster.Effective.Wisdom - 12f) * BattleConfig.CasterPowerPerPoint, BattleConfig.CasterPowerMin, BattleConfig.CasterPowerMax);
+        }
+
         /// <summary>WIS+INT shortens cast time, floored at 25% of base (old Formulas.CastTime).</summary>
         public static float CastTime(float baseSeconds, Stats s)
         {

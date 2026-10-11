@@ -87,6 +87,9 @@ namespace Gaiden.App
                 case "ui.select": return "ui_select";
                 case "ui.buy": return "ui_coin";
                 case "ui.error": return "ui_error";
+                case "ui.press": return "ui_press";
+                case "ui.confirm": return "ui_confirm";
+                case "ui.cancel": return "ui_cancel";
                 case "move": return "move_" + Random.Range(0, 6);
                 case "hit": return "hit_" + Random.Range(0, 7);
                 default: return key; // every other cue has a same-named file (tools/make_sfx.py)

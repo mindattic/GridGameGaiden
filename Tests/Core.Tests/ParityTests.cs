@@ -247,7 +247,7 @@ namespace Gaiden.Tests
         // ── Mana ────────────────────────────────────────────────────────────────
 
         [Fact] // US-075
-        public void Hero_crit_mints_a_bonus_orb()
+        public void Hero_crit_adds_mana_charge()
         {
             var db = Mini();
             db.Classes["knight"].BaseStats.Luck = 200; // crit% caps at 50: some strikes crit
@@ -260,7 +260,7 @@ namespace Gaiden.Tests
                 var s = BattleEngine.Create(db, setup, new List<BattleEvent>());
                 var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = Hero(s, "cleric").Id, Path = P((3, 3)) });
                 int crits = ev.OfType<DamagedEvent>().Count(d => d.Hit == HitKind.Critical && d.SourceId == Hero(s, "knight").Id);
-                int wild = ev.OfType<OrbMintedEvent>().Count(o => o.Reason == "critical");
+                int wild = ev.OfType<ManaChargedEvent>().Count(o => o.Reason == "critical" && o.Amount == BattleConfig.CritCharge);
                 if (crits > 0) { Assert.Equal(crits, wild); saw = true; }
             }
             Assert.True(saw);
@@ -293,7 +293,7 @@ namespace Gaiden.Tests
             var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = Hero(s, "cleric").Id, Path = P((3, 0)) });
             Assert.Contains(ev, e => e is CastStaggeredEvent st && st.DelayTicks > 0);
             Assert.Contains(ev, e => e is CastCancelledEvent c && c.Reason == "interrupted");
-            Assert.Contains(ev, e => e is OrbMintedEvent o && o.Reason == "interrupt");
+            Assert.Contains(ev, e => e is ManaChargedEvent o && o.Reason == "interrupt" && o.Amount == BattleConfig.InterruptCharge);
         }
 
         [Fact] // US-091
@@ -581,7 +581,8 @@ namespace Gaiden.Tests
                 var ev = BattleEngine.Apply(s, new UseSlotCommand { HeroId = Hero(s, "mage").Id, Slot = 0, Target = new Coord(2, 2) });
                 var d = ev.OfType<DamagedEvent>().First(x => x.SourceId == Hero(s, "mage").Id);
                 if (d.Hit == HitKind.Miss) misses++;
-                if (d.Hit == HitKind.Critical) { crits++; Assert.Equal(29, d.Amount); Assert.Contains(ev, e => e is OrbMintedEvent o && o.Reason == "critical"); }
+                int power = (int)System.Math.Round(18 * Formulas.CasterPower(db.Abilities["fireball"], Hero(s, "mage")));
+                if (d.Hit == HitKind.Critical) { crits++; Assert.Equal((int)System.Math.Round(power * 1.6), d.Amount); Assert.Contains(ev, e => e is ManaChargedEvent o && o.Reason == "critical"); }
             }
             Assert.Equal(0, misses);
             Assert.InRange(crits, 5, 30); // 50% physical crit cap × 0.5 → ~25%

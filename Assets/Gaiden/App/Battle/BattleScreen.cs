@@ -33,6 +33,10 @@ namespace Gaiden.App
         public bool Busy => playing || dragging;
         public int SelectedHeroId { get; private set; } = -1;
         public int TargetingSlot { get; private set; } = -1;
+        /// <summary>The picked anchor awaiting Confirm (owner direction 2026-10-11: select, confirm, act).</summary>
+        public Coord? PendingTarget { get; private set; }
+        public bool Confirming => PendingTarget.HasValue;
+        private bool ConfirmActions => App.Save?.Settings.ConfirmActions ?? true;
         public bool AutoPlay { get; set; }
 
         private readonly string stageId;
@@ -65,7 +69,7 @@ namespace Gaiden.App
         {
             "Drag a hero across the board. Anyone in the way swaps into the tile you just left — moving never hurts.",
             "Trap an enemy between two heroes in a straight line to PINCER it. Allies touching the attackers join in.",
-            "Pincers fill your orb line. Tap a hero, then a lit spell below, then a target.",
+            "Pincers fill your orb line. Tap a hero, then a lit spell below, then a target, then Confirm. Spells charge on the timeline before they land.",
             "The number on each enemy is how many moves until it acts. Hit an enemy inside the orange zone to push it back. GUARD skips ahead safely.",
         };
 
@@ -142,7 +146,7 @@ namespace Gaiden.App
 
             var bg = Ui.El("fill", root);
             bg.style.backgroundImage = new StyleBackground(Art.Background(State.Stage.Theme, Math.Abs(stageId.GetHashCode()) % 4));
-            bg.style.unityBackgroundImageTintColor = new Color(0.55f, 0.55f, 0.65f);
+            bg.style.unityBackgroundImageTintColor = new Color(0.78f, 0.78f, 0.86f);
             shake = Ui.El("fill", root);
 
             BuildTopBar(shake);
@@ -256,6 +260,8 @@ namespace Gaiden.App
                 slot.style.borderTopLeftRadius = slot.style.borderTopRightRadius = slot.style.borderBottomLeftRadius = slot.style.borderBottomRightRadius = 18;
                 slot.style.borderTopWidth = slot.style.borderBottomWidth = slot.style.borderLeftWidth = slot.style.borderRightWidth = 4;
                 slot.style.backgroundImage = new StyleBackground(Art.Window);
+                slot.AddToClassList("slot");
+                Ui.Pressable(slot);
                 slot.RegisterCallback<PointerDownEvent>(_ => { slotPress = idx; slotPressTime = Time.unscaledTime; slotInfoShown = false; });
                 slot.RegisterCallback<PointerLeaveEvent>(_ => { if (slotPress == idx) slotPress = -1; });
                 slot.RegisterCallback<ClickEvent>(_ =>
@@ -326,6 +332,7 @@ namespace Gaiden.App
             board.SyncTraps(State);
             board.SyncBlocks(State.Blocks);
             board.SyncAmplifier(State.Amplifier);
+            board.SyncPickups(State);
             SyncTimeline(null);
             SyncOrbs();
             SyncBar();
@@ -346,6 +353,8 @@ namespace Gaiden.App
                     case "poisoned": return new Color(0.5f, 1f, 0.3f, 1f);
                     case "regen": return new Color(0.4f, 1f, 0.6f, 1f);
                     case "sleep": return new Color(0.7f, 0.7f, 1f, 1f);
+                    case "taunting": return new Color(1f, 0.3f, 0.2f, 1f);
+                    case "empowered": return new Color(1f, 0.7f, 0.2f, 1f);
                 }
             return new Color(0, 0, 0, 0);
         }
@@ -522,12 +531,15 @@ namespace Gaiden.App
         {
             var casting = new Dictionary<int, List<(Color color, float left)>>();
             var targeted = new Dictionary<int, List<(Color color, AbilityDef a)>>();
-            foreach (var e in State.Timeline)
+            var rides = State.Timeline.Where(e => e.Kind == TimelineKind.Cast).Select(e => (e.Id, e.OwnerId, e.AbilityId, e.TargetUnitId, e.TargetTile, e.U)).ToList();
+            foreach (var g in castGhosts.Values)
+                if (rides.All(r => r.Id != g.EntryId)) rides.Add((g.EntryId, g.CasterId, g.AbilityId, g.TargetUnitId, g.TargetTile, g.U));
+            foreach (var e in rides)
             {
-                if (e.Kind != TimelineKind.Cast) continue;
                 var color = Art.SpellColor(e.AbilityId);
                 var a = App.Content.TryAbility(e.AbilityId);
                 float u = at != null && at.TryGetValue(e.Id, out var x) ? x : e.U;
+                if (castGhosts.TryGetValue(e.Id, out var ghost)) ghost.U = u;
                 if (!casting.TryGetValue(e.OwnerId, out var cl)) casting[e.OwnerId] = cl = new List<(Color, float)>();
                 cl.Add((color, 1f - u));
                 int target = e.TargetUnitId;
@@ -538,8 +550,8 @@ namespace Gaiden.App
             }
             foreach (var kv in board.Units)
             {
-                if (casting.TryGetValue(kv.Key, out var cl)) { var (c, left) = cl[castCycle % cl.Count]; kv.Value.SetCastRing(c, left); }
-                else kv.Value.SetCastRing(null, 0f);
+                if (casting.TryGetValue(kv.Key, out var cl)) { var (c, left) = cl[castCycle % cl.Count]; kv.Value.SetCastRing(c, left); kv.Value.SetCastBar(c, 1f - left); }
+                else { kv.Value.SetCastRing(null, 0f); kv.Value.SetCastBar(null, 0f); }
                 if (targeted.TryGetValue(kv.Key, out var tl))
                 {
                     var (c, a) = tl[castCycle % tl.Count];
@@ -581,6 +593,8 @@ namespace Gaiden.App
         private void SyncOrbs()
         {
             int filled = State.Bank.Count;
+            shownCharge = State.ManaCharge;
+            if (orbViews.Count > 0 && !playing) SetChargeBubble(State.ManaCharge / (float)BattleConfig.ManaChargePerOrb);
             for (int i = 0; i < orbViews.Count; i++)
             {
                 var o = (Label)orbViews[i];
@@ -659,8 +673,10 @@ namespace Gaiden.App
                     if (status == SlotStatus.Silenced) { border = new Color(1f, 0.25f, 0.25f); name.text += "\nSilenced"; }
                     if (status != SlotStatus.Ready) alpha = 0.45f;
                 }
-                if (i == TargetingSlot) { border = new Color(1f, 0.85f, 0.3f); v.style.scale = new Scale(new Vector2(1.06f, 1.06f)); }
-                else v.style.scale = new Scale(Vector2.one);
+                bool targeting = i == TargetingSlot;
+                if (targeting) border = new Color(1f, 0.85f, 0.3f);
+                v.EnableInClassList("slot--targeting", targeting);
+                v.style.scale = StyleKeyword.Null; // scale belongs to the stylesheet (press / targeting states)
                 v.style.borderTopColor = v.style.borderBottomColor = v.style.borderLeftColor = v.style.borderRightColor = border;
                 v.style.opacity = alpha;
             }
@@ -685,6 +701,7 @@ namespace Gaiden.App
             var col = Ui.El("col grow", row);
             var top = Ui.El("row", col);
             Ui.Text(u.Name, "h2 grow", top);
+            if (u.IsHero && !string.IsNullOrEmpty(u.Def.Role)) Ui.RoleBadge(u.Def.Role, top, 26);
             Ui.Text($"Lv {u.Level}", "h2 gold", top);
             bool reveal = u.IsHero || State.Results.Scanned.Contains(u.Def.Id) || (App.Save?.Bestiary.TryGetValue(u.Def.Id, out var be) == true && be.Scanned);
             var hpRow = Ui.El("row", col);
@@ -718,21 +735,53 @@ namespace Gaiden.App
             t.style.whiteSpace = WhiteSpace.Normal; t.style.flexShrink = 1;
         }
 
+        /// <summary>
+        /// The ability card in the actor panel (fits its ~260 design px). While aiming it explains the ability; once a
+        /// target is picked it becomes the confirm card: what, on whom, then Cast / Cancel stacked on the right.
+        /// </summary>
         private void AbilityInfo(AbilityDef a)
         {
+            bool confirm = PendingTarget.HasValue && TargetingSlot >= 0 && !slotInfoShown;
             var row = Ui.El("row", panel);
+            row.style.alignItems = Align.Center;
             var icon = Ui.El("menu-icon", row);
-            icon.style.width = icon.style.height = 120;
-            icon.style.backgroundImage = new StyleBackground(Art.AbilityIcon(a) ?? Art.Orb);
+            icon.style.width = icon.style.height = 96;
+            var itemTex = a.Id != null && a.Id.StartsWith("item:") ? Art.ItemIcon(a.Id.Substring(5)) : null;
+            icon.style.backgroundImage = new StyleBackground(itemTex ?? Art.AbilityIcon(a) ?? Art.Orb);
             var col = Ui.El("col grow", row);
+            col.style.flexShrink = 1;
             var top = Ui.El("row", col);
-            Ui.Text(a.Name, "h2 grow", top);
-            if (a.Cost > 0) Ui.CostPips(a.Cost, top, 40);
-            string timing = a.Kind == AbilityKind.Skill ? (a.CooldownTurns > 0 ? $"Skill · recharges in {a.CooldownTurns} turns" : "Skill") : a.CastTime > 0 ? $"Cast time {a.CastTime:0.#}s — rides the timeline" : "Instant";
-            Ui.Text(timing, "small gold", col);
-            var d = Ui.Text(a.Description ?? "", "small", col);
-            d.style.whiteSpace = WhiteSpace.Normal;
-            Ui.Text("Tap a highlighted tile. Tap the slot again to cancel.", "tiny dim", col);
+            top.style.alignItems = Align.Center;
+            Ui.Text(a.Name, "h2", top);
+            if (a.Cost > 0) Ui.CostPips(a.Cost, top, 32).style.marginLeft = 12;
+            string timing = a.Kind == AbilityKind.Skill ? (a.CooldownTurns > 0 ? $"Skill · recharges in {a.CooldownTurns} turns" : "Skill")
+                : a.Kind == AbilityKind.Item ? "Item · acts at once"
+                : a.CastTime > 0 ? $"Charges {a.CastTime:0.#}s on the timeline" : "Instant";
+            Ui.Text(timing, "tiny gold", col);
+            if (!confirm)
+            {
+                var d = Ui.Text(a.Description ?? "", "tiny", col);
+                d.style.whiteSpace = WhiteSpace.Normal;
+                Ui.Text("Tap a highlighted tile · tap the slot again to cancel", "tiny dim", col);
+                return;
+            }
+            var hero = State.UnitById(SelectedHeroId);
+            var hits = hero == null ? new List<Unit>() : TargetResolver.Collect(State, a, hero, PendingTarget.Value);
+            string who = hits.Count == 0 ? (a.IsTeleport ? "Teleport to the marked tile" : "No one in the area")
+                : hits.Count == 1 ? (hits[0] == hero ? $"On {hero.Name} (self)" : $"On {hits[0].Name}")
+                : $"On {string.Join(", ", hits.Take(3).Select(h => h.Name))}{(hits.Count > 3 ? $" +{hits.Count - 3}" : "")}";
+            var summary = Ui.Text(who, "small", col);
+            summary.name = "confirm-summary";
+            summary.style.whiteSpace = WhiteSpace.Normal;
+            var btns = Ui.El("col", row);
+            btns.style.width = 330; btns.style.flexShrink = 0;
+            string verb = a.Kind == AbilityKind.Item ? "Use" : a.Kind == AbilityKind.Spell ? "Cast" : "Go";
+            var ok = Ui.Button(verb, ConfirmPending, "btn--primary", btns);
+            ok.name = "confirm-action";
+            ok.style.marginTop = ok.style.marginBottom = 4;
+            var cancel = Ui.Button("Cancel", CancelByPlayer, "btn--small", btns);
+            cancel.name = "confirm-cancel";
+            cancel.style.marginTop = cancel.style.marginBottom = 4;
         }
 
         // ─────────────────────────────────────────────────────────────────────────
@@ -752,6 +801,22 @@ namespace Gaiden.App
         public string BannerText => banner?.text;
 
         /// <summary>Dev/automation helper: put a buff on a unit and refresh its view.</summary>
+        /// <summary>Dev/automation helper: put an ability ("poison") or item ("item:healing_potion_basic:3") in a hero's bar slot.</summary>
+        public bool DevSetBar(int unitId, int slot, string entry)
+        {
+            var u = State.UnitById(unitId);
+            if (u == null || !u.IsHero || slot < 0 || slot >= u.Bar.Count || string.IsNullOrEmpty(entry)) return false;
+            if (entry.StartsWith("item:"))
+            {
+                var parts = entry.Split(':');
+                int n = parts.Length > 2 && int.TryParse(parts[2], out var k) ? k : 3;
+                u.Bar[slot] = new AbilitySlot { ItemId = parts[1], Charges = n, MaxCharges = n };
+            }
+            else u.Bar[slot] = new AbilitySlot { AbilityId = entry };
+            SyncBar();
+            return true;
+        }
+
         public bool DevBuff(int unitId, string buffId)
         {
             var u = State.UnitById(unitId);
@@ -766,7 +831,9 @@ namespace Gaiden.App
         public void Commit(BattleCommand cmd, bool skipMovePrefix = false)
         {
             if (!CanCommand()) return;
+            bool wasTargeting = TargetingSlot >= 0;
             CancelTargeting();
+            if (wasTargeting) { SyncBar(); panelUnitId = -1; SyncPanel(); }
             var events = BattleEngine.Apply(State, cmd);
             Debug.Log($"[Battle] {cmd} → {events.Count} events, clock {State.Clock}");
             TutorialAfterCommit(cmd, events);
@@ -778,7 +845,8 @@ namespace Gaiden.App
             if (!CanCommand()) return;
             var hero = State.UnitById(SelectedHeroId);
             if (hero == null) return;
-            if (TargetingSlot == slot) { CancelTargeting(); SyncBar(); SyncPanel(); return; }
+            if (TargetingSlot == slot) { CancelByPlayer(); return; }
+            if (TargetingSlot >= 0) CancelTargeting();
             var status = BattleEngine.GetSlotStatus(State, hero.Id, slot);
             if (status != SlotStatus.Ready)
             {
@@ -791,7 +859,10 @@ namespace Gaiden.App
             App.Audio.Sfx("ui.select");
             if (a.Mode == TargetMode.Auto)
             {
-                Commit(new UseSlotCommand { HeroId = hero.Id, Slot = slot, Target = hero.Pos });
+                if (!ConfirmActions || AutoPlay) { Commit(new UseSlotCommand { HeroId = hero.Id, Slot = slot, Target = hero.Pos }); return; }
+                TargetingSlot = slot;
+                SetPending(hero.Pos);
+                SyncBar();
                 return;
             }
             var targets = BattleEngine.ValidTargets(State, hero.Id, slot);
@@ -823,13 +894,89 @@ namespace Gaiden.App
         {
             if (TargetingSlot < 0) return;
             TargetingSlot = -1;
+            PendingTarget = null;
             board.ClearMarks();
+            ClearTargetGlows();
             ShowBanner("");
+        }
+
+        /// <summary>Player-facing cancel (the confirm card's Cancel, a slot re-tap, Back): a soft "never mind" tone.</summary>
+        public void CancelByPlayer()
+        {
+            if (TargetingSlot < 0) return;
+            App.Audio.Sfx("ui.cancel", 0.8f);
+            CancelTargeting();
+            SyncBar();
+            SyncPanel();
+        }
+
+        /// <summary>
+        /// Lock a pick and ask for confirmation: the area and every unit it would touch light up, the banner names the
+        /// deal, and the actor panel turns into the confirm card. Tapping another legal tile re-aims; tapping the same
+        /// tile again (or Confirm) commits.
+        /// </summary>
+        private void SetPending(Coord anchor)
+        {
+            var hero = State.UnitById(SelectedHeroId);
+            var a = hero == null || TargetingSlot < 0 ? null : BattleEngine.SlotAbility(State, hero, TargetingSlot);
+            if (a == null) return;
+            PendingTarget = anchor;
+            RedrawTargeting();
+            var hits = TargetResolver.Collect(State, a, hero, anchor);
+            string who = hits.Count == 0 ? "" : hits.Count == 1 ? $" on {(hits[0] == hero ? "self" : hits[0].Name)}" : $" on {hits.Count} targets";
+            ShowBanner($"{a.Name}{who}? Confirm below");
+            App.Audio.Sfx("ui.select", 0.8f);
+            SyncPanel();
+            var btn = panel.Q<Button>("confirm-action");
+            if (btn != null) App.StartCoroutine(Tween.Pop(btn, 1.08f, 0.25f));
+        }
+
+        /// <summary>Commit the pending pick (Confirm button, or a second tap on the same tile).</summary>
+        public void ConfirmPending()
+        {
+            if (!PendingTarget.HasValue || TargetingSlot < 0 || !CanCommand()) return;
+            var hero = State.UnitById(SelectedHeroId);
+            if (hero == null) return;
+            App.Audio.Sfx("ui.confirm");
+            var cmd = new UseSlotCommand { HeroId = hero.Id, Slot = TargetingSlot, Target = PendingTarget.Value };
+            Commit(cmd);
+        }
+
+        private readonly HashSet<int> targetGlows = new HashSet<int>();
+
+        private void ClearTargetGlows()
+        {
+            foreach (var id in targetGlows)
+                if (board.Units.TryGetValue(id, out var v)) v.SetGlow(Color.white, 0f);
+            targetGlows.Clear();
+            if (board.Units.TryGetValue(SelectedHeroId, out var sv)) sv.SetGlow(new Color(1f, 0.9f, 0.5f), 0.65f);
+        }
+
+        /// <summary>Legal anchors in gold; the pending pick's area (red harmful, green helpful, blue teleport) and its units glowing.</summary>
+        private void RedrawTargeting()
+        {
+            var hero = State.UnitById(SelectedHeroId);
+            var a = hero == null || TargetingSlot < 0 ? null : BattleEngine.SlotAbility(State, hero, TargetingSlot);
+            board.ClearMarks();
+            ClearTargetGlows();
+            if (a == null) return;
+            if (a.Mode != TargetMode.Auto)
+                foreach (var vt in BattleEngine.ValidTargets(State, hero.Id, TargetingSlot)) board.Mark(vt, new Color(1f, 0.82f, 0.3f), 0.25f);
+            if (!PendingTarget.HasValue) return;
+            var at = PendingTarget.Value;
+            bool harmful = a.BaseDamage > 0 || a.Filter == TargetFilter.EnemyOnly;
+            var color = a.IsTeleport ? new Color(0.5f, 0.8f, 1f) : harmful ? new Color(1f, 0.3f, 0.25f) : new Color(0.4f, 0.9f, 0.5f);
+            var hits = TargetResolver.Collect(State, a, hero, at);
+            if (a.Mode == TargetMode.Auto || a.Shape == TargetShape.Self || a.Shape == TargetShape.AllAllies || a.Shape == TargetShape.AllEnemies)
+                foreach (var u in hits) foreach (var t in u.Tiles()) board.Mark(t, color, 0.42f);
+            else foreach (var t in TargetResolver.Tiles(at, a.Shape, a.Radius)) board.Mark(t, color, 0.42f);
+            foreach (var u in hits)
+                if (board.Units.TryGetValue(u.Id, out var v)) { v.SetGlow(color, 0.9f); targetGlows.Add(u.Id); }
         }
 
         public override bool OnBack()
         {
-            if (TargetingSlot >= 0) { CancelTargeting(); SyncBar(); return false; }
+            if (TargetingSlot >= 0) { CancelByPlayer(); return false; }
             OpenMenu();
             return false;
         }
@@ -871,6 +1018,7 @@ namespace Gaiden.App
                 playing = false;
                 SyncAll();
             }
+            TickLinger(dt);
             if (dragging && App.Save != null && App.Save.Settings.DragTimer)
             {
                 dragTimeLeft -= dt;
@@ -1000,7 +1148,7 @@ namespace Gaiden.App
         {
             yield return new WaitForSecondsRealtime(4f);
             float t = 0;
-            while (t < 0.6f && l.parent != null) { t += Time.unscaledDeltaTime; l.style.opacity = 1f - t / 0.6f; yield return null; }
+            while (t < 0.6f && l.parent != null) { t += Tween.Dt; l.style.opacity = 1f - t / 0.6f; yield return null; }
             l.RemoveFromHierarchy();
         }
 

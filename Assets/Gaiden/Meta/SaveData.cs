@@ -129,6 +129,8 @@ namespace Gaiden.Meta
         public float BattleSpeed = 1f;
         /// <summary>Close-up portrait cut-in on pincers (ported from GridGame2026).</summary>
         public bool PincerCutIns = true;
+        /// <summary>Pick a target, then confirm (owner direction 2026-10-11). Off = commit on the pick, for veterans.</summary>
+        public bool ConfirmActions = true;
     }
 
     public static class SaveMigrations

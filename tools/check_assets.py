@@ -4,7 +4,7 @@ import glob, os, re, sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SFX = os.path.join(ROOT, "Assets", "Gaiden", "Resources", "Audio", "Sfx")
 MUSIC = os.path.join(ROOT, "Assets", "Gaiden", "Resources", "Audio", "Music")
-SPECIAL = {"ui.click": "ui_click", "ui.back": "ui_click", "ui.select": "ui_select", "ui.buy": "ui_coin", "ui.error": "ui_error", "move": "move_0", "hit": "hit_0"}
+SPECIAL = {"ui.click": "ui_click", "ui.back": "ui_click", "ui.select": "ui_select", "ui.buy": "ui_coin", "ui.error": "ui_error", "ui.press": "ui_press", "ui.confirm": "ui_confirm", "ui.cancel": "ui_cancel", "move": "move_0", "hit": "hit_0"}
 code = "".join(open(p, encoding="utf-8").read() for p in glob.glob(os.path.join(ROOT, "Assets", "Gaiden", "App", "**", "*.cs"), recursive=True))
 cues = set(re.findall(r'Sfx\("([^"]+)"', code))
 cues |= set(re.findall(r'\? "([a-z.]+)" : "([a-z.]+)"', code) and [c for pair in re.findall(r'Sfx\([^;]*?"([a-z.]+)"\s*:\s*"([a-z.]+)"', code) for c in pair] or [])

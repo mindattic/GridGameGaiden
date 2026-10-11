@@ -23,7 +23,12 @@ namespace Gaiden.Core.Bot
             Randomness = randomness;
         }
 
-        public BattleCommand Decide(BattleState s)
+        /// <summary>The best drag on offer (hints and automation teach moving, so they ask for a move specifically).</summary>
+        public MoveCommand BestMove(BattleState s) => Decide(s, movesOnly: true) as MoveCommand;
+
+        public BattleCommand Decide(BattleState s) => Decide(s, false);
+
+        private BattleCommand Decide(BattleState s, bool movesOnly)
         {
             var heroes = s.LivingList(Team.Hero);
             var candidates = new List<(BattleCommand cmd, float score)>();
@@ -45,7 +50,7 @@ namespace Gaiden.Core.Bot
                         }
                     }
 
-                for (int slot = 0; slot < h.Bar.Count; slot++)
+                for (int slot = 0; slot < h.Bar.Count && !movesOnly; slot++)
                 {
                     if (BattleEngine.GetSlotStatus(s, h.Id, slot) != SlotStatus.Ready) continue;
                     var a = BattleEngine.SlotAbility(s, h, slot);
@@ -64,7 +69,7 @@ namespace Gaiden.Core.Bot
                 }
             }
 
-            if (candidates.Count == 0) return new ShieldCommand();
+            if (candidates.Count == 0) return movesOnly ? null : new ShieldCommand();
             if (Randomness > 0f && rng.Chance(Randomness)) return candidates[rng.Range(0, candidates.Count)].cmd;
 
             float best = float.NegativeInfinity;
@@ -74,7 +79,7 @@ namespace Gaiden.Core.Bot
                 if (score > best + 0.001f) { best = score; bestList.Clear(); bestList.Add(cmd); }
                 else if (Math.Abs(score - best) <= 0.001f) bestList.Add(cmd);
             }
-            if (best < 0.5f && rng.Chance(0.2f)) return new ShieldCommand();
+            if (!movesOnly && best < 0.5f && rng.Chance(0.2f)) return new ShieldCommand();
             return bestList[rng.Range(0, bestList.Count)];
         }
 
@@ -109,6 +114,14 @@ namespace Gaiden.Core.Bot
                 }
                 score += 2f * (p.SupportersA.Count + p.SupportersB.Count);
             }
+            // Pickups along the path (§13.3.1): worth a detour, more so a tonic for a hurt hero.
+            foreach (var step in pv.StepsTaken)
+            {
+                var pk = s.PickupAt(step);
+                if (pk == null) continue;
+                s.Content.Pickups.TryGetValue(pk.PickupId, out var def);
+                score += 4f + (def != null && def.HealFraction > 0f ? 8f * (1f - hero.HpFraction) : 1f);
+            }
             // Mild preference for staying out of melee range of soon-acting enemies when nothing else is on offer.
             if (pv.Positions.TryGetValue(hero.Id, out var at))
             {
@@ -141,7 +154,11 @@ namespace Gaiden.Core.Bot
                 if (t.Team != caster.Team)
                 {
                     if (BattleEngine.IsArmored(s, t)) continue;
-                    if (a.BaseDamage > 0) score += Math.Min(t.Hp, Formulas.SpellDamage(a, t, false)) * 0.6f + (t.Hp <= a.BaseDamage ? 8f : 0f);
+                    if (a.BaseDamage > 0)
+                    {
+                        int dmg = (int)Math.Round(Formulas.SpellDamage(a, t, false) * Formulas.CasterPower(a, caster) * caster.OutgoingDamageMultiplier);
+                        score += Math.Min(t.Hp, dmg) * 0.6f + (t.Hp <= dmg ? 8f : 0f);
+                    }
                     if (a.ApplyBuff != null && !t.HasBuff(a.ApplyBuff)) score += 3f;
                     if (a.StealsMana) score += s.Bank.IsFull ? 0f : 3f;
                     if (a.HastenU > 0) score -= 5f;
@@ -150,6 +167,26 @@ namespace Gaiden.Core.Bot
                 {
                     if (a.BaseHeal > 0) score += Math.Min(t.MaxHp - t.Hp, a.BaseHeal) * (t.HpFraction < 0.5f ? 0.9f : 0.2f);
                     if (a.RemovesDebuffs) foreach (var b in t.Buffs) if (b.Def.Kind == BuffKind.Debuff) score += 4f;
+                    var gift = s.Content.TryBuff(a.ApplyBuff);
+                    if (gift != null && gift.Kind == BuffKind.Buff && !t.HasBuff(gift.Id) && s.LivingList(Team.Enemy).Count > 0)
+                    {
+                        // Only worth a turn when the fight is close: a foe within 2 tiles of some hero.
+                        bool close = false;
+                        foreach (var ally in s.LivingList(Team.Hero))
+                            foreach (var e in s.LivingList(Team.Enemy)) if (e.DistanceTo(ally) <= 2) close = true;
+                        if (gift.Taunts)
+                        {
+                            // Taunt (§14.1.1): worth it when the tank is sturdy and allies are exposed or casting.
+                            if (t.HpFraction >= 0.45f)
+                            {
+                                score += 3f * s.HeroCastsInFlight;
+                                foreach (var ally in s.LivingList(Team.Hero))
+                                    if (ally != t) foreach (var e in s.LivingList(Team.Enemy)) if (e.IsAdjacentTo(ally)) { score += 2.5f; break; }
+                            }
+                        }
+                        else if (gift.OutgoingDamageMultiplier > 1f) score += close ? 1.2f : 0f;
+                        else score += close ? 1f : 0.3f;
+                    }
                     if (a.BaseDamage > 0 || (a.ApplyBuff != null && s.Content.TryBuff(a.ApplyBuff)?.Kind == BuffKind.Debuff)) score -= 20f;
                 }
             }

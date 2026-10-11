@@ -14,7 +14,7 @@ namespace Gaiden.Core.Content
         public static readonly string[] Files =
         {
             "classes", "abilities", "buffs", "items", "recipes", "droptables",
-            "stages", "campaign", "traps", "bounties", "summon", "enchants",
+            "stages", "campaign", "traps", "bounties", "summon", "enchants", "caravan", "pickups",
         };
 
         public static readonly JsonSerializerSettings Settings = new JsonSerializerSettings
@@ -45,6 +45,7 @@ namespace Gaiden.Core.Content
             db.Campaign = ReadOne<CampaignDef>(readText, "campaign") ?? new CampaignDef();
             db.Summon = ReadOne<SummonDef>(readText, "summon") ?? new SummonDef();
             AddAll(db.Caravan, ReadList<CaravanUpgradeDef>(readText, "caravan"), x => x.Id);
+            AddAll(db.Pickups, ReadList<PickupDef>(readText, "pickups"), x => x.Id);
             return db;
         }
 
@@ -115,6 +116,14 @@ namespace Gaiden.Core.Content
                 foreach (var s in t.Stages)
                     if (!db.Stages.ContainsKey(s)) p.Add($"theme {t.Id}: unknown stage '{s}'");
             foreach (var t in db.Traps.Values) NeedBuff(t.ApplyBuff, $"trap {t.Id}");
+            foreach (var pk in db.Pickups.Values)
+            {
+                NeedBuff(pk.ApplyBuff, $"pickup {pk.Id}");
+                if (pk.Weight <= 0) p.Add($"pickup {pk.Id}: weight must be positive");
+            }
+            var roles = new HashSet<string> { "Tank", "Healer", "Mage", "Striker", "Support" };
+            foreach (var c in db.Classes.Values)
+                if (c.Team == Team.Hero && (c.Role == null || !roles.Contains(c.Role))) p.Add($"class {c.Id}: hero needs a Role (Tank/Healer/Mage/Striker/Support), has '{c.Role}'");
             foreach (var b in db.Bounties.Values) { NeedClass(b.TargetClass, $"bounty {b.Id}"); NeedItem(b.RewardItem, $"bounty {b.Id}"); }
             foreach (var c in db.Summon.Pool) NeedClass(c, "summon pool");
             foreach (var e in db.Enchants.Values) NeedItem(e.Essence, $"enchant {e.Id}");

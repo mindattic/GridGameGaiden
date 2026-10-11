@@ -71,28 +71,59 @@
 .menu-icon { width: 64px; height: 64px; margin-right: 18px; background-size: contain; }
 
 /* ── Buttons ─────────────────────────────────────────────────────────────── */
+/* Every button stands on a darker lip (the thick bottom border). Pressing sinks it onto the lip. */
 .btn {
     min-height: 104px;
     padding: 0 40px;
     margin: 8px;
     border-width: 4px;
+    border-bottom-width: 12px;
     border-radius: 16px;
     border-color: rgb(236, 238, 255);
+    border-bottom-color: rgb(120, 132, 196);
     background-color: rgb(34, 58, 150);
     color: rgb(255, 255, 255);
     font-size: 42px;
     -unity-font-style: bold;
     -unity-text-align: middle-center;
-    transition-property: scale, background-color;
-    transition-duration: 0.08s;
 }
 .btn:hover { background-color: rgb(52, 84, 196); }
-.btn:active { scale: 0.96 0.96; }
-.btn--primary { background-color: rgb(196, 120, 24); border-color: rgb(255, 232, 170); }
+.btn--primary { background-color: rgb(196, 120, 24); border-color: rgb(255, 232, 170); border-bottom-color: rgb(150, 92, 30); }
 .btn--primary:hover { background-color: rgb(226, 146, 40); }
-.btn--danger { background-color: rgb(150, 30, 40); }
+.btn--danger { background-color: rgb(150, 30, 40); border-bottom-color: rgb(96, 18, 26); }
+.btn--danger:hover { background-color: rgb(178, 40, 52); }
+
+.role-badge {
+    -unity-font-style: bold;
+    border-width: 3px;
+    border-radius: 10px;
+    padding: 0 10px;
+    margin: 0 8px;
+    background-color: rgba(4, 6, 20, 0.75);
+    -unity-text-align: middle-center;
+    flex-shrink: 0;
+}
+
+/* ── Shared press feel (Ui.Pressable): sink on touch, spring back on release ── */
+.pressable {
+    transition-property: scale, translate, background-color, border-bottom-width, opacity;
+    transition-duration: 0.06s, 0.06s, 0.08s, 0.06s, 0.1s;
+    transition-timing-function: ease-out;
+}
+.pressable.is-pressed { scale: 0.95 0.95; translate: 0 6px; }
+.pressable.is-released { transition-duration: 0.14s; transition-timing-function: ease-out-back; }
+.btn.is-pressed { border-bottom-width: 4px; translate: 0 8px; background-color: rgb(24, 40, 108); }
+.btn--primary.is-pressed { background-color: rgb(150, 88, 14); }
+.btn--danger.is-pressed { background-color: rgb(110, 20, 28); }
+.menu-row.is-pressed { background-color: rgba(140, 170, 255, 0.34); translate: 4px 2px; scale: 0.985 0.985; }
+.tab.is-pressed { translate: 0 4px; scale: 0.94 0.94; }
+.card-tap.is-pressed { scale: 0.94 0.94; translate: 0 6px; }
+.slot { transition-property: scale, translate, opacity; transition-duration: 0.07s, 0.07s, 0.15s; }
+.slot--targeting { scale: 1.06 1.06; }
+.slot.is-pressed { scale: 0.92 0.92; translate: 0 10px; }
 .btn--disabled { opacity: 0.4; }
-.btn--small { min-height: 80px; font-size: 34px; padding: 0 24px; }
+.btn--small { min-height: 80px; font-size: 34px; padding: 0 24px; border-bottom-width: 9px; }
+.btn--small.is-pressed { border-bottom-width: 3px; translate: 0 6px; }
 .btn--icon { width: 104px; padding: 0; }
 
 /* ── Header bar ──────────────────────────────────────────────────────────── */

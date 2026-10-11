@@ -161,6 +161,17 @@ namespace Gaiden.Core.Battle
             get { foreach (var b in Buffs) if (b.Def.BlocksSpells) return true; return false; }
         }
 
+        /// <summary>Carries a taunt buff: enemies must come for this hero (§14.1.1).</summary>
+        public bool IsTaunting
+        {
+            get { foreach (var b in Buffs) if (b.Def.Taunts) return true; return false; }
+        }
+
+        public float OutgoingDamageMultiplier
+        {
+            get { float m = 1f; foreach (var b in Buffs) m *= b.Def.OutgoingDamageMultiplier; return m; }
+        }
+
         public float IncomingDamageMultiplier
         {
             get { float m = 1f; foreach (var b in Buffs) m *= b.Def.IncomingDamageMultiplier; return m; }

@@ -47,7 +47,9 @@ namespace Gaiden.Tests
             var pincer = ev.OfType<PincerFormedEvent>().Single();
             Assert.Contains(pincer.Attacker1, new[] { knight.Id, Hero(s, "cleric").Id });
             Assert.Single(pincer.Opponents);
-            Assert.True(ev.OfType<OrbMintedEvent>().Count(o => o.Reason == "pincer") == 2);
+            var charge = ev.OfType<ManaChargedEvent>().Single(c => c.Reason == "pincer");
+            Assert.Equal(2, charge.Participants); // §3.1.9: a lean two-hero pincer charges at full rate
+            Assert.True(charge.Amount > 0);
             Assert.Contains(ev, e => e is DisplacedEvent d && d.To == new Coord(5, 3));
             AssertInvariants(s);
         }
@@ -113,15 +115,21 @@ namespace Gaiden.Tests
         }
 
         [Fact]
-        public void Supporters_join_and_mint_their_own_orb()
+        public void Supporters_join_but_dilute_the_mana_charge()
         {
             var db = Mini();
+            db.Classes["tank"].BaseStats.Vitality = 30; // a foe the pincer can dent but not kill
             var (s, _) = Battle(db, Stage(("tank", 2, 3)), ("knight", 1, 3), ("cleric", 3, 4), ("mage", 1, 4));
             // cleric (3,4) → (3,3): knight(1,3) tank(2,3) cleric(3,3); mage (1,4) adjacent to knight = supporter
             var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = Hero(s, "cleric").Id, Path = P((3, 3)) });
             var p = ev.OfType<PincerFormedEvent>().Single();
             Assert.Contains(Hero(s, "mage").Id, p.Supporters);
-            Assert.Equal(3, ev.OfType<OrbMintedEvent>().Count(o => o.Reason == "pincer" || o.Reason == "support"));
+            var charge = ev.OfType<ManaChargedEvent>().Single(c => c.Reason == "pincer");
+            Assert.Equal(3, charge.Participants);
+            var tank = s.Units.Single(u => u.Def.Id == "tank");
+            float share = (tank.MaxHp - tank.Hp) / (float)tank.MaxHp;
+            Assert.Equal(System.Math.Max(BattleConfig.MinPincerCharge, (int)System.Math.Round(BattleConfig.PincerChargePerHp * share / 1.5f)), charge.Amount); // ×1.5 divisor for 3 heroes
+            Assert.DoesNotContain(ev, e => e is OrbMintedEvent o && o.Reason == "support");
             Assert.Contains(ev, e => e is AttackEvent a && a.IsSupport);
         }
 

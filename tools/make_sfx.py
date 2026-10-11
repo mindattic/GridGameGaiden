@@ -158,6 +158,34 @@ def main():
     write("victory", fan)
     sad = np.concatenate([note(392.0, 0.3, 0.5), note(349.2, 0.3, 0.5), note(311.1, 0.3, 0.5), note(261.6, 0.9, 1.2)])
     write("defeat", filt(sad, "low", 2500))
+    # ── Added 2026-10-11 (kept last so the RNG stream of every earlier cue is unchanged) ──
+    # Press / confirm (owner direction 2026-10-11: every press has feedback; a decision has a confirmation).
+    press = filt(noise(0.05), "low", 1400) * env(int(SR * 0.05), 0.001, 0.02, 6) + 0.7 * sine(sweep(260, 150, 0.05), 0.05) * env(int(SR * 0.05), 0.001, 0.03)
+    write("ui_press", press, 0.5)
+    write("ui_confirm", np.concatenate([tone_env(660, 0.07, 0.002, 0.05), tone_env(990, 0.07, 0.002, 0.05), tone_env(1320, 0.22, 0.002, 0.18)]) + 0.2 * filt(noise(0.36), "high", 6000) * env(int(SR * 0.36), 0.002, 0.08))
+    write("ui_cancel", np.concatenate([tone_env(740, 0.07, 0.002, 0.05), tone_env(494, 0.16, 0.002, 0.12)]), 0.6)
+    # Spell staging: release whoosh, splash, channel hum (owner direction 2026-10-11: rhythm and tempo).
+    n = noise(0.32)
+    write("whoosh", filt(n, "band", (500, 3500)) * env(len(n), 0.12, 0.16, 2) + 0.3 * sine(sweep(500, 900, 0.32), 0.32) * env(int(SR * 0.32), 0.1, 0.15), 0.6)
+    n = noise(0.4)
+    write("splash", filt(n, "band", (300, 4000)) * env(len(n), 0.002, 0.2, 3) + 0.5 * sine(sweep(240, 90, 0.4), 0.4) * env(int(SR * 0.4), 0.002, 0.2))
+    hum = sine(180, 0.6) * (0.6 + 0.4 * np.sin(2 * np.pi * 6 * t(0.6))) + 0.4 * sine(sweep(360, 720, 0.6), 0.6)
+    write("channel", hum * env(int(SR * 0.6), 0.2, 0.3), 0.5)
+    # Potions: uncork, glug, glass.
+    cork = filt(noise(0.05), "band", (1200, 5000)) * env(int(SR * 0.05), 0.001, 0.01, 6) + 0.6 * sine(sweep(900, 400, 0.05), 0.05) * env(int(SR * 0.05), 0.001, 0.03)
+    glugs = np.concatenate([np.zeros(int(SR * 0.05))] + [sine(sweep(260 + 40 * k, 160 + 20 * k, 0.09), 0.09) * env(int(SR * 0.09), 0.005, 0.06) for k in range(3)])
+    write("glug", np.concatenate([cork, glugs]), 0.7)
+    shards2 = mix(*[np.concatenate([np.zeros(int(SR * d)), tone_env(f, 0.18, 0.001, 0.07)]) for d, f in ((0, 4186), (0.02, 3520), (0.05, 5274), (0.08, 2960))])
+    write("glass", mix(filt(noise(0.3), "high", 3000) * env(int(SR * 0.3), 0.001, 0.06, 4), shards2))
+    # Role skills: taunt roar, war horn; pickups; bubbling poison.
+    n = noise(0.6)
+    roar = filt(saw(sweep(140, 90, 0.6), 0.6), "low", 900) * env(int(SR * 0.6), 0.03, 0.4) + 0.5 * filt(n, "band", (200, 1200)) * env(len(n), 0.03, 0.3)
+    write("taunt", roar)
+    horn = sum(tone_env(f, 0.7, 0.04, 0.5, saw) for f in (196, 293.7, 392))
+    write("warcry", filt(horn, "low", 2500))
+    write("powerup", np.concatenate([tone_env(f, 0.07, 0.002, 0.05) for f in (784, 988, 1175, 1568)] + [tone_env(2093, 0.25, 0.002, 0.2)]))
+    bubbles = mix(*[np.concatenate([np.zeros(int(SR * d)), sine(sweep(500 + 300 * k, 1100 + 300 * k, 0.06), 0.06) * env(int(SR * 0.06), 0.002, 0.04)]) for k, d in enumerate((0, 0.07, 0.15, 0.2))])
+    write("bubble", bubbles, 0.6)
     print("wrote", len([f for f in os.listdir(OUT) if f.endswith('.ogg')]), "files to", OUT)
 
 

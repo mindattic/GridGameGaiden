@@ -221,11 +221,13 @@ namespace Gaiden.App
                 var name = Ui.Text(c.Class(id).Name, "small grow", top);
                 name.style.unityFontStyleAndWeight = FontStyle.Bold;
                 name.style.overflow = Overflow.Hidden; name.style.textOverflow = TextOverflow.Ellipsis;
+                Ui.RoleBadge(c.Class(id).Role, top, 20).style.marginLeft = 4;
                 Ui.Text($"Lv {u.Level}", "small gold", top);
                 int hp = h.Hp > 0 ? Math.Min(h.Hp, u.MaxHp) : u.MaxHp;
                 Ui.Gauge(hp / (float)u.MaxHp, info, 300).style.marginTop = 6;
                 Ui.Text($"{hp}/{u.MaxHp}", "tiny dim", info);
-                card.RegisterCallback<ClickEvent>(_ => App.Router.Push(new StatusScreen(id)));
+                card.AddToClassList("card-tap");
+                Ui.Tappable(card, () => App.Router.Push(new StatusScreen(id)), "ui.select");
             }
 
             var lower = Ui.El("row grow", col);

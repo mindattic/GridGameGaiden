@@ -122,7 +122,7 @@ namespace Gaiden.Core.Battle
                 LineTiles = plan.Shape == ChargeShape.Line ? plan.Line : null,
             };
             S.Timeline.Add(entry);
-            Emit(new CastQueuedEvent { EntryId = entry.Id, CasterId = enemy.Id, AbilityId = plan.Ability.Id, Ticks = ticks, IsCharge = true, LineTiles = entry.LineTiles });
+            Emit(new CastQueuedEvent { EntryId = entry.Id, CasterId = enemy.Id, AbilityId = plan.Ability.Id, Ticks = ticks, IsCharge = true, LineTiles = entry.LineTiles, TargetUnitId = plan.Target.Id, TargetTile = plan.Target.Pos });
             Announce($"{enemy.Name} is charging {plan.Ability.Name}!", enemy.Id);
         }
 

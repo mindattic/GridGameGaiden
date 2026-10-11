@@ -48,6 +48,9 @@ namespace Gaiden.Core.Rules
         public static Unit PickFrom(BattleState s, Unit enemy, List<Unit> heroes)
         {
             if (heroes == null || heroes.Count == 0) return null;
+            // Taunt (§14.1.1): a taunting hero in reach overrides every personality.
+            var taunters = heroes.FindAll(h => h.IsTaunting);
+            if (taunters.Count > 0) heroes = taunters;
             var mode = TargetingOf(enemy);
             if (mode == Targeting.Erratic)
             {
