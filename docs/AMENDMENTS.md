@@ -337,3 +337,10 @@ updated: 2026-10-09
 - Balance after both: greedy bot 4/4 campaign and 6/6 first battle (~348 actions); casual+camp 1/4.
 - Art review fixes: plates sit on the tile rim (they covered the HP bar); the billboard dodges upward over the banner
   (it landed on the heroes), and also while a spell charges on a top-row target. UI gate 70/70.
+
+## 2026-10-11 — final art review pass
+
+- Every art-review scenario re-recorded on the final build (caster, sweep, confirm, poison, fireball, potion, taunt,
+  armor, corpses) and reviewed. Fix: the first-link pincer sweep now uses the standard cut-in band (slim, tilted,
+  feathered, white core) along each portrait's lane, so every cut-in shares one look. UI gate 70/70 (the long-press
+  check now recognises the "Charges …s on the timeline" wording).

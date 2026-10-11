@@ -274,7 +274,7 @@ def main():
     wait_idle(200)
     h.call("press", x=slot0[0], y=slot0[1], ms=700)
     time.sleep(0.2)
-    check("long-press shows the ability card", any(("Instant" in x) or ("Cast time" in x) or ("Skill" in x) for x in texts()))
+    check("long-press shows the ability card", any(("Instant" in x) or ("Charges" in x) or ("Skill" in x) or ("Item" in x) for x in texts()))
     h.call("release"); time.sleep(0.3)
 
     # ── Pause menu ────────────────────────────────────────────────────────

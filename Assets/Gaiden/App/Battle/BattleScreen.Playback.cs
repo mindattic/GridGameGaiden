@@ -304,6 +304,29 @@ namespace Gaiden.App
                 shots[0].Lane = la + shift; shots[1].Lane = lb + shift;
             }
 
+            // The standard cut-in look (feathered team band with a bright core) runs along each portrait's lane.
+            var bands = new List<VisualElement>();
+            foreach (var shot in shots)
+            {
+                var band = new VisualElement { pickingMode = PickingMode.Ignore };
+                band.style.position = Position.Absolute;
+                band.style.backgroundImage = new StyleBackground(BandTex);
+                var bc = BandColor(team);
+                band.style.unityBackgroundImageTintColor = new Color(bc.r, bc.g, bc.b, 0.9f);
+                float thick = (rowLine ? shot.H : shot.W) * 0.28f;
+                var core = new VisualElement { pickingMode = PickingMode.Ignore };
+                core.style.position = Position.Absolute;
+                core.style.backgroundImage = new StyleBackground(BandTex);
+                core.style.unityBackgroundImageTintColor = new Color(1f, 1f, 1f, 0.95f);
+                if (rowLine) { core.style.left = 0; core.style.right = 0; core.style.top = Length.Percent(46); core.style.height = 5; }
+                else { core.style.top = 0; core.style.bottom = 0; core.style.left = Length.Percent(46); core.style.width = 5; }
+                band.Add(core);
+                if (rowLine) { band.style.left = -200; band.style.width = StageW + 400; band.style.top = shot.Lane - thick / 2f; band.style.height = thick; band.style.rotate = new Rotate(shot.Dir * -3f); }
+                else { band.style.top = -200; band.style.height = StageH + 400; band.style.left = shot.Lane - thick / 2f; band.style.width = thick; band.style.rotate = new Rotate(shot.Dir * 3f); }
+                band.style.opacity = 0f;
+                layer.Insert(1, band); // above the dim, below the portraits
+                bands.Add(band);
+            }
             App.Audio.Sfx("dash", 0.7f, 0.9f);
             if (delay2 > 0f) App.StartCoroutine(DelayedSfx("dash", delay2, 1.05f));
             var cam = boardHost;
@@ -322,6 +345,7 @@ namespace Gaiden.App
                 float elapsed = k * total;
                 float fade = Mathf.Clamp01(Mathf.Min(elapsed / 0.15f, (total - elapsed) / 0.2f));
                 dim.style.opacity = 0.5f * fade;
+                foreach (var band in bands) band.style.opacity = fade;
                 // Board camera: slow push-in on the pincer with a hand-held drift.
                 float zoom = 1f + 0.14f * Tween.Back(Mathf.Clamp01(elapsed / 0.35f));
                 float sx = (Mathf.PerlinNoise(camSeed, elapsed * 1.6f) - 0.5f) * 18f;
