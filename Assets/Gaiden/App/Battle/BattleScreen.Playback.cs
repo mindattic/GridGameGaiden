@@ -129,7 +129,7 @@ namespace Gaiden.App
                 case ArmorBrokenEvent ab: App.Audio.Sfx("shatter", 0.7f); return FloatText(ab.UnitId, "Armor broke!", new Color(1f, 0.6f, 0.4f), 0.4f, 64);
                 case WeaponSwappedEvent sw: App.Audio.Sfx("dash"); SyncBar(); return FloatText(sw.UnitId, "⭾ " + (App.Content.TryItem(sw.ToWeapon)?.Name ?? "Swap"), new Color(0.85f, 0.9f, 1f), 0.3f, 54);
                 case BossPhaseEvent bp: return BossAnim(bp);
-                case WaveStartedEvent wv: return WaveAnim(wv);
+                case WaveStartedEvent wv: TutorialWaveStarted(); return WaveAnim(wv);
                 case WaveClearedEvent wc: FlushTallies(); ShowBanner("Wave cleared!"); return Tween.Wait(0.4f);
                 case BattleEndedEvent be: ShowBanner(be.Victory ? "VICTORY!" : be.Escaped ? "ESCAPED" : "DEFEAT"); App.Audio.Sfx(be.Victory ? "victory" : be.Escaped ? "dash" : "defeat"); return Tween.Wait(1.0f);
                 case RevivedEvent rv: return ReviveAnim(rv);

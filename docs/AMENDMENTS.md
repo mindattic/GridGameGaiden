@@ -297,3 +297,10 @@ updated: 2026-10-09
   fixed: flat cut-in band → feathered band + bust window + dimmed stage; opaque area slabs → soft bloom; dot
   projectile → glowing orb with comet tail; status text in the status colour; bolder taunt rings; item icon on the
   confirm card; billboard dodges top-row action.
+
+## 2026-10-11 — full tutorial, five-wave first battle (owner)
+
+- "there needs to be a full tutorial with explanations and examples, the first battle needs 5 waves of increasing
+  difficulty" → Green Valley I is five waves (levels ramp 1 → 2; test `The_first_battle_has_five_waves_of_rising_difficulty`)
+  and the coach card became ten lessons (§9). The first battle is now ~43 actions for a strong bot — above the 15–40
+  pacing target, accepted for the teaching battle.

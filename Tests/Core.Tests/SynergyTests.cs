@@ -238,5 +238,16 @@ namespace Gaiden.Tests
             Assert.Equal((int)System.Math.Round(BattleConfig.PincerChargePerHp), charge.Amount); // the whole foe: share 1, two heroes ×1
             Assert.Equal(charge.Amount / BattleConfig.ManaChargePerOrb, ev.OfType<OrbMintedEvent>().Count(o => o.Reason == "pincer")); // one per 100, not one per hero
         }
+    
+        [Fact]
+        public void The_first_battle_has_five_waves_of_rising_difficulty()
+        {
+            var c = Real;
+            var first = c.CampaignStages()[0];
+            Assert.Equal(5, first.Waves.Count);
+            int Weight(WaveDef w) => w.Enemies.Sum(e => { var d = c.Classes[e.Class]; return (int)(d.BaseStats.Vitality + d.BaseStats.Strength) * e.Level + (d.ChargeAbility != null ? 5 : 0) + (d.Trap != null ? 5 : 0); });
+            for (int i = 1; i < first.Waves.Count; i++)
+                Assert.True(Weight(first.Waves[i]) > Weight(first.Waves[i - 1]), $"wave {i + 1} should be harder than wave {i}");
+        }
     }
 }

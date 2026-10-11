@@ -61,61 +61,6 @@ namespace Gaiden.App
         private const float HintDelay = 5f;
         private bool HintsEnabled => App.Save == null || App.Save.HighestClearedStage < 2;
 
-        // Guided first battle (US-331): a coach card walks through drag → pincer → spell → timeline.
-        public int TutorialStep { get; private set; } = -1;
-        private int tutorialActions;
-        private bool TutorialActive => TutorialStep >= 0;
-        private static readonly string[] TutorialText =
-        {
-            "Drag a hero across the board. Anyone in the way swaps into the tile you just left — moving never hurts.",
-            "Trap an enemy between two heroes in a straight line to PINCER it. Allies touching the attackers join in.",
-            "Pincers fill your orb line. Tap a hero, then a lit spell below, then a target, then Confirm. Spells charge on the timeline before they land.",
-            "The number on each enemy is how many moves until it acts. Hit an enemy inside the orange zone to push it back. GUARD skips ahead safely.",
-        };
-
-        public void SkipTutorial() => FinishTutorial();
-
-        private void FinishTutorial()
-        {
-            TutorialStep = -1;
-            if (App.Save != null) { App.Save.TutorialDone = true; App.Persist(); }
-            SyncPanel();
-        }
-
-        private void AdvanceTutorial(int to)
-        {
-            if (!TutorialActive || to <= TutorialStep) return;
-            TutorialStep = Mathf.Min(to, TutorialText.Length - 1);
-            tutorialActions = 0;
-            hintShown = false; idle = 0f;
-            App.Audio.Sfx("ui.select", 0.6f);
-            SyncPanel();
-        }
-
-        private void TutorialAfterCommit(BattleCommand cmd, List<BattleEvent> events)
-        {
-            if (!TutorialActive) return;
-            if (TutorialStep == 0 && cmd is MoveCommand) AdvanceTutorial(1);
-            if (TutorialStep <= 1 && events.Exists(e => e is PincerFormedEvent p && p.Team == Team.Hero)) AdvanceTutorial(2);
-            else if (TutorialStep == 2)
-            {
-                tutorialActions++;
-                if (events.Exists(e => e is AbilityResolvedEvent r && State.UnitById(r.CasterId)?.IsHero == true) || tutorialActions >= 4) AdvanceTutorial(3);
-            }
-        }
-
-        private void TutorialCard()
-        {
-            var row = Ui.El("row", panel);
-            var col = Ui.El("col grow", row);
-            Ui.Text($"Tutorial {TutorialStep + 1}/{TutorialText.Length}", "small gold", col).name = "tutorial-title";
-            var t = Ui.Text(TutorialText[TutorialStep], "small", col);
-            t.style.whiteSpace = WhiteSpace.Normal;
-            var btns = Ui.El("col", row);
-            if (TutorialStep == TutorialText.Length - 1) Ui.Button("Got it", FinishTutorial, "btn--small btn--primary", btns).name = "tutorial-done";
-            Ui.Button("Skip", FinishTutorial, "btn--small", btns).name = "tutorial-skip";
-        }
-
         private int slotPress = -1;
         private float slotPressTime;
         private bool slotInfoShown;
@@ -1037,7 +982,7 @@ namespace Gaiden.App
             if (!AutoPlay && CanCommand() && !pressing && TargetingSlot < 0 && HintsEnabled)
             {
                 idle += dt;
-                if (idle > (TutorialActive && TutorialStep <= 1 ? 0.8f : HintDelay) && !hintShown) ShowHint();
+                if (idle > (TutorialDemoMove ? 0.8f : HintDelay) && !hintShown) ShowHint();
             }
             else ClearHint();
 
@@ -1078,7 +1023,7 @@ namespace Gaiden.App
         private void ShowHint()
         {
             hintShown = true;
-            var decision = new HeroBot(7).Decide(State);
+            var decision = TutorialDemoMove ? (BattleCommand)new HeroBot(7).BestMove(State) ?? new HeroBot(7).Decide(State) : new HeroBot(7).Decide(State);
             if (decision is UseSlotCommand use)
             {
                 var caster = State.UnitById(use.HeroId);

@@ -94,7 +94,8 @@ def main():
         h.call("clicktext", text="Skip"); time.sleep(1.5)
     check("battle screen", h.call("state")["screen"] == "battle")
     time.sleep(1.0)
-    check("first battle starts the guided tutorial", has_text("Tutorial 1/4"))
+    check("first battle starts the guided tutorial", any(x.startswith("Tutorial 1/") for x in texts()))
+    check("each lesson has an explanation and an example", has_text("Example:"))
     time.sleep(1.0)
     check("tutorial shows the suggested move right away", (h.call("banner")["text"] or "").startswith(("Hint", "Tip")))
 
@@ -147,7 +148,7 @@ def main():
         if sug["pincers"] > 0:
             check("a pincer names itself on the billboard", has_text("Pincer") or has_text("Chain"), str(texts()[:12]))
         tut = [x for x in texts() if x.startswith("Tutorial ")]
-        check("the tutorial advances after the first move", any(x in ("Tutorial 2/4", "Tutorial 3/4") for x in tut), f"tutorial texts={tut} panel={[x for x in texts()][-8:]}")
+        check("the tutorial advances after the first move", any(x.startswith(("Tutorial 2/", "Tutorial 3/", "Tutorial 4/")) for x in tut), f"tutorial texts={tut} panel={[x for x in texts()][-8:]}")
         h.call("click", name="tutorial-skip"); time.sleep(0.4)
         check("tutorial can be skipped", not any(x.startswith("Tutorial ") for x in texts()))
         cues = h.call("cues")
