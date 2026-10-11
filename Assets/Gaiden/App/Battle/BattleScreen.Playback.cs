@@ -1322,6 +1322,7 @@ namespace Gaiden.App
         private IEnumerator EndBattle()
         {
             ended = true;
+            SaveRecord();
             yield return Tween.Wait(0.6f);
             if (setupOverride != null || App.Save == null)
             {

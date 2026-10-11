@@ -179,9 +179,11 @@ namespace Gaiden.Core.Bot
                             // Taunt (§14.1.1): worth it when the tank is sturdy and allies are exposed or casting.
                             if (t.HpFraction >= 0.45f)
                             {
-                                score += 3f * s.HeroCastsInFlight;
+                                // Records showed the bot almost never taunting: value it by the exposed allies it would cover.
+                                int exposed = 0;
                                 foreach (var ally in s.LivingList(Team.Hero))
-                                    if (ally != t) foreach (var e in s.LivingList(Team.Enemy)) if (e.IsAdjacentTo(ally)) { score += 2.5f; break; }
+                                    if (ally != t) foreach (var e in s.LivingList(Team.Enemy)) if (e.IsAdjacentTo(ally) || e.DistanceTo(ally) <= Math.Max(1, e.Def.AttackRange)) { exposed++; break; }
+                                if (exposed > 0 || s.HeroCastsInFlight > 0) score += 6f + 5f * exposed + 3f * s.HeroCastsInFlight;
                             }
                         }
                         else if (gift.OutgoingDamageMultiplier > 1f) score += close ? 1.2f : 0f;

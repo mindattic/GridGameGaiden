@@ -741,6 +741,8 @@ Targeting is cancelled by tapping the same slot again, the hardware/Escape **Bac
 
 ### 4.7 Progressive slot unlock
 
+**Amended 2026-10-11 (owner: "give each character 2 stacks of full life potions and unlock the slots to put them in … the 2 healing potion is two stacks of 5x"):** all five slots are open from the start (`Progression.StartingSlots`). Every hero's default bar is two abilities, **two X-Potion stacks (5 each, full heal, usable on any ally)**, then more abilities; a new game stocks a full stack per potion slot (5 heroes × 2 × 5). The threshold rule below is kept for reference but no longer gates anything.
+
 `Progression.UnlockedSlots(save)`: **2** on a fresh save, +1 when `HighestClearedStage` reaches **0, 2 and 5** (`UnlockThresholds`), max 5. The battle reads it via `BattleSetup.UnlockedSlots`; the Abilities screen renders locked cells and `Abilities.Assign` refuses them. The post-battle screen announces "Ability slot unlocked!". *(Tests: `New_game_has_starting_trio_gold_and_loadouts`, `Full_loop_battle_commit_then_every_vendor`.)*
 
 ---
@@ -1541,6 +1543,8 @@ PostBattle — gold, XP, level-ups, items, unlocks, bounty ════╝
 
 ### 22.2 Failure path detail
 
+**Amended 2026-10-11 — hard-won experience:** a defeat now keeps the XP of every foe felled (gold and loot are still lost); the results screen shows "Hard-won experience +N each" and any level-ups. Found with the battle records: with a 20-wave first battle and no reward for losing, a learning player could never get stronger.
+
 - **Defeat** (all heroes down): "DEFEAT", no rewards, party restored to full, PostBattle offers **Retry** and **Continue**.
 - **Retreat** (pause menu → Retreat, confirmed): committed as a defeat. **Amended 2026-10-09** (new).
 - **Escape** (Smoke Bomb): "ESCAPED", no rewards, wounds remain. **Amended 2026-10-09** (new). No permadeath ([§29](#29-open-design-questions)).
@@ -1573,6 +1577,16 @@ Campaign (`campaign.json`): Green Valley, Sandsea Reaches, Mireholt Fens, Frostm
 
 ---
 
+
+### 22.6 Battle records (added 2026-10-11, owner: "record everything so you can learn how to balance and synergize, keep the records of all moves as JSON so that we can build ML around it in the future")
+
+`BattleRecorder` (Core) writes one JSON document per battle, schema v1: `source` (player / bot:greedy / bot:casual / bot:autoplay / player+autoplay), stage, seed, waves, the party (class, role, level, stats, gear, bar), the opening state and events, then every turn — the full state **before** (units with position, HP, buffs, cooldowns, bar, brain, timeline position, casts; pickups, traps, blocks, amplifier, bank, mana charge), the **command**, whether it was accepted, **every event** it produced (type + fields), and a summary after — and finally the outcome (phase, wave reached, actions, coins, XP, kills, items used, heroes standing).
+- The game saves every battle (victory, defeat, retreat) to `persistentDataPath/battle-records/` (or `<artifacts>/records` under the harness, or `-records <dir>`).
+- `RecordTests.Record_soak_of_the_first_battle` with `GAIDEN_RECORDS=<dir>` writes bot-played battles; `tools/records.py` prints per-wave tables (turns, damage taken, deaths, potions, pincers, chains, mana, pickups, taunts), each role's damage/healing, damage taken by enemy brain, and the most-used abilities. The 20-wave first battle and several rules (skirmisher dart, last stand, taunt valuation, hard-won experience) were tuned from these tables.
+
+### 22.7 The first battle (amended 2026-10-11, owner: "make the first battle 20 rounds with increasing difficulty")
+
+Green Valley I is **20 waves**: the five tutorial waves, then a ramp through frogs, gangers, skelepedes, the toad, soldiers, flyers, undead, a captain's squad and a final captain + soldiers + toad (levels 1 → 5; every wave outweighs the one before it — test `The_first_battle_has_twenty_waves_of_rising_difficulty`). Measured: a strong bot wins it 8/8 in ~290 actions with the party of five; a casual bot clears it on about half its attempts (with hard-won experience between tries).
 
 ### 22.5 Expeditions (added 2026-10-10, owner direction)
 
@@ -1823,6 +1837,10 @@ The caravan is the party's moving base — its wagons are the shops between batt
 | Scouts | 300 | Adventure lists each battle's foes |
 
 *(Test: `Caravan_upgrades_cost_gold_and_change_how_expeditions_play`.)*
+### 25.14 The party of five (added 2026-10-11, owner: "add a fourth and fifth hero onto the team … a 5 player team seems about right for max")
+
+`MaxPartySize` = **5**; a new game starts with one of each role: Paladin (Tank), Barbarian (Striker), Cleric (Healer), Red Mage (Mage), Engineer (Support). Recruits and rescued guests wait in reserve when the party is full. Camp shows the five in a two-column grid; class blurbs render their [keywords] as highlights.
+
 ### 25.13 Roles (added 2026-10-11, owner direction: "a healer should need to heal, a magician should have ranged spells, a tank should be able to taunt")
 
 Every hero class has a `Role` (validated): **Tank** (9), **Healer** (8), **Mage** (6), **Striker** (31), **Support** (8). The role sets the default bar and the learn list; caster power (§13.1.5) makes the stats matter.

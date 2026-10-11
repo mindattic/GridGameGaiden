@@ -353,6 +353,11 @@ test for every rule. 4. A harness step for anything visible. 5. Glyph check gree
 | US-362 | Action cut-ins that twist and zoom; supporters pop in as they strike | §9 | ✅ | `tools/artreview.py caster sweep` |
 | US-363 | Art review loop: record frames of any moment and review them | — | ✅ | `tools/artreview.py`, automation `record` |
 | US-364 | Full tutorial with explanations and examples; the first battle has 5 waves of rising difficulty | §9 | ✅ | ten lessons (`BattleScreen.Tutorial.cs`); `The_first_battle_has_five_waves_of_rising_difficulty`; `tools/uicheck.py` (lesson has an explanation and an example); autoplay walk-through artifacts/tutorial |
+| US-366 | Battle records of every move as JSON (for balance learning and future ML), with an analysis tool | §22.6 | ✅ | `A_recorded_battle_round_trips_as_json_with_every_turn`; game writes a record per battle (artifacts/first20/records); `tools/records.py` |
+| US-367 | The first battle is 20 waves of rising difficulty | §22.7 | ✅ | `The_first_battle_has_twenty_waves_of_rising_difficulty`; record soak: greedy 8/8 |
+| US-368 | Every hero starts with two stacks of 5 full-life potions in unlocked slots | §4.7 | ✅ | `New_game_has_starting_trio_gold_and_loadouts`; screenshot artifacts/first20/bar.png |
+| US-369 | A party of five (one of each role); every screen fits five | §25.14 | ✅ | `New_game_has_starting_trio_gold_and_loadouts`; sweep screenshots (hub, party, status) |
+| US-370 | A defeat keeps the experience earned | §22.2 | ✅ | BalanceReport (casual bot now clears the first battle on ~half its attempts) |
 | US-365 | Every enemy unit has its own distinct AI | §14.6 | ✅ | 20 brains over 41 families; `Every_enemy_family_plays_differently` + one test per brain behaviour; BalanceReport (greedy 4/4, casual+camp 2/4); enemy card shows the brain |
 
 ## Tally
@@ -371,7 +376,7 @@ test for every rule. 4. A harness step for anything visible. 5. Glyph check gree
 | Audio & VFX (19) | 18 | 0 | 1 |
 | Platform & ship (13) | 12 | 0 | 1 |
 | Production roadmap (owner direction, 2026-10-10) (9) | 8 | 1 | 0 |
-| Gameplay synergy & feel (owner direction, 2026-10-11) (15) | 15 | 0 | 0 |
-| **Total (258)** | **255** | **1** | **2** |
+| Gameplay synergy & feel (owner direction, 2026-10-11) (20) | 20 | 0 | 0 |
+| **Total (263)** | **260** | **1** | **2** |
 
 Open design questions that gate future stories live in [BIBLE §29](BIBLE.md#29-open-design-questions).

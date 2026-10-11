@@ -203,7 +203,7 @@ namespace Gaiden.App
             }
             G("Weapon", h.WeaponId, h.WeaponDurability); G("Armor", h.ArmorId, h.ArmorDurability);
             for (int i = 0; i < 3; i++) G($"Relic {i + 1}", h.Relics[i]);
-            var lore = Ui.Text(def.Lore ?? def.Description ?? "", "small dim", w);
+            var lore = Ui.Text(Ui.Keywords(def.Lore ?? def.Description ?? ""), "small dim", w);
             lore.style.whiteSpace = WhiteSpace.Normal; lore.style.marginTop = 16;
         }
     }
@@ -398,7 +398,7 @@ namespace Gaiden.App
                 Ui.Text(C.Class(h.ClassId).Name, "h2", nameRow);
                 Ui.RoleBadge(C.Class(h.ClassId).Role, nameRow);
                 Ui.Text($"Lv {u.Level}   HP {u.MaxHp}   {(active ? "<color=#78EC96>Active</color>" : "Reserve")}", "small", col);
-                Ui.Text(C.Class(h.ClassId).Card ?? "", "tiny dim", col).style.whiteSpace = WhiteSpace.Normal;
+                Ui.Text(Ui.Keywords(C.Class(h.ClassId).Card ?? ""), "tiny dim", col).style.whiteSpace = WhiteSpace.Normal;
                 card.AddToClassList("card-tap");
                 Ui.Tappable(card, () => Done(Party.Toggle(S, hero.ClassId)), "ui.select");
             }
@@ -677,7 +677,7 @@ namespace Gaiden.App
                 Ui.Thumb(d.Id, card, 140);
                 var col = Ui.El("col grow", card);
                 Ui.Text(d.Name, "h2", col);
-                Ui.Text(d.Card ?? d.Description ?? "", "tiny dim", col).style.whiteSpace = WhiteSpace.Normal;
+                Ui.Text(Ui.Keywords(d.Card ?? d.Description ?? ""), "tiny dim", col).style.whiteSpace = WhiteSpace.Normal;
                 var b = Ui.Button(owned ? "Joined" : "Recruit", () => Confirm.Show($"Recruit {def.Name} for {Ui.Gold(price)}?", "Recruit", () => Done(Summon.Recruit(C, S, def.Id))), "btn--small", card);
                 Ui.SetEnabled(b, !owned && S.Gold >= price);
             }
@@ -763,7 +763,7 @@ namespace Gaiden.App
             var top = Ui.El("row", w);
             Ui.Text(d.Name, "h2 grow", top);
             Ui.Text($"Defeated {e.Defeated}", "small gold", top);
-            var lore = Ui.Text(d.Lore ?? d.Description ?? "", "small dim", w);
+            var lore = Ui.Text(Ui.Keywords(d.Lore ?? d.Description ?? ""), "small dim", w);
             lore.style.whiteSpace = WhiteSpace.Normal;
             if (e.Scanned)
             {

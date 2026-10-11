@@ -20,10 +20,13 @@ namespace Gaiden.Tests
         public void New_game_has_starting_trio_gold_and_loadouts()
         {
             var s = Progression.NewGame(Real, "Test");
-            Assert.Equal(new[] { "paladin", "barbarian", "cleric" }, s.Party);
+            Assert.Equal(new[] { "paladin", "barbarian", "cleric", "redmage", "engineer" }, s.Party); // one of each role
+            Assert.Equal(new[] { "Tank", "Striker", "Healer", "Mage", "Support" }, s.Party.Select(id => Real.Classes[id].Role));
             Assert.Equal(Progression.StartingGold, s.Gold);
             Assert.All(s.Roster, h => Assert.Contains(h.Bar, e => e != null));
-            Assert.Equal(2, Progression.UnlockedSlots(s));
+            Assert.Equal(Progression.MaxBarSlots, Progression.UnlockedSlots(s)); // every slot open from the start (2026-10-11)
+            Assert.All(s.Roster, h => Assert.Equal(2, h.Bar.Count(e => e == "item:x_potion")));      // two full-life stacks per hero…
+            Assert.Equal(s.Roster.Count * 2 * Real.Items["x_potion"].MaxStack, s.Count("x_potion"));  // …each a full stack of 5
         }
 
         [Fact]
@@ -52,7 +55,7 @@ namespace Gaiden.Tests
                 var stage = stages[System.Math.Min(i, stages.Count - 1)];
                 if (!Progression.IsStageUnlocked(s, stages.IndexOf(stage))) break;
                 var setup = BattleFactory.Build(c, s, stage.Id, 100 + i);
-                var st = BotRunner.Play(c, setup, new HeroBot(i), 300);
+                var st = BotRunner.Play(c, setup, new HeroBot(i), 900); // the first battle is a 20-wave gauntlet
                 var rep = BattleFactory.Commit(c, s, st);
                 if (rep.Victory) victories++;
                 output.WriteLine($"{stage.Id}: {(rep.Victory ? "WIN" : "LOSS")} gold+{rep.Gold} xp+{rep.XpEach} items {string.Join(",", rep.Items.Select(kv => kv.Key + "x" + kv.Value))} lvls {string.Join(",", rep.LevelUps)}");
@@ -122,7 +125,8 @@ namespace Gaiden.Tests
                 s.Gold += Summon.Price(c, s); // recruit until the party can fill (a recruit joins while there's room)
                 Assert.True(Summon.Recruit(c, s, Summon.Pool(c, s).First(d => s.Hero(d.Id) == null).Id).Ok);
             }
-            Assert.Equal(6, s.Party.Count);
+            Assert.Equal(Progression.MaxPartySize, s.Party.Count);
+            Assert.Equal(5, Progression.MaxPartySize);
 
             // Bounty
             var bounty = Bounties.Posted(c, s).First();
@@ -227,7 +231,7 @@ namespace Gaiden.Tests
             var rep = BattleFactory.Commit(c, s, st);
             Assert.Contains("dervish", rep.GuestsJoined);
             Assert.NotNull(s.Hero("dervish"));
-            Assert.Contains("dervish", s.Party);
+            Assert.Equal(Progression.MaxPartySize, s.Party.Count); // a full party: the rescued guest waits in reserve
         }
 
         [Fact]

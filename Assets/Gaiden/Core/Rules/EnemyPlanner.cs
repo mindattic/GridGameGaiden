@@ -122,6 +122,21 @@ namespace Gaiden.Core.Rules
             }
         }
 
+        private static bool Evasive(Brain b) => b == Brain.Commander || b == Brain.Trapper || b == Brain.Kiter || b == Brain.Medic;
+
+        /// <summary>
+        /// Last stand: an evasive brain (Commander, Trapper, Kiter, Medic) with no fighting ally left stops hanging back and
+        /// charges — the battle can't stall on a foe that only runs (found in the battle records, §22.6).
+        /// </summary>
+        public static Brain EffectiveBrain(BattleState s, Unit e)
+        {
+            var b = e.Def.Brain;
+            if (!Evasive(b)) return b;
+            foreach (var a in s.Living(Team.Enemy))
+                if (a != e && !a.IsRemains && !Evasive(a.Def.Brain) && a.Def.Brain != Brain.Sentinel) return b;
+            return Brain.Berserker;
+        }
+
         private static float RetreatThreshold(Unit e)
         {
             switch (e.Def.Brain)
@@ -193,7 +208,7 @@ namespace Gaiden.Core.Rules
             if (enemy.IsImmobile || enemy.IsSnakeSegment) return enemy.Pos;
             var target = PickTarget(s, enemy);
             if (target == null) return enemy.Pos;
-            var brain = enemy.Def.Brain;
+            var brain = EffectiveBrain(s, enemy);
             if (brain == Brain.Sentinel) return enemy.Pos;
             if (brain == Brain.Ambusher && NearestHeroDistance(s, enemy) > 2) return enemy.Pos;
             if (brain == Brain.Sluggish && enemy.TurnsTaken % 2 == 0) return enemy.Pos;

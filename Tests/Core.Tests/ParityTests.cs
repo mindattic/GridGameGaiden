@@ -593,7 +593,7 @@ namespace Gaiden.Tests
         {
             var c = Real;
             var save = Progression.NewGame(c, "Stack");
-            var setup = BattleFactory.Build(c, save, c.CampaignStages()[0].Id, 5);
+            var setup = BattleFactory.Build(c, save, c.CampaignStages()[1].Id, 5);
             var st = Gaiden.Core.Bot.BotRunner.Play(c, setup, new Gaiden.Core.Bot.HeroBot(2), 300);
             Assert.Equal(BattlePhase.Victory, st.Phase);
             var item = st.Results.Items.Keys.FirstOrDefault();
@@ -634,6 +634,10 @@ namespace Gaiden.Tests
             var pick = Summon.Pool(c, save).First();
             Assert.True(Summon.Recruit(c, save, pick.Id).Ok);
             Assert.Equal(300, save.Hero(pick.Id).TotalXp);
+            // The starting party of five is full, so a recruit waits in reserve until there's room.
+            Assert.DoesNotContain(pick.Id, save.Party);
+            Assert.True(Party.Toggle(save, save.Party[4]).Ok);
+            Assert.True(Party.Toggle(save, pick.Id).Ok);
             Assert.Contains(pick.Id, save.Party);
         }
 
@@ -656,7 +660,7 @@ namespace Gaiden.Tests
         {
             var c = Real;
             var save = Progression.NewGame(c, "Best");
-            var setup = BattleFactory.Build(c, save, c.CampaignStages()[0].Id, 9);
+            var setup = BattleFactory.Build(c, save, c.CampaignStages()[1].Id, 9); // a short battle (the first is a 20-wave gauntlet)
             var st = Gaiden.Core.Bot.BotRunner.Play(c, setup, new Gaiden.Core.Bot.HeroBot(1), 300);
             Assert.Equal(BattlePhase.Victory, st.Phase);
             BattleFactory.Commit(c, save, st);

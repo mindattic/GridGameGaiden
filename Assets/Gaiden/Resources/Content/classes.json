@@ -108,9 +108,10 @@
     "DefaultLoadout": [
       "heal",
       "regen",
-      "item:healing_potion_basic",
-      "item:cons_sleep_dart",
-      "rejuvenate"
+      "item:x_potion",
+      "item:x_potion",
+      "rejuvenate",
+      "item:cons_sleep_dart"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -229,7 +230,8 @@
     "DefaultLoadout": [
       "cleave",
       "mug",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "steal",
       "poison"
     ],
@@ -349,7 +351,8 @@
     "DefaultLoadout": [
       "cleave",
       "war_cry",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "mug",
       "steal"
     ],
@@ -469,7 +472,8 @@
     "DefaultLoadout": [
       "cleave",
       "war_cry",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "mug",
       "steal"
     ],
@@ -924,7 +928,8 @@
     "DefaultLoadout": [
       "cleave",
       "teleport",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "steal",
       "mug"
     ],
@@ -1049,7 +1054,8 @@
     "DefaultLoadout": [
       "poison",
       "fireball",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "sleep",
       "frost"
     ],
@@ -1171,7 +1177,8 @@
     "DefaultLoadout": [
       "regen",
       "war_cry",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "rejuvenate",
       "quicken"
     ],
@@ -1291,7 +1298,8 @@
     "DefaultLoadout": [
       "cleave",
       "teleport",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "steal",
       "mug"
     ],
@@ -1411,7 +1419,8 @@
     "DefaultLoadout": [
       "cleave",
       "war_cry",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "mug",
       "steal"
     ],
@@ -2460,7 +2469,8 @@
     "DefaultLoadout": [
       "cleave",
       "teleport",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "steal",
       "mug"
     ],
@@ -2583,7 +2593,8 @@
     "DefaultLoadout": [
       "heal",
       "mass_heal",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "antidote",
       "regen"
     ],
@@ -2705,7 +2716,8 @@
     "DefaultLoadout": [
       "regen",
       "war_cry",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "rejuvenate",
       "quicken"
     ],
@@ -4083,7 +4095,8 @@
     "DefaultLoadout": [
       "taunt",
       "shield_bash",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "poison",
       "sleep"
     ],
@@ -4203,7 +4216,8 @@
     "DefaultLoadout": [
       "taunt",
       "shield_bash",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "scan",
       "silence"
     ],
@@ -4436,7 +4450,8 @@
     "DefaultLoadout": [
       "regen",
       "war_cry",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "rejuvenate",
       "quicken"
     ],
@@ -4559,7 +4574,8 @@
     "DefaultLoadout": [
       "heal",
       "mass_heal",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "antidote",
       "regen"
     ],
@@ -4682,7 +4698,8 @@
     "DefaultLoadout": [
       "frost",
       "bolt",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "slow",
       "shock_wave"
     ],
@@ -4802,7 +4819,8 @@
     "DefaultLoadout": [
       "cleave",
       "war_cry",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "mug",
       "steal"
     ],
@@ -4924,7 +4942,8 @@
     "DefaultLoadout": [
       "quicken",
       "slow",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "war_cry",
       "scan"
     ],
@@ -5044,7 +5063,8 @@
     "DefaultLoadout": [
       "cleave",
       "war_cry",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "mug",
       "steal"
     ],
@@ -5164,7 +5184,8 @@
     "DefaultLoadout": [
       "cleave",
       "war_cry",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "mug",
       "steal"
     ],
@@ -6823,7 +6844,8 @@
     "DefaultLoadout": [
       "cleave",
       "teleport",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "steal",
       "mug"
     ],
@@ -7390,7 +7412,8 @@
     "DefaultLoadout": [
       "poison",
       "bolt",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "sleep",
       "fireball"
     ],
@@ -7624,7 +7647,8 @@
     "DefaultLoadout": [
       "taunt",
       "shield_bash",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "scan",
       "silence"
     ],
@@ -7744,7 +7768,8 @@
     "DefaultLoadout": [
       "taunt",
       "shield_bash",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "scan",
       "silence"
     ],
@@ -7864,7 +7889,8 @@
     "DefaultLoadout": [
       "cleave",
       "war_cry",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "mug",
       "steal"
     ],
@@ -8316,7 +8342,8 @@
     "DefaultLoadout": [
       "quicken",
       "slow",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "war_cry",
       "scan"
     ],
@@ -8879,7 +8906,8 @@
     "DefaultLoadout": [
       "cleave",
       "war_cry",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "mug",
       "steal"
     ],
@@ -9335,7 +9363,8 @@
     "DefaultLoadout": [
       "heal",
       "mass_heal",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "antidote",
       "regen"
     ],
@@ -9566,7 +9595,8 @@
     "DefaultLoadout": [
       "taunt",
       "shield_bash",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "scan",
       "silence"
     ],
@@ -9798,7 +9828,8 @@
     "DefaultLoadout": [
       "cleave",
       "mug",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "steal",
       "poison"
     ],
@@ -9919,7 +9950,8 @@
     "DefaultLoadout": [
       "cleave",
       "mug",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "steal",
       "poison"
     ],
@@ -10372,7 +10404,8 @@
     "DefaultLoadout": [
       "poison",
       "frost",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "sleep",
       "bolt"
     ],
@@ -10493,7 +10526,8 @@
     "DefaultLoadout": [
       "taunt",
       "shield_bash",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "heal",
       "scan"
     ],
@@ -10613,7 +10647,8 @@
     "DefaultLoadout": [
       "cleave",
       "war_cry",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "mug",
       "steal"
     ],
@@ -10843,7 +10878,8 @@
     "DefaultLoadout": [
       "cleave",
       "war_cry",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "mug",
       "steal"
     ],
@@ -10963,7 +10999,8 @@
     "DefaultLoadout": [
       "cleave",
       "war_cry",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "mug",
       "steal"
     ],
@@ -11633,7 +11670,8 @@
     "DefaultLoadout": [
       "cleave",
       "war_cry",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "mug",
       "steal"
     ],
@@ -11868,7 +11906,8 @@
     "DefaultLoadout": [
       "fireball",
       "frost",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "bolt",
       "meteor"
     ],
@@ -11988,7 +12027,8 @@
     "DefaultLoadout": [
       "cleave",
       "teleport",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "steal",
       "mug"
     ],
@@ -12109,7 +12149,8 @@
     "DefaultLoadout": [
       "cleave",
       "mug",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "steal",
       "poison"
     ],
@@ -12234,7 +12275,8 @@
     "DefaultLoadout": [
       "poison",
       "fireball",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "sleep",
       "frost"
     ],
@@ -12354,7 +12396,8 @@
     "DefaultLoadout": [
       "cleave",
       "war_cry",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "mug",
       "steal"
     ],
@@ -12479,7 +12522,8 @@
     "DefaultLoadout": [
       "heal",
       "mass_heal",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "antidote",
       "regen"
     ],
@@ -12820,7 +12864,8 @@
     "DefaultLoadout": [
       "cleave",
       "war_cry",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "mug",
       "steal"
     ],
@@ -12940,7 +12985,8 @@
     "DefaultLoadout": [
       "taunt",
       "shield_bash",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "scan",
       "silence"
     ],
@@ -13063,7 +13109,8 @@
     "DefaultLoadout": [
       "heal",
       "mass_heal",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "antidote",
       "regen"
     ],
@@ -13520,7 +13567,8 @@
     "DefaultLoadout": [
       "cleave",
       "mug",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "steal",
       "poison"
     ],
@@ -14508,7 +14556,8 @@
     "DefaultLoadout": [
       "cleave",
       "war_cry",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "mug",
       "steal"
     ],
@@ -15178,7 +15227,8 @@
     "DefaultLoadout": [
       "cleave",
       "war_cry",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "mug",
       "steal"
     ],
@@ -15298,7 +15348,8 @@
     "DefaultLoadout": [
       "cleave",
       "war_cry",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "mug",
       "steal"
     ],
@@ -15530,7 +15581,8 @@
     "DefaultLoadout": [
       "cleave",
       "war_cry",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "mug",
       "steal"
     ],
@@ -15650,7 +15702,8 @@
     "DefaultLoadout": [
       "taunt",
       "shield_bash",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "scan",
       "silence"
     ],
@@ -16096,7 +16149,8 @@
     "DefaultLoadout": [
       "quicken",
       "slow",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "war_cry",
       "scan"
     ],
@@ -16883,7 +16937,8 @@
     "DefaultLoadout": [
       "cleave",
       "mug",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "steal",
       "poison"
     ],
@@ -17005,7 +17060,8 @@
     "DefaultLoadout": [
       "quicken",
       "slow",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "war_cry",
       "scan"
     ],
@@ -18383,7 +18439,8 @@
     "DefaultLoadout": [
       "cleave",
       "war_cry",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "mug",
       "steal"
     ],
@@ -18612,7 +18669,8 @@
     "DefaultLoadout": [
       "taunt",
       "shield_bash",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "scan",
       "silence"
     ],
@@ -18848,7 +18906,8 @@
     "DefaultLoadout": [
       "heal",
       "teleport",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "antidote",
       "mass_heal"
     ],
@@ -18973,7 +19032,8 @@
     "DefaultLoadout": [
       "heal",
       "mass_heal",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "antidote",
       "regen"
     ],
@@ -19095,7 +19155,8 @@
     "DefaultLoadout": [
       "regen",
       "war_cry",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "rejuvenate",
       "quicken"
     ],
@@ -19655,7 +19716,8 @@
     "DefaultLoadout": [
       "cleave",
       "teleport",
-      "item:healing_potion_basic",
+      "item:x_potion",
+      "item:x_potion",
       "steal",
       "mug"
     ],

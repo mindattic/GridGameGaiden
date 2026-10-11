@@ -138,7 +138,7 @@ namespace Gaiden.Tests
             Assert.Contains(ev, e => e is WeaponSwappedEvent w && w.ToWeapon == weapons[1].Id);
             Assert.Equal(weapons[1].Id, pal.WeaponId);
             Assert.Equal(weapons[0].Id, pal.Bar[1].WeaponId);
-            for (int w = 0; w < 10 && !s.IsOver; w++) // clear every wave (the first battle has five)
+            for (int w = 0; w < 30 && !s.IsOver; w++) // clear every wave (the first battle has twenty)
             {
                 foreach (var e in s.Units.Where(u => !u.IsHero)) { e.Hp = 0; e.OnBoard = false; }
                 BattleEngine.Apply(s, new ShieldCommand()); // any action → CheckEnd → next wave / victory bookkeeping

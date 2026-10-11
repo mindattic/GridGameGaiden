@@ -86,6 +86,360 @@
             "Y": -1
           }
         ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "frog00",
+            "Level": 3,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "frog01",
+            "Level": 2,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "bat01",
+            "Level": 2,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "wolf00",
+            "Level": 3,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "wolf01",
+            "Level": 3,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "bat00",
+            "Level": 3,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "ganger00",
+            "Level": 4,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "ganger01",
+            "Level": 4,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "slime03",
+            "Level": 3,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "skelepede00",
+            "Level": 3,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "skelepede01",
+            "Level": 3,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "goblinthug00",
+            "Level": 4,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "toad00",
+            "Level": 4,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "frog02",
+            "Level": 4,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "frog03",
+            "Level": 3,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "vulture",
+            "Level": 4,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "bat02",
+            "Level": 4,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "wolf02",
+            "Level": 3,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "soldier00",
+            "Level": 5,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "soldier01",
+            "Level": 4,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "ganger02",
+            "Level": 4,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "flyingmonkey",
+            "Level": 5,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "steppinrazor00",
+            "Level": 4,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "wolf03",
+            "Level": 5,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "ganger03",
+            "Level": 6,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "ganger04",
+            "Level": 5,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "goblinthug00",
+            "Level": 5,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "skelepede02",
+            "Level": 5,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "undead00",
+            "Level": 5,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "undead01",
+            "Level": 4,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "soldier02",
+            "Level": 6,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "soldier03",
+            "Level": 6,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "captain",
+            "Level": 5,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "wolf00",
+            "Level": 4,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "wolf01",
+            "Level": 4,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "wolf02",
+            "Level": 4,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "wolf03",
+            "Level": 3,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "steppinrazor01",
+            "Level": 5,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "flyingmonkey",
+            "Level": 4,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "vulture",
+            "Level": 4,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "bat02",
+            "Level": 4,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "ganger05",
+            "Level": 5,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "ganger06",
+            "Level": 5,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "captain",
+            "Level": 5,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "goblinthug00",
+            "Level": 4,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "captain",
+            "Level": 5,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "soldier00",
+            "Level": 5,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "soldier01",
+            "Level": 5,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "toad00",
+            "Level": 5,
+            "X": -1,
+            "Y": -1
+          }
+        ]
       }
     ]
   },

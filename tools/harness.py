@@ -18,7 +18,8 @@ import urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 EXE = os.path.join(ROOT, "Build", "Windows", "GridGameGaiden.exe")
-PORT = 7777
+# GAIDEN_PORT keeps this project's player off ports other projects' harnesses use (GridGameCaravan also defaults to 7777).
+PORT = int(os.environ.get("GAIDEN_PORT", "7787"))
 BASE = f"http://127.0.0.1:{PORT}"
 
 BOARD_LEFT, BOARD_TOP, TILE = 45, 450, 180

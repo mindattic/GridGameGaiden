@@ -24,12 +24,20 @@ namespace Gaiden.Meta
 
     public static class Progression
     {
-        public static readonly string[] StartingRoster = { "paladin", "barbarian", "cleric" };
+        /// <summary>
+        /// The starting party (owner 2026-10-11: "add a fourth and fifth hero … a 5 player team seems about right for max"):
+        /// Tank, Striker, Healer, Mage, Support — one of each role.
+        /// </summary>
+        public static readonly string[] StartingRoster = { "paladin", "barbarian", "cleric", "redmage", "engineer" };
         public const int StartingGold = 200;
-        public const int MaxPartySize = 6;
+        public const int MaxPartySize = 5;
         public const int MaxBarSlots = 5;
-        /// <summary>Slot unlocks: 2 on a fresh save, +1 when the highest cleared campaign index reaches each threshold (§4.7).</summary>
-        public static readonly int[] UnlockThresholds = { 0, 2, 5 };
+        /// <summary>
+        /// Slot unlocks (§4.7). Amended 2026-10-11 (owner: "give each character 2 stacks of full life potions and unlock
+        /// the slots to put them in"): every slot is open from the start, so the thresholds no longer gate anything.
+        /// </summary>
+        public static readonly int[] UnlockThresholds = { };
+        public const int StartingSlots = MaxBarSlots;
 
         public static SaveData NewGame(ContentDb c, string name)
         {
@@ -41,9 +49,10 @@ namespace Gaiden.Meta
                 s.Roster.Add(h);
                 s.Party.Add(id);
             }
+            // Every item slot on a starting bar is a full stack (two X-Potion stacks of 5 per hero).
             foreach (var h in s.Roster)
                 foreach (var e in h.Bar)
-                    if (e != null && e.StartsWith("item:")) s.AddItem(e.Substring(5), 3);
+                    if (e != null && e.StartsWith("item:")) s.AddItem(e.Substring(5), Math.Max(1, c.TryItem(e.Substring(5))?.MaxStack ?? 3));
             return s;
         }
 
@@ -54,9 +63,9 @@ namespace Gaiden.Meta
             int i = 0;
             foreach (var entry in def.DefaultLoadout)
             {
-                if (i >= MaxBarSlots) break;
+                // Abilities past the bar are still known (they can be slotted later); items may repeat (two stacks).
                 if (!entry.StartsWith("item:") && !h.Known.Contains(entry)) h.Known.Add(entry);
-                if (!entry.StartsWith("item:") || !h.Bar.Contains(entry)) h.Bar[i++] = entry;
+                if (i < MaxBarSlots) h.Bar[i++] = entry;
             }
             return h;
         }
@@ -65,7 +74,7 @@ namespace Gaiden.Meta
 
         public static int UnlockedSlots(SaveData s)
         {
-            int n = 2;
+            int n = StartingSlots;
             foreach (var t in UnlockThresholds) if (s.HighestClearedStage >= t) n++;
             return Math.Min(MaxBarSlots, n);
         }
@@ -376,6 +385,20 @@ namespace Gaiden.Meta
             else
             {
                 foreach (var id in s.Party) { var h = s.Hero(id); if (h != null) h.Hp = 0; } // defeat = retry at full (§22.2)
+                // Hard-won experience (amended 2026-10-11): the XP of every foe felled is kept, so each retry of a long
+                // gauntlet leaves the party stronger. Gold and loot are still lost.
+                var heroes = battle.Units.Where(u => u.IsHero && !u.IsGuest).ToList();
+                rep.XpEach = heroes.Count > 0 ? r.Xp : 0;
+                foreach (var u in heroes)
+                {
+                    var h = s.Hero(u.Def.Id);
+                    if (h == null || rep.XpEach <= 0) continue;
+                    int before = Progression.Level(h);
+                    h.TotalXp += rep.XpEach;
+                    int after = Progression.Level(h);
+                    if (after > before) rep.LevelUps.Add((h.ClassId, before, after));
+                }
+                foreach (var kv in r.Kills) Entry(s, kv.Key).Defeated += kv.Value;
             }
             // Guests: alive at a victory → they join the caravan; fallen at any point → lost forever.
             foreach (var g in battle.Units.Where(u => u.IsGuest))

@@ -58,6 +58,8 @@ namespace Gaiden.Core.Battle
         /// Brains that change the shape of a turn (§14.6): Skirmishers strike first and dart away; Blinkers (every 2nd
         /// turn) and Burrowers (every 3rd) vanish and reappear beside their prey, then strike. True = the turn is done.
         /// </summary>
+        private bool skirmishing;
+
         private bool BrainTurn(Unit enemy)
         {
             var brain = enemy.Def.Brain;
@@ -65,13 +67,14 @@ namespace Gaiden.Core.Battle
             foreach (var h in S.Living(Team.Hero)) if (enemy.IsAdjacentTo(h)) heroAdjacent = true;
             if (brain == Brain.Skirmisher && heroAdjacent && !enemy.IsMultiTile)
             {
+                // A glancing blow on the way out (×0.8), and only one tile of retreat — close enough to be punished
+                // (records showed two-tile darts made skirmishers unpincerable, §22.6).
+                skirmishing = true;
                 EnemyAttack(enemy);
+                skirmishing = false;
                 if (CheckEnd() || !enemy.Alive) return true;
-                for (int i = 0; i < Math.Max(1, enemy.Def.MoveRange) && enemy.Alive; i++)
-                {
-                    var away = EnemyPlanner.PlanRetreat(S, enemy);
-                    if (away == enemy.Pos || !StepEnemy(enemy, away)) break;
-                }
+                var away = EnemyPlanner.PlanRetreat(S, enemy);
+                if (away != enemy.Pos) StepEnemy(enemy, away);
                 Announce($"{enemy.Name} darts away!", enemy.Id);
                 EndEnemyTurn(enemy);
                 return true;

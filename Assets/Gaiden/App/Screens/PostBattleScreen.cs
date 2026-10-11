@@ -67,8 +67,14 @@ namespace Gaiden.App
             {
                 var t = Ui.Text(report.Escaped ? "The party slips away in the smoke. Wounds remain; no rewards." :
                     report.ExpeditionFailed ? $"The {report.ExpeditionName} expedition has failed. The party falls back to the caravan and recovers — the expedition restarts from battle 1." :
-                    "The party retreats to camp and recovers. No rewards this time — but the stage is yours to retry.", "h2", list);
+                    "The party retreats to camp and recovers. The gold and loot are lost — but every hero keeps the experience they earned. The stage is yours to retry.", "h2", list);
                 t.style.whiteSpace = WhiteSpace.Normal;
+                if (!report.Escaped && report.XpEach > 0)
+                {
+                    Ui.MenuRow("Hard-won experience", $"+{report.XpEach} each", null, list).name = "defeat-xp";
+                    foreach (var (cls, from, to) in report.LevelUps)
+                        Ui.MenuRow($"{c.Class(cls).Name} reached Lv {to}!", "", null, list).Q<Label>("label").AddToClassList("good");
+                }
             }
 
             foreach (var g in report.GuestsLost)

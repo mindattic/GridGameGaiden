@@ -87,6 +87,7 @@ namespace Gaiden.App
             {
                 var setup = setupOverride ?? BattleFactory.Build(App.Content, App.Save, stageId, Environment.TickCount);
                 State = BattleEngine.Create(App.Content, setup, initial);
+                recorder = new BattleRecorder(State, setup, "player", initial);
             }
 
             var bg = Ui.El("fill", root);
@@ -781,7 +782,10 @@ namespace Gaiden.App
             bool wasTargeting = TargetingSlot >= 0;
             CancelTargeting();
             if (wasTargeting) { SyncBar(); panelUnitId = -1; SyncPanel(); }
+            var before = recorder != null ? BattleRecorder.Snapshot(State) : null;
             var events = BattleEngine.Apply(State, cmd);
+            recorder?.Add(before, cmd, events, State);
+            if (AutoPlay) autoplayedTurns++;
             Debug.Log($"[Battle] {cmd} → {events.Count} events, clock {State.Clock}");
             TutorialAfterCommit(cmd, events);
             App.StartCoroutine(Play(events, skipMovePrefix));
@@ -943,9 +947,34 @@ namespace Gaiden.App
             Ui.Select(w[1]);
         }
 
+        // ── Battle records (§22.6): every battle is saved as JSON for balance analysis and future ML ──
+        private BattleRecorder recorder;
+        private int autoplayedTurns;
+        public string LastRecordPath { get; private set; }
+
+        private void SaveRecord()
+        {
+            if (recorder == null) return;
+            try
+            {
+                var doc = recorder.Finish(State);
+                if (autoplayedTurns > 0) doc["source"] = autoplayedTurns >= recorder.Turns ? "bot:autoplay" : "player+autoplay";
+                var art = CommandLine.Value("-artifacts");
+                var dir = CommandLine.Value("-records") ?? (art != null ? System.IO.Path.Combine(art, "records") : System.IO.Path.Combine(Application.persistentDataPath, "battle-records"));
+                System.IO.Directory.CreateDirectory(dir);
+                var file = System.IO.Path.Combine(dir, $"{DateTime.UtcNow:yyyyMMdd-HHmmss}_{State.Stage.Id}_{State.Phase}.json");
+                System.IO.File.WriteAllText(file, recorder.ToJson());
+                LastRecordPath = file;
+                Debug.Log($"[Battle] record saved: {file} ({recorder.Turns} turns)");
+            }
+            catch (Exception e) { Debug.LogWarning($"[Battle] could not save the battle record: {e.Message}"); }
+            recorder = null;
+        }
+
         private void Retreat()
         {
             ended = true;
+            SaveRecord();
             if (App.Save != null && setupOverride == null)
             {
                 State.Phase = BattlePhase.Defeat;

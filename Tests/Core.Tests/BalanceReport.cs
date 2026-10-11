@@ -39,7 +39,7 @@ namespace Gaiden.Tests
                     if (manageCamp) CampRoutine.Run(c, s);
                     else if (Inn.Cost(c, s) > 0 && Inn.Cost(c, s) <= s.Gold) Inn.Rest(c, s);
                     var setup = BattleFactory.Build(c, s, stage.Id, battleSeed++);
-                    var st = BotRunner.Play(c, setup, new HeroBot(battleSeed, randomness), 400);
+                    var st = BotRunner.Play(c, setup, new HeroBot(battleSeed, randomness), 900); // the first battle is a 20-wave gauntlet
                     if (!rows.TryGetValue(stage.Id, out var row)) rows[stage.Id] = row = new Row();
                     row.Runs++;
                     row.Actions += st.Results.ActionsTaken;

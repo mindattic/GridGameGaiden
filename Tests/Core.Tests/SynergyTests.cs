@@ -188,7 +188,7 @@ namespace Gaiden.Tests
             Assert.True(Abilities.Swap(save, h, 0, 1).Ok);
             Assert.Equal(second, h.Bar[0]);
             Assert.Equal(first, h.Bar[1]);
-            Assert.False(Abilities.Swap(save, h, 1, 4).Ok, "slot 5 is locked on a fresh save");
+            Assert.False(Abilities.Swap(save, h, 1, Progression.MaxBarSlots).Ok, "there is no sixth slot");
         }
     
         // ── Mana charge (§3.1.9) ──
@@ -240,11 +240,11 @@ namespace Gaiden.Tests
         }
     
         [Fact]
-        public void The_first_battle_has_five_waves_of_rising_difficulty()
+        public void The_first_battle_has_twenty_waves_of_rising_difficulty()
         {
             var c = Real;
             var first = c.CampaignStages()[0];
-            Assert.Equal(5, first.Waves.Count);
+            Assert.Equal(20, first.Waves.Count);
             int Weight(WaveDef w) => w.Enemies.Sum(e => { var d = c.Classes[e.Class]; return (int)(d.BaseStats.Vitality + d.BaseStats.Strength) * e.Level + (d.ChargeAbility != null ? 5 : 0) + (d.Trap != null ? 5 : 0); });
             for (int i = 1; i < first.Waves.Count; i++)
                 Assert.True(Weight(first.Waves[i]) > Weight(first.Waves[i - 1]), $"wave {i + 1} should be harder than wave {i}");

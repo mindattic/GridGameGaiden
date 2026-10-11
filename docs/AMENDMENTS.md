@@ -312,3 +312,17 @@ updated: 2026-10-09
   matched the frog exactly). Smarter foes made the campaign harder, so enemy strikes carry ×0.9
   (`EnemyStrikeMultiplier`) and the finale's second wave drops a bat and its reaper is level 5; result: greedy
   bot 4/4, casual+camp bot 2/4, finale 18–33 % for the casual bot (it was 9 % this morning).
+
+## 2026-10-11 — 20-wave first battle, battle records, potion stacks, party of five (owner)
+
+- "make the first battle 20 rounds with increasing difficulty and record everything … keep the records of all moves
+  as JSON" → §22.7, §22.6. Records drove fixes: skirmishers dart one tile (×0.8 glancing strike) instead of two;
+  evasive brains make a last stand when they're the only fighters left (no stalls); the bot values Taunt by the
+  allies it covers; late waves stay at level 4–5 and grow in numbers instead.
+- "give each character 2 stacks of full life potions and unlock the slots … two stacks of 5x" → X-Potion ×5 twice per
+  hero; all slots open from the start (§4.7). **Deviation:** progressive slot unlocks retired.
+- "add a fourth and fifth hero … a 5 player team seems about right for max" → party cap 6 → 5; Red Mage + Engineer
+  join the starting party (§25.14).
+- Call the owner may overrule: **a defeat keeps its XP** (§22.2) — without it a learning player could never get past a
+  20-wave first battle.
+- Harness: `tools/harness.py` now uses port 7787 (`GAIDEN_PORT`); GridGameCaravan's player also listens on 7777.

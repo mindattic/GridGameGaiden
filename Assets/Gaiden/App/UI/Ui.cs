@@ -235,6 +235,10 @@ namespace Gaiden.App
 
         public static string RarityClass(ItemRarity r) => "rarity-" + r;
 
+        /// <summary>Class blurbs mark their keywords as [word]; show them as highlighted words instead of raw brackets.</summary>
+        public static string Keywords(string text) =>
+            string.IsNullOrEmpty(text) ? "" : System.Text.RegularExpressions.Regex.Replace(text, @"\[([^\]]+)\]", "<color=#9CC8FF>$1</color>");
+
         public static Color RoleColor(string role)
         {
             switch (role)
