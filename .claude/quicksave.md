@@ -1,4 +1,4 @@
-# Quicksave — GridGameGaiden: synergy/feel goal delivered in three local commits (not pushed)
+# Quicksave — GridGameGaiden: synergy/feel goal + follow-ups delivered; 6 local commits (not pushed)
 _Printed: 2026-10-11_
 
 ## Current task
@@ -8,7 +8,9 @@ feedback, confirm before acting, and above all staged timing (confirm → caster
 time moves → cast splash → curved projectile → splash → status effect then icon). Mid-session additions: scarcer
 mana (participants divide the charge), action-packed cut-ins with supporter pop-ins, an art-review screenshot loop,
 lighter board tiles, a full tutorial over a five-wave first battle, a distinct AI for every enemy family.
-All of it is built, verified and committed locally: `895aaa7`, `24bb74d`, `58f281d`. **Not pushed** — ask before pushing.
+All of it is built, verified and committed locally: `895aaa7`, `24bb74d`, `58f281d`, `5c84bb5` (20-wave first battle,
+JSON battle records, two X-Potion stacks of 5 per hero in unlocked slots, party of five, defeats keep XP), `9e77c5b`
+(directional armor plates, Darkest Dungeon corpses). **Not pushed** — ask before pushing.
 
 ## Decisions locked
 - Laws in `AGENTS.md` stand. Story text stays lorem ipsum. Web deploy: owner said "not yet" (2026-10-11).
@@ -19,11 +21,14 @@ All of it is built, verified and committed locally: `895aaa7`, `24bb74d`, `58f28
   ~43 actions; enemy strikes ×0.9.
 
 ## State / where we are
-- 207 core tests green; `tools/uicheck.py` 69–70/70; harness smoke/campaign clean; BalanceReport: greedy 4/4,
+- 214 core tests green; `tools/uicheck.py` 70/70 (harness on port 7787 — GridGameCaravan's player uses 7777); harness smoke/campaign clean; BalanceReport: greedy 4/4,
   casual+camp 2/4, finale 18–33 % casual.
 - New tooling: `tools/artreview.py [scenario…]` + automation `record` (fixed-step frame recorder) → contact sheets in
   `artifacts/artreview/`. Automation also has `setbar`, `democaster`, `confirm` setting.
 - USER_STORIES: 258 total, 255 ✅ (open: US-348 story text, US-305 HD art V2, US-328 phone profiling).
+
+- Battle records: the game writes one JSON per battle (`persistentDataPath/battle-records`, or `<artifacts>/records`);
+  soak with `GAIDEN_RECORDS=<dir> dotnet test … --filter Record_soak`, analyse with `python tools/records.py`.
 
 ## Next concrete steps
 1. Ask the owner whether to push the three commits.
