@@ -158,7 +158,9 @@ namespace Gaiden.App
             App.StartCoroutine(Tween.Pop(v.Buffs, 1.6f, 0.28f));
             var aura = AuraFor(u);
             if (aura.a > 0f && u.Id != SelectedHeroId && !ReduceMotion) v.SetGlow(aura, 0.45f);
-            yield return FloatText(ba.UnitId, def.Name + "!", Color.Lerp(color, Color.white, 0.25f), 0.16f, 50);
+            // Floated higher than damage numbers so the status name never sits on top of the hit that caused it.
+            App.StartCoroutine(FloatAway(board.Float(def.Name + "!", at + new Vector2(0, -120), Color.Lerp(color, Color.white, 0.25f), 50), 0.8f));
+            yield return Tween.Wait(0.16f);
         }
 
         /// <summary>The look of each status taking hold (~0.3–0.45 s).</summary>
