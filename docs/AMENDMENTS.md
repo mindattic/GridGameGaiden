@@ -304,3 +304,11 @@ updated: 2026-10-09
   difficulty" → Green Valley I is five waves (levels ramp 1 → 2; test `The_first_battle_has_five_waves_of_rising_difficulty`)
   and the coach card became ten lessons (§9). The first battle is now ~43 actions for a strong bot — above the 15–40
   pacing target, accepted for the teaching battle.
+
+## 2026-10-11 — a brain for every enemy family (owner)
+
+- "come up with ai for every single enemy unit, they are all different in their own unique ways" → 20 brains (§14.6)
+  over the 41 families; with targeting and kit no two families play alike (test). The toad's tongue now slows (it
+  matched the frog exactly). Smarter foes made the campaign harder, so enemy strikes carry ×0.9
+  (`EnemyStrikeMultiplier`) and the finale's second wave drops a bat and its reaper is level 5; result: greedy
+  bot 4/4, casual+camp bot 2/4, finale 18–33 % for the casual bot (it was 9 % this morning).

@@ -860,12 +860,6 @@
             "Y": -1
           },
           {
-            "Class": "bat01",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          },
-          {
             "Class": "phantom",
             "Level": 1,
             "X": -1,
@@ -883,7 +877,7 @@
           },
           {
             "Class": "reaper",
-            "Level": 6,
+            "Level": 5,
             "X": -1,
             "Y": -1
           },

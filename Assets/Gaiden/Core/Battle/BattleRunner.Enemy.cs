@@ -15,6 +15,7 @@ namespace Gaiden.Core.Battle
             Emit(new TurnStartedEvent { UnitId = enemy.Id });
 
             if (enemy.IsRemains) { RiseAgain(enemy); return; }
+            enemy.TurnsTaken++;
 
             var phase = AdvanceBossPhases(enemy);
             if (S.IsOver || !enemy.Alive) return;
@@ -25,6 +26,8 @@ namespace Gaiden.Core.Battle
                 EndEnemyTurn(enemy);
                 return;
             }
+
+            if (BrainTurn(enemy)) return;
 
             bool alreadyCasting = S.CastEntryOf(enemy.Id) != null;
             var charge = alreadyCasting ? null : EnemyPlanner.PlanCast(S, enemy, phase?.PrefersCharge ?? false);
@@ -42,13 +45,65 @@ namespace Gaiden.Core.Battle
             {
                 var dest = EnemyPlanner.PlanStep(S, enemy);
                 if (dest == enemy.Pos) break;
-                if (!StepEnemy(enemy, dest)) break;
+                if (dest.Manhattan(enemy.Pos) == 2 ? !LeapEnemy(enemy, dest) : !StepEnemy(enemy, dest)) break;
             }
             if (!enemy.Alive || S.IsOver) return;
 
             EnemyAttack(enemy);
             if (CheckEnd()) return;
             EndEnemyTurn(enemy);
+        }
+
+        /// <summary>
+        /// Brains that change the shape of a turn (§14.6): Skirmishers strike first and dart away; Blinkers (every 2nd
+        /// turn) and Burrowers (every 3rd) vanish and reappear beside their prey, then strike. True = the turn is done.
+        /// </summary>
+        private bool BrainTurn(Unit enemy)
+        {
+            var brain = enemy.Def.Brain;
+            bool heroAdjacent = false;
+            foreach (var h in S.Living(Team.Hero)) if (enemy.IsAdjacentTo(h)) heroAdjacent = true;
+            if (brain == Brain.Skirmisher && heroAdjacent && !enemy.IsMultiTile)
+            {
+                EnemyAttack(enemy);
+                if (CheckEnd() || !enemy.Alive) return true;
+                for (int i = 0; i < Math.Max(1, enemy.Def.MoveRange) && enemy.Alive; i++)
+                {
+                    var away = EnemyPlanner.PlanRetreat(S, enemy);
+                    if (away == enemy.Pos || !StepEnemy(enemy, away)) break;
+                }
+                Announce($"{enemy.Name} darts away!", enemy.Id);
+                EndEnemyTurn(enemy);
+                return true;
+            }
+            bool blink = brain == Brain.Blinker && enemy.TurnsTaken % 2 == 0;
+            bool burrow = brain == Brain.Burrower && enemy.TurnsTaken % 3 == 0;
+            if ((blink || burrow) && !heroAdjacent && !enemy.IsMultiTile)
+            {
+                var target = EnemyPlanner.PickTarget(S, enemy);
+                var spot = target == null ? null : EnemyPlanner.SurfaceBeside(S, enemy, target);
+                if (spot == null) return false;
+                var from = enemy.Pos;
+                enemy.Pos = spot.Value;
+                Emit(new TeleportedEvent { UnitId = enemy.Id, From = from, To = spot.Value });
+                Announce(burrow ? $"{enemy.Name} bursts up from below!" : $"{enemy.Name} blinks beside {target.Name}!", enemy.Id);
+                EnemyAttack(enemy);
+                if (CheckEnd()) return true;
+                EndEnemyTurn(enemy);
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>A Hopper's two-tile leap (over a unit, a block or nothing).</summary>
+        private bool LeapEnemy(Unit enemy, Coord dest)
+        {
+            var from = enemy.Pos;
+            if (from.Manhattan(dest) != 2 || S.UnitAt(dest) != null || !S.Walkable(dest)) return false;
+            enemy.Pos = dest;
+            Emit(new SteppedEvent { UnitId = enemy.Id, From = from, To = dest });
+            LeaveTrail(enemy, from);
+            return true;
         }
 
         /// <summary>Trail kits (slime, mire, quicksand): the tile just left becomes a trap; at most 3 per enemy, oldest first.</summary>

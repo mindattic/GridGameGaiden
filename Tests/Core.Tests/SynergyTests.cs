@@ -249,5 +249,107 @@ namespace Gaiden.Tests
             for (int i = 1; i < first.Waves.Count; i++)
                 Assert.True(Weight(first.Waves[i]) > Weight(first.Waves[i - 1]), $"wave {i + 1} should be harder than wave {i}");
         }
+    
+        // ── Enemy brains (§14.6) ──
+
+        [Fact]
+        public void Every_enemy_family_plays_differently()
+        {
+            var c = Real;
+            var sig = new Dictionary<string, string>();
+            foreach (var d in c.Classes.Values.Where(x => x.Team == Team.Enemy && !x.HasTag("Remains")))
+            {
+                string fam = System.Text.RegularExpressions.Regex.Replace(d.Id, @"\d+$", "");
+                string key = string.Join("|", d.Brain, EnemyPlanner.TargetingOf(new Unit { Def = d, Team = Team.Enemy, LevelStats = d.BaseStats.Clone() }), d.MoveRange, d.AttackRange,
+                    d.ChargeAbility, d.Trap, d.Trail, d.OnHitBuff, d.DeathBurst, string.Join(",", d.Abilities.OrderBy(x => x)));
+                if (sig.TryGetValue(key, out var other) && other != fam) Assert.Fail($"{fam} plays exactly like {other}: {key}");
+                sig[key] = fam;
+            }
+            Assert.True(c.Classes.Values.Where(x => x.Team == Team.Enemy).Select(x => x.Brain).Distinct().Count() >= 18);
+        }
+
+        private static ContentDb BrainDb(Brain brain, int move = 1)
+        {
+            var db = Mini();
+            db.Classes["wolf"].Brain = brain;
+            db.Classes["wolf"].MoveRange = move;
+            db.Classes["wolf"].BaseStats.Vitality = 40;
+            return db;
+        }
+
+        [Fact]
+        public void An_ambusher_waits_until_a_hero_comes_close()
+        {
+            var (s, _) = Battle(BrainDb(Brain.Ambusher), Stage(("wolf", 2, 0)), ("knight", 2, 6), ("cleric", 5, 7));
+            var w = s.Units.Single(u => u.Def.Id == "wolf");
+            Assert.Equal(w.Pos, EnemyPlanner.PlanStep(s, w));
+            Hero(s, "knight").Pos = new Coord(2, 2);
+            Assert.NotEqual(w.Pos, EnemyPlanner.PlanStep(s, w));
+        }
+
+        [Fact]
+        public void A_sentinel_never_moves_and_a_sluggish_foe_moves_every_other_turn()
+        {
+            var (s, _) = Battle(BrainDb(Brain.Sentinel), Stage(("wolf", 2, 0)), ("knight", 2, 3), ("cleric", 5, 7));
+            var w = s.Units.Single(u => u.Def.Id == "wolf");
+            Assert.Equal(w.Pos, EnemyPlanner.PlanStep(s, w));
+            var (s2, _) = Battle(BrainDb(Brain.Sluggish), Stage(("wolf", 2, 0)), ("knight", 2, 3), ("cleric", 5, 7));
+            var w2 = s2.Units.Single(u => u.Def.Id == "wolf");
+            w2.TurnsTaken = 1; Assert.NotEqual(w2.Pos, EnemyPlanner.PlanStep(s2, w2));
+            w2.TurnsTaken = 2; Assert.Equal(w2.Pos, EnemyPlanner.PlanStep(s2, w2));
+        }
+
+        [Fact]
+        public void A_hopper_leaps_two_tiles_over_a_unit()
+        {
+            var (s, _) = Battle(BrainDb(Brain.Hopper), Stage(("wolf", 2, 0), ("tank", 2, 1)), ("knight", 2, 4), ("cleric", 5, 7));
+            var w = s.Units.Single(u => u.Def.Id == "wolf");
+            Assert.Equal(new Coord(2, 2), EnemyPlanner.PlanStep(s, w));
+        }
+
+        [Fact]
+        public void A_bomber_dives_where_it_touches_the_most_heroes()
+        {
+            var (s, _) = Battle(BrainDb(Brain.Bomber), Stage(("wolf", 2, 2)), ("knight", 1, 3), ("cleric", 3, 3), ("mage", 0, 0));
+            var w = s.Units.Single(u => u.Def.Id == "wolf");
+            Assert.Equal(new Coord(2, 3), EnemyPlanner.PlanStep(s, w)); // between knight and cleric: touches two
+        }
+
+        [Fact]
+        public void A_skirmisher_strikes_then_darts_away()
+        {
+            var db = BrainDb(Brain.Skirmisher);
+            db.Classes["wolf"].ChargeAbility = null;
+            var (s, _) = Battle(db, Stage(("wolf", 2, 2)), ("knight", 2, 3), ("cleric", 5, 7));
+            var w = s.Units.Single(u => u.Def.Id == "wolf");
+            s.TurnEntryOf(w.Id).Ip = BattleConfig.BarLength - 1;
+            var ev = BattleEngine.Apply(s, new ShieldCommand());
+            Assert.Contains(ev, e => e is AttackEvent a && a.AttackerId == w.Id);
+            Assert.True(w.DistanceTo(Hero(s, "knight")) >= 2, "it backed off after the strike");
+        }
+
+        [Fact]
+        public void A_burrower_surfaces_beside_its_target()
+        {
+            var db = BrainDb(Brain.Burrower);
+            db.Classes["wolf"].ChargeAbility = null;
+            var (s, _) = Battle(db, Stage(("wolf", 0, 0)), ("knight", 4, 6), ("cleric", 5, 7));
+            var w = s.Units.Single(u => u.Def.Id == "wolf");
+            w.TurnsTaken = 2; // its next turn is the third: it burrows
+            s.TurnEntryOf(w.Id).Ip = BattleConfig.BarLength - 1;
+            var ev = BattleEngine.Apply(s, new ShieldCommand());
+            Assert.Contains(ev, e => e is TeleportedEvent t && t.UnitId == w.Id);
+            Assert.True(s.Units.Where(u => u.IsHero).Any(h => w.IsAdjacentTo(h)));
+        }
+
+        [Fact]
+        public void A_guardian_stays_by_its_ward()
+        {
+            var db = BrainDb(Brain.Guardian);
+            var (s, _) = Battle(db, Stage(("wolf", 2, 1), ("witch", 0, 0)), ("knight", 2, 6), ("cleric", 5, 7));
+            var w = s.Units.Single(u => u.Def.Id == "wolf");
+            var step = EnemyPlanner.PlanStep(s, w);
+            Assert.True(step.Manhattan(new Coord(0, 0)) <= w.Pos.Manhattan(new Coord(0, 0)), "it closes on the witch, not the heroes");
+        }
     }
 }

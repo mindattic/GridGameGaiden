@@ -658,7 +658,9 @@ namespace Gaiden.App
                 int n = BattleEngine.ActionsUntilTurn(State, u.Id);
                 var cast = State.CastEntryOf(u.Id);
                 Ui.Text(cast != null ? $"Charging {App.Content.TryAbility(cast.AbilityId)?.Name}!" : n < 0 ? "Frozen in time" : n == 0 ? "Acts after your next move!" : $"Acts in {n} moves", "small warn", col);
-                Ui.Text(EnemyPlanner.Describe(EnemyPlanner.TargetingOf(u)), "tiny dim", col);
+                var mind = Ui.Text($"{EnemyPlanner.DescribeBrain(u.Def.Brain)} · {EnemyPlanner.Describe(EnemyPlanner.TargetingOf(u)).ToLowerInvariant()}", "tiny dim", col);
+                mind.name = "enemy-brain";
+                mind.style.whiteSpace = WhiteSpace.Normal;
                 var kit = Ui.KitTraits(App.Content, u.Def);
                 if (kit.Length > 0) { var kt = Ui.Text(kit, "tiny gold", col); kt.name = "enemy-kit"; kt.style.whiteSpace = WhiteSpace.Normal; }
             }

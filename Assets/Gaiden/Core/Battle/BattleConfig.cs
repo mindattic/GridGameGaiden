@@ -105,6 +105,9 @@ namespace Gaiden.Core.Battle
         public const int InterruptCharge = 25;
         public const int AmplifierCharge = 30;
 
+        /// <summary>Global weight on enemy physical strikes (difficulty knob; tuned with BalanceReport after the brains, §14.6).</summary>
+        public const float EnemyStrikeMultiplier = 0.9f;
+
         // ── Role identity (§13.1.5) ─────────────────────────────────────────────────
         public const float CasterPowerPerPoint = 0.035f;
         public const float CasterPowerMin = 0.7f;

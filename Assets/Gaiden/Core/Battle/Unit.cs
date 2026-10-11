@@ -40,6 +40,8 @@ namespace Gaiden.Core.Battle
         public ClassDef Def;
         public Team Team;
         public int Level = 1;
+        /// <summary>Enemy turns this unit has started (brains with a rhythm: sluggish, blinkers, burrowers).</summary>
+        public int TurnsTaken;
 
         /// <summary>Level-derived stats before equipment.</summary>
         public Stats LevelStats = new Stats();

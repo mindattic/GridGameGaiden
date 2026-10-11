@@ -8,7 +8,18 @@ namespace Gaiden.Core.Content
     public enum Team { Hero, Enemy }
 
     /// <summary>How an enemy chooses which hero to go after (bible §14.1). Auto derives it from INT and tags.</summary>
-    public enum Targeting { Auto, Closest, Weakest, Threat, Squishy, Erratic }
+    public enum Targeting { Auto, Closest, Weakest, Threat, Squishy, Erratic, Caster }
+
+    /// <summary>
+    /// How an enemy moves and decides (bible §14.6, owner direction 2026-10-11: "ai for every single enemy unit, they are
+    /// all different in their own unique ways"). Combined with its targeting personality and kit, every family plays
+    /// differently.
+    /// </summary>
+    public enum Brain
+    {
+        Hunter, Pack, Ambusher, Skirmisher, Kiter, Guardian, Berserker, Scavenger, Trapper, Sluggish,
+        Hopper, Blinker, Burrower, Bomber, Medic, Commander, Duelist, Stalker, Sentinel, Relentless,
+    }
 
 
     public enum DamageType { Physical, Fire, Ice, Lightning, Poison, Holy, Dark, Arcane }
@@ -142,6 +153,8 @@ namespace Gaiden.Core.Content
         public int DeathBurst;
         /// <summary>Enemy targeting personality (§14.1).</summary>
         public Targeting Targeting = Targeting.Auto;
+        /// <summary>Movement / decision style (§14.6).</summary>
+        public Brain Brain = Brain.Hunter;
         /// <summary>Straight-line attack reach for the Ranged archetype (1 = melee only).</summary>
         public int AttackRange = 1;
         /// <summary>Buff ids this class shrugs off ("Immune!") — the Mechanical archetype.</summary>

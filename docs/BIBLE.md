@@ -1333,6 +1333,35 @@ Owner: "some undead enemies should spawn a solid grave stone like in Darkest Dun
 - Art: procedurally drawn gravestone and bone pile (ImageMagick), pixel sprites via `tools/make_pixel_icons.py`.
 - *(Tests: `A_slain_undead_leaves_solid_remains_that_block_the_wave_from_clearing`, `Remains_left_alone_raise_their_owner_at_half_hp_without_loot`, `Remains_are_solid_and_real_undead_leave_them`.)*
 
+### 14.6 Brains — every family thinks differently (added 2026-10-11, owner: "come up with ai for every single enemy unit, they are all different in their own unique ways")
+
+`ClassDef.Brain` sets how a family moves and decides, on top of its targeting personality (§14.1) and kit (§14.4). `EnemyPlanner.PlanStep` scores tiles with the brain's taste (`BrainScore`); `BattleRunner.BrainTurn` handles brains that change the shape of a turn. The enemy card and bestiary describe it.
+
+| Brain | Behaviour | Families |
+|---|---|---|
+| Hunter | closes on its prey (the classic) | purple prototype, yeti |
+| Pack | +1.5 per kin beside it — moves as a group | wolves, gangers, skelepedes |
+| Ambusher | holds still until a hero is within 2 tiles | lurkers, naga, scorpion |
+| Skirmisher | adjacent at turn start → strikes first, then darts away | bats, flying monkey, steppin' razors |
+| Kiter | holds ~3 tiles from heroes (melee kiters keep charging spells) | hags, mecha armour |
+| Guardian | stays beside its most valuable ally (boss, caster, commander, medic) | ceramic knights, templars, ice mauler |
+| Berserker | charges, ignores flanking danger, never retreats | cyclops, oni, werewolf |
+| Scavenger | hunts the wounded, retreats at 50 % HP | vulture, reaper |
+| Trapper | keeps ~3 tiles off to lay traps on the approach | goblin thug, tech gremlins |
+| Sluggish | moves every other turn | slimes, marsh shamblers, tree golems |
+| Hopper | can leap two tiles, over units or blocks | frogs, toad (toad's tongue slows) |
+| Blinker | every 2nd turn appears beside its prey and strikes | ghost |
+| Burrower | every 3rd turn tunnels under and bursts up beside its target | sandmaw |
+| Bomber | dives where it touches the most heroes (it explodes) | cyber zombies |
+| Medic | stays one tile from its most wounded ally, away from heroes | swamp mistress |
+| Commander | stays ~3 tiles back with an ally between it and the heroes | captain, demon lord |
+| Duelist | wants exactly one hero adjacent; avoids being outnumbered | soldiers |
+| Stalker | targets casters (new `Caster` targeting), avoids crowds | phantom |
+| Sentinel | never moves | mannequin, remains |
+| Relentless | never retreats | undead, mountain troll |
+
+No two families share brain + targeting + kit (`Every_enemy_family_plays_differently`). Enemy physical strikes carry `EnemyStrikeMultiplier` 0.9 (retuned after the brains with `BalanceReport`). *(Tests: `An_ambusher_waits_until_a_hero_comes_close`, `A_sentinel_never_moves_and_a_sluggish_foe_moves_every_other_turn`, `A_hopper_leaps_two_tiles_over_a_unit`, `A_bomber_dives_where_it_touches_the_most_heroes`, `A_skirmisher_strikes_then_darts_away`, `A_burrower_surfaces_beside_its_target`, `A_guardian_stays_by_its_ward`.)*
+
 ## 15. Save
 
 ### 15.1 Data model

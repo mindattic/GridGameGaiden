@@ -298,7 +298,7 @@ namespace Gaiden.Core.Battle
 
         /// <summary>Berserk: below half HP an enemy hits 35% harder.</summary>
         private float KitDamageMultiplier(Unit attacker) =>
-            !attacker.IsHero && attacker.HpFraction < 0.5f && HasPassive(attacker, "berserk") ? 1.35f : 1f;
+            attacker.IsHero ? 1f : BattleConfig.EnemyStrikeMultiplier * (attacker.HpFraction < 0.5f && HasPassive(attacker, "berserk") ? 1.35f : 1f);
 
         /// <summary>After an enemy's attack lands: lifesteal heals half the damage; an on-hit buff may stick.</summary>
         private void AfterLandedHit(Unit attacker, Unit target, int dealt)

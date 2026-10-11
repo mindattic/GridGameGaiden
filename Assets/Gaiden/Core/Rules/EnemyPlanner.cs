@@ -33,6 +33,7 @@ namespace Gaiden.Core.Rules
                 case Targeting.Threat: return "Goes after your hardest hitter";
                 case Targeting.Squishy: return "Targets the most fragile hero";
                 case Targeting.Erratic: return "Attacks at random";
+                case Targeting.Caster: return "Hunts your spellcasters";
                 default: return "Attacks whoever is closest";
             }
         }
@@ -88,8 +89,102 @@ namespace Gaiden.Core.Rules
                 case Targeting.Weakest: return h.Hp;
                 case Targeting.Threat: return -h.DamageDealt;
                 case Targeting.Squishy: return h.Effective.Vitality * 1000f + h.MaxHp;
+                case Targeting.Caster: return -(h.Effective.Intelligence + h.Effective.Wisdom);
                 default: return enemy.DistanceTo(h);
             }
+        }
+
+        /// <summary>The brain in a few words (§14.6) — shown on the enemy card and in the bestiary.</summary>
+        public static string DescribeBrain(Brain b)
+        {
+            switch (b)
+            {
+                case Brain.Pack: return "Hunts in packs, keeping close to its kin";
+                case Brain.Ambusher: return "Lies in wait until a hero comes within 2 tiles";
+                case Brain.Skirmisher: return "Strikes, then darts away";
+                case Brain.Kiter: return "Keeps its distance to cast or shoot";
+                case Brain.Guardian: return "Guards its most valuable ally";
+                case Brain.Berserker: return "Charges headlong, fearing no flank";
+                case Brain.Scavenger: return "Picks off the wounded and flees when hurt";
+                case Brain.Trapper: return "Hangs back to mine the approach";
+                case Brain.Sluggish: return "Moves only every other turn";
+                case Brain.Hopper: return "Leaps two tiles at a time, over anything";
+                case Brain.Blinker: return "Blinks beside its prey every other turn";
+                case Brain.Burrower: return "Tunnels under the board and surfaces beside its target";
+                case Brain.Bomber: return "Dives into crowds of heroes";
+                case Brain.Medic: return "Stays by its wounded allies";
+                case Brain.Commander: return "Directs from behind its line";
+                case Brain.Duelist: return "Seeks one-on-one fights, avoids being outnumbered";
+                case Brain.Stalker: return "Slips past the front line to reach your casters";
+                case Brain.Sentinel: return "Never moves";
+                case Brain.Relentless: return "Never retreats, whatever its wounds";
+                default: return "Closes in on its prey";
+            }
+        }
+
+        private static float RetreatThreshold(Unit e)
+        {
+            switch (e.Def.Brain)
+            {
+                case Brain.Scavenger: return 0.5f;
+                case Brain.Berserker: case Brain.Relentless: case Brain.Bomber: case Brain.Sentinel: return -1f;
+                default: return BattleConfig.RetreatHpThreshold;
+            }
+        }
+
+        private static int NearestHeroDistance(BattleState s, Unit e)
+        {
+            int best = int.MaxValue;
+            foreach (var h in s.Living(Team.Hero)) best = Math.Min(best, e.DistanceTo(h));
+            return best;
+        }
+
+        /// <summary>The ally a Guardian protects: a boss, caster, commander or medic, else the toughest other ally.</summary>
+        private static Unit Ward(BattleState s, Unit e)
+        {
+            Unit best = null; float bestV = float.NegativeInfinity;
+            foreach (var a in s.Living(Team.Enemy))
+            {
+                if (a == e || a.IsRemains || a.Def.Brain == Brain.Guardian) continue;
+                float v = a.MaxHp * 0.01f;
+                if (a.Def.HasTag("Boss")) v += 10f;
+                if (!string.IsNullOrEmpty(a.Def.ChargeAbility)) v += 6f;
+                if (a.Def.Brain == Brain.Commander || a.Def.Brain == Brain.Medic) v += 8f;
+                if (v > bestV) { bestV = v; best = a; }
+            }
+            return best;
+        }
+
+        /// <summary>A free tile beside <paramref name="target"/> for a blink or a burrow, closest to the enemy's current spot.</summary>
+        public static Coord? SurfaceBeside(BattleState s, Unit enemy, Unit target)
+        {
+            Coord? best = null; int bestD = int.MaxValue;
+            foreach (var t in target.Tiles())
+                foreach (var d in Coord.Cardinals)
+                {
+                    var c = t + d;
+                    if (!s.FreeForSpawn(c) || s.TrapAt(c) != null) continue;
+                    int dd = c.Manhattan(enemy.Pos);
+                    if (dd < bestD) { bestD = dd; best = c; }
+                }
+            return best;
+        }
+
+        /// <summary>The tile that best breaks contact: farthest from every hero (Skirmisher after a strike).</summary>
+        public static Coord PlanRetreat(BattleState s, Unit enemy)
+        {
+            var best = enemy.Pos; int bestD = NearestHeroDistance(s, enemy);
+            var original = enemy.Pos;
+            foreach (var d in Coord.Cardinals)
+            {
+                var c = original + d;
+                if (!s.Walkable(c) || s.UnitAt(c) != null) continue;
+                enemy.Pos = c;
+                int dist = NearestHeroDistance(s, enemy);
+                enemy.Pos = original;
+                if (dist > bestD) { bestD = dist; best = c; }
+            }
+            return best;
         }
 
         /// <summary>The single best next tile for this enemy (its anchor for a multi-tile actor).</summary>
@@ -98,6 +193,10 @@ namespace Gaiden.Core.Rules
             if (enemy.IsImmobile || enemy.IsSnakeSegment) return enemy.Pos;
             var target = PickTarget(s, enemy);
             if (target == null) return enemy.Pos;
+            var brain = enemy.Def.Brain;
+            if (brain == Brain.Sentinel) return enemy.Pos;
+            if (brain == Brain.Ambusher && NearestHeroDistance(s, enemy) > 2) return enemy.Pos;
+            if (brain == Brain.Sluggish && enemy.TurnsTaken % 2 == 0) return enemy.Pos;
 
             var candidates = new List<Coord> { enemy.Pos };
             foreach (var d in Coord.Cardinals)
@@ -112,8 +211,18 @@ namespace Gaiden.Core.Rules
                 }
                 candidates.Add(c);
             }
+            if (brain == Brain.Hopper && !enemy.IsMultiTile)
+                foreach (var d in Coord.Cardinals)
+                {
+                    var c = enemy.Pos + d + d; // a leap clears whatever is in between
+                    if (s.Walkable(c) && s.UnitAt(c) == null && s.MovableAt(c) == null) candidates.Add(c);
+                }
+            var ward = brain == Brain.Guardian ? Ward(s, enemy) : null;
+            Unit patient = null;
+            if (brain == Brain.Medic)
+                foreach (var a in s.Living(Team.Enemy)) if (a != enemy && !a.IsRemains && a.HpFraction < 0.9f && (patient == null || a.HpFraction < patient.HpFraction)) patient = a;
 
-            bool wounded = enemy.HpFraction < BattleConfig.RetreatHpThreshold;
+            bool wounded = enemy.HpFraction < RetreatThreshold(enemy);
             bool seeksPincer = enemy.IsHumanoid && !enemy.IsMultiTile;
             var original = enemy.Pos;
             Coord best = enemy.Pos; float bestScore = float.NegativeInfinity;
@@ -130,7 +239,8 @@ namespace Gaiden.Core.Rules
                     if (enemy.IsAdjacentTo(target)) score -= 2f;
                 }
                 if (!wounded && enemy.IsAdjacentTo(target)) score += 2f;
-                if (!enemy.IsMultiTile && WouldBeFlanked(s, c)) score -= 100f;
+                if (!wounded) score += BrainScore(s, enemy, brain, target, ward, patient);
+                if (!enemy.IsMultiTile && brain != Brain.Berserker && brain != Brain.Bomber && WouldBeFlanked(s, c)) score -= 100f;
                 if (c == original) score -= 0.5f;
                 // Clever foes shove the Power Amplifier away before the party can line up an amplified pincer.
                 var mode = TargetingOf(enemy);
@@ -142,6 +252,43 @@ namespace Gaiden.Core.Rules
             }
             enemy.Pos = original;
             return best;
+        }
+
+        /// <summary>Each brain's taste in tiles, scored with the enemy standing on the candidate tile (§14.6).</summary>
+        private static float BrainScore(BattleState s, Unit e, Brain brain, Unit target, Unit ward, Unit patient)
+        {
+            int heroesAdjacent = 0;
+            foreach (var h in s.Living(Team.Hero)) if (e.IsAdjacentTo(h)) heroesAdjacent++;
+            int dist = e.DistanceTo(target), near = NearestHeroDistance(s, e);
+            switch (brain)
+            {
+                case Brain.Pack:
+                {
+                    float sc = 0f;
+                    foreach (var a in s.Living(Team.Enemy)) if (a != e && !a.IsRemains && e.IsAdjacentTo(a)) sc += 1.5f;
+                    return sc;
+                }
+                case Brain.Guardian:
+                    if (ward == null) return 0f;
+                    return -1.4f * e.DistanceTo(ward) + (e.IsAdjacentTo(ward) ? 3f : 0f) + dist * 0.6f; // the ward first, the prey second
+                case Brain.Berserker: return -0.8f * dist;
+                case Brain.Trapper: return -1.4f * Math.Abs(near - 3) + dist * 1f - (heroesAdjacent > 0 ? 2f : 0f);
+                case Brain.Bomber: return 2.5f * heroesAdjacent;
+                case Brain.Medic:
+                    if (patient == null) return -1.2f * Math.Abs(near - 3) + dist;
+                    return -1.6f * Math.Abs(e.DistanceTo(patient) - 1) - 2f * Math.Max(0, 2 - near) + dist;
+                case Brain.Commander:
+                {
+                    float sc = -1.3f * Math.Abs(near - 3) + dist;
+                    foreach (var a in s.Living(Team.Enemy))
+                        if (a != e && !a.IsRemains && e.IsAdjacentTo(a) && a.DistanceTo(target) < dist) sc += 2f; // an ally stands between it and the heroes
+                    return sc;
+                }
+                case Brain.Duelist: return heroesAdjacent == 1 ? 2.5f : heroesAdjacent >= 2 ? -6f : 0f;
+                case Brain.Stalker: return heroesAdjacent > 1 ? -1.5f * (heroesAdjacent - 1) : 0f;
+                case Brain.Kiter: return e.Def.AttackRange > 1 ? 0f : -1.4f * Math.Abs(near - 3) + dist - (heroesAdjacent > 0 ? 3f : 0f);
+                default: return 0f;
+            }
         }
 
         /// <summary>Caster archetype: telegraph a charge when no hero is adjacent (or a boss phase prefers charging).</summary>

@@ -353,7 +353,7 @@ test for every rule. 4. A harness step for anything visible. 5. Glyph check gree
 | US-362 | Action cut-ins that twist and zoom; supporters pop in as they strike | §9 | ✅ | `tools/artreview.py caster sweep` |
 | US-363 | Art review loop: record frames of any moment and review them | — | ✅ | `tools/artreview.py`, automation `record` |
 | US-364 | Full tutorial with explanations and examples; the first battle has 5 waves of rising difficulty | §9 | ✅ | ten lessons (`BattleScreen.Tutorial.cs`); `The_first_battle_has_five_waves_of_rising_difficulty`; `tools/uicheck.py` (lesson has an explanation and an example); autoplay walk-through artifacts/tutorial |
-| US-365 | Every enemy unit has its own distinct AI | §14 | ⬜ | next |
+| US-365 | Every enemy unit has its own distinct AI | §14.6 | ✅ | 20 brains over 41 families; `Every_enemy_family_plays_differently` + one test per brain behaviour; BalanceReport (greedy 4/4, casual+camp 2/4); enemy card shows the brain |
 
 ## Tally
 
@@ -371,7 +371,7 @@ test for every rule. 4. A harness step for anything visible. 5. Glyph check gree
 | Audio & VFX (19) | 18 | 0 | 1 |
 | Platform & ship (13) | 12 | 0 | 1 |
 | Production roadmap (owner direction, 2026-10-10) (9) | 8 | 1 | 0 |
-| Gameplay synergy & feel (owner direction, 2026-10-11) (15) | 14 | 0 | 1 |
-| **Total (258)** | **254** | **1** | **3** |
+| Gameplay synergy & feel (owner direction, 2026-10-11) (15) | 15 | 0 | 0 |
+| **Total (258)** | **255** | **1** | **2** |
 
 Open design questions that gate future stories live in [BIBLE §29](BIBLE.md#29-open-design-questions).
