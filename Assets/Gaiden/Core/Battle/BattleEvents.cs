@@ -327,6 +327,26 @@ namespace Gaiden.Core.Battle
         public override string ToString() => $"ManaCharged +{Amount} ({Reason}) -> {Total}";
     }
 
+    /// <summary>A physical blow from the armored side dented the plate instead of the body (§13.5).</summary>
+    public sealed class PlateHitEvent : BattleEvent
+    {
+        public int UnitId; public int AttackerId; public int Amount; public int Left; public int Max;
+        public override string ToString() => $"Plate hit {UnitId} -{Amount} ({Left}/{Max})";
+    }
+
+    public sealed class PlateBrokenEvent : BattleEvent
+    {
+        public int UnitId; public int AttackerId;
+        public override string ToString() => $"Plate broken on {UnitId}";
+    }
+
+    /// <summary>An armored unit turned to face its target (its plate turns with it).</summary>
+    public sealed class FacingChangedEvent : BattleEvent
+    {
+        public int UnitId; public Coord Facing;
+        public override string ToString() => $"Unit {UnitId} faces {Facing}";
+    }
+
     /// <summary>A fallen enemy left a pickup on the board (§13.3.1).</summary>
     public sealed class PickupDroppedEvent : BattleEvent
     {

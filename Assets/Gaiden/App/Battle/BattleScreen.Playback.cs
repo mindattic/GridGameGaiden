@@ -113,6 +113,9 @@ namespace Gaiden.App
                 case AbilityResolvedEvent ar: FlushTallies(); return AbilityAnim(ar);
                 case AbilityRefusedEvent rf: App.Audio.Sfx("ui.error"); ShowBanner(rf.Reason); return null;
                 case ItemUsedEvent iu: pendingItemUser = iu.UserId; pendingItemId = iu.ItemId; ShowBanner($"{App.Content.TryItem(iu.ItemId)?.Name} ({iu.ChargesLeft} left)"); return Tween.Wait(0.1f);
+                case PlateHitEvent ph: return PlateHitAnim(ph);
+                case PlateBrokenEvent pbk: return PlateBrokenAnim(pbk);
+                case FacingChangedEvent fc: { var fu = State.UnitById(fc.UnitId); if (fu != null && board.Units.TryGetValue(fu.Id, out var fv)) { fv.SetPlate(fc.Facing, fu.PlateHp, fu.PlateMax); App.StartCoroutine(Tween.Pop(fv.Plate, 1.2f, 0.18f)); } return null; }
                 case PickupDroppedEvent pd: return PickupDropAnim(pd);
                 case PickupCollectedEvent pc: return PickupCollectAnim(pc);
                 case PickupExpiredEvent pe: return PickupExpiredAnim(pe);
@@ -646,7 +649,8 @@ namespace Gaiden.App
         }
 
         private bool billboardLow;
-        private float BillboardTop => billboardLow ? BoardTop + BoardView.Tile * BattleConfig.Rows - 300f : BoardTop - 30;
+        // Dodging moves it up over the banner line (which says the same thing), never down onto the heroes.
+        private float BillboardTop => billboardLow ? BoardTop - 120 : BoardTop - 30;
 
         private void Billboard(string text, Texture2D icon, Color color)
         {
@@ -880,6 +884,8 @@ namespace Gaiden.App
             ShowBanner($"{caster?.Name} {(cq.IsCharge ? "charges" : "casts")} {what}{on} — lands in {secs:0.#}s");
             Billboard($"{caster?.Name}: {what}{on}", Art.AbilityIcon(App.Content.TryAbility(cq.AbilityId)), caster != null && caster.IsHero ? Color.white : new Color(1f, 0.7f, 0.65f));
             AddGhost(cq);
+            var tu = State.UnitById(cq.TargetUnitId);
+            DodgeBillboard(new[] { cq.TargetTile }.Concat(tu != null ? tu.Tiles() : Enumerable.Empty<Coord>()).Concat(cq.LineTiles ?? new List<Coord>()));
             var castColor = CastColor(App.Content.TryAbility(cq.AbilityId), cq.AbilityId);
             if (caster != null) yield return Gather(caster, castColor);
             if (caster != null) { StartChannel(caster.Id, castColor); App.Audio.Sfx("channel", 0.7f); }
@@ -1290,6 +1296,7 @@ namespace Gaiden.App
             var u = State.UnitById(id);
             if (u != null && board.Units.TryGetValue(id, out var v))
             {
+                v.SetPlate(u.Facing, u.PlateHp, u.PlateMax);
                 v.SetBuffs(u, Colorblind, State.TurnEntryOf(u.Id)?.StunTicks > 0);
                 v.SetHp(u.Hp, u.MaxHp);
                 if (!u.HasBuff("frozen")) v.Art.style.unityBackgroundImageTintColor = Color.white; // the frost tint thaws with the status

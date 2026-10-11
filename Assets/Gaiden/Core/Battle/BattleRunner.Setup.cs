@@ -209,7 +209,9 @@ namespace Gaiden.Core.Battle
             u.LevelStats = Formulas.StatsAtLevel(def, u.Level);
             u.MaxHp = Formulas.MaxHp(u.Effective, u.Level);
             u.Hp = u.MaxHp;
+            if (def.ArmorPlate > 0) u.PlateHp = u.PlateMax = (int)Math.Round(def.ArmorPlate * (1f + BattleConfig.PlatePerLevel * (u.Level - 1)));
             S.Units.Add(u);
+            if (u.PlateMax > 0) FaceTarget(u, false);
             S.Timeline.Add(new TimelineEntry
             {
                 Id = S.NextEntryId++,

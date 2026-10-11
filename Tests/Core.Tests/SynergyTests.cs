@@ -351,5 +351,97 @@ namespace Gaiden.Tests
             var step = EnemyPlanner.PlanStep(s, w);
             Assert.True(step.Manhattan(new Coord(0, 0)) <= w.Pos.Manhattan(new Coord(0, 0)), "it closes on the witch, not the heroes");
         }
+    
+        // ── Armor plates (§13.5) and corpses (§14.7) ──
+
+        private static ContentDb Plated(int plate = 40)
+        {
+            var db = Mini();
+            db.Classes["goblin"].ArmorPlate = plate;
+            db.Classes["goblin"].BaseStats.Vitality = 60;
+            db.Classes["goblin"].DropTable = null;
+            return db;
+        }
+
+        [Fact]
+        public void A_plate_takes_the_blow_from_its_facing_side_and_the_flank_hits_flesh()
+        {
+            var (s, _) = Battle(Plated(), Stage(("goblin", 2, 3), ("tank", 0, 0)), ("knight", 2, 4), ("cleric", 2, 0));
+            var gob = s.Units.Single(u => u.Def.Id == "goblin");
+            Assert.Equal(new Coord(0, 1), gob.Facing); // it faces the closest hero, below it
+            int hp = gob.Hp;
+            var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = Hero(s, "cleric").Id, Path = P((2, 1), (2, 2)) });
+            Assert.Contains(ev, e => e is PlateHitEvent ph && ph.AttackerId == Hero(s, "knight").Id);
+            Assert.Contains(ev, e => e is DamagedEvent d && d.TargetId == gob.Id && d.SourceId == Hero(s, "cleric").Id);
+            Assert.DoesNotContain(ev, e => e is DamagedEvent d && d.TargetId == gob.Id && d.SourceId == Hero(s, "knight").Id);
+            Assert.True(gob.PlateHp < gob.PlateMax);
+        }
+
+        [Fact]
+        public void A_pincer_across_its_line_of_sight_skips_the_plate_and_a_broken_plate_stops_blocking()
+        {
+            var (s, _) = Battle(Plated(), Stage(("goblin", 2, 3), ("tank", 0, 0)), ("knight", 2, 4), ("cleric", 3, 3), ("mage", 0, 3));
+            var gob = s.Units.Single(u => u.Def.Id == "goblin");
+            var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = Hero(s, "mage").Id, Path = P((1, 3)) }); // mage (1,3) · goblin · cleric (3,3): from the sides
+            Assert.DoesNotContain(ev, e => e is PlateHitEvent);
+            Assert.Contains(ev, e => e is DamagedEvent d && d.TargetId == gob.Id && d.Amount > 0);
+
+            var (s2, _) = Battle(Plated(1), Stage(("goblin", 2, 3), ("tank", 0, 0)), ("knight", 2, 4), ("cleric", 2, 0));
+            var g2 = s2.Units.Single(u => u.Def.Id == "goblin");
+            var ev2 = BattleEngine.Apply(s2, new MoveCommand { HeroId = Hero(s2, "cleric").Id, Path = P((2, 1), (2, 2)) });
+            Assert.Contains(ev2, e => e is PlateBrokenEvent);
+            Assert.False(g2.HasPlate);
+        }
+
+        [Fact]
+        public void Spells_go_around_the_plate()
+        {
+            var db = Plated();
+            var (s, _) = Battle(db, Stage(("goblin", 2, 3), ("tank", 0, 0)), ("mage", 2, 5), ("knight", 5, 7));
+            var gob = s.Units.Single(u => u.Def.Id == "goblin");
+            var m = Hero(s, "mage");
+            m.Bar[0] = new AbilitySlot { AbilityId = "fireball" };
+            s.Bank.Add(3);
+            var ev = BattleEngine.Apply(s, new UseSlotCommand { HeroId = m.Id, Slot = 0, Target = gob.Pos });
+            Assert.DoesNotContain(ev, e => e is PlateHitEvent);
+            Assert.Contains(ev, e => e is DamagedEvent d && d.TargetId == gob.Id && d.Amount > 0);
+        }
+
+        private static ContentDb WithCorpses()
+        {
+            var db = Mini();
+            db.Classes["corpse"] = new ClassDef { Id = "corpse", Name = "Corpse", Team = Team.Enemy, Tags = { "Remains", "Corpse" }, BaseStats = new Stats { Vitality = 6 }, MoveRange = 0, Brain = Brain.Sentinel };
+            db.Classes["goblin"].Remains = "corpse";
+            db.Classes["goblin"].DropTable = null;
+            return db;
+        }
+
+        [Fact]
+        public void A_fallen_foe_leaves_a_corpse_that_blocks_the_way_but_not_the_win()
+        {
+            var db = WithCorpses();
+            var (s, _) = Battle(db, Stage(("goblin", 2, 3)), ("knight", 1, 3), ("cleric", 3, 4));
+            var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = Hero(s, "cleric").Id, Path = P((3, 3)) });
+            Assert.Contains(ev, e => e is RemainsLeftEvent);
+            var corpse = s.Units.Single(u => u.Alive && u.IsCorpse);
+            Assert.Equal(new Coord(2, 3), corpse.Pos);
+            Assert.Equal(BattlePhase.Victory, s.Phase); // only a body left: the wave is clear
+            Assert.DoesNotContain(s.Timeline, e => e.OwnerId == corpse.Id);
+        }
+
+        [Fact]
+        public void A_corpse_blocks_movement_and_rots_away()
+        {
+            var db = WithCorpses();
+            var (s, _) = Battle(db, StageWaves(new[] { ("goblin", 2, 3) }, new[] { ("tank", 0, 0) }), ("knight", 1, 3), ("cleric", 3, 4));
+            BattleEngine.Apply(s, new MoveCommand { HeroId = Hero(s, "cleric").Id, Path = P((3, 3)) });
+            var corpse = s.Units.Single(u => u.Alive && u.IsCorpse);
+            var k = Hero(s, "knight");
+            var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = k.Id, Path = P((2, 3)) });
+            Assert.Contains(ev, e => e is StepBlockedEvent);
+            for (int i = 0; i < BattleConfig.CorpseDecayActions + 1 && corpse.Alive; i++)
+                BattleEngine.Apply(s, new ShieldCommand());
+            Assert.False(corpse.Alive, "it rotted away");
+        }
     }
 }

@@ -186,6 +186,9 @@ def main():
     write("powerup", np.concatenate([tone_env(f, 0.07, 0.002, 0.05) for f in (784, 988, 1175, 1568)] + [tone_env(2093, 0.25, 0.002, 0.2)]))
     bubbles = mix(*[np.concatenate([np.zeros(int(SR * d)), sine(sweep(500 + 300 * k, 1100 + 300 * k, 0.06), 0.06) * env(int(SR * 0.06), 0.002, 0.04)]) for k, d in enumerate((0, 0.07, 0.15, 0.2))])
     write("bubble", bubbles, 0.6)
+    # Armor plates (§13.5): a metallic clang (inharmonic partials, fast attack, ringing tail).
+    clang = mix(*[tone_env(f, 0.45, 0.001, 0.35) * a for f, a in ((523, 1.0), (1393, 0.6), (2311, 0.45), (3557, 0.3))])
+    write("clang", mix(clang, 0.5 * filt(noise(0.45), "band", (2000, 7000)) * env(int(SR * 0.45), 0.001, 0.04, 6)))
     print("wrote", len([f for f in os.listdir(OUT) if f.endswith('.ogg')]), "files to", OUT)
 
 

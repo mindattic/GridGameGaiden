@@ -1542,7 +1542,9 @@
     "ChargeShape": "Single",
     "Trap": null,
     "SnakeSegments": 0,
-    "Brain": "Commander"
+    "Brain": "Commander",
+    "Remains": "corpse",
+    "ArmorPlate": 24
   },
   {
     "Id": "ceramicknight00",
@@ -1659,7 +1661,8 @@
       "poisoned",
       "sleep"
     ],
-    "Brain": "Guardian"
+    "Brain": "Guardian",
+    "ArmorPlate": 30
   },
   {
     "Id": "ceramicknight01",
@@ -1776,7 +1779,8 @@
       "poisoned",
       "sleep"
     ],
-    "Brain": "Guardian"
+    "Brain": "Guardian",
+    "ArmorPlate": 30
   },
   {
     "Id": "ceramicknight02",
@@ -1893,7 +1897,8 @@
       "poisoned",
       "sleep"
     ],
-    "Brain": "Guardian"
+    "Brain": "Guardian",
+    "ArmorPlate": 30
   },
   {
     "Id": "ceramicknight03",
@@ -2010,7 +2015,8 @@
       "poisoned",
       "sleep"
     ],
-    "Brain": "Guardian"
+    "Brain": "Guardian",
+    "ArmorPlate": 30
   },
   {
     "Id": "ceramicknight04",
@@ -2127,7 +2133,8 @@
       "poisoned",
       "sleep"
     ],
-    "Brain": "Guardian"
+    "Brain": "Guardian",
+    "ArmorPlate": 30
   },
   {
     "Id": "ceramicknight05",
@@ -2244,7 +2251,8 @@
       "poisoned",
       "sleep"
     ],
-    "Brain": "Guardian"
+    "Brain": "Guardian",
+    "ArmorPlate": 30
   },
   {
     "Id": "ceramicknight06",
@@ -2361,7 +2369,8 @@
       "poisoned",
       "sleep"
     ],
-    "Brain": "Guardian"
+    "Brain": "Guardian",
+    "ArmorPlate": 30
   },
   {
     "Id": "chromaninja",
@@ -5858,7 +5867,8 @@
     "SnakeSegments": 0,
     "OnHitBuff": "blinded",
     "OnHitChance": 0.3,
-    "Brain": "Pack"
+    "Brain": "Pack",
+    "Remains": "corpse"
   },
   {
     "Id": "ganger01",
@@ -5968,7 +5978,8 @@
     "SnakeSegments": 0,
     "OnHitBuff": "blinded",
     "OnHitChance": 0.3,
-    "Brain": "Pack"
+    "Brain": "Pack",
+    "Remains": "corpse"
   },
   {
     "Id": "ganger02",
@@ -6078,7 +6089,8 @@
     "SnakeSegments": 0,
     "OnHitBuff": "blinded",
     "OnHitChance": 0.3,
-    "Brain": "Pack"
+    "Brain": "Pack",
+    "Remains": "corpse"
   },
   {
     "Id": "ganger03",
@@ -6188,7 +6200,8 @@
     "SnakeSegments": 0,
     "OnHitBuff": "blinded",
     "OnHitChance": 0.3,
-    "Brain": "Pack"
+    "Brain": "Pack",
+    "Remains": "corpse"
   },
   {
     "Id": "ganger04",
@@ -6298,7 +6311,8 @@
     "SnakeSegments": 0,
     "OnHitBuff": "blinded",
     "OnHitChance": 0.3,
-    "Brain": "Pack"
+    "Brain": "Pack",
+    "Remains": "corpse"
   },
   {
     "Id": "ganger05",
@@ -6408,7 +6422,8 @@
     "SnakeSegments": 0,
     "OnHitBuff": "blinded",
     "OnHitChance": 0.3,
-    "Brain": "Pack"
+    "Brain": "Pack",
+    "Remains": "corpse"
   },
   {
     "Id": "ganger06",
@@ -6518,7 +6533,8 @@
     "SnakeSegments": 0,
     "OnHitBuff": "blinded",
     "OnHitChance": 0.3,
-    "Brain": "Pack"
+    "Brain": "Pack",
+    "Remains": "corpse"
   },
   {
     "Id": "ghost",
@@ -6736,7 +6752,8 @@
     "ChargeShape": "Single",
     "Trap": "caltrops",
     "SnakeSegments": 0,
-    "Brain": "Trapper"
+    "Brain": "Trapper",
+    "Remains": "corpse"
   },
   {
     "Id": "greenninja",
@@ -8012,7 +8029,8 @@
     "SnakeSegments": 0,
     "OnHitBuff": "poisoned",
     "OnHitChance": 0.3,
-    "Brain": "Ambusher"
+    "Brain": "Ambusher",
+    "Remains": "corpse"
   },
   {
     "Id": "lurker01",
@@ -8122,7 +8140,8 @@
     "SnakeSegments": 0,
     "OnHitBuff": "poisoned",
     "OnHitChance": 0.3,
-    "Brain": "Ambusher"
+    "Brain": "Ambusher",
+    "Remains": "corpse"
   },
   {
     "Id": "lurker02",
@@ -8232,7 +8251,8 @@
     "SnakeSegments": 0,
     "OnHitBuff": "poisoned",
     "OnHitChance": 0.3,
-    "Brain": "Ambusher"
+    "Brain": "Ambusher",
+    "Remains": "corpse"
   },
   {
     "Id": "machinist",
@@ -9030,7 +9050,8 @@
     "ChargeShape": "Single",
     "Trap": null,
     "SnakeSegments": 0,
-    "Brain": "Kiter"
+    "Brain": "Kiter",
+    "ArmorPlate": 40
   },
   {
     "Id": "mechaarmor01",
@@ -9141,7 +9162,8 @@
     "ChargeShape": "Single",
     "Trap": null,
     "SnakeSegments": 0,
-    "Brain": "Kiter"
+    "Brain": "Kiter",
+    "ArmorPlate": 40
   },
   {
     "Id": "mechaarmor02",
@@ -9252,7 +9274,8 @@
     "ChargeShape": "Single",
     "Trap": null,
     "SnakeSegments": 0,
-    "Brain": "Kiter"
+    "Brain": "Kiter",
+    "ArmorPlate": 40
   },
   {
     "Id": "monk",
@@ -9487,7 +9510,8 @@
     "ChargeShape": "Single",
     "Trap": null,
     "SnakeSegments": 0,
-    "Brain": "Relentless"
+    "Brain": "Relentless",
+    "Remains": "corpse"
   },
   {
     "Id": "myrmidon",
@@ -10073,7 +10097,8 @@
     "ChargeShape": "Single",
     "Trap": null,
     "SnakeSegments": 0,
-    "Brain": "Berserker"
+    "Brain": "Berserker",
+    "Remains": "corpse"
   },
   {
     "Id": "oni01",
@@ -10183,7 +10208,8 @@
     "ChargeShape": "Single",
     "Trap": null,
     "SnakeSegments": 0,
-    "Brain": "Berserker"
+    "Brain": "Berserker",
+    "Remains": "corpse"
   },
   {
     "Id": "oni02",
@@ -10293,7 +10319,8 @@
     "ChargeShape": "Single",
     "Trap": null,
     "SnakeSegments": 0,
-    "Brain": "Berserker"
+    "Brain": "Berserker",
+    "Remains": "corpse"
   },
   {
     "Id": "operative",
@@ -12756,7 +12783,8 @@
     "SnakeSegments": 0,
     "OnHitBuff": "poisoned",
     "OnHitChance": 0.3,
-    "Brain": "Ambusher"
+    "Brain": "Ambusher",
+    "Remains": "corpse"
   },
   {
     "Id": "sellsword",
@@ -14118,7 +14146,9 @@
     "ChargeShape": "Single",
     "Trap": null,
     "SnakeSegments": 0,
-    "Brain": "Duelist"
+    "Brain": "Duelist",
+    "Remains": "corpse",
+    "ArmorPlate": 18
   },
   {
     "Id": "soldier01",
@@ -14228,7 +14258,9 @@
     "ChargeShape": "Single",
     "Trap": null,
     "SnakeSegments": 0,
-    "Brain": "Duelist"
+    "Brain": "Duelist",
+    "Remains": "corpse",
+    "ArmorPlate": 18
   },
   {
     "Id": "soldier02",
@@ -14338,7 +14370,9 @@
     "ChargeShape": "Single",
     "Trap": null,
     "SnakeSegments": 0,
-    "Brain": "Duelist"
+    "Brain": "Duelist",
+    "Remains": "corpse",
+    "ArmorPlate": 18
   },
   {
     "Id": "soldier03",
@@ -14448,7 +14482,9 @@
     "ChargeShape": "Single",
     "Trap": null,
     "SnakeSegments": 0,
-    "Brain": "Duelist"
+    "Brain": "Duelist",
+    "Remains": "corpse",
+    "ArmorPlate": 18
   },
   {
     "Id": "speedster",
@@ -16273,7 +16309,8 @@
     "ChargeShape": "Single",
     "Trap": null,
     "SnakeSegments": 0,
-    "Brain": "Guardian"
+    "Brain": "Guardian",
+    "ArmorPlate": 30
   },
   {
     "Id": "templar01",
@@ -16384,7 +16421,8 @@
     "ChargeShape": "Single",
     "Trap": null,
     "SnakeSegments": 0,
-    "Brain": "Guardian"
+    "Brain": "Guardian",
+    "ArmorPlate": 30
   },
   {
     "Id": "templar02",
@@ -16495,7 +16533,8 @@
     "ChargeShape": "Single",
     "Trap": null,
     "SnakeSegments": 0,
-    "Brain": "Guardian"
+    "Brain": "Guardian",
+    "ArmorPlate": 30
   },
   {
     "Id": "templar03",
@@ -16606,7 +16645,8 @@
     "ChargeShape": "Single",
     "Trap": null,
     "SnakeSegments": 0,
-    "Brain": "Guardian"
+    "Brain": "Guardian",
+    "ArmorPlate": 30
   },
   {
     "Id": "templar04",
@@ -16717,7 +16757,8 @@
     "ChargeShape": "Single",
     "Trap": null,
     "SnakeSegments": 0,
-    "Brain": "Guardian"
+    "Brain": "Guardian",
+    "ArmorPlate": 30
   },
   {
     "Id": "templar05",
@@ -16828,7 +16869,8 @@
     "ChargeShape": "Single",
     "Trap": null,
     "SnakeSegments": 0,
-    "Brain": "Guardian"
+    "Brain": "Guardian",
+    "ArmorPlate": 30
   },
   {
     "Id": "thief",
@@ -17183,7 +17225,8 @@
     "SnakeSegments": 0,
     "OnHitBuff": "slowed",
     "OnHitChance": 0.4,
-    "Brain": "Hopper"
+    "Brain": "Hopper",
+    "Remains": "corpse"
   },
   {
     "Id": "treegolem00",
@@ -18794,7 +18837,8 @@
     "ChargeShape": "Single",
     "Trap": null,
     "SnakeSegments": 0,
-    "Brain": "Berserker"
+    "Brain": "Berserker",
+    "Remains": "corpse"
   },
   {
     "Id": "whiteninja",
@@ -19278,7 +19322,8 @@
     "ChargeShape": "Single",
     "Trap": null,
     "SnakeSegments": 0,
-    "Brain": "Pack"
+    "Brain": "Pack",
+    "Remains": "corpse"
   },
   {
     "Id": "wolf01",
@@ -19388,7 +19433,8 @@
     "ChargeShape": "Single",
     "Trap": null,
     "SnakeSegments": 0,
-    "Brain": "Pack"
+    "Brain": "Pack",
+    "Remains": "corpse"
   },
   {
     "Id": "wolf02",
@@ -19498,7 +19544,8 @@
     "ChargeShape": "Single",
     "Trap": null,
     "SnakeSegments": 0,
-    "Brain": "Pack"
+    "Brain": "Pack",
+    "Remains": "corpse"
   },
   {
     "Id": "wolf03",
@@ -19608,7 +19655,8 @@
     "ChargeShape": "Single",
     "Trap": null,
     "SnakeSegments": 0,
-    "Brain": "Pack"
+    "Brain": "Pack",
+    "Remains": "corpse"
   },
   {
     "Id": "yellowninja",
@@ -19840,7 +19888,8 @@
     "SnakeSegments": 0,
     "OnHitBuff": "frozen",
     "OnHitChance": 0.25,
-    "Brain": "Hunter"
+    "Brain": "Hunter",
+    "Remains": "corpse"
   },
   {
     "Id": "gravestone",
@@ -19989,6 +20038,129 @@
     "BaseStats": {
       "Strength": 0,
       "Vitality": 5,
+      "Agility": 0,
+      "Speed": 5,
+      "Stamina": 16,
+      "Intelligence": 10,
+      "Wisdom": 12,
+      "Luck": 0
+    },
+    "Growth": {
+      "Strength": 0,
+      "Vitality": 1,
+      "Agility": 0,
+      "Speed": 0,
+      "Stamina": 0,
+      "Intelligence": 0,
+      "Wisdom": 0,
+      "Luck": 0
+    },
+    "Milestones": [
+      {
+        "Level": 5,
+        "Growth": {
+          "Strength": 0.3,
+          "Vitality": 0.32,
+          "Agility": 0.17,
+          "Speed": 0.17,
+          "Stamina": 0.33,
+          "Intelligence": 0.19,
+          "Wisdom": 0.24,
+          "Luck": 0.14
+        }
+      },
+      {
+        "Level": 10,
+        "Growth": {
+          "Strength": 0.38,
+          "Vitality": 0.41,
+          "Agility": 0.23,
+          "Speed": 0.23,
+          "Stamina": 0.43,
+          "Intelligence": 0.25,
+          "Wisdom": 0.32,
+          "Luck": 0.18
+        }
+      },
+      {
+        "Level": 20,
+        "Growth": {
+          "Strength": 0.51,
+          "Vitality": 0.54,
+          "Agility": 0.3,
+          "Speed": 0.3,
+          "Stamina": 0.57,
+          "Intelligence": 0.33,
+          "Wisdom": 0.42,
+          "Luck": 0.24
+        }
+      },
+      {
+        "Level": 40,
+        "Growth": {
+          "Strength": 0.68,
+          "Vitality": 0.72,
+          "Agility": 0.4,
+          "Speed": 0.4,
+          "Stamina": 0.76,
+          "Intelligence": 0.44,
+          "Wisdom": 0.56,
+          "Luck": 0.32
+        }
+      }
+    ],
+    "Resistances": {},
+    "Abilities": [],
+    "DefaultLoadout": [],
+    "DropTable": null,
+    "MoveRange": 0,
+    "Targeting": "Closest",
+    "XpReward": 0,
+    "BossPhases": [],
+    "ChargeAbility": null,
+    "ChargeShape": "Single",
+    "Trap": null,
+    "SnakeSegments": 0,
+    "Trail": null,
+    "OnHitBuff": null,
+    "OnHitChance": 0,
+    "DeathBurst": 0,
+    "Remains": null,
+    "ImmuneBuffs": [
+      "poisoned",
+      "sleep",
+      "burning",
+      "frozen",
+      "slowed",
+      "silenced",
+      "blinded"
+    ],
+    "Brain": "Sentinel"
+  },
+  {
+    "Id": "corpse",
+    "Name": "Corpse",
+    "Team": "Enemy",
+    "Tags": [
+      "Remains",
+      "Corpse"
+    ],
+    "Description": "A fallen body in the way. Clear it with a pincer or wait for it to rot.",
+    "Lore": "A fallen body in the way. Clear it with a pincer or wait for it to rot.",
+    "Card": "A fallen body in the way. Clear it with a pincer or wait for it to rot.",
+    "Portrait": "corpse",
+    "Crop": {
+      "X": 512,
+      "Y": 140,
+      "Zoom": 1
+    },
+    "Footprint": {
+      "W": 1,
+      "H": 1
+    },
+    "BaseStats": {
+      "Strength": 0,
+      "Vitality": 6,
       "Agility": 0,
       "Speed": 5,
       "Stamina": 16,

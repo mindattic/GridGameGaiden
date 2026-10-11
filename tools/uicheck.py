@@ -293,9 +293,14 @@ def main():
     # ── Settings toggles don't break the battle ───────────────────────────
     for key in ("colorblind", "reducemotion"):
         h.call("setting", key=key, value=1)
+    # The first battle is a 20-wave gauntlet now; finish a short one (Green Valley II) to reach the results screen.
+    h.call("back"); time.sleep(0.6)
+    if h.call("state")["screen"] == "battle":
+        h.call("clicktext", text="Resume"); time.sleep(0.3)
+    h.call("battle", stage="greenvalley-02"); time.sleep(2.5)
     h.call("speed", x=3)
     h.call("autoplay", on=1)
-    for _ in range(60):
+    for _ in range(120):
         time.sleep(1.0)
         s = h.call("state")
         if s["screen"] != "battle":

@@ -240,6 +240,8 @@ namespace Gaiden.Core.Battle
                     if (a.BonusVsTag != null && t.Def.HasTag(a.BonusVsTag)) dmg = (int)Math.Round(dmg * a.BonusMultiplier);
                     bool crit = dmg > 0 && S.Rng.Chance(Formulas.CritPercent(caster.Effective) / 100f * BattleConfig.SpellCritFraction);
                     if (crit) dmg = (int)Math.Round(dmg * BattleConfig.SpellCritMultiplier);
+                    // Physical skills (Cleave, Shield Bash) meet the plate like any blow; spells go around it (§13.5).
+                    if (a.DamageType == DamageType.Physical && PlateAbsorbs(t, caster, dmg)) continue;
                     Damage(t, dmg, caster, crit ? HitKind.Critical : HitKind.Normal, a.DamageType, wet ? "Shock!" : null);
                     if (crit && caster.IsHero) AddCharge(BattleConfig.CritCharge, caster.Id, "critical");
                     if (t.Alive && a.DamageType == DamageType.Lightning && S.Rng.Chance(BattleConfig.LightningBlindChance))

@@ -520,6 +520,58 @@ namespace Gaiden.App
             cv.SetGlow(Color.white, 0f);
         }
 
+        // ── Armor plates (§13.5): the blow rings off the steel; enough of them and it shatters ──
+
+        private Vector2 PlateEdge(UnitView v, Coord facing)
+        {
+            var c = BoardView.CenterOf(v.Tile, v.W, v.H);
+            return c + new Vector2(facing.X * BoardView.Tile * 0.45f * v.W, facing.Y * BoardView.Tile * 0.45f * v.H);
+        }
+
+        private IEnumerator PlateHitAnim(PlateHitEvent e)
+        {
+            var u = State.UnitById(e.UnitId);
+            if (u == null || !board.Units.TryGetValue(u.Id, out var v)) yield break;
+            var at = PlateEdge(v, u.Facing);
+            App.Audio.Sfx("clang", 0.9f, Random.Range(0.92f, 1.08f));
+            if (!ReduceMotion) Sparks(at, 10, new Color(1f, 0.95f, 0.75f));
+            v.SetPlate(u.Facing, e.Left > 0 ? e.Left : 1, e.Max);
+            v.Plate.style.backgroundColor = Color.white;
+            App.StartCoroutine(Tween.Shake(v.Plate, 8f * Fx, 0.15f));
+            App.StartCoroutine(FloatAway(board.Float($"CLANG! −{e.Amount}", at + new Vector2(0, -30), new Color(0.82f, 0.88f, 1f), 50), 0.7f));
+            yield return Tween.Wait(0.12f);
+            v.Plate.style.backgroundColor = new Color(0.72f, 0.76f, 0.84f);
+            v.SetPlate(u.Facing, e.Left, e.Max);
+        }
+
+        private IEnumerator PlateBrokenAnim(PlateBrokenEvent e)
+        {
+            var u = State.UnitById(e.UnitId);
+            if (u == null || !board.Units.TryGetValue(u.Id, out var v)) yield break;
+            var at = PlateEdge(v, u.Facing);
+            App.Audio.Sfx("shatter", 1f, 0.8f);
+            v.SetPlate(u.Facing, 0, 1);
+            if (!ReduceMotion)
+                for (int i = 0; i < 9; i++)
+                {
+                    var shard = new VisualElement { pickingMode = PickingMode.Ignore };
+                    shard.style.position = Position.Absolute;
+                    shard.style.width = Random.Range(14f, 30f); shard.style.height = Random.Range(8f, 16f);
+                    shard.style.backgroundColor = new Color(0.78f, 0.82f, 0.9f);
+                    board.FxLayer.Add(shard);
+                    var vel = new Vector2(Random.Range(-260f, 260f), Random.Range(-320f, -120f));
+                    float spin = Random.Range(-720f, 720f);
+                    App.StartCoroutine(Tween.Run(0.6f, k =>
+                    {
+                        var p = at + vel * k + new Vector2(0, 700f * k * k);
+                        shard.style.left = p.x; shard.style.top = p.y; shard.style.rotate = new Rotate(spin * k); shard.style.opacity = 1f - k;
+                        if (k >= 1f) shard.RemoveFromHierarchy();
+                    }));
+                }
+            App.StartCoroutine(Tween.Shake(shake, 10f * Fx, 0.2f));
+            yield return FloatText(u.Id, "ARMOR BROKEN!", new Color(1f, 0.85f, 0.5f), 0.3f, 64);
+        }
+
         // ── Pickups (§13.3.1) ──
 
         private IEnumerator PickupDropAnim(PickupDroppedEvent e)

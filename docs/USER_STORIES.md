@@ -358,6 +358,8 @@ test for every rule. 4. A harness step for anything visible. 5. Glyph check gree
 | US-368 | Every hero starts with two stacks of 5 full-life potions in unlocked slots | §4.7 | ✅ | `New_game_has_starting_trio_gold_and_loadouts`; screenshot artifacts/first20/bar.png |
 | US-369 | A party of five (one of each role); every screen fits five | §25.14 | ✅ | `New_game_has_starting_trio_gold_and_loadouts`; sweep screenshots (hub, party, status) |
 | US-370 | A defeat keeps the experience earned | §22.2 | ✅ | BalanceReport (casual bot now clears the first battle on ~half its attempts) |
+| US-371 | Directional armor plates: blows from the plated side dent the plate until it breaks; flanks and spells get through | §13.5 | ✅ | three plate tests; artreview armor sheet |
+| US-372 | Corpses (Darkest Dungeon): bodies block the board until cleared or rotted, without holding up a wave | §14.7 | ✅ | two corpse tests; artreview corpses sheet |
 | US-365 | Every enemy unit has its own distinct AI | §14.6 | ✅ | 20 brains over 41 families; `Every_enemy_family_plays_differently` + one test per brain behaviour; BalanceReport (greedy 4/4, casual+camp 2/4); enemy card shows the brain |
 
 ## Tally
@@ -376,7 +378,7 @@ test for every rule. 4. A harness step for anything visible. 5. Glyph check gree
 | Audio & VFX (19) | 18 | 0 | 1 |
 | Platform & ship (13) | 12 | 0 | 1 |
 | Production roadmap (owner direction, 2026-10-10) (9) | 8 | 1 | 0 |
-| Gameplay synergy & feel (owner direction, 2026-10-11) (20) | 20 | 0 | 0 |
-| **Total (263)** | **260** | **1** | **2** |
+| Gameplay synergy & feel (owner direction, 2026-10-11) (22) | 22 | 0 | 0 |
+| **Total (265)** | **262** | **1** | **2** |
 
 Open design questions that gate future stories live in [BIBLE §29](BIBLE.md#29-open-design-questions).

@@ -153,6 +153,8 @@ namespace Gaiden.Core.Content
         public int DeathBurst;
         /// <summary>Enemy targeting personality (§14.1).</summary>
         public Targeting Targeting = Targeting.Auto;
+        /// <summary>Armor plate HP on the side it faces (§13.5); 0 = none. Physical blows from that side dent the plate, not the body.</summary>
+        public int ArmorPlate;
         /// <summary>Movement / decision style (§14.6).</summary>
         public Brain Brain = Brain.Hunter;
         /// <summary>Straight-line attack reach for the Ranged archetype (1 = melee only).</summary>

@@ -303,6 +303,9 @@ namespace Gaiden.App.Automation
                 case "democutin":
                     if (app.Router.Current is BattleScreen dc) { dc.DemoCutIn(); return new { ok = true }; }
                     return new { error = "not in battle" };
+                case "devhp":
+                    if (app.Router.Current is BattleScreen dh) return new { ok = dh.DevHp((int)F(q["unit"]), (int)F(q["hp"], 1)) };
+                    return new { error = "not in battle" };
                 case "setbar":
                     if (app.Router.Current is BattleScreen setb) return new { ok = setb.DevSetBar((int)F(q["unit"]), (int)F(q["slot"]), q["entry"]) };
                     return new { error = "not in battle" };

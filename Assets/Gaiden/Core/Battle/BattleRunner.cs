@@ -96,9 +96,22 @@ namespace Gaiden.Core.Battle
         }
 
         /// <summary>Control returns to the player: hero turn-unit buffs and skill cooldowns tick (§8.3, §4.1.1).</summary>
+        /// <summary>Corpses rot away a few actions after they fall (§14.7).</summary>
+        private void AgeCorpses()
+        {
+            foreach (var u in S.LivingList(Team.Enemy))
+            {
+                if (!u.IsCorpse || --u.DecayIn > 0) continue;
+                var at = u.Pos;
+                u.Hp = 0; u.OnBoard = false;
+                Emit(new DiedEvent { UnitId = u.Id, Team = u.Team, At = at });
+            }
+        }
+
         private void ReturnControl()
         {
             AgePickups();
+            AgeCorpses();
             MaybeSpawnAmplifier();
             foreach (var h in S.LivingList(Team.Hero))
             {
@@ -126,7 +139,7 @@ namespace Gaiden.Core.Battle
             foreach (var u in S.Units)
             {
                 if (!u.Alive) continue;
-                if (u.Team == Team.Hero) heroesAlive = true; else enemiesAlive = true;
+                if (u.Team == Team.Hero) heroesAlive = true; else if (!u.IsCorpse) enemiesAlive = true; // bodies don't hold up a wave
             }
             if (!heroesAlive)
             {
@@ -248,6 +261,7 @@ namespace Gaiden.Core.Battle
             u.Buffs.Clear();
             S.Timeline.RemoveAll(e => e.OwnerId == u.Id);
             Emit(new DiedEvent { UnitId = u.Id, Team = u.Team, At = at });
+            if (u.IsCorpse) { Announce("Cleared away", u.Id); return; }
             if (u.IsRemains) { Announce("Laid to rest", u.Id); return; }
             if (u.IsGuest) Announce($"{u.Name} has fallen — lost forever", u.Id);
             if (u.Team == Team.Enemy && !u.NoLoot) AwardLoot(u);
@@ -323,6 +337,16 @@ namespace Gaiden.Core.Battle
             if (def == null || u.IsMultiTile) return;
             var r = SpawnEnemy(def, u.Level, at.X, at.Y);
             if (r == null || r.Pos != at) { if (r != null) { r.OnBoard = false; r.Hp = 0; S.Timeline.RemoveAll(e => e.OwnerId == r.Id); } return; }
+            if (r.IsCorpse)
+            {
+                // A body in the way (§14.7): no turn, never rises, rots after a few actions.
+                S.Timeline.RemoveAll(e => e.OwnerId == r.Id);
+                r.CorpseOf = u.Def.Id;
+                r.DecayIn = BattleConfig.CorpseDecayActions;
+                r.NoLoot = true;
+                Emit(new RemainsLeftEvent { RemainsId = r.Id, FromUnitId = u.Id, At = at });
+                return;
+            }
             r.RisesAs = u.Def.Id;
             r.RisesLevel = u.Level;
             Emit(new RemainsLeftEvent { RemainsId = r.Id, FromUnitId = u.Id, At = at });

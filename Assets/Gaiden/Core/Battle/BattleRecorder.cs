@@ -138,6 +138,8 @@ namespace Gaiden.Core.Battle
                 {
                     o["brain"] = u.Def.Brain.ToString();
                     o["remains"] = u.IsRemains;
+                    if (u.IsCorpse) { o["corpseOf"] = u.CorpseOf; o["decayIn"] = u.DecayIn; }
+                    if (u.PlateMax > 0) { o["plate"] = u.PlateHp; o["plateMax"] = u.PlateMax; o["facing"] = new JArray(u.Facing.X, u.Facing.Y); }
                 }
                 if (turn != null) { o["turnU"] = Math.Round(turn.U, 4); o["stun"] = turn.StunTicks; }
                 if (cast != null) o["casting"] = new JObject { ["ability"] = cast.AbilityId, ["u"] = Math.Round(cast.U, 4), ["target"] = cast.TargetUnitId };

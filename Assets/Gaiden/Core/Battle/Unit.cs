@@ -85,6 +85,17 @@ namespace Gaiden.Core.Battle
         public bool IsMultiTile => W > 1 || H > 1;
         /// <summary>A grave marker left by an undead (§14.5): solid, never acts except to raise its owner.</summary>
         public bool IsRemains => Def != null && Def.HasTag("Remains");
+        /// <summary>A body left on the board (§14.7): blocks its tile, never rises, doesn't hold up a wave, rots away.</summary>
+        public bool IsCorpse => Def != null && Def.HasTag("Corpse");
+        /// <summary>Class id of the fallen unit a corpse came from (its art, its name).</summary>
+        public string CorpseOf;
+        /// <summary>Player actions until a corpse rots away.</summary>
+        public int DecayIn;
+        /// <summary>Armor plate (§13.5): HP left on the plate and its full value; 0 = none or broken.</summary>
+        public int PlateHp, PlateMax;
+        /// <summary>The side the unit faces (a cardinal unit vector): its plate is on this side.</summary>
+        public Coord Facing = new Coord(0, 1);
+        public bool HasPlate => PlateHp > 0;
         /// <summary>For remains: the class and level that rise when its turn arrives.</summary>
         public string RisesAs;
         public int RisesLevel;

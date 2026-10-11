@@ -269,6 +269,7 @@ namespace Gaiden.App
                 v.Root.style.opacity = 1; v.Root.style.scale = new Scale(Vector2.one); v.Root.style.translate = new Translate(0, 0);
                 v.SetHp(u.Hp, u.MaxHp);
                 v.SetBuffs(u, Colorblind, State.TurnEntryOf(u.Id)?.StunTicks > 0);
+                v.SetPlate(u.Facing, u.PlateHp, u.PlateMax);
                 bool sel = u.Id == SelectedHeroId;
                 var aura = AuraFor(u);
                 if (sel) v.SetGlow(new Color(1f, 0.9f, 0.5f), 0.65f);
@@ -662,6 +663,8 @@ namespace Gaiden.App
                 var mind = Ui.Text($"{EnemyPlanner.DescribeBrain(u.Def.Brain)} · {EnemyPlanner.Describe(EnemyPlanner.TargetingOf(u)).ToLowerInvariant()}", "tiny dim", col);
                 mind.name = "enemy-brain";
                 mind.style.whiteSpace = WhiteSpace.Normal;
+                if (u.HasPlate) { var pl = Ui.Text($"Armor plate {u.PlateHp}/{u.PlateMax} on its {SideName(u.Facing)} — strike from the sides, break it head-on, or use spells", "tiny", col); pl.style.whiteSpace = WhiteSpace.Normal; pl.style.color = new Color(0.8f, 0.85f, 0.95f); }
+                if (u.IsCorpse) { var co = Ui.Text($"The body of a {App.Content.TryClass(u.CorpseOf)?.Name ?? "foe"} — blocks the tile, rots in {u.DecayIn} actions", "tiny dim", col); co.style.whiteSpace = WhiteSpace.Normal; }
                 var kit = Ui.KitTraits(App.Content, u.Def);
                 if (kit.Length > 0) { var kt = Ui.Text(kit, "tiny gold", col); kt.name = "enemy-kit"; kt.style.whiteSpace = WhiteSpace.Normal; }
             }
@@ -673,6 +676,8 @@ namespace Gaiden.App
                     Art.HexColor(b.Def.Color, b.Def.Kind == BuffKind.Buff ? new Color(0.4f, 0.8f, 1f) : new Color(0.8f, 0.4f, 0.9f)),
                     b.Def.Name, $"{Ui.BuffEffect(b.Def)} ({b.Remaining} {(b.Def.Unit == Gaiden.Core.Content.DurationUnit.Turns ? "turns" : "s")} left)");
         }
+
+        private static string SideName(Coord f) => f.Y > 0 ? "front (facing down)" : f.Y < 0 ? "front (facing up)" : f.X > 0 ? "front (facing right)" : "front (facing left)";
 
         private static void StatusRow(VisualElement parent, string icon, string letter, Color color, string name, string what)
         {
@@ -762,6 +767,16 @@ namespace Gaiden.App
             }
             else u.Bar[slot] = new AbilitySlot { AbilityId = entry };
             SyncBar();
+            return true;
+        }
+
+        /// <summary>Dev/automation helper: set a unit's HP (art review: make the next blow a kill).</summary>
+        public bool DevHp(int unitId, int hp)
+        {
+            var u = State.UnitById(unitId);
+            if (u == null || !u.Alive) return false;
+            u.Hp = Mathf.Clamp(hp, 1, u.MaxHp);
+            SyncAll();
             return true;
         }
 

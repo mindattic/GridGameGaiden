@@ -136,6 +136,29 @@ def taunt():
     record("taunt", lambda: h.call("click", name="confirm-action"), frames=90, every=2)
 
 
+@scenario
+def armor():
+    # Plated soldiers and their captain (§13.5): autoplay until blows ring off the plates.
+    h.call("newgame", slot=0, gold=5000); time.sleep(1.5)
+    fresh_battle("desert-03")
+    h.call("autoplay", on=1)
+    record("armor", lambda: None, frames=360, every=3)
+    h.call("autoplay", on=0)
+
+
+@scenario
+def corpses():
+    # Wolves leave bodies that block the board (§14.7).
+    h.call("newgame", slot=0, gold=5000); time.sleep(1.5)
+    fresh_battle("greenvalley-02")
+    for u in units():
+        if u["team"] == "Enemy" and u["cls"].startswith("wolf"):
+            h.call("devhp", unit=u["Id"], hp=1)  # the next blow fells it, so the body drops on camera
+    h.call("autoplay", on=1)
+    record("corpses", lambda: None, frames=300, every=3)
+    h.call("autoplay", on=0)
+
+
 def main():
     picks = sys.argv[1:] or list(SCENARIOS)
     os.makedirs(OUT, exist_ok=True)

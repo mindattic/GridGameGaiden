@@ -24,6 +24,9 @@ namespace Gaiden.App
         /// <summary>The charging bar (owner direction 2026-10-11): fills left to right as a cast rides the timeline.</summary>
         public readonly VisualElement CastBar;
         private readonly VisualElement castBarFill;
+        /// <summary>The armor plate (§13.5): a riveted steel bar on the edge the unit faces.</summary>
+        public readonly VisualElement Plate;
+        private readonly float tileSize;
         public Coord Tile;
         public int W = 1, H = 1;
         public bool Dead;
@@ -57,9 +60,16 @@ namespace Gaiden.App
             Art = new VisualElement { pickingMode = PickingMode.Ignore };
             Art.style.position = Position.Absolute;
             Art.style.left = Art.style.top = Art.style.right = Art.style.bottom = 0;
-            Art.style.backgroundImage = new StyleBackground(App.Art.Thumb(u.Def.Id));
+            // A corpse shows the fallen unit's own art, greyed and laid on its side (§14.7).
+            Art.style.backgroundImage = new StyleBackground(App.Art.Thumb(u.IsCorpse && u.CorpseOf != null ? u.CorpseOf : u.Def.Id));
             Art.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Cover);
             if (!u.IsHero) Art.style.scale = new Scale(new Vector2(-1, 1)); // enemies face the party
+            if (u.IsCorpse)
+            {
+                Art.style.rotate = new Rotate(90f);
+                Art.style.unityBackgroundImageTintColor = new Color(0.42f, 0.38f, 0.38f);
+                Frame.style.opacity = 0.8f;
+            }
             Frame.Add(Art);
 
             // Team keyline just inside the white border, so heroes, foes and bosses still read apart.
@@ -111,6 +121,26 @@ namespace Gaiden.App
             CastChip[0].style.fontSize = 30; CastChip[0].style.unityFontStyleAndWeight = FontStyle.Bold;
             CastChip[0].style.unityTextAlign = TextAnchor.MiddleCenter; CastChip[0].style.flexGrow = 1;
             Root.Add(CastChip);
+
+            tileSize = tile;
+            Plate = new VisualElement { name = "plate-" + u.Id, pickingMode = PickingMode.Ignore };
+            Plate.style.position = Position.Absolute;
+            Plate.style.backgroundColor = new Color(0.72f, 0.76f, 0.84f);
+            Plate.style.borderTopWidth = Plate.style.borderBottomWidth = Plate.style.borderLeftWidth = Plate.style.borderRightWidth = 3;
+            Plate.style.borderTopColor = Plate.style.borderLeftColor = new Color(0.95f, 0.97f, 1f);
+            Plate.style.borderBottomColor = Plate.style.borderRightColor = new Color(0.3f, 0.32f, 0.4f);
+            Plate.style.borderTopLeftRadius = Plate.style.borderTopRightRadius = Plate.style.borderBottomLeftRadius = Plate.style.borderBottomRightRadius = 6;
+            Plate.style.display = DisplayStyle.None;
+            for (int i = 0; i < 3; i++)
+            {
+                var rivet = new VisualElement { name = "rivet", pickingMode = PickingMode.Ignore };
+                rivet.style.width = rivet.style.height = 8;
+                rivet.style.backgroundColor = new Color(0.35f, 0.37f, 0.45f);
+                rivet.style.borderTopLeftRadius = rivet.style.borderTopRightRadius = rivet.style.borderBottomLeftRadius = rivet.style.borderBottomRightRadius = 4;
+                Plate.Add(rivet);
+            }
+            Plate.style.justifyContent = Justify.SpaceAround; Plate.style.alignItems = Align.Center;
+            Root.Add(Plate);
 
             CastBar = new VisualElement { name = "castbar-" + u.Id, pickingMode = PickingMode.Ignore };
             CastBar.style.position = Position.Absolute;
@@ -191,6 +221,22 @@ namespace Gaiden.App
         {
             Cast.style.display = color.HasValue ? DisplayStyle.Flex : DisplayStyle.None;
             if (color.HasValue) Cast.Set(color.Value, left);
+        }
+
+        /// <summary>Draw the plate on the facing edge; it fades as it dents and vanishes when broken.</summary>
+        public void SetPlate(Coord facing, int hp, int max)
+        {
+            Plate.style.display = hp > 0 && max > 0 ? DisplayStyle.Flex : DisplayStyle.None;
+            if (hp <= 0 || max <= 0) return;
+            // On the tile's outer rim (half outside the frame), so it never covers the HP bar or the art.
+            float thick = 18f, inset = 14f, w = tileSize * W, h = tileSize * H, out_ = thick * 0.55f;
+            bool horizontal = facing.Y != 0;
+            Plate.style.flexDirection = horizontal ? FlexDirection.Row : FlexDirection.Column;
+            Plate.style.left = facing.X > 0 ? w - thick + out_ : facing.X < 0 ? -out_ : inset;
+            Plate.style.top = facing.Y > 0 ? h - thick + out_ : facing.Y < 0 ? -out_ : inset;
+            Plate.style.width = horizontal ? w - inset * 2 : thick;
+            Plate.style.height = horizontal ? thick : h - inset * 2;
+            Plate.style.opacity = 0.45f + 0.55f * Mathf.Clamp01(hp / (float)max);
         }
 
         /// <summary>Caster side: the charging bar, <paramref name="filled"/> = fraction of the cast already charged (null hides it).</summary>

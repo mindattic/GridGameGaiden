@@ -326,3 +326,14 @@ updated: 2026-10-09
 - Call the owner may overrule: **a defeat keeps its XP** (§22.2) — without it a learning player could never get past a
   20-wave first battle.
 - Harness: `tools/harness.py` now uses port 7787 (`GAIDEN_PORT`); GridGameCaravan's player also listens on 7777.
+
+## 2026-10-11 — armor plates and corpses (owner)
+
+- "some enemies are armored and need to take damage from that side to break it off" → directional plates (§13.5).
+  Calls the owner may overrule: spells bypass plates (a mage's answer to armor); the plate turns to face the enemy's
+  target each turn.
+- "add in the corpses for some things so they get in the way like Darkest Dungeon" → corpses (§14.7). Calls: corpses
+  don't hold up a wave and rot after 6 actions (a 20-wave battle would otherwise silt up the 6×8 board).
+- Balance after both: greedy bot 4/4 campaign and 6/6 first battle (~348 actions); casual+camp 1/4.
+- Art review fixes: plates sit on the tile rim (they covered the HP bar); the billboard dodges upward over the banner
+  (it landed on the heroes), and also while a spell charges on a top-row target. UI gate 70/70.

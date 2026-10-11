@@ -107,7 +107,14 @@ namespace Gaiden.Core.Bot
                 foreach (var o in p.Opponents)
                 {
                     if (BattleEngine.IsArmored(s, o)) { score -= 1f; continue; }
+                    if (o.IsCorpse) { score += 1f; continue; } // clearing a body is worth little on its own
                     score += 10f;
+                    if (o.HasPlate)
+                    {
+                        // A plated foe: an attacker on its facing side only dents the plate.
+                        foreach (var att in new[] { p.A, p.B })
+                            if (pv.Positions.TryGetValue(att.Id, out var ap) && SideFacing(o, ap)) score -= 4f;
+                    }
                     var e = s.TurnEntryOf(o.Id);
                     if (e != null && e.InZone) score += 4f;
                     if (o.HpFraction < 0.4f) score += 3f;
@@ -134,6 +141,13 @@ namespace Gaiden.Core.Bot
                 }
             }
             return score + rng.NextFloat() * 0.01f;
+        }
+
+        private static bool SideFacing(Unit o, Coord at)
+        {
+            int dx = at.X - o.Pos.X, dy = at.Y - o.Pos.Y;
+            var side = Math.Abs(dx) > Math.Abs(dy) || (Math.Abs(dx) == Math.Abs(dy) && o.Facing.X != 0) ? new Coord(Math.Sign(dx), 0) : new Coord(0, Math.Sign(dy));
+            return side == o.Facing;
         }
 
         private float ScoreAbility(BattleState s, Unit caster, AbilityDef a, Coord anchor)

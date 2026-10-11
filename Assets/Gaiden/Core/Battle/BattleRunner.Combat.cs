@@ -203,7 +203,7 @@ namespace Gaiden.Core.Battle
                 // it, multiplied up the deeper it sits in a chain. Lean, chained pincers farm mana; dog-piles don't.
                 float share = 0f;
                 foreach (var o in p.Opponents)
-                    if (o.MaxHp > 0) share += Math.Min(1f, Math.Max(0, hpBefore[o] - o.Hp) / (float)o.MaxHp);
+                    if (o.MaxHp > 0 && !o.IsCorpse) share += Math.Min(1f, Math.Max(0, hpBefore[o] - o.Hp) / (float)o.MaxHp);
                 int participants = 2 + supporters.Count;
                 float divisor = 1f + BattleConfig.ChargeParticipantPenalty * Math.Max(0, participants - 2);
                 float chainMult = 1f + BattleConfig.ChargeChainBonus * chainIndex;
@@ -237,10 +237,52 @@ namespace Gaiden.Core.Battle
         {
             Emit(new AttackEvent { AttackerId = attacker.Id, TargetId = target.Id, IsSupport = support });
             var roll = Formulas.Physical(attacker, target, S.Rng, mult * KitDamageMultiplier(attacker) * attacker.OutgoingDamageMultiplier);
+            if (roll.Hit != HitKind.Miss && PlateAbsorbs(target, attacker, roll.Damage)) return;
             int before = target.Hp;
             Damage(target, roll.Damage, attacker, roll.Hit, DamageType.Physical);
             if (roll.Hit == HitKind.Critical && attacker.IsHero) AddCharge(BattleConfig.CritCharge, attacker.Id, "critical");
             if (roll.Hit != HitKind.Miss) { AfterLandedHit(attacker, target, before - target.Hp); MaybeCounter(target, attacker); }
+        }
+
+        // ── Armor plates (§13.5) ──
+
+        /// <summary>The side of <paramref name="u"/> that <paramref name="from"/> stands on (dominant axis; ties go to the facing axis).</summary>
+        public static Coord SideOf(Unit u, Unit from)
+        {
+            float cx = u.Pos.X + (u.W - 1) / 2f, cy = u.Pos.Y + (u.H - 1) / 2f;
+            float fx = from.Pos.X + (from.W - 1) / 2f, fy = from.Pos.Y + (from.H - 1) / 2f;
+            float dx = fx - cx, dy = fy - cy;
+            if (Math.Abs(dx) > Math.Abs(dy) || (Math.Abs(dx) == Math.Abs(dy) && u.Facing.X != 0))
+                return new Coord(Math.Sign(dx), 0);
+            return new Coord(0, Math.Sign(dy));
+        }
+
+        /// <summary>A physical blow from the plated side dents the plate instead of the body; the plate breaks off at 0.</summary>
+        private bool PlateAbsorbs(Unit target, Unit attacker, int amount)
+        {
+            if (!target.HasPlate || attacker == null || attacker.Team == target.Team || amount <= 0) return false;
+            if (SideOf(target, attacker) != target.Facing) return false;
+            target.PlateHp = Math.Max(0, target.PlateHp - amount);
+            Emit(new PlateHitEvent { UnitId = target.Id, AttackerId = attacker.Id, Amount = amount, Left = target.PlateHp, Max = target.PlateMax });
+            if (target.PlateHp == 0)
+            {
+                Emit(new PlateBrokenEvent { UnitId = target.Id, AttackerId = attacker.Id });
+                Announce($"{target.Name}'s armor breaks off!", target.Id);
+            }
+            return true;
+        }
+
+        /// <summary>An armored unit turns its plate toward the hero it wants.</summary>
+        private void FaceTarget(Unit u, bool emit = true)
+        {
+            if (u.PlateMax <= 0 || !u.Alive) return;
+            var t = EnemyPlanner.PickTarget(S, u);
+            if (t == null) return;
+            var f = SideOf(u, t);
+            if (f.X == 0 && f.Y == 0) return;
+            if (f == u.Facing) return;
+            u.Facing = f;
+            if (emit) Emit(new FacingChangedEvent { UnitId = u.Id, Facing = f });
         }
 
         /// <summary>Is <paramref name="c"/> cardinally next to any tile of <paramref name="u"/>?</summary>
