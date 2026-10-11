@@ -18,20 +18,20 @@ JSON battle records, two X-Potion stacks of 5 per hero in unlocked slots, party 
   lurker02) to keep it fair under scarcer mana. Finale wave 2 lost a bat, reaper L5.
 - Calls the owner may overrule (all in `docs/AMENDMENTS.md` 2026-10-11): spells keep unlimited range (mage identity =
   INT damage); old saves keep their bars; the shrinking cast ring stays beside the new filling bar; first battle runs
-  ~43 actions; enemy strikes ×0.9.
+  20 waves (~290–350 actions for a strong bot); defeats keep XP; enemy strikes ×0.9; spells bypass armor plates.
 
 ## State / where we are
 - 214 core tests green; `tools/uicheck.py` 70/70 (harness on port 7787 — GridGameCaravan's player uses 7777); harness smoke/campaign clean; BalanceReport: greedy 4/4,
   casual+camp 2/4, finale 18–33 % casual.
 - New tooling: `tools/artreview.py [scenario…]` + automation `record` (fixed-step frame recorder) → contact sheets in
   `artifacts/artreview/`. Automation also has `setbar`, `democaster`, `confirm` setting.
-- USER_STORIES: 258 total, 255 ✅ (open: US-348 story text, US-305 HD art V2, US-328 phone profiling).
+- USER_STORIES: 265 total, 262 ✅ (open: US-348 story text, US-305 HD art V2, US-328 phone profiling).
 
 - Battle records: the game writes one JSON per battle (`persistentDataPath/battle-records`, or `<artifacts>/records`);
   soak with `GAIDEN_RECORDS=<dir> dotnet test … --filter Record_soak`, analyse with `python tools/records.py`.
 
 ## Next concrete steps
-1. Ask the owner whether to push the three commits.
+1. Ask the owner whether to push the seven local commits.
 2. Keep running `python tools/artreview.py` after visual changes and review the sheets (owner asked for this loop).
 3. Possible polish: pincer sweep could use the bust-window card style too; billboard shows two lines for one cast.
 
