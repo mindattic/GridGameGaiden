@@ -1,23 +1,23 @@
 """
-Cleans up and (once triaged) imports hand-generated hero/enemy portrait art dropped into
+Cleans up and visually previews the eyes-in-frame crop for hand-generated portrait art dropped into
 content-drafts/portraits_src/ — NOT the GridGame2026 reference tree tools/import_art.py expects.
 
-    python tools/portraits_pipeline.py clean   [--only id1,id2] [--fuzz 3]
-    python tools/portraits_pipeline.py crop    [--only id1,id2] [--write]
-    python tools/portraits_pipeline.py sheet   [--only id1,id2]
-    python tools/portraits_pipeline.py import  --only id1,id2
+    python tools/portraits_pipeline.py clean  [--only id1,id2] [--fuzz 3]
+    python tools/portraits_pipeline.py crop   [--only id1,id2] [--kind Face|Figure]
+    python tools/portraits_pipeline.py sheet  [--only id1,id2] [--kind Face|Figure]
 
-Staged workflow — nothing touches the live game's Resources/ until the last, explicit step:
-  1. `clean`  — background-knockout + trim, IN PLACE on whatever's sitting in portraits_src/ (re-roll
+There is deliberately no "import into the live game" step here: that requires a finalized roster
+(content-drafts/new_heroes.json / new_enemies.json), which doesn't exist yet — the owner hasn't decided
+the new heroes/enemies roster. This tool only prepares art (clean background, preview crop framing) ahead
+of that decision; once a roster exists, a separate step wires Portrait/Crop into it and promotes finished
+files into Resources/Portraits + Thumbs via import_art.save_portrait_assets (same as it always has).
+
+  1. `clean` — background-knockout + trim, IN PLACE on whatever's sitting in portraits_src/ (re-roll
      variants, not-yet-renamed generic names, all of it). The true original is kept once per file under
      content-drafts/portraits_src_originals/ before anything is overwritten.
-  2. Pick the best roll per class and rename it to the real class Id (e.g. stonegolem00.png) — this is
-     manual/LLM-assisted triage, not scripted here.
-  3. `crop` (dry run) / `sheet` — compute and visually review the eyes-in-frame PortraitCrop against the
-     renamed files still in portraits_src/.
-  4. `crop --write` — commits Portrait/Crop into content-drafts/new_heroes.json / new_enemies.json.
-  5. `import --only <ids>` — the one step that writes into Resources/Portraits + Thumbs (via
-     import_art.save_portrait_assets). Always explicit, never defaults to "everything in the folder".
+  2. `crop` / `sheet` — compute and visually review the eyes-in-frame PortraitCrop. `--kind` picks the
+     framing heuristic (Face: alpha-weighted head centroid, for humanoid art; Figure: whole-body square,
+     for creatures) — there's no roster to infer this from, so it's an explicit flag, default Figure.
 
 The actual pixel work (background-cleanup un-mixing, face/figure crop-box heuristics) is NOT implemented
 here — it lives in the sibling `AssetForge` repo (github.com/mindattic/AssetForge,
@@ -46,21 +46,12 @@ import sys
 
 from PIL import Image, ImageDraw, ImageFont
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import import_art as ia  # noqa: E402  (save_portrait_assets)
-
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-RES = os.path.join(ROOT, "Assets", "Gaiden", "Resources")
-CONTENT = os.path.join(RES, "Content")
 SRC = os.path.join(ROOT, "content-drafts", "portraits_src")
 BACKUP_DIR = os.path.join(ROOT, "content-drafts", "portraits_src_originals")
 SHEET_OUT = os.path.join(ROOT, "artifacts", "portrait_crops")
 CROP_OVERRIDES_PATH = os.path.join(ROOT, "tools", "new_portrait_crop_overrides.json")
 BG_OVERRIDES_PATH = os.path.join(ROOT, "tools", "new_portrait_bg_overrides.json")
-DRAFT_FILES = [
-    os.path.join(ROOT, "content-drafts", "new_heroes.json"),
-    os.path.join(ROOT, "content-drafts", "new_enemies.json"),
-]
 
 ASSETFORGE_ROOT = os.path.join(os.path.dirname(ROOT), "AssetForge")
 ASSETFORGE_CLI_DLL = os.path.join(
@@ -99,55 +90,17 @@ def load_overrides(path):
     return json.load(open(path, encoding="utf-8")) if os.path.exists(path) else {}
 
 
-# ── Draft roster I/O ─────────────────────────────────────────────────────────
-
-def load_draft_classes():
-    """Returns {id: (record, source_file_path)} across both draft files, skipping the _notes header."""
-    out = {}
-    for path in DRAFT_FILES:
-        data = json.load(open(path, encoding="utf-8"))
-        for rec in data:
-            if "Id" not in rec:
-                continue
-            out[rec["Id"]] = (rec, path)
-    return out
-
-
-def write_back(updates):
-    """updates: {id: {"Portrait": ..., "Crop": {"X":..} or None}}. Loads each draft file once, patches
-    matching records in place, writes back preserving the rest of the file untouched."""
-    by_file = {}
-    for path in DRAFT_FILES:
-        data = json.load(open(path, encoding="utf-8"))
-        changed = False
-        for rec in data:
-            cid = rec.get("Id")
-            if cid in updates:
-                rec["Portrait"] = updates[cid]["Portrait"]
-                if updates[cid]["Crop"] is not None:
-                    rec["Crop"] = updates[cid]["Crop"]
-                elif "Crop" in rec:
-                    del rec["Crop"]
-                changed = True
-        if changed:
-            by_file[path] = data
-    for path, data in by_file.items():
-        json.dump(data, open(path, "w", encoding="utf-8"), indent=2)
-        print(f"  wrote {path}")
+def portraits_in_src():
+    return sorted(os.path.splitext(f)[0] for f in os.listdir(SRC) if f.lower().endswith(".png"))
 
 
 # ── Phase 1: background removal + trim (delegates to AssetForge) ────────────
 
 def cmd_clean(ids, fuzz_pct):
-    # Default: every PNG actually sitting in portraits_src/, not just ones that already match a roster
-    # Id — re-roll variants (arbalist_2.png, imp_37.png, ...) and not-yet-renamed generic names
-    # (antmonster.png, female_12.png, ...) all still need cleaning before anyone sorts/renames them.
-    #
-    # Writes the cleaned result back into portraits_src/ itself (in place), NOT into the live game's
-    # Resources/Portraits — this is still the staging folder: most of these filenames aren't real class
-    # Ids yet (re-roll suffixes, generic placeholder names), so nothing here should land in production
-    # assets until it's been triaged and renamed. See `import` for that later, explicit step.
-    todo = ids or sorted(os.path.splitext(f)[0] for f in os.listdir(SRC) if f.lower().endswith(".png"))
+    # Default: every PNG actually sitting in portraits_src/ — re-roll variants (arbalist_2.png,
+    # imp_37.png, ...) and not-yet-renamed generic names (antmonster.png, female_12.png, ...) all still
+    # need cleaning before anyone sorts/renames them.
+    todo = ids or portraits_in_src()
     ensure(BACKUP_DIR)
     overrides = load_overrides(BG_OVERRIDES_PATH)
     done = 0
@@ -174,32 +127,6 @@ def cmd_clean(ids, fuzz_pct):
         )
         done += 1
     print(f"cleaned {done}/{len(todo)} (originals kept in {BACKUP_DIR})")
-
-
-def cmd_import(ids):
-    """Promotes explicitly-named, already-renamed-to-real-Id files from portraits_src/ into the live
-    Resources/Portraits + Thumbs (via import_art.save_portrait_assets). Deliberately has no "do
-    everything in the folder" default — this is the one step that actually touches production assets,
-    so it only ever runs on an explicit --only list."""
-    if not ids:
-        print("`import` requires --only id1,id2,... (it writes into the live Resources/ folder, so it never defaults to the whole staging folder)")
-        return
-    classes = load_draft_classes()
-    done = 0
-    for cid in ids:
-        src_path = os.path.join(SRC, cid + ".png")
-        if not os.path.exists(src_path):
-            print(f"  {cid}: no cleaned source at {src_path}, skipped")
-            continue
-        if cid not in classes:
-            print(f"  {cid}: not a known class Id in content-drafts/new_heroes.json or new_enemies.json, skipped")
-            continue
-        rec, _ = classes[cid]
-        im = Image.open(src_path).convert("RGBA")
-        ia.save_portrait_assets(im, cid, rec.get("Tags"), rec.get("Team"))
-        print(f"  {cid}: imported into Resources/Portraits + Thumbs")
-        done += 1
-    print(f"imported {done}/{len(ids)}")
 
 
 # ── Phase 2: eyes-in-frame crop math (mirrors BattleScreen.CutIns.cs exactly) ─
@@ -258,20 +185,24 @@ def solve_crop_pct(img_w, img_h, target_fx, target_fy):
     def solve_axis(target_f, disp, slack, box_lo, win_span):
         win_center = win_span / 2.0
         if slack <= 1e-9:
-            return 50.0  # no slack on this axis: position can't move anything, pick the harmless default
+            return 50.0, False  # no slack on this axis: position can't move anything, pick the harmless default
         pct = 100.0 * (win_center - box_lo - target_f * disp) / slack
-        return max(0.0, min(100.0, pct))
+        clamped = pct < 0.0 or pct > 100.0
+        return max(0.0, min(100.0, pct)), clamped
 
-    x_pct = solve_axis(target_fx, disp_w, slack_w, g["box_left"], g["win_w"]) if x_is_live else 50.0
-    y_pct = solve_axis(target_fy, disp_h, slack_h, g["box_top"], g["win_h"]) if y_is_live else 0.0
+    x_pct, x_clamped = solve_axis(target_fx, disp_w, slack_w, g["box_left"], g["win_w"]) if x_is_live else (50.0, False)
+    y_pct, y_clamped = solve_axis(target_fy, disp_h, slack_h, g["box_top"], g["win_h"]) if y_is_live else (0.0, False)
 
     # Self-check: forward-simulate and confirm the window center maps back near the target fraction, but
     # only on whichever axis actually has slack to move — the other axis is pinned by contain and can't
-    # be expected to hit anything.
+    # be expected to hit anything. Skipped when the solved percentage had to be clamped into [0,100]: that
+    # means the target point is genuinely out of reach for this image's geometry (e.g. a near-dead-center
+    # centroid against an asymmetric box offset), not an algebra bug — clamping to the nearest edge is the
+    # correct behavior there, and it can never recover the exact target by definition.
     fx_check, fy_check = visible_fraction_at(g["win_w"] / 2.0, g["win_h"] / 2.0, img_w, img_h, x_pct, y_pct, g, disp_w, disp_h)
-    if x_is_live:
+    if x_is_live and not x_clamped:
         assert abs(fx_check - target_fx) < 0.02, f"crop-x self-check failed: {fx_check} vs {target_fx}"
-    if y_is_live:
+    if y_is_live and not y_clamped:
         assert abs(fy_check - target_fy) < 0.02, f"crop-y self-check failed: {fy_check} vs {target_fy}"
     return x_pct, y_pct, x_is_live, y_is_live
 
@@ -296,11 +227,10 @@ def visible_image_box(img_w, img_h, x_pct, y_pct):
     return fx0c * img_w, fy0c * img_h, fx1c * img_w, fy1c * img_h
 
 
-def estimate_crop(path, tags, team):
+def estimate_crop(path, kind):
     """Head-position proxy: AssetForge's face/figure crop-box heuristic (the generic version of the
     logic Thumbs generation already trusts) gives the target point to keep centered in the bust window.
     Returns (x_pct, y_pct, x_is_live, y_is_live)."""
-    kind = "Face" if ("Humanoid" in (tags or []) or team == "Hero") else "Figure"
     box = assetforge("crop", path, "--kind", kind)
     w, h = box["imageWidth"], box["imageHeight"]
     target_fx = ((box["left"] + box["right"]) / 2.0) / w
@@ -308,18 +238,15 @@ def estimate_crop(path, tags, team):
     return solve_crop_pct(w, h, target_fx, target_fy)
 
 
-def cmd_crop(ids, do_write):
-    classes = load_draft_classes()
+def cmd_crop(ids, kind):
     overrides = load_overrides(CROP_OVERRIDES_PATH)
-    todo = ids or [i for i in classes if os.path.exists(os.path.join(SRC, i + ".png"))]
-    updates = {}
+    todo = ids or portraits_in_src()
     print(f"{'id':22s} {'aspect':>7s}  {'Y-live':6s} {'X':>6s} {'Y':>6s}  source")
     for cid in todo:
         path = os.path.join(SRC, cid + ".png")
         if not os.path.exists(path):
             print(f"  {cid}: not cleaned yet (run `clean` first), skipped")
             continue
-        rec, _ = classes.get(cid, ({}, None))
         with Image.open(path) as im:
             w, h = im.size
         aspect = w / h
@@ -329,28 +256,17 @@ def cmd_crop(ids, do_write):
             x_live = not y_live
             source = "override"
         else:
-            x_pct, y_pct, x_live, y_live = estimate_crop(path, rec.get("Tags"), rec.get("Team"))
+            x_pct, y_pct, x_live, y_live = estimate_crop(path, kind)
             source = "auto"
         live_axis = "Y" if y_live else "X" if x_live else "none"
         print(f"{cid:22s} {aspect:7.3f}  live={live_axis:4s} {x_pct:6.1f} {y_pct:6.1f}  {source}")
-        crop = None
-        if (x_live and abs(x_pct - 50.0) > 0.5) or (y_live and abs(y_pct) > 0.5):
-            crop = {"X": round(x_pct, 1)}
-            if y_live:
-                crop["Y"] = round(y_pct, 1)
-        updates[cid] = {"Portrait": cid, "Crop": crop}
-    if do_write:
-        write_back(updates)
-    else:
-        print(f"(dry run - {len(updates)} classes would be updated; pass --write to commit)")
 
 
 # ── Phase 3: visual contact sheet ─────────────────────────────────────────────
 
-def cmd_sheet(ids):
-    classes = load_draft_classes()
+def cmd_sheet(ids, kind):
     overrides = load_overrides(CROP_OVERRIDES_PATH)
-    todo = ids or [i for i in classes if os.path.exists(os.path.join(SRC, i + ".png"))]
+    todo = ids or portraits_in_src()
     ensure(SHEET_OUT)
     try:
         font = ImageFont.truetype("arialbd.ttf", 16)
@@ -364,11 +280,10 @@ def cmd_sheet(ids):
             continue
         im = Image.open(path).convert("RGBA")
         w, h = im.size
-        rec, _ = classes.get(cid, ({}, None))
         if cid in overrides:
             x_pct, y_pct = overrides[cid]["X"], overrides[cid].get("Y", 0.0)
         else:
-            x_pct, y_pct, _, _ = estimate_crop(path, rec.get("Tags"), rec.get("Team"))
+            x_pct, y_pct, _, _ = estimate_crop(path, kind)
         l, t, r, b = visible_image_box(w, h, x_pct, y_pct)
         crop = im.crop((int(l), int(t), int(r), int(b)))
         canvas = Image.new("RGBA", (int(r - l), int(b - t)), (40, 20, 50, 255))
@@ -402,21 +317,18 @@ def main():
     p_clean.add_argument("--fuzz", type=float, default=3.0)
     p_crop = sub.add_parser("crop")
     p_crop.add_argument("--only", default="")
-    p_crop.add_argument("--write", action="store_true")
+    p_crop.add_argument("--kind", default="Figure", choices=["Face", "Figure"])
     p_sheet = sub.add_parser("sheet")
     p_sheet.add_argument("--only", default="")
-    p_import = sub.add_parser("import")
-    p_import.add_argument("--only", default="", required=True)
+    p_sheet.add_argument("--kind", default="Figure", choices=["Face", "Figure"])
     args = ap.parse_args()
     ids = args.only.split(",") if args.only else []
     if args.cmd == "clean":
         cmd_clean(ids, args.fuzz)
     elif args.cmd == "crop":
-        cmd_crop(ids, args.write)
+        cmd_crop(ids, args.kind)
     elif args.cmd == "sheet":
-        cmd_sheet(ids)
-    elif args.cmd == "import":
-        cmd_import(ids)
+        cmd_sheet(ids, args.kind)
 
 
 if __name__ == "__main__":
