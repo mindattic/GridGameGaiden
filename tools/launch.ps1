@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Deploys the current Release build to C:\Apps\GridGameGaiden, then offers Normal Play, Autoplay +
+  Deploys the current Release build to C:\Apps\GridGameGaiden, then offers Normal Play, Demo +
   Capture, or Quit.
 .NOTES
   Always redeploys from source first (tools\deploy.ps1), so this never runs a stale build.
@@ -23,7 +23,7 @@ if (-not (Test-Path $exe)) {
 Write-Host ""
 Write-Host "  GridGameGaiden" -ForegroundColor Cyan
 Write-Host "  [1] Normal Play"
-Write-Host "  [2] Autoplay + Capture"
+Write-Host "  [2] Demo + Capture"
 Write-Host "  [3] Quit"
 Write-Host ""
 $choice = Read-Host "Select (default 1)"
@@ -31,7 +31,7 @@ if ([string]::IsNullOrWhiteSpace($choice)) { $choice = "1" }
 
 switch ($choice) {
     "1" { Start-Process -FilePath $exe }
-    "2" { Start-Process -FilePath $exe -ArgumentList @("-autoplay", "-capture", "video", "screen", "5") }
+    "2" { Start-Process -FilePath $exe -ArgumentList @("-demo", "-capture", "video", "screen", "5") }
     "3" { exit 0 }
     default {
         Write-Host "Unrecognized choice, launching Normal Play." -ForegroundColor Yellow

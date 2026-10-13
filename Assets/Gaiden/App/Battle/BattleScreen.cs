@@ -41,7 +41,7 @@ namespace Gaiden.App
         public Coord? PendingTarget { get; private set; }
         public bool Confirming => PendingTarget.HasValue;
         private bool ConfirmActions => App.Save?.Settings.ConfirmActions ?? true;
-        /// <summary>HeroBot plays this battle. Forced on by <c>-autobattle</c> or <c>-demo</c>/<c>-autoplay</c>
+        /// <summary>HeroBot plays this battle. Forced on by <c>-autobattle</c> or <c>-demo</c>
         /// (the tour, see GameApp.DemoMode); otherwise toggled from the pause menu or the automation
         /// "autoplay" endpoint.</summary>
         public bool AutoPlay { get; set; }

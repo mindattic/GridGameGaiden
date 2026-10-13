@@ -26,3 +26,8 @@ __pycache__/
 /.utmp/
 /tools/node_modules/
 /tools/package-lock.json
+
+# Local scratch art (drafts and portrait-repair working copies), never committed
+/content-drafts/
+/_portrait_repairs/
+/_portrait_repairs_originals/
