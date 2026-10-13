@@ -13,6 +13,10 @@ namespace Gaiden.App
     public sealed partial class BattleScreen
     {
         private const float DragThreshold = 18f;
+        // Diagonal slip (BattleConfig.DiagonalSlipEnabled): how fast and how close to 45° a drag must be,
+        // frame to frame, to offer a diagonal step instead of the safe two-cardinal-step route.
+        private const float DiagonalSlipMinSpeed = BoardView.Tile * 6f; // px/s
+        private const float DiagonalSlipAngleTolerance = 12f; // degrees off a true 45°
 
         private void OnPointerDown(PointerDownEvent evt)
         {
@@ -42,6 +46,8 @@ namespace Gaiden.App
                 dragTile = unit.Pos;
                 dragPath.Clear();
                 preview = null;
+                lastPointerPos = evt.localPosition;
+                lastPointerTime = Time.unscaledTime;
                 board.Root.CapturePointer(evt.pointerId);
             }
             else if (unit != null)
@@ -62,17 +68,57 @@ namespace Gaiden.App
                 if (t != dragTile) { dragTile = t; PreviewTarget(t); }
                 return;
             }
+            HandlePointerPosition(local);
+        }
+
+        /// <summary>
+        /// The real drag-following/diagonal-slip-gating logic, factored out of <see cref="OnPointerMove"/> so a
+        /// simulated human cursor (<see cref="SimulatedHumanDrag"/>) can drive the exact same code a real
+        /// pointer does — a diagonal slip succeeds or fails there for the same kinematic reasons either way,
+        /// never by being told the outcome.
+        /// </summary>
+        private void HandlePointerPosition(Vector2 local)
+        {
             if (!dragging)
             {
                 if ((local - pressPos).magnitude < DragThreshold) return;
                 BeginDrag();
             }
+            // Diagonal slip tech: a fast, near-45° flick between polled frames offers a diagonal step;
+            // anything slower/straighter falls back to the safe two-cardinal-step route, unchanged.
+            var rawDelta = local - lastPointerPos;
+            float dt = Mathf.Max(0.0001f, Time.unscaledTime - lastPointerTime);
+            float speed = rawDelta.magnitude / dt;
+            float angleFromDiagonal = Mathf.Abs(Mathf.Atan2(Mathf.Abs(rawDelta.y), Mathf.Max(0.0001f, Mathf.Abs(rawDelta.x))) * Mathf.Rad2Deg - 45f);
+            bool fastDiagonal = BattleConfig.DiagonalSlipEnabled && speed > DiagonalSlipMinSpeed && angleFromDiagonal < DiagonalSlipAngleTolerance;
+            lastPointerPos = local;
+            lastPointerTime = Time.unscaledTime;
             var v = board.Units[dragHeroId];
             // The hero follows the finger, lifted slightly so it isn't hidden under it.
             v.Root.style.left = Mathf.Clamp(local.x - BoardView.Tile / 2f, -BoardView.Tile * 0.3f, BoardView.Tile * (BattleConfig.Cols - 0.7f));
             v.Root.style.top = Mathf.Clamp(local.y - BoardView.Tile * 0.62f, -BoardView.Tile * 0.3f, BoardView.Tile * (BattleConfig.Rows - 0.7f));
             var over = board.TileAt(new Vector2(local.x, local.y - BoardView.Tile * 0.12f));
-            ExtendPath(over);
+            ExtendPath(over, fastDiagonal);
+        }
+
+        /// <summary>Starts a drag on <paramref name="heroId"/> with no real pointer to capture — used by the
+        /// simulated human cursor (<see cref="SimulatedHumanDrag"/>) instead of <see cref="OnPointerDown"/>.</summary>
+        private bool BeginSimulatedDrag(int heroId)
+        {
+            var hero = State.UnitById(heroId);
+            if (hero == null || !hero.IsHero || !BattleEngine.CanMove(State, heroId)) return false;
+            ClearHint();
+            SelectHero(heroId);
+            pressing = true;
+            dragHeroId = heroId;
+            var startPos = BoardView.CenterOf(hero.Pos);
+            pressPos = startPos;
+            dragTile = hero.Pos;
+            dragPath.Clear();
+            preview = null;
+            lastPointerPos = startPos;
+            lastPointerTime = Time.unscaledTime;
+            return true;
         }
 
         private void OnPointerUp(PointerUpEvent evt)
@@ -112,13 +158,29 @@ namespace Gaiden.App
             ShowBanner("");
         }
 
-        /// <summary>Turns the tile under the finger into cardinal steps from the last logical tile (one tile at a time, §1.1).</summary>
-        private void ExtendPath(Coord target)
+        /// <summary>Turns the tile under the finger into cardinal steps from the last logical tile (one tile at a
+        /// time, §1.1) — or, on a fast near-45° flick straight onto a diagonal tile, a single diagonal slip.</summary>
+        private void ExtendPath(Coord target, bool fastDiagonal = false)
         {
             int guard = 0;
             while (dragTile != target && guard++ < 16)
             {
                 int dx = target.X - dragTile.X, dy = target.Y - dragTile.Y;
+                if (fastDiagonal && Math.Abs(dx) == 1 && Math.Abs(dy) == 1)
+                {
+                    var diag = new Coord(dragTile.X + Math.Sign(dx), dragTile.Y + Math.Sign(dy));
+                    var diagCandidate = new List<Coord>(dragPath) { diag };
+                    var diagPv = BattleEngine.PreviewMove(State, dragHeroId, diagCandidate);
+                    if (diagPv.StepsTaken.Count == diagCandidate.Count)
+                    {
+                        dragPath.Add(diag);
+                        dragTile = diag;
+                        preview = diagPv;
+                        App.Audio.Sfx("dash", 0.7f);
+                        ApplyPreview(diagPv, dragHeroId);
+                        continue;
+                    }
+                }
                 Coord step = Math.Abs(dx) >= Math.Abs(dy)
                     ? new Coord(dragTile.X + Math.Sign(dx), dragTile.Y)
                     : new Coord(dragTile.X, dragTile.Y + Math.Sign(dy));
@@ -192,7 +254,7 @@ namespace Gaiden.App
             else ShowBanner("");
         }
 
-        private void CommitDrag()
+        private void CommitDrag(BattleCommand perfectCmd = null)
         {
             if (!dragging) return;
             dragging = false;
@@ -211,7 +273,7 @@ namespace Gaiden.App
             var cmd = new MoveCommand { HeroId = dragHeroId, Path = new List<Coord>(dragPath), TimeLeftSeconds = timeLeft };
             // Snap the dragged hero onto its final tile before playback.
             App.StartCoroutine(Tween.Move(v.Root, new Vector2(v.Root.resolvedStyle.left, v.Root.resolvedStyle.top), BoardView.PosOf(dragTile), 0.06f));
-            Commit(cmd, true);
+            Commit(cmd, true, perfectCmd);
         }
 
         private void PreviewTarget(Coord tile)

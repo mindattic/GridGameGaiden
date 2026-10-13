@@ -14,6 +14,13 @@ namespace Gaiden.Core.Battle
         private readonly List<BattleEvent> ev;
         public bool PreviewOnly;
 
+        /// <summary>
+        /// Enemies already pushed back this player action (owner direction 2026-10-11 capped a single push's
+        /// magnitude, but a pincer's several landed hits on the same target each re-triggered Pushback, stacking
+        /// far past that cap — a big combo could erase an enemy's whole Zone approach in one action).
+        /// </summary>
+        private readonly HashSet<int> pushedThisAction = new HashSet<int>();
+
         private ContentDb C => S.Content;
 
         public BattleRunner(BattleState s, List<BattleEvent> events)
@@ -37,6 +44,7 @@ namespace Gaiden.Core.Battle
         {
             if (S.IsOver) { Emit(new AbilityRefusedEvent { CasterId = -1, Reason = "Battle is over" }); return; }
 
+            pushedThisAction.Clear();
             bool acted;
             bool shield = false;
             switch (cmd)
@@ -57,7 +65,39 @@ namespace Gaiden.Core.Battle
             }
             if (!S.IsOver) CheckEnd();
             if (!S.IsOver) ReturnControl();
+            EnforceTileInvariant(cmd.GetType().Name);
             S.Results.TicksElapsed = (int)S.Clock;
+        }
+
+        /// <summary>
+        /// Defense in depth: two units must never occupy the same tile (bible invariant, asserted after every
+        /// command in the soak tests). If one ever slips through anyway, don't ship a broken board — nudge the
+        /// more recently spawned/moved unit to the nearest free tile with a visible step, and emit a diagnostic
+        /// event so the App layer can log it loudly. This never fires on a healthy board; if it fires, the root
+        /// cause is still a bug worth finding — this just stops it from ever being visible to a player.
+        /// </summary>
+        private void EnforceTileInvariant(string lastCommand)
+        {
+            var seen = new Dictionary<Coord, Unit>();
+            foreach (var u in S.Units)
+            {
+                if (!u.Alive) continue;
+                foreach (var t in u.Tiles())
+                {
+                    if (!seen.TryGetValue(t, out var other)) { seen[t] = u; continue; }
+                    var mover = u.Id > other.Id ? u : other;
+                    var stays = mover == u ? other : u;
+                    var from = mover.Pos;
+                    var free = RandomFreeTile(mover.W, mover.H, 0, BattleConfig.Rows - 1);
+                    Emit(new TileConflictEvent { UnitId = mover.Id, OtherUnitId = stays.Id, At = t, Command = lastCommand });
+                    if (free != null)
+                    {
+                        mover.Pos = free.Value;
+                        Emit(new DisplacedEvent { UnitId = mover.Id, From = from, To = free.Value, ByUnitId = stays.Id });
+                    }
+                    return; // one conflict per command is already an exceptional event; re-scan next command
+                }
+            }
         }
 
         // ─────────────────────────────────────────────────────────────────────────────
@@ -147,6 +187,8 @@ namespace Gaiden.Core.Battle
                 Emit(new BattleEndedEvent { Victory = false });
                 return true;
             }
+            // A reinforcement still queued for this wave (§14.8) holds it open even with the board clear.
+            if (!enemiesAlive) foreach (var p in S.PendingSpawns) if (!p.Consumed && p.Wave == S.Wave) enemiesAlive = true;
             if (!enemiesAlive)
             {
                 Emit(new WaveClearedEvent { Wave = S.Wave });
@@ -355,7 +397,9 @@ namespace Gaiden.Core.Battle
 
         private void AwardLoot(Unit enemy)
         {
-            var loot = new LootEvent { FromUnitId = enemy.Id, Xp = Formulas.XpReward(enemy) };
+            // A kill mid pincer-chain pays out more XP, same multiplier the chain already pays in mana (§3.1.9).
+            float chainMult = 1f + BattleConfig.ChargeChainBonus * chainBonusDepth;
+            var loot = new LootEvent { FromUnitId = enemy.Id, Xp = (int)Math.Round(Formulas.XpReward(enemy) * chainMult) };
             C.DropTables.TryGetValue(enemy.Def.DropTable ?? "", out var table);
             if (table != null && table.CoinsMax > 0) loot.Coins = S.Rng.Range(table.CoinsMin, table.CoinsMax + 1);
             else if (!enemy.IsSnakeSegment) loot.Coins = CoinsFor(loot.Xp);
@@ -447,9 +491,13 @@ namespace Gaiden.Core.Battle
         /// <param name="haltingOnly">Only tick timeline-halting turn buffs (used for enemies at the shared turn boundary).</param>
         private void TickTurnBuffs(Unit u, bool haltingOnly)
         {
-            for (int i = u.Buffs.Count - 1; i >= 0 && i < u.Buffs.Count; i--)
+            // Snapshot first: Expire()'s OnExpireApply chain, or a Stack-cap eviction, can remove a
+            // *different* buff than the one just ticked and append a freshly chained one — index-based
+            // iteration over the live list would then either skip an entry or immediately re-tick the
+            // brand-new instance in this same pass. Buffs added mid-pass simply wait for the next tick.
+            foreach (var b in u.Buffs.ToArray())
             {
-                var b = u.Buffs[i];
+                if (!u.Buffs.Contains(b)) continue;
                 if (b.Def.Unit != DurationUnit.Turns) continue;
                 if (haltingOnly != b.Def.HaltsTimeline) continue;
                 if (b.Def.HaltsTimeline && b.Fresh) { b.Fresh = false; continue; }
@@ -465,9 +513,11 @@ namespace Gaiden.Core.Battle
             foreach (var u in S.Units.ToArray())
             {
                 if (!u.Alive) continue;
-                for (int i = u.Buffs.Count - 1; i >= 0 && i < u.Buffs.Count; i--)
+                // Snapshot for the same reason as TickTurnBuffs: a chain/stack-cap eviction triggered from
+                // within this loop can remove or add sibling buffs, which index-based iteration can't survive.
+                foreach (var b in u.Buffs.ToArray())
                 {
-                    var b = u.Buffs[i];
+                    if (!u.Buffs.Contains(b)) continue;
                     if (b.Def.Unit != DurationUnit.Ticks) continue;
                     b.TickAccumulator += ticks;
                     while (b.TickAccumulator >= BattleConfig.BuffTickInterval && u.Alive && u.Buffs.Contains(b))

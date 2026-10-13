@@ -25,8 +25,10 @@ namespace Gaiden.Tests
             Assert.Equal(Progression.StartingGold, s.Gold);
             Assert.All(s.Roster, h => Assert.Contains(h.Bar, e => e != null));
             Assert.Equal(Progression.MaxBarSlots, Progression.UnlockedSlots(s)); // every slot open from the start (2026-10-11)
-            Assert.All(s.Roster, h => Assert.Equal(2, h.Bar.Count(e => e == "item:x_potion")));      // two full-life stacks per hero…
-            Assert.Equal(s.Roster.Count * 2 * Real.Items["x_potion"].MaxStack, s.Count("x_potion"));  // …each a full stack of 5
+            // One full-life stack per hero (amended 2026-10-11: the second X-Potion slot became each
+            // class's new unique 5th skill).
+            Assert.All(s.Roster, h => Assert.Equal(1, h.Bar.Count(e => e == "item:x_potion")));
+            Assert.Equal(s.Roster.Count * Real.Items["x_potion"].MaxStack, s.Count("x_potion"));  // one full stack of 5 each
         }
 
         [Fact]
@@ -210,6 +212,80 @@ namespace Gaiden.Tests
             Assert.Null(s2.Expedition);
             Assert.True(Expeditions.CanLaunch(c, s2, theme.Stages[0], out _));
             Assert.False(Expeditions.CanLaunch(c, s2, theme.Stages[1], out _), "a failed expedition restarts from battle 1");
+        }
+
+        // ── Voluntary retreat (§22.2, FFIV-style partial loss, owner direction 2026-10-11) ──
+
+        private static BattleState DirectBattle(ContentDb c, SaveData s, string stageId, int seed = 11) =>
+            BattleEngine.Create(c, BattleFactory.Build(c, s, stageId, seed), new List<BattleEvent>());
+
+        [Fact]
+        public void A_voluntary_retreat_keeps_a_fraction_of_coins_and_items_but_not_the_rest()
+        {
+            var c = Real; var s = Progression.NewGame(c, "Retreat1");
+            var st = DirectBattle(c, s, c.CampaignStages()[0].Id);
+            st.Results.Coins = 100;
+            st.Results.Items["ether"] = 4;
+            st.Phase = BattlePhase.Retreated;
+            int goldBefore = s.Gold;
+            var rep = BattleFactory.Commit(c, s, st);
+
+            Assert.True(rep.Retreated);
+            int expectedGold = (int)System.Math.Floor(100 * BattleConfig.RetreatKeepFraction);
+            Assert.Equal(expectedGold, rep.Gold);
+            Assert.Equal(goldBefore + expectedGold, s.Gold);
+            Assert.Equal((int)System.Math.Floor(4 * BattleConfig.RetreatKeepFraction), rep.Items.GetValueOrDefault("ether"));
+        }
+
+        [Fact]
+        public void A_retreat_still_keeps_hard_won_xp_like_a_defeat()
+        {
+            var c = Real; var s = Progression.NewGame(c, "Retreat2");
+            var st = DirectBattle(c, s, c.CampaignStages()[0].Id);
+            st.Results.Xp = 40;
+            st.Phase = BattlePhase.Retreated;
+            var rep = BattleFactory.Commit(c, s, st);
+
+            Assert.Equal(40, rep.XpEach);
+            Assert.All(s.Party, id => Assert.True(s.Hero(id).TotalXp >= 40));
+        }
+
+        [Fact]
+        public void Retreating_mid_expedition_ends_it_without_touching_already_banked_gold()
+        {
+            var c = Real; var s = Progression.NewGame(c, "Retreat3");
+            var theme = c.Campaign.Themes[0];
+            BattleFactory.Commit(c, s, Fight(c, s, theme.Stages[0], true));
+            int goldAfterBattle1 = s.Gold;
+
+            var b2 = DirectBattle(c, s, theme.Stages[1]);
+            b2.Results.Coins = 60;
+            b2.Phase = BattlePhase.Retreated;
+            var rep = BattleFactory.Commit(c, s, b2);
+
+            Assert.True(rep.ExpeditionFailed);
+            Assert.Null(s.Expedition);
+            int expectedKeep = (int)System.Math.Floor(60 * BattleConfig.RetreatKeepFraction);
+            Assert.Equal(goldAfterBattle1 + expectedKeep, s.Gold);
+        }
+
+        [Fact]
+        public void Defeat_still_grants_only_hard_won_xp_after_the_retreat_refactor()
+        {
+            var c = Real; var s = Progression.NewGame(c, "Defeat1");
+            var st = DirectBattle(c, s, c.CampaignStages()[0].Id);
+            st.Results.Coins = 100;
+            st.Results.Items["ether"] = 4;
+            st.Results.Xp = 40;
+            st.Phase = BattlePhase.Defeat;
+            int goldBefore = s.Gold;
+            var rep = BattleFactory.Commit(c, s, st);
+
+            Assert.False(rep.Retreated);
+            Assert.Equal(0, rep.Gold);
+            Assert.Equal(goldBefore, s.Gold);
+            Assert.Empty(rep.Items);
+            Assert.Equal(40, rep.XpEach);
         }
 
         // ── Guest allies (§25.11) ──

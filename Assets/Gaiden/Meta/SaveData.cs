@@ -131,6 +131,32 @@ namespace Gaiden.Meta
         public bool PincerCutIns = true;
         /// <summary>Pick a target, then confirm (owner direction 2026-10-11). Off = commit on the pick, for veterans.</summary>
         public bool ConfirmActions = true;
+        /// <summary>Menu color theme by name (App.Art.Themes); unknown/missing names fall back to Classic.</summary>
+        public string MenuTheme = "Classic";
+        /// <summary>Body font by name (App.Fonts.Presets); unknown/missing names fall back to Classic.</summary>
+        public string FontName = "Classic";
+        /// <summary>Difficulty preset + multipliers (§22.9). Scaffolding only — every multiplier is inert
+        /// at 1.0 until balance work consumes it; only Custom lets the player move them away from 1.0 today.</summary>
+        public DifficultySettings Difficulty = new DifficultySettings();
+    }
+
+    /// <summary>
+    /// Difficulty presets and their multipliers (owner direction 2026-10-11: build the selection and its
+    /// multipliers now, before any of them do anything, so (a) later balance work has a lever to turn and
+    /// (b) telemetry can already tag every battle with the active multipliers to learn what affects what.
+    /// A built-in preset (Easy/Normal/Hard) resets every multiplier to 1.0 — they're placeholders until
+    /// balance work gives each one a real curve; Custom is the only preset where the player's own values
+    /// stick. "Higher difficulty = better rewards" is the intended direction once that work lands, not yet.
+    /// </summary>
+    public sealed class DifficultySettings
+    {
+        public string Preset = "Normal"; // "Easy" | "Normal" | "Hard" | "Custom"
+        public float EnemyHp = 1f;
+        public float EnemyDamage = 1f;
+        public float EnemySpeed = 1f;
+        public float RewardGold = 1f;
+        public float RewardXp = 1f;
+        public float ItemDropRate = 1f;
     }
 
     public static class SaveMigrations

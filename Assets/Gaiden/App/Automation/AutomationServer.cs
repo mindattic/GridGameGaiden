@@ -34,6 +34,7 @@ namespace Gaiden.App.Automation
         private string artifacts;
         private Mouse mouse;
         private bool holdDrag;
+        private Application.LogCallback logHandler;
 
         public static void TryStart(GameApp app)
         {
@@ -47,11 +48,12 @@ namespace Gaiden.App.Automation
         {
             artifacts = CommandLine.Value("-artifacts") ?? Path.Combine(Application.persistentDataPath, "artifacts");
             Directory.CreateDirectory(artifacts);
-            Application.logMessageReceivedThreaded += (msg, stack, type) =>
+            logHandler = (msg, stack, type) =>
             {
                 if (type == LogType.Log && !msg.StartsWith("[")) return;
                 lock (logs) { logs.Add($"{type}: {msg}" + (type == LogType.Exception || type == LogType.Error ? "\n" + stack : "")); if (logs.Count > 400) logs.RemoveAt(0); }
             };
+            Application.logMessageReceivedThreaded += logHandler;
             Debug.developerConsoleEnabled = false;
             mouse = InputSystem.AddDevice<Mouse>("AutomationMouse");
             InputSystem.QueueStateEvent(mouse, new MouseState { position = new Vector2(1, 1) });
@@ -65,6 +67,7 @@ namespace Gaiden.App.Automation
 
         private void OnDestroy()
         {
+            if (logHandler != null) Application.logMessageReceivedThreaded -= logHandler;
             try { listener?.Stop(); } catch { }
         }
 
@@ -81,7 +84,14 @@ namespace Gaiden.App.Automation
             while (listener.IsListening)
             {
                 HttpListenerContext ctx;
-                try { ctx = listener.GetContext(); } catch { return; }
+                try { ctx = listener.GetContext(); }
+                catch (Exception)
+                {
+                    // Expected when OnDestroy() calls listener.Stop() while GetContext() is blocked;
+                    // anything else should not silently end the listener thread.
+                    if (!listener.IsListening) return;
+                    continue;
+                }
                 ThreadPool.QueueUserWorkItem(_ => Handle(ctx));
             }
         }
@@ -116,11 +126,15 @@ namespace Gaiden.App.Automation
                 body = JsonConvert.SerializeObject(new { error = e.Message });
             }
             var bytes = Encoding.UTF8.GetBytes(body);
-            ctx.Response.StatusCode = status;
-            ctx.Response.ContentType = "application/json";
-            ctx.Response.ContentLength64 = bytes.Length;
-            ctx.Response.OutputStream.Write(bytes, 0, bytes.Length);
-            ctx.Response.OutputStream.Close();
+            try
+            {
+                ctx.Response.StatusCode = status;
+                ctx.Response.ContentType = "application/json";
+                ctx.Response.ContentLength64 = bytes.Length;
+                ctx.Response.OutputStream.Write(bytes, 0, bytes.Length);
+            }
+            catch (Exception) { /* client disconnected mid-response; nothing more to do */ }
+            finally { try { ctx.Response.OutputStream.Close(); } catch (Exception) { } }
         }
 
         private static readonly object Pending = new object();
@@ -135,10 +149,10 @@ namespace Gaiden.App.Automation
                 case "logs":
                     lock (logs) { var copy = logs.ToList(); if (q["clear"] == "1") logs.Clear(); return copy; }
                 case "record":
-                    StartCoroutine(Record(q["name"] ?? "rec", (int)F(q["frames"], 60), Math.Max(1, (int)F(q["every"], 1)), F(q["step"], 1f / 30f), reply));
+                    StartCoroutine(Record(SafeName(q["name"], "rec"), (int)F(q["frames"], 60), Math.Max(1, (int)F(q["every"], 1)), F(q["step"], 1f / 30f), reply));
                     return Pending;
                 case "screenshot":
-                    StartCoroutine(Screenshot(q["name"] ?? DateTime.Now.ToString("HHmmss"), reply));
+                    StartCoroutine(Screenshot(SafeName(q["name"], DateTime.Now.ToString("HHmmss")), reply));
                     return Pending;
                 case "tap":
                     StartCoroutine(Tap(F(q["x"]), F(q["y"]), reply));
@@ -302,6 +316,9 @@ namespace Gaiden.App.Automation
                     return new { error = "not in battle" };
                 case "democutin":
                     if (app.Router.Current is BattleScreen dc) { dc.DemoCutIn(); return new { ok = true }; }
+                    return new { error = "not in battle" };
+                case "demosurprise":
+                    if (app.Router.Current is BattleScreen dsp) { dsp.DemoSurprise(q["speaker"] ?? "captain", q["line"] ?? "Reinforcements!"); return new { ok = true }; }
                     return new { error = "not in battle" };
                 case "devhp":
                     if (app.Router.Current is BattleScreen dh) return new { ok = dh.DevHp((int)F(q["unit"]), (int)F(q["hp"], 1)) };
@@ -554,6 +571,13 @@ namespace Gaiden.App.Automation
                 if (xy.Length == 2) list.Add(new Vector2(F(xy[0]), F(xy[1])));
             }
             return list;
+        }
+
+        /// <summary>Strips any directory component/traversal from a request-supplied file name so it can't write or delete outside `artifacts`.</summary>
+        private static string SafeName(string name, string fallback)
+        {
+            var n = Path.GetFileName(name);
+            return string.IsNullOrEmpty(n) ? fallback : n;
         }
 
         private static List<Coord> ParseTiles(string s)

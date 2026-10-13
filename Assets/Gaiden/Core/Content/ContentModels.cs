@@ -101,12 +101,18 @@ namespace Gaiden.Core.Content
         public int H = 1;
     }
 
-    /// <summary>Portrait crop hints carried over from the old ThumbnailSettings (pixel offset + zoom).</summary>
+    /// <summary>
+    /// Where a cut-in's "bust" close-up (BattleScreen.CutIns.ActionCard) should anchor on this class's
+    /// full-body Portrait, as a 0-100 position on each axis (CSS background-position style: X 50/Y 0 is
+    /// the default — horizontally centred, anchored to the top — which is right for a front-facing
+    /// humanoid but wrong for an off-centre pose, e.g. a wolf sitting in profile with its head to one
+    /// side). Null (the common case) means "use the default." Owner direction 2026-10-11: "make sure
+    /// their eyes are in the portrait."
+    /// </summary>
     public sealed class PortraitCrop
     {
-        public int X;
-        public int Y;
-        public float Zoom = 1f;
+        public float X = 50f;
+        public float Y;
     }
 
     public sealed class BossPhaseDef
@@ -149,6 +155,10 @@ namespace Gaiden.Core.Content
         public float OnHitChance;
         /// <summary>Class id of the remains this enemy leaves (gravestone, bone pile — §14.5). Destroy them or it rises again.</summary>
         public string Remains;
+        /// <summary>Class id of the egg this enemy lays periodically (§14.8). Optional.</summary>
+        public string LaysEgg;
+        /// <summary>Lay an egg every Nth own turn (only used when LaysEgg is set).</summary>
+        public int EggInterval = 4;
         /// <summary>Damage dealt to every adjacent hero when this enemy dies (cyber-zombie self-destruct). 0 = none.</summary>
         public int DeathBurst;
         /// <summary>Enemy targeting personality (§14.1).</summary>
@@ -341,6 +351,8 @@ namespace Gaiden.Core.Content
         public int X = -1;
         /// <summary>Optional fixed tile (0-based row, 0 = top); -1 = random free tile.</summary>
         public int Y = -1;
+        /// <summary>Ticks after this wave starts before this entry spawns (§14.8). 0 = immediate, today's only behavior.</summary>
+        public int DelayTicks;
     }
 
     public sealed class WaveDef
@@ -348,6 +360,10 @@ namespace Gaiden.Core.Content
         public List<SpawnDef> Enemies = new List<SpawnDef>();
         /// <summary>Guest allies met in this wave (§25.11): fight with you; survive and they join, fall and they're gone for good.</summary>
         public List<SpawnDef> Guests = new List<SpawnDef>();
+        /// <summary>Class id whose portrait/name show when this wave's first delayed reinforcement arrives (§14.8). Optional.</summary>
+        public string SurpriseSpeaker;
+        /// <summary>The line that speaker says. Null/empty = no dialogue beat, just the spawn (silent reinforcement).</summary>
+        public string SurpriseLine;
     }
 
     public sealed class StageDef

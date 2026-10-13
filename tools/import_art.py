@@ -94,9 +94,34 @@ def face_crop(im):
     return (left, top, left + size, top + size)
 
 
-def import_portraits(src, classes):
+def save_portrait_assets(im, class_id, tags, team):
+    """im: an opened RGBA PIL.Image, pre-crop. Writes Thumbs/<id>.png (256x256 face/figure crop) and
+    Portraits/<id>.png (alpha-bbox-trimmed, max 640px tall). Returns the saved full-res Image (the
+    post-alpha-bbox-trim version, pre-thumbnail) for any downstream crop-coordinate computation."""
     thumbs = ensure(os.path.join(RES, "Thumbs"))
     portraits = ensure(os.path.join(RES, "Portraits"))
+    if class_id in CROP_OVERRIDES:
+        fx, ft, fs = CROP_OVERRIDES[class_id]
+        w, h = im.size
+        s = int(fs * w)
+        l = int(fx * w - s / 2)
+        t = int(ft * h)
+        box = (l, t, l + s, t + s)
+    elif "Humanoid" in (tags or []) or team == "Hero":
+        box = face_crop(im)
+    else:
+        box = figure_crop(im)
+    im.crop(box).resize((256, 256), Image.LANCZOS).save(os.path.join(thumbs, class_id + ".png"), optimize=True)
+    full = im.copy()
+    bbox = full.getchannel("A").getbbox()
+    if bbox:
+        full = full.crop(bbox)
+    full.thumbnail((640, 640), Image.LANCZOS)
+    full.save(os.path.join(portraits, class_id + ".png"), optimize=True)
+    return full
+
+
+def import_portraits(src, classes):
     done = 0
     for c in classes:
         key = c.get("Portrait") or c["Name"]
@@ -105,24 +130,7 @@ def import_portraits(src, classes):
             print("  missing portrait", key)
             continue
         im = Image.open(path).convert("RGBA")
-        if c["Id"] in CROP_OVERRIDES:
-            fx, ft, fs = CROP_OVERRIDES[c["Id"]]
-            w, h = im.size
-            s = int(fs * w)
-            l = int(fx * w - s / 2)
-            t = int(ft * h)
-            box = (l, t, l + s, t + s)
-        elif "Humanoid" in c.get("Tags", []) or c.get("Team") == "Hero":
-            box = face_crop(im)
-        else:
-            box = figure_crop(im)
-        im.crop(box).resize((256, 256), Image.LANCZOS).save(os.path.join(thumbs, c["Id"] + ".png"), optimize=True)
-        full = im.copy()
-        bbox = full.getchannel("A").getbbox()
-        if bbox:
-            full = full.crop(bbox)
-        full.thumbnail((640, 640), Image.LANCZOS)
-        full.save(os.path.join(portraits, c["Id"] + ".png"), optimize=True)
+        save_portrait_assets(im, c["Id"], c.get("Tags"), c.get("Team"))
         done += 1
     print(f"  portraits: {done}")
 

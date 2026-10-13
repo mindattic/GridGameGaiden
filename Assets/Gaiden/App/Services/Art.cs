@@ -100,9 +100,75 @@ namespace Gaiden.App
 
         public static Texture2D Placeholder => placeholder ??= Solid(new Color(0.35f, 0.2f, 0.45f), "placeholder");
 
-        /// <summary>The Final Fantasy window body: a deep vertical blue gradient (border drawn by USS).</summary>
-        public static Texture2D Window => window ??= Gradient(new Color32(44, 70, 170, 255), new Color32(10, 18, 70, 255), "window");
-        public static Texture2D WindowDark => windowDark ??= Gradient(new Color32(30, 36, 80, 255), new Color32(6, 8, 30, 255), "window-dark");
+        /// <summary>The Final Fantasy window body: a deep vertical gradient from the active menu theme (border
+        /// tint also follows the theme — see <see cref="ThemeAccent"/>, applied in <c>Ui.Window</c>).</summary>
+        public static Texture2D Window => window ??= Gradient(CurrentTheme.ColorA, CurrentTheme.ColorB, "window");
+        public static Texture2D WindowDark => windowDark ??= Gradient(Darken(CurrentTheme.ColorA, 0.3f), Darken(CurrentTheme.ColorB, 0.55f), "window-dark");
+
+        // ── Menu themes (owner request 2026-10-11: "the gradient on all the menus is generated... make
+        // multiple Themes... updated in Settings and remembers it") ──────────────────────────────────
+
+        /// <summary>A theme is two chosen base colors; the accent (window border, highlights) is derived from
+        /// them by color theory, never hand-picked, so every theme — including future ones — looks coherent
+        /// with zero extra tuning: hue-average the two bases (shortest arc around the wheel), then take its
+        /// complement (+180°) for a third hue guaranteed to stand apart from both, pushed toward full
+        /// saturation/brightness since it's used for thin borders and highlights, not large fills.</summary>
+        public readonly struct MenuTheme
+        {
+            public readonly string Name;
+            public readonly Color32 ColorA, ColorB;
+            public readonly Color32 Accent;
+
+            public MenuTheme(string name, Color32 a, Color32 b)
+            {
+                Name = name; ColorA = a; ColorB = b;
+                Color.RGBToHSV(a, out var ha, out var sa, out var va);
+                Color.RGBToHSV(b, out var hb, out var sb, out var vb);
+                float arc = Mathf.DeltaAngle(ha * 360f, hb * 360f) / 360f; // shortest signed hue distance a→b
+                float mid = Mathf.Repeat(ha + arc * 0.5f, 1f);             // circular midpoint hue
+                float accentHue = Mathf.Repeat(mid + 0.5f, 1f);            // its complement
+                float sat = Mathf.Clamp(Mathf.Max(sa, sb), 0.6f, 0.95f);
+                float val = Mathf.Clamp(Mathf.Max(va, vb) * 1.05f, 0.8f, 1f);
+                Accent = Color.HSVToRGB(accentHue, sat, val);
+            }
+        }
+
+        public static readonly MenuTheme[] Themes =
+        {
+            new MenuTheme("Classic", new Color32(44, 70, 170, 255), new Color32(10, 18, 70, 255)),
+            new MenuTheme("Cyberpunk", new Color32(255, 0, 200, 255), new Color32(0, 220, 255, 255)),
+            new MenuTheme("Ember", new Color32(239, 83, 80, 255), new Color32(38, 166, 154, 255)),
+            new MenuTheme("Verdant", new Color32(46, 125, 50, 255), new Color32(7, 20, 8, 255)),
+        };
+
+        private static MenuTheme CurrentTheme = Themes[0];
+        public static Color ThemeAccent => CurrentTheme.Accent;
+
+        /// <summary>Switches the active theme, regenerating any already-created textures in place (same
+        /// Texture2D instance, so every <c>VisualElement</c> already pointing at it updates with no rebuild).
+        /// Unknown names fall back to Classic. Call once at save load and again whenever Settings changes it.</summary>
+        public static void ApplyTheme(string name)
+        {
+            var found = Themes.FirstOrDefault(t => t.Name == name);
+            CurrentTheme = found.Name != null ? found : Themes[0];
+            if (window != null) Repaint(window, CurrentTheme.ColorA, CurrentTheme.ColorB);
+            if (windowDark != null) Repaint(windowDark, Darken(CurrentTheme.ColorA, 0.3f), Darken(CurrentTheme.ColorB, 0.55f));
+        }
+
+        private static Color32 Darken(Color32 c, float amount) => Color32.Lerp(c, new Color32(0, 0, 0, c.a), amount);
+
+        /// <summary>Repaints an existing gradient texture's pixels in place (see <see cref="Gradient"/>).</summary>
+        private static void Repaint(Texture2D tex, Color32 top, Color32 bottom)
+        {
+            int h = tex.height;
+            for (int y = 0; y < h; y++)
+            {
+                var c = Color32.Lerp(bottom, top, y / (float)(h - 1));
+                tex.SetPixel(0, y, c);
+                tex.SetPixel(1, y, c);
+            }
+            tex.Apply();
+        }
 
         /// <summary>The pointing-glove cursor (tools/make_icons.py, UI/cursor); the generated one if it's missing.</summary>
         public static Texture2D Cursor => cursor ??= (Resources.Load<Texture2D>("UI/cursor") ?? MakeCursor());

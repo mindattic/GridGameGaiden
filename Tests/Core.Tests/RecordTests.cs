@@ -45,7 +45,7 @@ namespace Gaiden.Tests
             var (s, rec) = PlayRecorded(3, 0f, "bot:greedy", 60);
             var parsed = JObject.Parse(rec.ToString());
             Assert.Equal(BattleRecorder.SchemaVersion, (int)parsed["schema"]);
-            Assert.Equal(20, (int)parsed["waves"]);
+            Assert.Equal(5, (int)parsed["waves"]);
             var turns = (JArray)parsed["turns"];
             Assert.True(turns.Count > 10);
             var first = turns[0];
@@ -54,7 +54,7 @@ namespace Gaiden.Tests
             Assert.True(((JArray)first["events"]).Count > 0);
             Assert.All(turns, t => Assert.NotNull(t["after"]["heroHp"]));
             Assert.NotNull(parsed["outcome"]["phase"]);
-            Assert.All((JArray)parsed["party"], h => Assert.Equal(2, ((JArray)h["bar"]).Count(b => b.Type == JTokenType.Object && (string)b["item"] == "x_potion")));
+            Assert.All((JArray)parsed["party"], h => Assert.Equal(1, ((JArray)h["bar"]).Count(b => b.Type == JTokenType.Object && (string)b["item"] == "x_potion")));
         }
 
         [Fact]

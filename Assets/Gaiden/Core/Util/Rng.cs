@@ -58,6 +58,10 @@ namespace Gaiden.Core
 
         public bool Chance(float p) => p > 0f && NextFloat() < p;
 
-        public T Pick<T>(IReadOnlyList<T> list) => list[Range(0, list.Count)];
+        public T Pick<T>(IReadOnlyList<T> list)
+        {
+            if (list == null || list.Count == 0) throw new ArgumentException("Pick: list is empty", nameof(list));
+            return list[Range(0, list.Count)];
+        }
     }
 }

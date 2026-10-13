@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using Gaiden.Core.Content;
 using Gaiden.Meta;
@@ -150,11 +151,201 @@ namespace Gaiden.App
 
         private void Start(int slot)
         {
-            App.Save = Progression.NewGame(App.Content, "Player");
-            App.Slot = slot;
-            App.ApplySettings();
-            App.Persist();
-            App.Router.ResetTo(new HubScreen());
+            App.Router.Push(new CharacterSelectScreen(party =>
+            {
+                App.Save = Progression.NewGame(App.Content, "Player", party);
+                App.Slot = slot;
+                App.ApplySettings();
+                App.Persist();
+                App.Router.ResetTo(new HubScreen());
+            }));
+        }
+    }
+
+    /// <summary>
+    /// Fighting-game-style roster pick (owner request: "a grid at the bottom, select a tile, the full
+    /// artwork appears on top, lock in that character"). Every hero class is open here regardless of
+    /// normal unlocks; five picks build the starting party. <c>-demo</c> drives the same screen by
+    /// tapping random tiles instead of a human, so each attract-mode run shows a different squad.
+    /// </summary>
+    public sealed class CharacterSelectScreen : GameScreen
+    {
+        public const int PartySize = 5;
+        private readonly Action<List<string>> onDone;
+        private readonly bool auto;
+        private readonly List<string> locked = new List<string>();
+        private string highlighted;
+        private bool finishing;
+        private VisualElement partyStrip, revealPanel, grid;
+        private Button lockBtn;
+
+        public CharacterSelectScreen(Action<List<string>> onDone, bool auto = false)
+        {
+            this.onDone = onDone;
+            this.auto = auto || DemoMode.Active;
+        }
+
+        public override string Id => "charselect";
+        public override string Music => "MinstrelGuild";
+
+        protected override void Build(VisualElement root)
+        {
+            var bg = Ui.El("fill", root);
+            bg.style.backgroundImage = new StyleBackground(Art.Background("cityruins", 0));
+            bg.style.unityBackgroundImageTintColor = new Color(0.4f, 0.4f, 0.55f);
+            var col = Ui.El("fill col", root);
+            Ui.Header("Choose Your Party", () => App.Router.Back(), col, out _);
+
+            partyStrip = Ui.El("row", col);
+            partyStrip.style.justifyContent = Justify.Center;
+            partyStrip.style.marginTop = 6; partyStrip.style.marginBottom = 10;
+
+            revealPanel = Ui.Window(null, col);
+            revealPanel.style.minHeight = 420;
+
+            lockBtn = Ui.Button("Lock In", LockInHighlighted, "btn--primary", col);
+            lockBtn.style.alignSelf = Align.Center;
+            lockBtn.style.width = 300;
+            lockBtn.style.marginBottom = 10;
+
+            var gridWindow = Ui.Window("Every hero — tap to preview, tap again to lock in", col);
+            gridWindow.style.flexGrow = 1;
+            grid = Ui.List(gridWindow).contentContainer;
+            grid.style.flexDirection = FlexDirection.Row;
+            grid.style.flexWrap = Wrap.Wrap;
+            grid.style.justifyContent = Justify.Center;
+            foreach (var def in App.Content.Classes.Values.Where(d => d.Team == Team.Hero).OrderBy(d => d.Name))
+            {
+                var id = def.Id;
+                var t = Ui.Thumb(id, grid, 164);
+                t.name = "tile-" + id;
+                t.style.marginLeft = t.style.marginRight = t.style.marginTop = t.style.marginBottom = 10;
+                t.AddToClassList("card-tap");
+                Ui.Tappable(t, () => Pick(id));
+            }
+
+            RefreshState();
+            if (auto) App.StartCoroutine(AutoPlay());
+        }
+
+        private void Pick(string id)
+        {
+            if (finishing || locked.Contains(id)) return;
+            if (highlighted == id) { LockInHighlighted(); return; }
+            highlighted = id;
+            App.Audio.Sfx("ui.select");
+            RefreshState();
+        }
+
+        private void LockInHighlighted()
+        {
+            if (finishing || highlighted == null || locked.Contains(highlighted)) return;
+            locked.Add(highlighted);
+            highlighted = null;
+            App.Audio.Sfx("ui.buy");
+            RefreshState();
+            if (locked.Count >= PartySize) { finishing = true; App.StartCoroutine(Finish()); }
+        }
+
+        private IEnumerator Finish()
+        {
+            yield return Tween.Wait(0.7f);
+            onDone(new List<string>(locked));
+        }
+
+        /// <summary>Bombastic reveal (owner request: "slam into place similar to the Portraits"): oversized and
+        /// tilted, punches down past full size with a back-ease overshoot, then a small settle shake.</summary>
+        private IEnumerator SlamIn(VisualElement target)
+        {
+            target.style.scale = new Scale(Vector2.one * 1.5f);
+            target.style.rotate = new Rotate(-6f);
+            App.Audio.Sfx("shatter", 0.55f);
+            yield return Tween.Run(0.22f, k =>
+            {
+                float s = Mathf.LerpUnclamped(1.5f, 1f, Tween.Back(k));
+                target.style.scale = new Scale(Vector2.one * s);
+                target.style.opacity = Mathf.Clamp01(k * 2.2f);
+                target.style.rotate = new Rotate(Mathf.LerpUnclamped(-6f, 0f, k));
+            });
+            target.style.scale = new Scale(Vector2.one);
+            target.style.opacity = 1f;
+            target.style.rotate = new Rotate(0f);
+            yield return Tween.Shake(target, 6f, 0.14f);
+        }
+
+        private IEnumerator AutoPlay()
+        {
+            var rng = new System.Random();
+            while (!finishing && locked.Count < PartySize)
+            {
+                yield return Tween.Wait(0.5f);
+                var pool = App.Content.Classes.Values.Where(d => d.Team == Team.Hero && !locked.Contains(d.Id)).ToList();
+                if (pool.Count == 0) yield break;
+                Pick(pool[rng.Next(pool.Count)].Id);
+                yield return Tween.Wait(0.6f);
+                LockInHighlighted();
+            }
+        }
+
+        private void RefreshState()
+        {
+            partyStrip.Clear();
+            for (int i = 0; i < PartySize; i++)
+            {
+                var slot = Ui.El("col", partyStrip);
+                slot.style.width = 108; slot.style.marginLeft = slot.style.marginRight = 6; slot.style.alignItems = Align.Center;
+                if (i < locked.Count)
+                {
+                    Ui.Thumb(locked[i], slot, 96);
+                    var nm = Ui.Text(App.Content.Class(locked[i]).Name, "tiny", slot);
+                    nm.style.unityTextAlign = TextAnchor.MiddleCenter;
+                }
+                else
+                {
+                    var empty = Ui.El("thumb", slot);
+                    empty.style.width = empty.style.height = 96;
+                    empty.style.opacity = 0.3f;
+                }
+            }
+
+            revealPanel.Clear();
+            var showId = highlighted ?? (locked.Count > 0 && !finishing ? locked[locked.Count - 1] : null);
+            if (finishing) { Ui.Text("Party complete!", "h1 shadow gold", revealPanel).style.unityTextAlign = TextAnchor.MiddleCenter; }
+            else if (showId != null)
+            {
+                var def = App.Content.Class(showId);
+                var row = Ui.El("row", revealPanel);
+                row.style.opacity = 0f; // slammed into place below, not swapped in cold
+                var frame = Ui.El(null, row);
+                frame.style.width = 360; frame.style.height = 400;
+                frame.style.borderTopWidth = frame.style.borderBottomWidth = frame.style.borderLeftWidth = frame.style.borderRightWidth = 4;
+                var roleColor = Ui.RoleColor(def.Role);
+                frame.style.borderTopColor = frame.style.borderBottomColor = frame.style.borderLeftColor = frame.style.borderRightColor = roleColor;
+                frame.style.backgroundColor = new Color(0.1f, 0.1f, 0.15f, 0.6f);
+                frame.style.backgroundImage = new StyleBackground(Art.Portrait(showId));
+                frame.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Contain);
+                var info = Ui.El("col", row);
+                info.style.marginLeft = 24; info.style.flexGrow = 1;
+                var nm = Ui.Text(def.Name, "h1 shadow", info);
+                Fonts.UseDisplay(nm);
+                Ui.RoleBadge(def.Role, info).style.marginBottom = 10;
+                var desc = Ui.Text(def.Description ?? "", "small dim", info);
+                desc.style.whiteSpace = WhiteSpace.Normal;
+                if (locked.Contains(showId)) Ui.Text("Locked in", "small good", info).style.marginTop = 10;
+                App.StartCoroutine(SlamIn(row));
+            }
+            else Ui.Text("Tap a hero below to preview them.", "h2 dim", revealPanel).style.unityTextAlign = TextAnchor.MiddleCenter;
+
+            foreach (var child in grid.Children())
+            {
+                if (!child.name.StartsWith("tile-")) continue;
+                var id = child.name.Substring(5);
+                bool isLocked = locked.Contains(id);
+                child.SetEnabled(!isLocked && !finishing);
+                child.style.opacity = isLocked ? 0.25f : (highlighted == id ? 1f : 0.85f);
+                child.EnableInClassList("thumb--selected", highlighted == id);
+            }
+            Ui.SetEnabled(lockBtn, !finishing && highlighted != null && !locked.Contains(highlighted));
         }
     }
 
@@ -435,6 +626,7 @@ namespace Gaiden.App
             var skip = Ui.Button("Skip ›", Finish, "btn--small", root);
             skip.style.position = Position.Absolute; skip.style.right = 30; skip.style.bottom = 40;
             root.RegisterCallback<ClickEvent>(_ => Finish());
+            if (DemoMode.Active) root.schedule.Execute(Finish).ExecuteLater(600);
         }
 
         public override void Tick(float dt)

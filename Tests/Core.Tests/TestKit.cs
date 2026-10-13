@@ -119,7 +119,10 @@ namespace Gaiden.Tests
             if (!s.IsOver)
             {
                 Assert.True(s.Units.Any(u => u.Alive && u.IsHero), "No heroes but battle not over");
-                Assert.True(s.Units.Any(u => u.Alive && !u.IsHero), "No enemies but battle not over");
+                // A reinforcement queued for the current wave (§14.8) legitimately holds the battle open with
+                // the board clear — mirrors the same check BattleRunner.CheckEnd makes before ending a wave.
+                bool reinforcementPending = s.PendingSpawns.Any(p => !p.Consumed && p.Wave == s.Wave);
+                Assert.True(s.Units.Any(u => u.Alive && !u.IsHero) || reinforcementPending, "No enemies but battle not over");
             }
         }
     }

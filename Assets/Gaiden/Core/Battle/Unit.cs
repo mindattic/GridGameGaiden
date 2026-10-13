@@ -22,6 +22,8 @@ namespace Gaiden.Core.Battle
         public string ItemId;
         /// <summary>A spare weapon carried on the bar; using it swaps it with the equipped one.</summary>
         public string WeaponId;
+        /// <summary>Remaining durability of the weapon stowed in this slot, carried across swaps so stowing and re-equipping never resets wear.</summary>
+        public int WeaponDurability;
         public int Charges;
         public int MaxCharges;
         /// <summary>True when the stack came from the player's inventory (use also consumes the item).</summary>
@@ -85,6 +87,8 @@ namespace Gaiden.Core.Battle
         public bool IsMultiTile => W > 1 || H > 1;
         /// <summary>A grave marker left by an undead (§14.5): solid, never acts except to raise its owner.</summary>
         public bool IsRemains => Def != null && Def.HasTag("Remains");
+        /// <summary>An egg laid mid-battle (§14.8): solid, never acts except to hatch.</summary>
+        public bool IsEgg => Def != null && Def.HasTag("Egg");
         /// <summary>A body left on the board (§14.7): blocks its tile, never rises, doesn't hold up a wave, rots away.</summary>
         public bool IsCorpse => Def != null && Def.HasTag("Corpse");
         /// <summary>Class id of the fallen unit a corpse came from (its art, its name).</summary>

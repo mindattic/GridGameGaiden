@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Gaiden.Core.Battle;
 using Gaiden.Core.Content;
 using Gaiden.Meta;
 using UnityEngine;
@@ -69,8 +70,14 @@ namespace Gaiden.App
             BuildPanel();
             Router = new ScreenRouter(Stage.Q("screens"), Stage.Q("fade"));
 
+            if (CommandLine.Has("-noDiagonalSlip")) BattleConfig.DiagonalSlipEnabled = false;
+            var skill = CommandLine.Value("-skill");
+            if (skill != null && float.TryParse(skill, out var skillLevel)) BotSkillProfile.Level = skillLevel;
+            BotSkillProfile.TelemetryEnabled = CommandLine.Has("-telemetry");
+
             var start = CommandLine.Value("-start");
-            if (!string.IsNullOrEmpty(start) && Automation.StartScreens.TryGet(start, out var startScreen)) Router.ResetTo(startScreen);
+            if (DemoMode.Active) DemoMode.Start();
+            else if (!string.IsNullOrEmpty(start) && Automation.StartScreens.TryGet(start, out var startScreen)) Router.ResetTo(startScreen);
             else Router.ResetTo(new TitleScreen());
 
 #if DEVELOPMENT_BUILD || UNITY_EDITOR
@@ -231,6 +238,8 @@ namespace Gaiden.App
             if (Save == null) return;
             Audio.Apply(Save.Settings);
             Tween.Speed = Mathf.Clamp(Save.Settings.BattleSpeed, 0.5f, 3f);
+            Art.ApplyTheme(Save.Settings.MenuTheme);
+            Fonts.ApplyFont(Save.Settings.FontName);
         }
     }
 
@@ -249,6 +258,73 @@ namespace Gaiden.App
             foreach (var a in Environment.GetCommandLineArgs())
                 if (string.Equals(a, flag, StringComparison.OrdinalIgnoreCase)) return true;
             return false;
+        }
+    }
+
+    /// <summary>
+    /// `-demo`: boots straight into a scripted self-play loop (new game → battle, autoplayed → next
+    /// stage → …, looping with a fresh save when the campaign ends or nothing is launchable). This is
+    /// the same path tools/harness.py campaign drives over HTTP, formalized as a startup flag so the
+    /// game can demo or soak-test itself with no external driver attached.
+    /// </summary>
+    public static class DemoMode
+    {
+        public static bool Active => CommandLine.Has("-demo");
+
+        public static void Start()
+        {
+            GameApp.I.Router.ResetTo(new TitleScreen());
+            Restart();
+        }
+
+        /// <summary>Called from PostBattleScreen once the results are up: does whatever a human would click next.</summary>
+        public static void AfterBattle(BattleReport report, string stageId)
+        {
+            var app = GameApp.I;
+            var c = app.Content;
+            if (!report.Victory)
+            {
+                var theme = c.ThemeOf(stageId);
+                string retryId = report.ExpeditionFailed && theme != null ? theme.Stages[0] : stageId;
+                StageLauncher.Launch(retryId, true);
+                return;
+            }
+            if (report.NextStageId != null) { StageLauncher.Launch(report.NextStageId, true); return; }
+            var stages = c.CampaignStages();
+            int idx = stages.FindIndex(s => s.Id == stageId);
+            if (idx >= 0 && idx + 1 < stages.Count && Progression.IsStageUnlocked(app.Save, idx + 1) && Expeditions.CanLaunch(c, app.Save, stages[idx + 1].Id, out _))
+            {
+                StageLauncher.Launch(stages[idx + 1].Id, true);
+                return;
+            }
+            Restart(); // campaign complete, or nothing left to launch — loop with a fresh save
+        }
+
+        /// <summary>Unlocks every class and shows the fighting-game-style select screen, which drives itself
+        /// in demo mode: random tiles, so each run shows a different cross-section of the roster.</summary>
+        private static void Restart()
+        {
+            GameApp.I.Router.Push(new CharacterSelectScreen(BeginRun, auto: true));
+        }
+
+        private static void BeginRun(List<string> party)
+        {
+            var app = GameApp.I;
+            app.Save = Progression.NewGame(app.Content, "Demo", party);
+            app.Slot = -1;
+            // ResetTo fades out the still-visible CharacterSelectScreen before its mutate actually applies
+            // (ScreenRouter.Go only mutates the stack synchronously when nothing is on screen yet), so pushing
+            // the first stage immediately after would race it and land on top of the stale stack, then get wiped
+            // out when the delayed Hub mutate finally runs. Wait for Hub to actually land before launching.
+            void OnShown(GameScreen shown)
+            {
+                if (shown is not HubScreen) return;
+                app.Router.Changed -= OnShown;
+                var stages = app.Content.CampaignStages();
+                if (stages.Count > 0) StageLauncher.Launch(stages[0].Id, false);
+            }
+            app.Router.Changed += OnShown;
+            app.Router.ResetTo(new HubScreen());
         }
     }
 }

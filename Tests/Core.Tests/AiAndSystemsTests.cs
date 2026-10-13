@@ -306,7 +306,7 @@ namespace Gaiden.Tests
         [Fact]
         public void Every_real_enemy_has_a_targeting_personality_and_a_speed_tier()
         {
-            var enemies = Real.Classes.Values.Where(c => c.Team == Team.Enemy && !c.HasTag("Remains")).ToList();
+            var enemies = Real.Classes.Values.Where(c => c.Team == Team.Enemy && !c.HasTag("Remains") && !c.HasTag("Egg")).ToList();
             Assert.All(enemies, c => Assert.NotEqual(Targeting.Auto, c.Targeting));
             Assert.All(enemies, c => Assert.Contains(c.BaseStats.Speed, new[] { 8f, 11f, 15f, 18f }));
             Assert.True(enemies.Select(c => c.Targeting).Distinct().Count() >= 4);
@@ -508,6 +508,34 @@ namespace Gaiden.Tests
             Assert.Contains(ev, e => e is StepBlockedEvent b && b.Reason == "immovable");
             Assert.Equal("gravestone", Real.Classes["undead00"].Remains);
             Assert.Equal("bonepile", Real.Classes["skelepede00"].Remains);
+        }
+
+        // ── Eggs (§14.8) ──
+
+        private static ContentDb EggDb()
+        {
+            var db = Mini();
+            db.Classes["naga"] = new ClassDef { Id = "naga", Name = "Naga", Team = Team.Enemy, Tags = { "Aquatic" }, BaseStats = new Stats { Vitality = 10, Speed = 10 }, MoveRange = 0, LaysEgg = "nagaegg", EggInterval = 4 };
+            db.Classes["nagaegg"] = new ClassDef { Id = "nagaegg", Name = "Naga Egg", Team = Team.Enemy, Tags = { "Egg" }, BaseStats = new Stats { Vitality = 2, Speed = 20 }, MoveRange = 0 };
+            return db;
+        }
+
+        [Fact]
+        public void An_egg_hatches_into_its_real_enemy_at_full_hp_on_schedule()
+        {
+            var db = EggDb();
+            var (s, _) = Battle(db, Stage(("tank", 0, 0)), ("cleric", 2, 7), ("knight", 5, 7));
+            var egg = new Unit { Id = s.NextUnitId++, Def = db.Classes["nagaegg"], Team = Team.Enemy, Level = 3, Pos = new Coord(3, 3), W = 1, H = 1, RisesAs = "naga", RisesLevel = 3 };
+            egg.LevelStats = Formulas.StatsAtLevel(egg.Def, 3); egg.MaxHp = egg.Hp = 5;
+            s.Units.Add(egg);
+            s.Timeline.Add(new TimelineEntry { Id = s.NextEntryId++, Kind = TimelineKind.Turn, OwnerId = egg.Id, Ip = 990 });
+            var ev = BattleEngine.Apply(s, new ShieldCommand());
+            var hatched = ev.OfType<EggHatchedEvent>().SingleOrDefault();
+            Assert.NotNull(hatched);
+            var u = s.UnitById(hatched.UnitId);
+            Assert.Equal("naga", u.Def.Id);
+            Assert.Equal(u.MaxHp, u.Hp); // full HP — a fresh enemy, not a weakened return
+            Assert.False(egg.Alive);
         }
     }
 }

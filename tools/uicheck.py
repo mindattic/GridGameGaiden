@@ -351,7 +351,7 @@ def main():
           "defaultScreenOrientation: 0" in ps and "m_ShowUnitySplashScreen: 0" in ps and f"bundleVersion: {ver}" in ps)
 
     logs = h.call("logs")
-    errs = [l for l in logs if l.startswith(("Error", "Exception")) and "first mouse position" not in l]
+    errs = [l for l in logs if l.startswith(("Error", "Exception", "Assert")) and "first mouse position" not in l]
     check("no errors or exceptions logged", not errs, " | ".join(e[:160] for e in errs[:5]))
 
     # ── Safe area (US-287): simulate a 120 px notch + 80 px home bar on a 585×1266 window ─────
@@ -361,11 +361,11 @@ def main():
         pass
     time.sleep(1.5)
     h.launch("uicheck-safearea", fresh=True, extra=("-safeArea", "120,80"))
-    time.sleep(1.0)
+    until(lambda: h.call("element", name="screens").get("w", 0) > 0)
     el = h.call("element", name="screens")
     # 120 screen px at 585 px wide = 240 design px; the stage fills the window exactly.
     check("safe-area insets push content below the notch and above the home bar",
-          abs(el["y"] - 240) < 6 and abs((2532 - (el["y"] + el["h"])) - 160) < 6, str(el))
+          abs(el.get("y", -1) - 240) < 6 and abs((2532 - (el.get("y", 0) + el.get("h", 0))) - 160) < 6, str(el))
     h.shot("safearea-title")
 
     passed = sum(1 for r in results if r["ok"])

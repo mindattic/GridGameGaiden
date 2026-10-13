@@ -11,11 +11,6 @@
     "Lore": "Knows every reagent, every breath, and when to spend both.",
     "Card": "Backline [healer][buffer]. Restores tempo with [cleanse] and [aid].",
     "Portrait": "Alchemist",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 5
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -103,15 +98,15 @@
       "rejuvenate",
       "silence",
       "scan",
-      "sleep"
+      "sleep",
+      "alchemist_transmute"
     ],
     "DefaultLoadout": [
       "heal",
       "regen",
       "item:x_potion",
-      "item:x_potion",
-      "rejuvenate",
-      "item:cons_sleep_dart"
+      "alchemist_transmute",
+      "rejuvenate"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -134,11 +129,6 @@
     "Lore": "Years of quiet training forged a will that moves faster than thought.",
     "Card": "Mobile [striker][flanker]. Leans on [crit] and [backstab] windows.",
     "Portrait": "Assassain",
-    "Crop": {
-      "X": 346,
-      "Y": 250,
-      "Zoom": 5
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -225,15 +215,15 @@
       "steal",
       "teleport",
       "quicken",
-      "poison"
+      "poison",
+      "assassain_killingblow"
     ],
     "DefaultLoadout": [
       "cleave",
       "mug",
       "item:x_potion",
-      "item:x_potion",
-      "steal",
-      "poison"
+      "assassain_killingblow",
+      "steal"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -256,11 +246,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "Barbarian",
-    "Crop": {
-      "X": 349,
-      "Y": 250,
-      "Zoom": 5
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -346,15 +331,15 @@
       "mug",
       "steal",
       "teleport",
-      "quicken"
+      "quicken",
+      "barbarian_reckless"
     ],
     "DefaultLoadout": [
       "cleave",
       "war_cry",
       "item:x_potion",
-      "item:x_potion",
-      "mug",
-      "steal"
+      "barbarian_reckless",
+      "mug"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -377,11 +362,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "Basher",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 5
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -467,15 +447,15 @@
       "mug",
       "steal",
       "teleport",
-      "quicken"
+      "quicken",
+      "basher_skullcrack"
     ],
     "DefaultLoadout": [
       "cleave",
       "war_cry",
       "item:x_potion",
-      "item:x_potion",
-      "mug",
-      "steal"
+      "basher_skullcrack",
+      "mug"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -499,11 +479,6 @@
     "Lore": "Born to the deep places, it runs by instinct and strikes without doubt.",
     "Card": "Ferocious [pouncer][mauler]. Disrupts with [roar] and [knockdown].",
     "Portrait": "Bat00",
-    "Crop": {
-      "X": 235,
-      "Y": 796,
-      "Zoom": 2
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -610,11 +585,6 @@
     "Lore": "Born to the deep places, it runs by instinct and strikes without doubt.",
     "Card": "Ferocious [pouncer][mauler]. Disrupts with [roar] and [knockdown].",
     "Portrait": "Bat01",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 5
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -722,11 +692,6 @@
     "Lore": "Born to the deep places, it runs by instinct and strikes without doubt.",
     "Card": "Ferocious [pouncer][mauler]. Disrupts with [roar] and [knockdown].",
     "Portrait": "Bat02",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 5
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -833,11 +798,6 @@
     "Lore": "Years of quiet training forged a will that moves faster than thought.",
     "Card": "Mobile [striker][flanker]. Leans on [crit] and [backstab] windows.",
     "Portrait": "BlackNinja",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 5
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -923,15 +883,15 @@
       "mug",
       "steal",
       "teleport",
-      "quicken"
+      "quicken",
+      "blackninja_shadowfang"
     ],
     "DefaultLoadout": [
       "cleave",
       "teleport",
       "item:x_potion",
-      "item:x_potion",
-      "steal",
-      "mug"
+      "blackninja_shadowfang",
+      "steal"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -955,11 +915,6 @@
     "Lore": "Disciplines of ink and flame taught that power begins in focus.",
     "Card": "Arcane [controller][debuffer]. Shapes fights with [aoe][curse].",
     "Portrait": "BlackWitch",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 5
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -1049,15 +1004,15 @@
       "poison",
       "sleep",
       "slow",
-      "charge_fireball"
+      "charge_fireball",
+      "blackwitch_shadowbolt"
     ],
     "DefaultLoadout": [
       "poison",
       "fireball",
       "item:x_potion",
-      "item:x_potion",
-      "sleep",
-      "frost"
+      "blackwitch_shadowbolt",
+      "sleep"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -1080,11 +1035,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "BlueLion",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 5
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -1172,15 +1122,15 @@
       "regen",
       "rejuvenate",
       "frost",
-      "antidote"
+      "antidote",
+      "bluelion_roar"
     ],
     "DefaultLoadout": [
       "regen",
       "war_cry",
       "item:x_potion",
-      "item:x_potion",
-      "rejuvenate",
-      "quicken"
+      "bluelion_roar",
+      "rejuvenate"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -1203,11 +1153,6 @@
     "Lore": "Years of quiet training forged a will that moves faster than thought.",
     "Card": "Mobile [striker][flanker]. Leans on [crit] and [backstab] windows.",
     "Portrait": "BlueNinja",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -1293,15 +1238,15 @@
       "mug",
       "steal",
       "teleport",
-      "quicken"
+      "quicken",
+      "blueninja_frostfang"
     ],
     "DefaultLoadout": [
       "cleave",
       "teleport",
       "item:x_potion",
-      "item:x_potion",
-      "steal",
-      "mug"
+      "blueninja_frostfang",
+      "steal"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -1324,11 +1269,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "Bruiser",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -1414,15 +1354,15 @@
       "mug",
       "steal",
       "teleport",
-      "quicken"
+      "quicken",
+      "bruiser_haymaker"
     ],
     "DefaultLoadout": [
       "cleave",
       "war_cry",
       "item:x_potion",
-      "item:x_potion",
-      "mug",
-      "steal"
+      "bruiser_haymaker",
+      "mug"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -1445,11 +1385,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "Captain",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -1558,11 +1493,6 @@
     "Lore": "Built on vows and iron patience, they stand where others fall back.",
     "Card": "Frontline [guardian][bruiser]. Absorbs pressure and [taunts].",
     "Portrait": "CeramicKnight00",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -1676,11 +1606,6 @@
     "Lore": "Built on vows and iron patience, they stand where others fall back.",
     "Card": "Frontline [guardian][bruiser]. Absorbs pressure and [taunts].",
     "Portrait": "CeramicKnight01",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -1794,11 +1719,6 @@
     "Lore": "Built on vows and iron patience, they stand where others fall back.",
     "Card": "Frontline [guardian][bruiser]. Absorbs pressure and [taunts].",
     "Portrait": "CeramicKnight02",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -1912,11 +1832,6 @@
     "Lore": "Built on vows and iron patience, they stand where others fall back.",
     "Card": "Frontline [guardian][bruiser]. Absorbs pressure and [taunts].",
     "Portrait": "CeramicKnight03",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -2030,11 +1945,6 @@
     "Lore": "Built on vows and iron patience, they stand where others fall back.",
     "Card": "Frontline [guardian][bruiser]. Absorbs pressure and [taunts].",
     "Portrait": "CeramicKnight04",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -2148,11 +2058,6 @@
     "Lore": "Built on vows and iron patience, they stand where others fall back.",
     "Card": "Frontline [guardian][bruiser]. Absorbs pressure and [taunts].",
     "Portrait": "CeramicKnight05",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -2266,11 +2171,6 @@
     "Lore": "Built on vows and iron patience, they stand where others fall back.",
     "Card": "Frontline [guardian][bruiser]. Absorbs pressure and [taunts].",
     "Portrait": "CeramicKnight06",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -2383,11 +2283,6 @@
     "Lore": "Years of quiet training forged a will that moves faster than thought.",
     "Card": "Mobile [striker][flanker]. Leans on [crit] and [backstab] windows.",
     "Portrait": "ChromaNinja",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -2473,15 +2368,15 @@
       "mug",
       "steal",
       "teleport",
-      "quicken"
+      "quicken",
+      "chromaninja_prismfang"
     ],
     "DefaultLoadout": [
       "cleave",
       "teleport",
       "item:x_potion",
-      "item:x_potion",
-      "steal",
-      "mug"
+      "chromaninja_prismfang",
+      "steal"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -2505,11 +2400,6 @@
     "Lore": "Knows every reagent, every breath, and when to spend both.",
     "Card": "Backline [healer][buffer]. Restores tempo with [cleanse] and [aid].",
     "Portrait": "Cleric",
-    "Crop": {
-      "X": 414,
-      "Y": 230,
-      "Zoom": 5
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -2597,15 +2487,15 @@
       "rejuvenate",
       "silence",
       "scan",
-      "sleep"
+      "sleep",
+      "cleric_grace"
     ],
     "DefaultLoadout": [
       "heal",
       "mass_heal",
       "item:x_potion",
-      "item:x_potion",
-      "antidote",
-      "regen"
+      "cleric_grace",
+      "antidote"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -2628,11 +2518,6 @@
     "Lore": "Knows every reagent, every breath, and when to spend both.",
     "Card": "Backline [healer][buffer]. Restores tempo with [cleanse] and [aid].",
     "Portrait": "Courier",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -2720,15 +2605,15 @@
       "regen",
       "rejuvenate",
       "frost",
-      "antidote"
+      "antidote",
+      "courier_relay"
     ],
     "DefaultLoadout": [
       "regen",
       "war_cry",
       "item:x_potion",
-      "item:x_potion",
-      "rejuvenate",
-      "quicken"
+      "courier_relay",
+      "rejuvenate"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -2752,11 +2637,6 @@
     "Lore": "Life ended. Purpose remained. The rest is hunger and memory.",
     "Card": "Grim [attrition][drain]. Pressures with [fear] and [rot].",
     "Portrait": "CyberZombie00",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -2868,11 +2748,6 @@
     "Lore": "Life ended. Purpose remained. The rest is hunger and memory.",
     "Card": "Grim [attrition][drain]. Pressures with [fear] and [rot].",
     "Portrait": "CyberZombie01",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -2984,11 +2859,6 @@
     "Lore": "Life ended. Purpose remained. The rest is hunger and memory.",
     "Card": "Grim [attrition][drain]. Pressures with [fear] and [rot].",
     "Portrait": "CyberZombie02",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -3100,11 +2970,6 @@
     "Lore": "Life ended. Purpose remained. The rest is hunger and memory.",
     "Card": "Grim [attrition][drain]. Pressures with [fear] and [rot].",
     "Portrait": "CyberZombie03",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -3216,11 +3081,6 @@
     "Lore": "Life ended. Purpose remained. The rest is hunger and memory.",
     "Card": "Grim [attrition][drain]. Pressures with [fear] and [rot].",
     "Portrait": "CyberZombie04",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -3332,11 +3192,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "Cyclops00",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 2,
       "H": 2
@@ -3457,11 +3312,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "Cyclops01",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -3568,11 +3418,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "Cyclops02",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -3678,11 +3523,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "Cyclops03",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -3788,11 +3628,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "Cyclops04",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -3898,11 +3733,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "Cyclops06",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -4008,11 +3838,6 @@
     "Lore": "Built on vows and iron patience, they stand where others fall back.",
     "Card": "Frontline [guardian][bruiser]. Absorbs pressure and [taunts].",
     "Portrait": "DarkTemplar",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -4099,15 +3924,15 @@
       "silence",
       "sleep",
       "antidote",
-      "poison"
+      "poison",
+      "darktemplar_rite"
     ],
     "DefaultLoadout": [
       "taunt",
       "shield_bash",
       "item:x_potion",
-      "item:x_potion",
-      "poison",
-      "sleep"
+      "darktemplar_rite",
+      "poison"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -4130,11 +3955,6 @@
     "Lore": "Built on vows and iron patience, they stand where others fall back.",
     "Card": "Frontline [guardian][bruiser]. Absorbs pressure and [taunts].",
     "Portrait": "Defender",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -4220,15 +4040,15 @@
       "scan",
       "silence",
       "sleep",
-      "antidote"
+      "antidote",
+      "defender_wall"
     ],
     "DefaultLoadout": [
       "taunt",
       "shield_bash",
       "item:x_potion",
-      "item:x_potion",
-      "scan",
-      "silence"
+      "defender_wall",
+      "scan"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -4251,11 +4071,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "DemonLord",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -4362,11 +4177,6 @@
     "Lore": "Knows every reagent, every breath, and when to spend both.",
     "Card": "Backline [healer][buffer]. Restores tempo with [cleanse] and [aid].",
     "Portrait": "Dervish",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -4454,15 +4264,15 @@
       "regen",
       "rejuvenate",
       "frost",
-      "antidote"
+      "antidote",
+      "dervish_whirl"
     ],
     "DefaultLoadout": [
       "regen",
       "war_cry",
       "item:x_potion",
-      "item:x_potion",
-      "rejuvenate",
-      "quicken"
+      "dervish_whirl",
+      "rejuvenate"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -4486,11 +4296,6 @@
     "Lore": "Knows every reagent, every breath, and when to spend both.",
     "Card": "Backline [healer][buffer]. Restores tempo with [cleanse] and [aid].",
     "Portrait": "Doctor",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -4578,15 +4383,15 @@
       "rejuvenate",
       "silence",
       "scan",
-      "sleep"
+      "sleep",
+      "doctor_triage"
     ],
     "DefaultLoadout": [
       "heal",
       "mass_heal",
       "item:x_potion",
-      "item:x_potion",
-      "antidote",
-      "regen"
+      "doctor_triage",
+      "antidote"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -4609,11 +4414,6 @@
     "Lore": "Knows every reagent, every breath, and when to spend both.",
     "Card": "Backline [healer][buffer]. Restores tempo with [cleanse] and [aid].",
     "Portrait": "Drifter",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -4702,15 +4502,15 @@
       "cross_hit",
       "poison",
       "sleep",
-      "slow"
+      "slow",
+      "drifter_frostnova"
     ],
     "DefaultLoadout": [
       "frost",
       "bolt",
       "item:x_potion",
-      "item:x_potion",
-      "slow",
-      "shock_wave"
+      "drifter_frostnova",
+      "slow"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -4733,11 +4533,6 @@
     "Lore": "Every scar is a lesson. Every lesson becomes an opening.",
     "Card": "Close-range [brawler][cleaver]. Wins trades with [stagger].",
     "Portrait": "Duelist",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -4823,15 +4618,15 @@
       "mug",
       "steal",
       "teleport",
-      "quicken"
+      "quicken",
+      "duelist_riposte"
     ],
     "DefaultLoadout": [
       "cleave",
       "war_cry",
       "item:x_potion",
-      "item:x_potion",
-      "mug",
-      "steal"
+      "duelist_riposte",
+      "mug"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -4854,11 +4649,6 @@
     "Lore": "Blueprints and boldness turned problems into levers and switches.",
     "Card": "Tactical [engineer][controller]. Deploys [traps][turrets][gadgets].",
     "Portrait": "Engineer",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -4946,15 +4736,15 @@
       "regen",
       "rejuvenate",
       "frost",
-      "antidote"
+      "antidote",
+      "engineer_overclock"
     ],
     "DefaultLoadout": [
       "quicken",
       "slow",
       "item:x_potion",
-      "item:x_potion",
-      "war_cry",
-      "scan"
+      "engineer_overclock",
+      "war_cry"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -4977,11 +4767,6 @@
     "Lore": "Every scar is a lesson. Every lesson becomes an opening.",
     "Card": "Close-range [brawler][cleaver]. Wins trades with [stagger].",
     "Portrait": "Fencer",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -5067,15 +4852,15 @@
       "mug",
       "steal",
       "teleport",
-      "quicken"
+      "quicken",
+      "fencer_fleche"
     ],
     "DefaultLoadout": [
       "cleave",
       "war_cry",
       "item:x_potion",
-      "item:x_potion",
-      "mug",
-      "steal"
+      "fencer_fleche",
+      "mug"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -5098,11 +4883,6 @@
     "Lore": "Every scar is a lesson. Every lesson becomes an opening.",
     "Card": "Close-range [brawler][cleaver]. Wins trades with [stagger].",
     "Portrait": "Fighter",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -5188,15 +4968,15 @@
       "mug",
       "steal",
       "teleport",
-      "quicken"
+      "quicken",
+      "fighter_combo"
     ],
     "DefaultLoadout": [
       "cleave",
       "war_cry",
       "item:x_potion",
-      "item:x_potion",
-      "mug",
-      "steal"
+      "fighter_combo",
+      "mug"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -5220,11 +5000,6 @@
     "Lore": "Born to the deep places, it runs by instinct and strikes without doubt.",
     "Card": "Ferocious [pouncer][mauler]. Disrupts with [roar] and [knockdown].",
     "Portrait": "FlyingMonkey",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -5330,11 +5105,6 @@
     "Lore": "Born to the deep places, it runs by instinct and strikes without doubt.",
     "Card": "Ferocious [pouncer][mauler]. Disrupts with [roar] and [knockdown].",
     "Portrait": "Frog00",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -5440,11 +5210,6 @@
     "Lore": "Born to the deep places, it runs by instinct and strikes without doubt.",
     "Card": "Ferocious [pouncer][mauler]. Disrupts with [roar] and [knockdown].",
     "Portrait": "Frog01",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -5550,11 +5315,6 @@
     "Lore": "Born to the deep places, it runs by instinct and strikes without doubt.",
     "Card": "Ferocious [pouncer][mauler]. Disrupts with [roar] and [knockdown].",
     "Portrait": "Frog02",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -5660,11 +5420,6 @@
     "Lore": "Born to the deep places, it runs by instinct and strikes without doubt.",
     "Card": "Ferocious [pouncer][mauler]. Disrupts with [roar] and [knockdown].",
     "Portrait": "Frog03",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -5770,11 +5525,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "Ganger00",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -5857,7 +5607,7 @@
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
-    "MoveRange": 1,
+    "MoveRange": 2,
     "Targeting": "Squishy",
     "XpReward": 10,
     "BossPhases": [],
@@ -5881,11 +5631,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "Ganger01",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -5968,7 +5713,7 @@
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
-    "MoveRange": 1,
+    "MoveRange": 2,
     "Targeting": "Squishy",
     "XpReward": 10,
     "BossPhases": [],
@@ -5992,11 +5737,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "Ganger02",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -6079,7 +5819,7 @@
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
-    "MoveRange": 1,
+    "MoveRange": 2,
     "Targeting": "Squishy",
     "XpReward": 10,
     "BossPhases": [],
@@ -6103,11 +5843,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "Ganger03",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -6190,7 +5925,7 @@
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
-    "MoveRange": 1,
+    "MoveRange": 2,
     "Targeting": "Squishy",
     "XpReward": 10,
     "BossPhases": [],
@@ -6214,11 +5949,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "Ganger04",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -6301,7 +6031,7 @@
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
-    "MoveRange": 1,
+    "MoveRange": 2,
     "Targeting": "Squishy",
     "XpReward": 10,
     "BossPhases": [],
@@ -6325,11 +6055,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "Ganger05",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -6412,7 +6137,7 @@
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
-    "MoveRange": 1,
+    "MoveRange": 2,
     "Targeting": "Squishy",
     "XpReward": 10,
     "BossPhases": [],
@@ -6436,11 +6161,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "Ganger06",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -6523,7 +6243,7 @@
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
-    "MoveRange": 1,
+    "MoveRange": 2,
     "Targeting": "Squishy",
     "XpReward": 10,
     "BossPhases": [],
@@ -6547,11 +6267,6 @@
     "Lore": "Life ended. Purpose remained. The rest is hunger and memory.",
     "Card": "Grim [attrition][drain]. Pressures with [fear] and [rot].",
     "Portrait": "Ghost",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -6657,11 +6372,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "GoblinThug00",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -6766,11 +6476,6 @@
     "Lore": "Years of quiet training forged a will that moves faster than thought.",
     "Card": "Mobile [striker][flanker]. Leans on [crit] and [backstab] windows.",
     "Portrait": "GreenNinja",
-    "Crop": {
-      "X": 406,
-      "Y": 231,
-      "Zoom": 5
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -6856,15 +6561,15 @@
       "mug",
       "steal",
       "teleport",
-      "quicken"
+      "quicken",
+      "greenninja_venomfang"
     ],
     "DefaultLoadout": [
       "cleave",
       "teleport",
       "item:x_potion",
-      "item:x_potion",
-      "steal",
-      "mug"
+      "greenninja_venomfang",
+      "steal"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -6888,11 +6593,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "Hag00",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -7000,11 +6700,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "Hag01",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -7111,11 +6806,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "Hag02",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -7221,11 +6911,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "Hag03",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -7331,11 +7016,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "Harbinger",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -7424,15 +7104,15 @@
       "cross_hit",
       "poison",
       "sleep",
-      "slow"
+      "slow",
+      "harbinger_omen"
     ],
     "DefaultLoadout": [
       "poison",
       "bolt",
       "item:x_potion",
-      "item:x_potion",
-      "sleep",
-      "fireball"
+      "harbinger_omen",
+      "sleep"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -7457,11 +7137,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "IceMauler",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -7569,11 +7244,6 @@
     "Lore": "Built on vows and iron patience, they stand where others fall back.",
     "Card": "Frontline [guardian][bruiser]. Absorbs pressure and [taunts].",
     "Portrait": "JadeKnight",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -7659,15 +7329,15 @@
       "scan",
       "silence",
       "sleep",
-      "antidote"
+      "antidote",
+      "jadeknight_resolve"
     ],
     "DefaultLoadout": [
       "taunt",
       "shield_bash",
       "item:x_potion",
-      "item:x_potion",
-      "scan",
-      "silence"
+      "jadeknight_resolve",
+      "scan"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -7690,11 +7360,6 @@
     "Lore": "Built on vows and iron patience, they stand where others fall back.",
     "Card": "Frontline [guardian][bruiser]. Absorbs pressure and [taunts].",
     "Portrait": "Knight",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -7780,15 +7445,15 @@
       "scan",
       "silence",
       "sleep",
-      "antidote"
+      "antidote",
+      "knight_oath"
     ],
     "DefaultLoadout": [
       "taunt",
       "shield_bash",
       "item:x_potion",
-      "item:x_potion",
-      "scan",
-      "silence"
+      "knight_oath",
+      "scan"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -7811,11 +7476,6 @@
     "Lore": "Every scar is a lesson. Every lesson becomes an opening.",
     "Card": "Close-range [brawler][cleaver]. Wins trades with [stagger].",
     "Portrait": "Lancer",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -7901,15 +7561,15 @@
       "mug",
       "steal",
       "teleport",
-      "quicken"
+      "quicken",
+      "lancer_chargeline"
     ],
     "DefaultLoadout": [
       "cleave",
       "war_cry",
       "item:x_potion",
-      "item:x_potion",
-      "mug",
-      "steal"
+      "lancer_chargeline",
+      "mug"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -7932,11 +7592,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "Lurker00",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -8043,11 +7698,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "Lurker01",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -8154,11 +7804,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "Lurker02",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -8265,11 +7910,6 @@
     "Lore": "Blueprints and boldness turned problems into levers and switches.",
     "Card": "Tactical [engineer][controller]. Deploys [traps][turrets][gadgets].",
     "Portrait": "Machinist",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -8357,15 +7997,15 @@
       "regen",
       "rejuvenate",
       "frost",
-      "antidote"
+      "antidote",
+      "machinist_turret"
     ],
     "DefaultLoadout": [
       "quicken",
       "slow",
       "item:x_potion",
-      "item:x_potion",
-      "war_cry",
-      "scan"
+      "machinist_turret",
+      "war_cry"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -8388,11 +8028,6 @@
     "Lore": "Life ended. Purpose remained. The rest is hunger and memory.",
     "Card": "Grim [attrition][drain]. Pressures with [fear] and [rot].",
     "Portrait": "Mannequin",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -8498,11 +8133,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "MarshShambler00",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -8609,11 +8239,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "MarshShambler01",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -8720,11 +8345,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "MarshShambler03",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -8831,11 +8451,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "MartialArtist",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -8921,15 +8536,15 @@
       "mug",
       "steal",
       "teleport",
-      "quicken"
+      "quicken",
+      "martialartist_palm"
     ],
     "DefaultLoadout": [
       "cleave",
       "war_cry",
       "item:x_potion",
-      "item:x_potion",
-      "mug",
-      "steal"
+      "martialartist_palm",
+      "mug"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -8952,11 +8567,6 @@
     "Lore": "Blueprints and boldness turned problems into levers and switches.",
     "Card": "Tactical [engineer][controller]. Deploys [traps][turrets][gadgets].",
     "Portrait": "MechaArmor00",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -9064,11 +8674,6 @@
     "Lore": "Blueprints and boldness turned problems into levers and switches.",
     "Card": "Tactical [engineer][controller]. Deploys [traps][turrets][gadgets].",
     "Portrait": "MechaArmor01",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -9176,11 +8781,6 @@
     "Lore": "Blueprints and boldness turned problems into levers and switches.",
     "Card": "Tactical [engineer][controller]. Deploys [traps][turrets][gadgets].",
     "Portrait": "MechaArmor02",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -9289,11 +8889,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "Monk",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -9381,15 +8976,15 @@
       "rejuvenate",
       "silence",
       "scan",
-      "sleep"
+      "sleep",
+      "monk_peace"
     ],
     "DefaultLoadout": [
       "heal",
       "mass_heal",
       "item:x_potion",
-      "item:x_potion",
-      "antidote",
-      "regen"
+      "monk_peace",
+      "antidote"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -9412,11 +9007,6 @@
     "Lore": "Born to the deep places, it runs by instinct and strikes without doubt.",
     "Card": "Ferocious [pouncer][mauler]. Disrupts with [roar] and [knockdown].",
     "Portrait": "MountainTroll",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -9502,7 +9092,7 @@
     ],
     "DefaultLoadout": [],
     "DropTable": "mountaintroll",
-    "MoveRange": 1,
+    "MoveRange": 2,
     "Targeting": "Closest",
     "XpReward": 10,
     "BossPhases": [],
@@ -9524,11 +9114,6 @@
     "Lore": "Built on vows and iron patience, they stand where others fall back.",
     "Card": "Frontline [guardian][bruiser]. Absorbs pressure and [taunts].",
     "Portrait": "Myrmidon",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -9614,15 +9199,15 @@
       "scan",
       "silence",
       "sleep",
-      "antidote"
+      "antidote",
+      "myrmidon_phalanx"
     ],
     "DefaultLoadout": [
       "taunt",
       "shield_bash",
       "item:x_potion",
-      "item:x_potion",
-      "scan",
-      "silence"
+      "myrmidon_phalanx",
+      "scan"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -9646,11 +9231,6 @@
     "Lore": "Born to the deep places, it runs by instinct and strikes without doubt.",
     "Card": "Ferocious [pouncer][mauler]. Disrupts with [roar] and [knockdown].",
     "Portrait": "Naga00",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -9743,7 +9323,9 @@
     "SnakeSegments": 3,
     "OnHitBuff": "poisoned",
     "OnHitChance": 0.4,
-    "Brain": "Ambusher"
+    "Brain": "Ambusher",
+    "LaysEgg": "nagaegg",
+    "EggInterval": 4
   },
   {
     "Id": "nighthunter",
@@ -9756,11 +9338,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "NightHunter",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -9847,15 +9424,15 @@
       "steal",
       "teleport",
       "quicken",
-      "poison"
+      "poison",
+      "nighthunter_nightstalk"
     ],
     "DefaultLoadout": [
       "cleave",
       "mug",
       "item:x_potion",
-      "item:x_potion",
-      "steal",
-      "poison"
+      "nighthunter_nightstalk",
+      "steal"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -9878,11 +9455,6 @@
     "Lore": "Every scar is a lesson. Every lesson becomes an opening.",
     "Card": "Close-range [brawler][cleaver]. Wins trades with [stagger].",
     "Portrait": "Odachi",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -9969,15 +9541,15 @@
       "steal",
       "teleport",
       "quicken",
-      "poison"
+      "poison",
+      "odachi_iaijutsu"
     ],
     "DefaultLoadout": [
       "cleave",
       "mug",
       "item:x_potion",
-      "item:x_potion",
-      "steal",
-      "poison"
+      "odachi_iaijutsu",
+      "steal"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -10000,11 +9572,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "Oni00",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -10111,11 +9678,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "Oni01",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -10222,11 +9784,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "Oni02",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -10333,11 +9890,6 @@
     "Lore": "Blueprints and boldness turned problems into levers and switches.",
     "Card": "Tactical [engineer][controller]. Deploys [traps][turrets][gadgets].",
     "Portrait": "Operative",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -10426,15 +9978,15 @@
       "cross_hit",
       "poison",
       "sleep",
-      "slow"
+      "slow",
+      "operative_shock"
     ],
     "DefaultLoadout": [
       "poison",
       "frost",
       "item:x_potion",
-      "item:x_potion",
-      "sleep",
-      "bolt"
+      "operative_shock",
+      "sleep"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -10457,11 +10009,6 @@
     "Lore": "Built on vows and iron patience, they stand where others fall back.",
     "Card": "Frontline [guardian][bruiser]. Absorbs pressure and [taunts].",
     "Portrait": "Paladin",
-    "Crop": {
-      "X": 428,
-      "Y": 230,
-      "Zoom": 5
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -10548,15 +10095,15 @@
       "silence",
       "sleep",
       "antidote",
-      "heal"
+      "heal",
+      "paladin_bulwark"
     ],
     "DefaultLoadout": [
       "taunt",
       "shield_bash",
       "item:x_potion",
-      "item:x_potion",
-      "heal",
-      "scan"
+      "paladin_bulwark",
+      "heal"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -10579,11 +10126,6 @@
     "Lore": "Born to the deep places, it runs by instinct and strikes without doubt.",
     "Card": "Ferocious [pouncer][mauler]. Disrupts with [roar] and [knockdown].",
     "Portrait": "PandaGirl",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -10669,15 +10211,15 @@
       "mug",
       "steal",
       "teleport",
-      "quicken"
+      "quicken",
+      "pandagirl_slam"
     ],
     "DefaultLoadout": [
       "cleave",
       "war_cry",
       "item:x_potion",
-      "item:x_potion",
-      "mug",
-      "steal"
+      "pandagirl_slam",
+      "mug"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -10700,11 +10242,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "Phantom",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -10810,11 +10347,6 @@
     "Lore": "Every scar is a lesson. Every lesson becomes an opening.",
     "Card": "Close-range [brawler][cleaver]. Wins trades with [stagger].",
     "Portrait": "PrizeFighter",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -10900,15 +10432,15 @@
       "mug",
       "steal",
       "teleport",
-      "quicken"
+      "quicken",
+      "prizefighter_knockout"
     ],
     "DefaultLoadout": [
       "cleave",
       "war_cry",
       "item:x_potion",
-      "item:x_potion",
-      "mug",
-      "steal"
+      "prizefighter_knockout",
+      "mug"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -10931,11 +10463,6 @@
     "Lore": "Every scar is a lesson. Every lesson becomes an opening.",
     "Card": "Close-range [brawler][cleaver]. Wins trades with [stagger].",
     "Portrait": "Pugilist",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -11021,15 +10548,15 @@
       "mug",
       "steal",
       "teleport",
-      "quicken"
+      "quicken",
+      "pugilist_jabcross"
     ],
     "DefaultLoadout": [
       "cleave",
       "war_cry",
       "item:x_potion",
-      "item:x_potion",
-      "mug",
-      "steal"
+      "pugilist_jabcross",
+      "mug"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -11052,11 +10579,6 @@
     "Lore": "Blueprints and boldness turned problems into levers and switches.",
     "Card": "Tactical [engineer][controller]. Deploys [traps][turrets][gadgets].",
     "Portrait": "PurplePrototype00",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -11141,7 +10663,7 @@
     ],
     "DefaultLoadout": [],
     "DropTable": null,
-    "MoveRange": 1,
+    "MoveRange": 2,
     "Targeting": "Weakest",
     "XpReward": 10,
     "BossPhases": [],
@@ -11162,11 +10684,6 @@
     "Lore": "Blueprints and boldness turned problems into levers and switches.",
     "Card": "Tactical [engineer][controller]. Deploys [traps][turrets][gadgets].",
     "Portrait": "PurplePrototype01",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -11251,7 +10768,7 @@
     ],
     "DefaultLoadout": [],
     "DropTable": null,
-    "MoveRange": 1,
+    "MoveRange": 2,
     "Targeting": "Weakest",
     "XpReward": 10,
     "BossPhases": [],
@@ -11272,11 +10789,6 @@
     "Lore": "Blueprints and boldness turned problems into levers and switches.",
     "Card": "Tactical [engineer][controller]. Deploys [traps][turrets][gadgets].",
     "Portrait": "PurplePrototype02",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -11361,7 +10873,7 @@
     ],
     "DefaultLoadout": [],
     "DropTable": null,
-    "MoveRange": 1,
+    "MoveRange": 2,
     "Targeting": "Weakest",
     "XpReward": 10,
     "BossPhases": [],
@@ -11382,11 +10894,6 @@
     "Lore": "Blueprints and boldness turned problems into levers and switches.",
     "Card": "Tactical [engineer][controller]. Deploys [traps][turrets][gadgets].",
     "Portrait": "PurplePrototype03",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -11471,7 +10978,7 @@
     ],
     "DefaultLoadout": [],
     "DropTable": null,
-    "MoveRange": 1,
+    "MoveRange": 2,
     "Targeting": "Weakest",
     "XpReward": 10,
     "BossPhases": [],
@@ -11492,11 +10999,6 @@
     "Lore": "Blueprints and boldness turned problems into levers and switches.",
     "Card": "Tactical [engineer][controller]. Deploys [traps][turrets][gadgets].",
     "Portrait": "PurplePrototype04",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -11581,7 +11083,7 @@
     ],
     "DefaultLoadout": [],
     "DropTable": null,
-    "MoveRange": 1,
+    "MoveRange": 2,
     "Targeting": "Weakest",
     "XpReward": 10,
     "BossPhases": [],
@@ -11602,11 +11104,6 @@
     "Lore": "Every scar is a lesson. Every lesson becomes an opening.",
     "Card": "Close-range [brawler][cleaver]. Wins trades with [stagger].",
     "Portrait": "Raider",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -11692,15 +11189,15 @@
       "mug",
       "steal",
       "teleport",
-      "quicken"
+      "quicken",
+      "raider_plunder"
     ],
     "DefaultLoadout": [
       "cleave",
       "war_cry",
       "item:x_potion",
-      "item:x_potion",
-      "mug",
-      "steal"
+      "raider_plunder",
+      "mug"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -11723,11 +11220,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "Reaper",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -11834,11 +11326,6 @@
     "Lore": "Disciplines of ink and flame taught that power begins in focus.",
     "Card": "Arcane [controller][debuffer]. Shapes fights with [aoe][curse].",
     "Portrait": "RedMage",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -11928,15 +11415,15 @@
       "poison",
       "sleep",
       "slow",
-      "charge_fireball"
+      "charge_fireball",
+      "redmage_fury"
     ],
     "DefaultLoadout": [
       "fireball",
       "frost",
       "item:x_potion",
-      "item:x_potion",
-      "bolt",
-      "meteor"
+      "redmage_fury",
+      "bolt"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -11959,11 +11446,6 @@
     "Lore": "Years of quiet training forged a will that moves faster than thought.",
     "Card": "Mobile [striker][flanker]. Leans on [crit] and [backstab] windows.",
     "Portrait": "RedNinja",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -12049,15 +11531,15 @@
       "mug",
       "steal",
       "teleport",
-      "quicken"
+      "quicken",
+      "redninja_flamefang"
     ],
     "DefaultLoadout": [
       "cleave",
       "teleport",
       "item:x_potion",
-      "item:x_potion",
-      "steal",
-      "mug"
+      "redninja_flamefang",
+      "steal"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -12080,11 +11562,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "Ripper",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -12171,15 +11648,15 @@
       "steal",
       "teleport",
       "quicken",
-      "poison"
+      "poison",
+      "ripper_rend"
     ],
     "DefaultLoadout": [
       "cleave",
       "mug",
       "item:x_potion",
-      "item:x_potion",
-      "steal",
-      "poison"
+      "ripper_rend",
+      "steal"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -12203,11 +11680,6 @@
     "Lore": "Disciplines of ink and flame taught that power begins in focus.",
     "Card": "Arcane [controller][debuffer]. Shapes fights with [aoe][curse].",
     "Portrait": "Ritualist",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -12297,15 +11769,15 @@
       "poison",
       "sleep",
       "slow",
-      "charge_fireball"
+      "charge_fireball",
+      "ritualist_bloodrite"
     ],
     "DefaultLoadout": [
       "poison",
       "fireball",
       "item:x_potion",
-      "item:x_potion",
-      "sleep",
-      "frost"
+      "ritualist_bloodrite",
+      "sleep"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -12328,11 +11800,6 @@
     "Lore": "Every scar is a lesson. Every lesson becomes an opening.",
     "Card": "Close-range [brawler][cleaver]. Wins trades with [stagger].",
     "Portrait": "Ronin",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -12418,15 +11885,15 @@
       "mug",
       "steal",
       "teleport",
-      "quicken"
+      "quicken",
+      "ronin_masterless"
     ],
     "DefaultLoadout": [
       "cleave",
       "war_cry",
       "item:x_potion",
-      "item:x_potion",
-      "mug",
-      "steal"
+      "ronin_masterless",
+      "mug"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -12451,11 +11918,6 @@
     "Lore": "Disciplines of ink and flame taught that power begins in focus.",
     "Card": "Arcane [controller][debuffer]. Shapes fights with [aoe][curse].",
     "Portrait": "Sage",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -12544,15 +12006,15 @@
       "silence",
       "scan",
       "sleep",
-      "charge_fireball"
+      "charge_fireball",
+      "sage_insight"
     ],
     "DefaultLoadout": [
       "heal",
       "mass_heal",
       "item:x_potion",
-      "item:x_potion",
-      "antidote",
-      "regen"
+      "sage_insight",
+      "antidote"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -12573,11 +12035,6 @@
     "Lore": "Born to the deep places, it runs by instinct and strikes without doubt.",
     "Card": "Ferocious [pouncer][mauler]. Disrupts with [roar] and [knockdown].",
     "Portrait": "SandMaw",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -12684,11 +12141,6 @@
     "Lore": "Every scar is a lesson. Every lesson becomes an opening.",
     "Card": "Close-range [brawler][cleaver]. Wins trades with [stagger].",
     "Portrait": "Scorpion",
-    "Crop": {
-      "X": 316,
-      "Y": 345,
-      "Zoom": 4
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -12797,11 +12249,6 @@
     "Lore": "Every scar is a lesson. Every lesson becomes an opening.",
     "Card": "Close-range [brawler][cleaver]. Wins trades with [stagger].",
     "Portrait": "Sellsword",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -12887,15 +12334,15 @@
       "mug",
       "steal",
       "teleport",
-      "quicken"
+      "quicken",
+      "sellsword_contract"
     ],
     "DefaultLoadout": [
       "cleave",
       "war_cry",
       "item:x_potion",
-      "item:x_potion",
-      "mug",
-      "steal"
+      "sellsword_contract",
+      "mug"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -12918,11 +12365,6 @@
     "Lore": "Built on vows and iron patience, they stand where others fall back.",
     "Card": "Frontline [guardian][bruiser]. Absorbs pressure and [taunts].",
     "Portrait": "ShieldMaiden",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -13008,15 +12450,15 @@
       "scan",
       "silence",
       "sleep",
-      "antidote"
+      "antidote",
+      "shieldmaiden_valkyrie"
     ],
     "DefaultLoadout": [
       "taunt",
       "shield_bash",
       "item:x_potion",
-      "item:x_potion",
-      "scan",
-      "silence"
+      "shieldmaiden_valkyrie",
+      "scan"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -13040,11 +12482,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "Sister",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -13132,15 +12569,15 @@
       "rejuvenate",
       "silence",
       "scan",
-      "sleep"
+      "sleep",
+      "sister_benediction"
     ],
     "DefaultLoadout": [
       "heal",
       "mass_heal",
       "item:x_potion",
-      "item:x_potion",
-      "antidote",
-      "regen"
+      "sister_benediction",
+      "antidote"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -13164,11 +12601,6 @@
     "Lore": "Life ended. Purpose remained. The rest is hunger and memory.",
     "Card": "Grim [attrition][drain]. Pressures with [fear] and [rot].",
     "Portrait": "Skelepede00",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -13251,7 +12683,7 @@
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
-    "MoveRange": 1,
+    "MoveRange": 2,
     "Targeting": "Closest",
     "XpReward": 10,
     "BossPhases": [],
@@ -13276,11 +12708,6 @@
     "Lore": "Life ended. Purpose remained. The rest is hunger and memory.",
     "Card": "Grim [attrition][drain]. Pressures with [fear] and [rot].",
     "Portrait": "Skelepede01",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -13363,7 +12790,7 @@
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
-    "MoveRange": 1,
+    "MoveRange": 2,
     "Targeting": "Closest",
     "XpReward": 10,
     "BossPhases": [],
@@ -13388,11 +12815,6 @@
     "Lore": "Life ended. Purpose remained. The rest is hunger and memory.",
     "Card": "Grim [attrition][drain]. Pressures with [fear] and [rot].",
     "Portrait": "Skelepede02",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -13475,7 +12897,7 @@
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
-    "MoveRange": 1,
+    "MoveRange": 2,
     "Targeting": "Closest",
     "XpReward": 10,
     "BossPhases": [],
@@ -13499,11 +12921,6 @@
     "Lore": "Every scar is a lesson. Every lesson becomes an opening.",
     "Card": "Close-range [brawler][cleaver]. Wins trades with [stagger].",
     "Portrait": "Slasher",
-    "Crop": {
-      "X": 104,
-      "Y": 793,
-      "Zoom": 2
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -13590,15 +13007,15 @@
       "steal",
       "teleport",
       "quicken",
-      "poison"
+      "poison",
+      "slasher_flurry"
     ],
     "DefaultLoadout": [
       "cleave",
       "mug",
       "item:x_potion",
-      "item:x_potion",
-      "steal",
-      "poison"
+      "slasher_flurry",
+      "steal"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -13619,11 +13036,6 @@
     "Lore": "Born to the deep places, it runs by instinct and strikes without doubt.",
     "Card": "Ferocious [pouncer][mauler]. Disrupts with [roar] and [knockdown].",
     "Portrait": "Slime00",
-    "Crop": {
-      "X": 397,
-      "Y": 683,
-      "Zoom": 3
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -13726,11 +13138,6 @@
     "Lore": "Born to the deep places, it runs by instinct and strikes without doubt.",
     "Card": "Ferocious [pouncer][mauler]. Disrupts with [roar] and [knockdown].",
     "Portrait": "Slime01",
-    "Crop": {
-      "X": 178,
-      "Y": 779,
-      "Zoom": 2
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -13833,11 +13240,6 @@
     "Lore": "Born to the deep places, it runs by instinct and strikes without doubt.",
     "Card": "Ferocious [pouncer][mauler]. Disrupts with [roar] and [knockdown].",
     "Portrait": "Slime02",
-    "Crop": {
-      "X": 178,
-      "Y": 779,
-      "Zoom": 2
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -13940,11 +13342,6 @@
     "Lore": "Born to the deep places, it runs by instinct and strikes without doubt.",
     "Card": "Ferocious [pouncer][mauler]. Disrupts with [roar] and [knockdown].",
     "Portrait": "Slime03",
-    "Crop": {
-      "X": 178,
-      "Y": 779,
-      "Zoom": 2
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -14049,11 +13446,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "Soldier00",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 2
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -14161,11 +13553,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "Soldier01",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -14273,11 +13660,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "Soldier02",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -14385,11 +13767,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "Soldier03",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -14497,11 +13874,6 @@
     "Lore": "Years of quiet training forged a will that moves faster than thought.",
     "Card": "Mobile [striker][flanker]. Leans on [crit] and [backstab] windows.",
     "Portrait": "Speedster",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -14587,15 +13959,15 @@
       "mug",
       "steal",
       "teleport",
-      "quicken"
+      "quicken",
+      "speedster_blitz"
     ],
     "DefaultLoadout": [
       "cleave",
       "war_cry",
       "item:x_potion",
-      "item:x_potion",
-      "mug",
-      "steal"
+      "speedster_blitz",
+      "mug"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -14618,11 +13990,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "SteppinRazor00",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -14728,11 +14095,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "SteppinRazor01",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -14838,11 +14200,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "SteppinRazor02",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -14948,11 +14305,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "SteppinRazor04",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -15058,11 +14410,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "SteppinRazor05",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -15168,11 +14515,6 @@
     "Lore": "Every scar is a lesson. Every lesson becomes an opening.",
     "Card": "Close-range [brawler][cleaver]. Wins trades with [stagger].",
     "Portrait": "StreetFighter",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -15258,15 +14600,15 @@
       "mug",
       "steal",
       "teleport",
-      "quicken"
+      "quicken",
+      "streetfighter_dirtytrick"
     ],
     "DefaultLoadout": [
       "cleave",
       "war_cry",
       "item:x_potion",
-      "item:x_potion",
-      "mug",
-      "steal"
+      "streetfighter_dirtytrick",
+      "mug"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -15289,11 +14631,6 @@
     "Lore": "Years of quiet training forged a will that moves faster than thought.",
     "Card": "Mobile [striker][flanker]. Leans on [crit] and [backstab] windows.",
     "Portrait": "Striker",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -15379,15 +14716,15 @@
       "mug",
       "steal",
       "teleport",
-      "quicken"
+      "quicken",
+      "striker_finishingblow"
     ],
     "DefaultLoadout": [
       "cleave",
       "war_cry",
       "item:x_potion",
-      "item:x_potion",
-      "mug",
-      "steal"
+      "striker_finishingblow",
+      "mug"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -15411,11 +14748,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "SwampMistress00",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -15522,11 +14854,6 @@
     "Lore": "Every scar is a lesson. Every lesson becomes an opening.",
     "Card": "Close-range [brawler][cleaver]. Wins trades with [stagger].",
     "Portrait": "SwordMaster",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -15612,15 +14939,15 @@
       "mug",
       "steal",
       "teleport",
-      "quicken"
+      "quicken",
+      "swordmaster_perfectcut"
     ],
     "DefaultLoadout": [
       "cleave",
       "war_cry",
       "item:x_potion",
-      "item:x_potion",
-      "mug",
-      "steal"
+      "swordmaster_perfectcut",
+      "mug"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -15643,11 +14970,6 @@
     "Lore": "Built on vows and iron patience, they stand where others fall back.",
     "Card": "Frontline [guardian][bruiser]. Absorbs pressure and [taunts].",
     "Portrait": "Tank",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -15733,15 +15055,15 @@
       "scan",
       "silence",
       "sleep",
-      "antidote"
+      "antidote",
+      "tank_juggernaut"
     ],
     "DefaultLoadout": [
       "taunt",
       "shield_bash",
       "item:x_potion",
-      "item:x_potion",
-      "scan",
-      "silence"
+      "tank_juggernaut",
+      "scan"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -15764,11 +15086,6 @@
     "Lore": "Blueprints and boldness turned problems into levers and switches.",
     "Card": "Tactical [engineer][controller]. Deploys [traps][turrets][gadgets].",
     "Portrait": "TechGremlin00",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -15872,11 +15189,6 @@
     "Lore": "Blueprints and boldness turned problems into levers and switches.",
     "Card": "Tactical [engineer][controller]. Deploys [traps][turrets][gadgets].",
     "Portrait": "TechGremlin01",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -15980,11 +15292,6 @@
     "Lore": "Blueprints and boldness turned problems into levers and switches.",
     "Card": "Tactical [engineer][controller]. Deploys [traps][turrets][gadgets].",
     "Portrait": "TechGremlin02",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -16088,11 +15395,6 @@
     "Lore": "Blueprints and boldness turned problems into levers and switches.",
     "Card": "Tactical [engineer][controller]. Deploys [traps][turrets][gadgets].",
     "Portrait": "Technician",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -16180,15 +15482,15 @@
       "regen",
       "rejuvenate",
       "frost",
-      "antidote"
+      "antidote",
+      "technician_diagnostic"
     ],
     "DefaultLoadout": [
       "quicken",
       "slow",
       "item:x_potion",
-      "item:x_potion",
-      "war_cry",
-      "scan"
+      "technician_diagnostic",
+      "war_cry"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -16211,11 +15513,6 @@
     "Lore": "Built on vows and iron patience, they stand where others fall back.",
     "Card": "Frontline [guardian][bruiser]. Absorbs pressure and [taunts].",
     "Portrait": "Templar00",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -16323,11 +15620,6 @@
     "Lore": "Built on vows and iron patience, they stand where others fall back.",
     "Card": "Frontline [guardian][bruiser]. Absorbs pressure and [taunts].",
     "Portrait": "Templar01",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -16435,11 +15727,6 @@
     "Lore": "Built on vows and iron patience, they stand where others fall back.",
     "Card": "Frontline [guardian][bruiser]. Absorbs pressure and [taunts].",
     "Portrait": "Templar02",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -16547,11 +15834,6 @@
     "Lore": "Built on vows and iron patience, they stand where others fall back.",
     "Card": "Frontline [guardian][bruiser]. Absorbs pressure and [taunts].",
     "Portrait": "Templar03",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -16659,11 +15941,6 @@
     "Lore": "Built on vows and iron patience, they stand where others fall back.",
     "Card": "Frontline [guardian][bruiser]. Absorbs pressure and [taunts].",
     "Portrait": "Templar04",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -16771,11 +16048,6 @@
     "Lore": "Built on vows and iron patience, they stand where others fall back.",
     "Card": "Frontline [guardian][bruiser]. Absorbs pressure and [taunts].",
     "Portrait": "Templar05",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -16883,11 +16155,6 @@
     "Lore": "Years of quiet training forged a will that moves faster than thought.",
     "Card": "Mobile [striker][flanker]. Leans on [crit] and [backstab] windows.",
     "Portrait": "Thief",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -16974,15 +16241,15 @@
       "steal",
       "teleport",
       "quicken",
-      "poison"
+      "poison",
+      "thief_snatch"
     ],
     "DefaultLoadout": [
       "cleave",
       "mug",
       "item:x_potion",
-      "item:x_potion",
-      "steal",
-      "poison"
+      "thief_snatch",
+      "steal"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -17005,11 +16272,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "Tinkerer",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -17097,15 +16359,15 @@
       "regen",
       "rejuvenate",
       "frost",
-      "antidote"
+      "antidote",
+      "tinkerer_juryrig"
     ],
     "DefaultLoadout": [
       "quicken",
       "slow",
       "item:x_potion",
-      "item:x_potion",
-      "war_cry",
-      "scan"
+      "tinkerer_juryrig",
+      "war_cry"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -17128,11 +16390,6 @@
     "Lore": "Born to the deep places, it runs by instinct and strikes without doubt.",
     "Card": "Ferocious [pouncer][mauler]. Disrupts with [roar] and [knockdown].",
     "Portrait": "Toad00",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -17240,11 +16497,6 @@
     "Lore": "Born to the deep places, it runs by instinct and strikes without doubt.",
     "Card": "Ferocious [pouncer][mauler]. Disrupts with [roar] and [knockdown].",
     "Portrait": "TreeGolem00",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -17357,11 +16609,6 @@
     "Lore": "Born to the deep places, it runs by instinct and strikes without doubt.",
     "Card": "Ferocious [pouncer][mauler]. Disrupts with [roar] and [knockdown].",
     "Portrait": "TreeGolem01",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -17474,11 +16721,6 @@
     "Lore": "Born to the deep places, it runs by instinct and strikes without doubt.",
     "Card": "Ferocious [pouncer][mauler]. Disrupts with [roar] and [knockdown].",
     "Portrait": "TreeGolem02",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -17591,11 +16833,6 @@
     "Lore": "Born to the deep places, it runs by instinct and strikes without doubt.",
     "Card": "Ferocious [pouncer][mauler]. Disrupts with [roar] and [knockdown].",
     "Portrait": "TreeGolem03",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -17708,11 +16945,6 @@
     "Lore": "Born to the deep places, it runs by instinct and strikes without doubt.",
     "Card": "Ferocious [pouncer][mauler]. Disrupts with [roar] and [knockdown].",
     "Portrait": "TreeGolem04",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -17825,11 +17057,6 @@
     "Lore": "Born to the deep places, it runs by instinct and strikes without doubt.",
     "Card": "Ferocious [pouncer][mauler]. Disrupts with [roar] and [knockdown].",
     "Portrait": "TreeGolem06",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -17941,11 +17168,6 @@
     "Lore": "Life ended. Purpose remained. The rest is hunger and memory.",
     "Card": "Grim [attrition][drain]. Pressures with [fear] and [rot].",
     "Portrait": "Undead00",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -18030,7 +17252,7 @@
     ],
     "DefaultLoadout": [],
     "DropTable": "undead00",
-    "MoveRange": 1,
+    "MoveRange": 2,
     "Targeting": "Closest",
     "XpReward": 10,
     "BossPhases": [],
@@ -18052,11 +17274,6 @@
     "Lore": "Life ended. Purpose remained. The rest is hunger and memory.",
     "Card": "Grim [attrition][drain]. Pressures with [fear] and [rot].",
     "Portrait": "Undead01",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -18141,7 +17358,7 @@
     ],
     "DefaultLoadout": [],
     "DropTable": "undead01",
-    "MoveRange": 1,
+    "MoveRange": 2,
     "Targeting": "Closest",
     "XpReward": 10,
     "BossPhases": [],
@@ -18163,11 +17380,6 @@
     "Lore": "Life ended. Purpose remained. The rest is hunger and memory.",
     "Card": "Grim [attrition][drain]. Pressures with [fear] and [rot].",
     "Portrait": "Undead02",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -18252,7 +17464,7 @@
     ],
     "DefaultLoadout": [],
     "DropTable": null,
-    "MoveRange": 1,
+    "MoveRange": 2,
     "Targeting": "Closest",
     "XpReward": 10,
     "BossPhases": [],
@@ -18274,11 +17486,6 @@
     "Lore": "Life ended. Purpose remained. The rest is hunger and memory.",
     "Card": "Grim [attrition][drain]. Pressures with [fear] and [rot].",
     "Portrait": "Undead04",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -18363,7 +17570,7 @@
     ],
     "DefaultLoadout": [],
     "DropTable": null,
-    "MoveRange": 1,
+    "MoveRange": 2,
     "Targeting": "Closest",
     "XpReward": 10,
     "BossPhases": [],
@@ -18387,11 +17594,6 @@
     "Lore": "Life ended. Purpose remained. The rest is hunger and memory.",
     "Card": "Grim [attrition][drain]. Pressures with [fear] and [rot].",
     "Portrait": "Vampire",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -18477,15 +17679,15 @@
       "mug",
       "steal",
       "teleport",
-      "quicken"
+      "quicken",
+      "vampire_enervate"
     ],
     "DefaultLoadout": [
       "cleave",
       "war_cry",
       "item:x_potion",
-      "item:x_potion",
-      "mug",
-      "steal"
+      "vampire_enervate",
+      "mug"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -18509,11 +17711,6 @@
     "Lore": "Born to the deep places, it runs by instinct and strikes without doubt.",
     "Card": "Ferocious [pouncer][mauler]. Disrupts with [roar] and [knockdown].",
     "Portrait": "Vulture",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -18617,11 +17814,6 @@
     "Lore": "Built on vows and iron patience, they stand where others fall back.",
     "Card": "Frontline [guardian][bruiser]. Absorbs pressure and [taunts].",
     "Portrait": "WarChief",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -18707,15 +17899,15 @@
       "scan",
       "silence",
       "sleep",
-      "antidote"
+      "antidote",
+      "warchief_banner"
     ],
     "DefaultLoadout": [
       "taunt",
       "shield_bash",
       "item:x_potion",
-      "item:x_potion",
-      "scan",
-      "silence"
+      "warchief_banner",
+      "scan"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -18740,9 +17932,8 @@
     "Card": "Ferocious [pouncer][mauler]. Disrupts with [roar] and [knockdown].",
     "Portrait": "Werewolf00",
     "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
+      "X": 15,
+      "Y": 15
     },
     "Footprint": {
       "W": 1,
@@ -18852,11 +18043,6 @@
     "Lore": "Years of quiet training forged a will that moves faster than thought.",
     "Card": "Mobile [striker][flanker]. Leans on [crit] and [backstab] windows.",
     "Portrait": "WhiteNinja",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -18945,15 +18131,15 @@
       "silence",
       "scan",
       "sleep",
-      "teleport"
+      "teleport",
+      "whiteninja_moonlit"
     ],
     "DefaultLoadout": [
       "heal",
       "teleport",
       "item:x_potion",
-      "item:x_potion",
-      "antidote",
-      "mass_heal"
+      "whiteninja_moonlit",
+      "antidote"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -18978,11 +18164,6 @@
     "Lore": "Disciplines of ink and flame taught that power begins in focus.",
     "Card": "Arcane [controller][debuffer]. Shapes fights with [aoe][curse].",
     "Portrait": "WhiteWitch",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -19071,15 +18252,15 @@
       "silence",
       "scan",
       "sleep",
-      "charge_fireball"
+      "charge_fireball",
+      "whitewitch_ward"
     ],
     "DefaultLoadout": [
       "heal",
       "mass_heal",
       "item:x_potion",
-      "item:x_potion",
-      "antidote",
-      "regen"
+      "whitewitch_ward",
+      "antidote"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -19102,11 +18283,6 @@
     "Lore": "Walks many roads, never lost for lack of a single path.",
     "Card": "Flexible [fighter]. Converts [openings] into [combo finishes].",
     "Portrait": "WildChild",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -19194,15 +18370,15 @@
       "regen",
       "rejuvenate",
       "frost",
-      "antidote"
+      "antidote",
+      "wildchild_howl"
     ],
     "DefaultLoadout": [
       "regen",
       "war_cry",
       "item:x_potion",
-      "item:x_potion",
-      "rejuvenate",
-      "quicken"
+      "wildchild_howl",
+      "rejuvenate"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -19226,9 +18402,8 @@
     "Card": "Ferocious [pouncer][mauler]. Disrupts with [roar] and [knockdown].",
     "Portrait": "Wolf00",
     "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
+      "X": 17,
+      "Y": 16
     },
     "Footprint": {
       "W": 1,
@@ -19314,7 +18489,7 @@
     ],
     "DefaultLoadout": [],
     "DropTable": "wolf00",
-    "MoveRange": 1,
+    "MoveRange": 2,
     "Targeting": "Weakest",
     "XpReward": 10,
     "BossPhases": [],
@@ -19337,9 +18512,8 @@
     "Card": "Ferocious [pouncer][mauler]. Disrupts with [roar] and [knockdown].",
     "Portrait": "Wolf01",
     "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
+      "X": 82,
+      "Y": 27
     },
     "Footprint": {
       "W": 1,
@@ -19425,7 +18599,7 @@
     ],
     "DefaultLoadout": [],
     "DropTable": "wolf01",
-    "MoveRange": 1,
+    "MoveRange": 2,
     "Targeting": "Weakest",
     "XpReward": 10,
     "BossPhases": [],
@@ -19448,9 +18622,8 @@
     "Card": "Ferocious [pouncer][mauler]. Disrupts with [roar] and [knockdown].",
     "Portrait": "Wolf02",
     "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
+      "X": 85,
+      "Y": 19
     },
     "Footprint": {
       "W": 1,
@@ -19536,7 +18709,7 @@
     ],
     "DefaultLoadout": [],
     "DropTable": null,
-    "MoveRange": 1,
+    "MoveRange": 2,
     "Targeting": "Weakest",
     "XpReward": 10,
     "BossPhases": [],
@@ -19559,9 +18732,8 @@
     "Card": "Ferocious [pouncer][mauler]. Disrupts with [roar] and [knockdown].",
     "Portrait": "Wolf03",
     "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
+      "X": 78,
+      "Y": 33
     },
     "Footprint": {
       "W": 1,
@@ -19647,7 +18819,7 @@
     ],
     "DefaultLoadout": [],
     "DropTable": null,
-    "MoveRange": 1,
+    "MoveRange": 2,
     "Targeting": "Weakest",
     "XpReward": 10,
     "BossPhases": [],
@@ -19669,11 +18841,6 @@
     "Lore": "Years of quiet training forged a will that moves faster than thought.",
     "Card": "Mobile [striker][flanker]. Leans on [crit] and [backstab] windows.",
     "Portrait": "YellowNinja",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -19759,15 +18926,15 @@
       "mug",
       "steal",
       "teleport",
-      "quicken"
+      "quicken",
+      "yellowninja_shockfang"
     ],
     "DefaultLoadout": [
       "cleave",
       "teleport",
       "item:x_potion",
-      "item:x_potion",
-      "steal",
-      "mug"
+      "yellowninja_shockfang",
+      "steal"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -19791,11 +18958,6 @@
     "Lore": "Born to the deep places, it runs by instinct and strikes without doubt.",
     "Card": "Ferocious [pouncer][mauler]. Disrupts with [roar] and [knockdown].",
     "Portrait": "Yeti",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -19878,7 +19040,7 @@
     "Abilities": [],
     "DefaultLoadout": [],
     "DropTable": null,
-    "MoveRange": 1,
+    "MoveRange": 2,
     "Targeting": "Closest",
     "XpReward": 10,
     "BossPhases": [],
@@ -19903,11 +19065,6 @@
     "Lore": "A cracked grave marker. Break it before the dead climb back out.",
     "Card": "A cracked grave marker. Break it before the dead climb back out.",
     "Portrait": "gravestone",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -20026,11 +19183,6 @@
     "Lore": "A heap of rattling bones that wants to stand up again. Scatter it.",
     "Card": "A heap of rattling bones that wants to stand up again. Scatter it.",
     "Portrait": "bonepile",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -20149,11 +19301,6 @@
     "Lore": "A fallen body in the way. Clear it with a pincer or wait for it to rot.",
     "Card": "A fallen body in the way. Clear it with a pincer or wait for it to rot.",
     "Portrait": "corpse",
-    "Crop": {
-      "X": 512,
-      "Y": 140,
-      "Zoom": 1
-    },
     "Footprint": {
       "W": 1,
       "H": 1
@@ -20232,6 +19379,71 @@
         }
       }
     ],
+    "Resistances": {},
+    "Abilities": [],
+    "DefaultLoadout": [],
+    "DropTable": null,
+    "MoveRange": 0,
+    "Targeting": "Closest",
+    "XpReward": 0,
+    "BossPhases": [],
+    "ChargeAbility": null,
+    "ChargeShape": "Single",
+    "Trap": null,
+    "SnakeSegments": 0,
+    "Trail": null,
+    "OnHitBuff": null,
+    "OnHitChance": 0,
+    "DeathBurst": 0,
+    "Remains": null,
+    "ImmuneBuffs": [
+      "poisoned",
+      "sleep",
+      "burning",
+      "frozen",
+      "slowed",
+      "silenced",
+      "blinded"
+    ],
+    "Brain": "Sentinel"
+  },
+  {
+    "Id": "nagaegg",
+    "Name": "Naga Egg",
+    "Team": "Enemy",
+    "Tags": [
+      "Egg",
+      "Aquatic"
+    ],
+    "Description": "A leathery egg, still warm. Best to break it before it hatches.",
+    "Lore": "A leathery egg, still warm. Best to break it before it hatches.",
+    "Card": "A leathery egg, still warm. Best to break it before it hatches.",
+    "Portrait": "naga00",
+    "Footprint": {
+      "W": 1,
+      "H": 1
+    },
+    "BaseStats": {
+      "Strength": 0,
+      "Vitality": 5,
+      "Agility": 0,
+      "Speed": 5,
+      "Stamina": 16,
+      "Intelligence": 10,
+      "Wisdom": 12,
+      "Luck": 0
+    },
+    "Growth": {
+      "Strength": 0,
+      "Vitality": 1,
+      "Agility": 0,
+      "Speed": 0,
+      "Stamina": 0,
+      "Intelligence": 0,
+      "Wisdom": 0,
+      "Luck": 0
+    },
+    "Milestones": [],
     "Resistances": {},
     "Abilities": [],
     "DefaultLoadout": [],

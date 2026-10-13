@@ -3,7 +3,7 @@ using Gaiden.Core.Content;
 
 namespace Gaiden.Core.Battle
 {
-    public enum BattlePhase { PlayerInput, Victory, Defeat, Escaped }
+    public enum BattlePhase { PlayerInput, Victory, Defeat, Escaped, Retreated }
 
     public sealed class Trap
     {
@@ -107,6 +107,16 @@ namespace Gaiden.Core.Battle
         public MovableTile Clone() => (MovableTile)MemberwiseClone();
     }
 
+    /// <summary>A delayed mid-wave spawn (§14.8), queued at wave start and resolved once the clock reaches its trigger tick.</summary>
+    public sealed class PendingSpawn
+    {
+        public int Wave;
+        public SpawnDef Spawn;
+        public long TriggerClock;
+        public bool Consumed;
+        public PendingSpawn Clone() => (PendingSpawn)MemberwiseClone();
+    }
+
     public sealed class BattleState
     {
         public ContentDb Content;
@@ -156,6 +166,8 @@ namespace Gaiden.Core.Battle
         /// <summary>Progress toward the next orb, 0..ManaChargePerOrb-1 (§3.1.9).</summary>
         public int ManaCharge;
         public int Wave;
+        /// <summary>Delayed mid-wave spawns (§14.8) queued by <c>SpawnWave</c>, resolved as the clock reaches their trigger tick.</summary>
+        public List<PendingSpawn> PendingSpawns = new List<PendingSpawn>();
         public BattlePhase Phase = BattlePhase.PlayerInput;
         public int NextUnitId = 1;
         public int NextEntryId = 1;
@@ -242,6 +254,8 @@ namespace Gaiden.Core.Battle
             foreach (var t in Traps) s.Traps.Add(t.Clone());
             s.Pickups = new List<Pickup>(Pickups.Count);
             foreach (var p in Pickups) s.Pickups.Add(p.Clone());
+            s.PendingSpawns = new List<PendingSpawn>(PendingSpawns.Count);
+            foreach (var p in PendingSpawns) s.PendingSpawns.Add(p.Clone());
             s.Bank = Bank.Clone();
             s.Results = Results.Clone();
             return s;

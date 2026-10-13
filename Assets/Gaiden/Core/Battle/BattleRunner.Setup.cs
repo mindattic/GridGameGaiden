@@ -124,7 +124,7 @@ namespace Gaiden.Core.Battle
             {
                 var w = C.TryItem(entry.Substring(7));
                 spec.ItemCounts.TryGetValue(entry.Substring(7), out var have);
-                if (w != null && w.Slot == EquipmentSlot.Weapon && have > 0) { slot.WeaponId = w.Id; spec.ItemCounts[w.Id] = have - 1; }
+                if (w != null && w.Slot == EquipmentSlot.Weapon && have > 0) { slot.WeaponId = w.Id; slot.WeaponDurability = w.Durability; spec.ItemCounts[w.Id] = have - 1; }
                 return slot;
             }
             if (entry.StartsWith("item:", StringComparison.Ordinal))
@@ -178,6 +178,11 @@ namespace Gaiden.Core.Battle
             SpawnGuests(wave);
             foreach (var sp in wave.Enemies)
             {
+                if (sp.DelayTicks > 0)
+                {
+                    S.PendingSpawns.Add(new PendingSpawn { Wave = index, Spawn = sp, TriggerClock = S.Clock + sp.DelayTicks });
+                    continue;
+                }
                 var def = C.TryClass(sp.Class);
                 if (def == null) continue;
                 int level = S.Stage.IsTest ? sp.Level : Math.Max(sp.Level, S.RecommendedLevel) + S.NewGamePlus * BattleConfig.NgPlusLevelStep;
@@ -187,6 +192,34 @@ namespace Gaiden.Core.Battle
                 if (def.SnakeSegments > 0) GrowSnake(u, def.SnakeSegments, started.Spawned);
             }
             Emit(started);
+        }
+
+        /// <summary>Resolves any delayed reinforcements (§14.8) for the current wave whose trigger tick has arrived.</summary>
+        private void ResolvePendingSpawns()
+        {
+            if (S.PendingSpawns.Count == 0) return;
+            List<int> spawned = null;
+            string speakerClassId = null, line = null;
+            foreach (var pending in S.PendingSpawns)
+            {
+                if (pending.Consumed || pending.Wave != S.Wave || S.Clock < pending.TriggerClock) continue;
+                pending.Consumed = true;
+                var def = C.TryClass(pending.Spawn.Class);
+                if (def == null) continue;
+                int level = S.Stage.IsTest ? pending.Spawn.Level : Math.Max(pending.Spawn.Level, S.RecommendedLevel) + S.NewGamePlus * BattleConfig.NgPlusLevelStep;
+                var u = SpawnEnemy(def, level, pending.Spawn.X, pending.Spawn.Y);
+                if (u == null) continue;
+                spawned ??= new List<int>();
+                spawned.Add(u.Id);
+                if (def.SnakeSegments > 0) GrowSnake(u, def.SnakeSegments, spawned);
+                if (speakerClassId == null)
+                {
+                    var wave = S.Stage.Waves[pending.Wave];
+                    if (!string.IsNullOrEmpty(wave.SurpriseLine)) { speakerClassId = wave.SurpriseSpeaker; line = wave.SurpriseLine; }
+                }
+            }
+            if (spawned != null) Emit(new ReinforcementsArrivedEvent { Wave = S.Wave, Spawned = spawned, SpeakerClassId = speakerClassId, Line = line });
+            S.PendingSpawns.RemoveAll(p => p.Consumed);
         }
 
         internal Unit SpawnEnemy(ClassDef def, int level, int x, int y)

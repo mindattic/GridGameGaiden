@@ -8,6 +8,10 @@ using Gaiden.Core.Bot;
 using Gaiden.Core.Content;
 using Gaiden.Core.Rules;
 using Gaiden.Meta;
+using MindAttic.Capture;
+using MindAttic.Capture.Unity;
+using MindAttic.Telemetry;
+using MindAttic.Telemetry.Unity;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -26,8 +30,8 @@ namespace Gaiden.App
         // Layout (design pixels)
         private const float BoardLeft = 45f, BoardTop = 450f;
         private const float TimelineLeft = 40f, TimelineWidth = 940f, TimelineY = 250f;
-        /// <summary>The track line's y inside the timeline frame; turn icons centre on it, cast icons hang below.</summary>
-        private const float TrackY = 100f;
+        /// <summary>The track line's y inside the timeline frame; every icon centres on it.</summary>
+        private const float TrackY = 50f;
 
         public BattleState State { get; private set; }
         public bool Busy => playing || dragging;
@@ -48,12 +52,18 @@ namespace Gaiden.App
         private readonly List<VisualElement> orbViews = new List<VisualElement>();
         private VisualElement panel;
         private VisualElement feed;
+        private VisualElement bannerViewport;
+        private Coroutine bannerScrollRoutine;
+        private const float BannerViewportHeight = 90f;
         private Label banner, waveLabel, coinLabel, timerLabel;
         private VisualElement shake;
         private VisualElement boardHost;
         private bool playing;
         private bool ended;
         private HeroBot autoBot;
+        /// <summary>Strict-best shadow bot (BotSkillProfile demo mode): only instantiated when `-telemetry`
+        /// and a below-100 skill are both active, to log the road not taken alongside the move actually played.</summary>
+        private HeroBot perfectBot;
 
         // First-battles hint: after a pause, show the move the bot would make (§29 tutorial question → contextual hints).
         private float idle;
@@ -67,12 +77,20 @@ namespace Gaiden.App
 
         // drag state
         private bool pressing, dragging;
+        /// <summary>True for the duration of <see cref="SimulatedHumanDrag"/> — pauses the real drag-timer
+        /// countdown (Update()) so a slow, low-skill simulated drag can't be auto-committed out from under it.</summary>
+        private bool simulatingDrag;
         private int dragHeroId = -1;
         private Vector2 pressPos;
         private Coord dragTile;
         private readonly List<Coord> dragPath = new List<Coord>();
         private MovePreview preview;
         private float dragTimeLeft;
+        // diagonal slip gesture tracking (BattleScreen.Input.cs)
+        private Vector2 lastPointerPos;
+        private float lastPointerTime;
+        // MindAttic.Capture: how the battle ended, set when BattleEndedEvent plays (BattleScreen.Playback.cs)
+        private BattleEndedEvent lastEnded;
 
         public BattleScreen(string stageId) { this.stageId = stageId; }
         public BattleScreen(BattleSetup setup) { setupOverride = setup; stageId = setup.Stage.Id; }
@@ -88,6 +106,17 @@ namespace Gaiden.App
                 var setup = setupOverride ?? BattleFactory.Build(App.Content, App.Save, stageId, Environment.TickCount);
                 State = BattleEngine.Create(App.Content, setup, initial);
                 recorder = new BattleRecorder(State, setup, "player", initial);
+                var diff = App.Save?.Settings.Difficulty;
+                TelemetryUnity.Begin("GridGameGaiden", seed: setup.Seed, contentVersion: Application.version,
+                    tags: new TelemetryData
+                    {
+                        ["stage"] = State.Stage.Id, ["source"] = "player",
+                        // Difficulty is a scaffold today (§22.9) — tagging every battle with it now means
+                        // the data to learn "what multiplier affects what" already exists once it's wired in.
+                        ["difficultyPreset"] = diff?.Preset,
+                        ["diffEnemyHp"] = diff?.EnemyHp, ["diffEnemyDamage"] = diff?.EnemyDamage, ["diffEnemySpeed"] = diff?.EnemySpeed,
+                        ["diffRewardGold"] = diff?.RewardGold, ["diffRewardXp"] = diff?.RewardXp, ["diffItemDropRate"] = diff?.ItemDropRate,
+                    });
             }
 
             var bg = Ui.El("fill", root);
@@ -97,10 +126,16 @@ namespace Gaiden.App
 
             BuildTopBar(shake);
             BuildTimeline(shake);
-            banner = Ui.Text("", "h2 shadow", shake);
+            bannerViewport = Ui.El("", shake);
+            bannerViewport.name = "banner-viewport";
+            bannerViewport.style.position = Position.Absolute;
+            bannerViewport.style.left = 0; bannerViewport.style.right = 0; bannerViewport.style.top = 318; bannerViewport.style.height = BannerViewportHeight;
+            bannerViewport.style.overflow = Overflow.Hidden;
+            banner = Ui.Text("", "h2 shadow", bannerViewport);
             banner.style.position = Position.Absolute;
-            banner.style.left = 0; banner.style.right = 0; banner.style.top = 368; banner.style.height = 70;
-            banner.style.unityTextAlign = TextAnchor.MiddleCenter;
+            banner.style.left = 0; banner.style.right = 0; banner.style.top = 0;
+            banner.style.unityTextAlign = TextAnchor.UpperCenter;
+            banner.style.whiteSpace = WhiteSpace.Normal;
 
             boardHost = Ui.El("", shake);
             boardHost.style.position = Position.Absolute;
@@ -132,10 +167,11 @@ namespace Gaiden.App
 
             foreach (var u in State.Units) if (u.Alive) board.Add(u);
             SelectedHeroId = State.Units.FirstOrDefault(u => u.IsHero && u.Alive)?.Id ?? -1;
-            if (setupOverride == null && App.Save != null && !App.Save.TutorialDone && App.Save.HighestClearedStage < 0 && !CommandLine.Has("-autoplay")) TutorialStep = 0;
+            if (setupOverride == null && App.Save != null && !App.Save.TutorialDone && App.Save.HighestClearedStage < 0 && !CommandLine.Has("-autoplay") && !DemoMode.Active) TutorialStep = 0;
             SyncAll();
             App.StartCoroutine(Play(initial, false));
-            if (CommandLine.Has("-autoplay")) AutoPlay = true;
+            if (CommandLine.Has("-autoplay") || DemoMode.Active) AutoPlay = true;
+            CaptureUnity.Raise("battle-start", new CaptureData { ["stage"] = State.Stage.Id });
         }
 
         // ─────────────────────────────────────────────────────────────────────────
@@ -156,14 +192,14 @@ namespace Gaiden.App
             coinLabel.style.width = 200; coinLabel.style.unityTextAlign = TextAnchor.MiddleRight;
             timerLabel = Ui.Text("", "h1 shadow warn", root);
             timerLabel.style.position = Position.Absolute;
-            timerLabel.style.right = 40; timerLabel.style.top = 368;
+            timerLabel.style.right = 40; timerLabel.style.top = 318;
         }
 
         private void BuildTimeline(VisualElement root)
         {
             var frame = Ui.El("", root);
             frame.style.position = Position.Absolute;
-            frame.style.left = TimelineLeft; frame.style.top = TimelineY - 100; frame.style.width = TimelineWidth; frame.style.height = 200;
+            frame.style.left = TimelineLeft; frame.style.top = TimelineY - 50; frame.style.width = TimelineWidth; frame.style.height = 100;
             timelineBar = Ui.El("", frame);
             timelineBar.name = "timeline-track";
             timelineBar.style.position = Position.Absolute;
@@ -331,7 +367,8 @@ namespace Gaiden.App
                 if (!live.Contains(kv.Key)) { kv.Value.RemoveFromHierarchy(); timelineIconViews.Remove(kv.Key); }
         }
 
-        private const float TurnIcon = 84f, CastIcon = 60f;
+        // Owner direction 2026-10-11: every timeline icon (turn or cast) should be the same size.
+        private const float TurnIcon = 84f, CastIcon = 84f;
 
         private VisualElement MakeTimelineIcon(TimelineEntry e)
         {
@@ -362,7 +399,7 @@ namespace Gaiden.App
                 var a = App.Content.TryAbility(e.AbilityId);
                 icon.style.width = icon.style.height = CastIcon;
                 icon.style.top = TrackY - CastIcon / 2f;
-                SetBorder(icon, 14, 5, Art.SpellColor(e.AbilityId));
+                SetBorder(icon, CastIcon / 2f - 2f, 5, Art.SpellColor(e.AbilityId));
                 icon.style.backgroundColor = e.CasterTeam == Team.Hero ? new Color(0.08f, 0.14f, 0.36f, 1f) : new Color(0.3f, 0.06f, 0.1f, 1f);
                 icon.style.overflow = Overflow.Hidden;
                 var tex = Art.AbilityIcon(a);
@@ -790,16 +827,25 @@ namespace Gaiden.App
             return true;
         }
 
-        /// <summary>Apply a command to the simulation and play its consequences.</summary>
-        public void Commit(BattleCommand cmd, bool skipMovePrefix = false)
+        /// <summary>Apply a command to the simulation and play its consequences. <paramref name="perfectCmd"/>:
+        /// demo-mode only (BotSkillProfile) — the strict-best move this same decision point would have made at
+        /// full skill, recorded alongside whatever imperfect <paramref name="cmd"/> was actually played.</summary>
+        public void Commit(BattleCommand cmd, bool skipMovePrefix = false, BattleCommand perfectCmd = null)
         {
             if (!CanCommand()) return;
             bool wasTargeting = TargetingSlot >= 0;
             CancelTargeting();
             if (wasTargeting) { SyncBar(); panelUnitId = -1; SyncPanel(); }
-            var before = recorder != null ? BattleRecorder.Snapshot(State) : null;
+            bool telemetryOn = TelemetryUnity.Current.Enabled;
+            var before = recorder != null || telemetryOn ? BattleRecorder.Snapshot(State) : null;
             var events = BattleEngine.Apply(State, cmd);
-            recorder?.Add(before, cmd, events, State);
+            recorder?.Add(before, cmd, events, State, perfectCmd, perfectCmd != null ? BotSkillProfile.Level : (float?)null);
+            if (telemetryOn)
+            {
+                bool accepted = events.Exists(e => e is PlayerControlEvent || e is BattleEndedEvent);
+                // Same type-labeled shape BattleRecorder writes to disk, so every event is self-describing (not just its raw fields).
+                TelemetryUnity.RecordTurn(before, BattleRecorder.Command(cmd), accepted, BattleRecorder.Events(events), BattleRecorder.Snapshot(State));
+            }
             if (AutoPlay) autoplayedTurns++;
             Debug.Log($"[Battle] {cmd} → {events.Count} events, clock {State.Clock}");
             TutorialAfterCommit(cmd, events);
@@ -958,7 +1004,9 @@ namespace Gaiden.App
             Ui.MenuRow("Resume", "", () => veil.RemoveFromHierarchy(), w);
             Ui.MenuRow(AutoPlay ? "Auto battle: ON" : "Auto battle: OFF", "", () => { AutoPlay = !AutoPlay; veil.RemoveFromHierarchy(); }, w);
             Ui.MenuRow("How to play", "", () => { veil.RemoveFromHierarchy(); App.Router.Push(new SettingsScreen()); }, w);
-            Ui.MenuRow("Retreat", "(no rewards)", () => { veil.RemoveFromHierarchy(); Confirm.Show("Retreat from battle? You keep nothing.", "Retreat", Retreat); }, w);
+            int retreatPct = (int)(BattleConfig.RetreatKeepFraction * 100);
+            Ui.MenuRow("Retreat", $"(keep {retreatPct}%)", () => { veil.RemoveFromHierarchy();
+                Confirm.Show($"Retreat from battle? You'll keep {retreatPct}% of this fight's gold and loot — safer than risking a wipe.", "Retreat", Retreat); }, w);
             Ui.Select(w[1]);
         }
 
@@ -988,14 +1036,18 @@ namespace Gaiden.App
 
         private void Retreat()
         {
+            // Retreating while an event list is still animating would tear down this screen out from under
+            // coroutines that `App` (the persistent singleton, not this screen) is still running for it —
+            // they'd keep playing sfx/vfx into whatever screen comes next. Same Busy gate as CanCommand().
+            if (playing) return;
             ended = true;
             SaveRecord();
             if (App.Save != null && setupOverride == null)
             {
-                State.Phase = BattlePhase.Defeat;
+                State.Phase = BattlePhase.Retreated;
                 var rep = BattleFactory.Commit(App.Content, App.Save, State);
                 App.Persist();
-                App.Router.Replace(new PostBattleScreen(rep, State.Stage.Id));
+                PostBattleScreen.RouteFrom(rep, State.Stage.Id);
             }
             else App.Router.Back();
         }
@@ -1010,7 +1062,7 @@ namespace Gaiden.App
                 SyncAll();
             }
             TickLinger(dt);
-            if (dragging && App.Save != null && App.Save.Settings.DragTimer)
+            if (dragging && !simulatingDrag && App.Save != null && App.Save.Settings.DragTimer)
             {
                 dragTimeLeft -= dt;
                 timerLabel.text = $"{Mathf.Max(0, dragTimeLeft):0.0}";
@@ -1035,31 +1087,113 @@ namespace Gaiden.App
             if (AutoPlay && CanCommand() && !pressing)
             {
                 autoBot ??= new HeroBot(Environment.TickCount);
+                autoBot.SkillLevel = BotSkillProfile.Level;
                 var cmd = autoBot.Decide(State);
-                if (cmd is MoveCommand m && m.Path.Count > 0) App.StartCoroutine(AutoDrag(m));
-                else Commit(cmd);
+                BattleCommand perfect = null;
+                if (BotSkillProfile.TelemetryEnabled && BotSkillProfile.Level < 99.9f)
+                {
+                    perfectBot ??= new HeroBot(Environment.TickCount) { SkillLevel = 100f };
+                    perfect = perfectBot.Decide(State);
+                }
+                if (cmd is MoveCommand m && m.Path.Count > 0) App.StartCoroutine(SimulatedHumanDrag(m, perfect));
+                else Commit(cmd, perfectCmd: perfect);
             }
         }
 
-        /// <summary>Plays a bot move as a visible drag (so autoplay looks like a person playing).</summary>
-        private IEnumerator AutoDrag(MoveCommand m)
+        /// <summary>
+        /// Plays a bot move as a human-like simulated drag, driving the real pointer pipeline
+        /// (<see cref="HandlePointerPosition"/>) instead of teleporting the hero tile-to-tile — so a diagonal
+        /// slip succeeds or fails for the same kinematic reasons a real player's drag would, and the capture
+        /// footage shows an actual hand-shaped path rather than a mechanical snap. The route is built from a
+        /// cubic Bézier through every waypoint of <paramref name="m"/>'s path (Catmull-Rom-style tangents so
+        /// corners carry velocity through them instead of stopping dead — a dead stop can never clear the
+        /// diagonal-slip speed gate), timed by Fitts's Law and eased by a minimum-jerk profile, with
+        /// physiological tremor and an occasional overshoot-then-correct, all scaled by BotSkillProfile.
+        /// <paramref name="perfectCmd"/>: the strict-best move at this same decision (telemetry only, may be null).
+        /// </summary>
+        private IEnumerator SimulatedHumanDrag(MoveCommand m, BattleCommand perfectCmd)
         {
+            if (!BeginSimulatedDrag(m.HeroId)) yield break;
             playing = true;
+            simulatingDrag = true;
             playStarted = Time.unscaledTime;
-            var v = board.Units[m.HeroId];
-            SelectHero(m.HeroId);
-            var path = new List<Coord>();
-            foreach (var step in m.Path)
+
+            var hero = State.UnitById(m.HeroId);
+            var pts = new List<Vector2> { BoardView.CenterOf(hero.Pos) };
+            foreach (var step in m.Path) pts.Add(BoardView.CenterOf(step));
+
+            float skill01 = BotSkillProfile.Skill01;
+            float totalLen = 0f;
+            for (int i = 1; i < pts.Count; i++) totalLen += Vector2.Distance(pts[i - 1], pts[i]);
+            float duration = Mathf.Max(0.08f, BotSkillProfile.FittsDuration(totalLen, BoardView.Tile));
+            float tremor = BotSkillProfile.TremorPixels;
+            bool willOvershoot = pts.Count > 0 && UnityEngine.Random.value < BotSkillProfile.OvershootChance;
+            var overshootDir = pts.Count > 1 ? (pts[pts.Count - 1] - pts[pts.Count - 2]).normalized : Vector2.zero;
+            var overshootPoint = pts[pts.Count - 1] + overshootDir * Mathf.Lerp(45f, 8f, skill01);
+
+            float elapsed = 0f;
+            while (elapsed < duration)
             {
-                path.Add(step);
-                var pv = BattleEngine.PreviewMove(State, m.HeroId, path);
-                ApplyPreview(pv, m.HeroId);
-                var from = new Vector2(v.Root.resolvedStyle.left, v.Root.resolvedStyle.top);
-                App.Audio.Sfx("move", 0.5f);
-                yield return Tween.Move(v.Root, from, BoardView.PosOf(step), 0.09f);
+                float tau = BotSkillProfile.MinimumJerk(elapsed / duration);
+                var basePos = EvaluateHumanPath(pts, tau, skill01);
+                var jitter = new Vector2(Mathf.PerlinNoise(elapsed * 11f, 0.37f) - 0.5f, Mathf.PerlinNoise(0.91f, elapsed * 11f) - 0.5f) * tremor;
+                HandlePointerPosition(basePos + jitter);
+                if (!pressing) { playing = false; simulatingDrag = false; yield break; } // hero died / battle ended mid-drag
+                yield return null;
+                elapsed += Tween.Dt;
             }
+            if (willOvershoot)
+            {
+                float ct = 0f; const float correctDuration = 0.1f;
+                HandlePointerPosition(overshootPoint);
+                while (ct < correctDuration)
+                {
+                    HandlePointerPosition(Vector2.Lerp(overshootPoint, pts[pts.Count - 1], ct / correctDuration));
+                    yield return null;
+                    ct += Tween.Dt;
+                }
+            }
+            HandlePointerPosition(pts[pts.Count - 1]);
             playing = false;
-            Commit(m, true);
+            simulatingDrag = false;
+            CommitDrag(perfectCmd);
+        }
+
+        /// <summary>
+        /// A point at parametric position <paramref name="tau"/> (0-1) along a smoothed polyline through
+        /// <paramref name="pts"/>: each interior waypoint is pulled toward the corner's bisector by an amount
+        /// that grows with skill (a confident player cuts the corner close to a true diagonal; a clumsy one
+        /// hugs the exact tile-to-tile route — see <see cref="BotSkillProfile.DiagonalAttemptChance"/>'s sibling
+        /// reasoning), and consecutive segments share Catmull-Rom tangents so the path — and its velocity —
+        /// stays continuous through every corner instead of stopping and restarting at each tile.
+        /// </summary>
+        private static Vector2 EvaluateHumanPath(List<Vector2> pts, float tau, float skill01)
+        {
+            if (pts.Count < 2) return pts.Count == 1 ? pts[0] : Vector2.zero;
+            float cut = Mathf.Lerp(0.05f, 0.8f, skill01);
+            var shaped = new List<Vector2> { pts[0] };
+            for (int i = 1; i < pts.Count - 1; i++)
+                shaped.Add(Vector2.Lerp(pts[i], Vector2.Lerp(pts[i - 1], pts[i + 1], 0.5f), cut));
+            shaped.Add(pts[pts.Count - 1]);
+
+            float[] segLen = new float[shaped.Count - 1];
+            float total = 0f;
+            for (int i = 0; i < segLen.Length; i++) { segLen[i] = Vector2.Distance(shaped[i], shaped[i + 1]); total += segLen[i]; }
+            if (total <= 0f) return shaped[0];
+
+            float target = Mathf.Clamp01(tau) * total, acc = 0f;
+            int seg = 0;
+            while (seg < segLen.Length - 1 && acc + segLen[seg] < target) { acc += segLen[seg]; seg++; }
+            float localTau = segLen[seg] > 0f ? (target - acc) / segLen[seg] : 0f;
+
+            var p0 = shaped[seg];
+            var p3 = shaped[seg + 1];
+            var prev = seg > 0 ? shaped[seg - 1] : p0 - (p3 - p0);
+            var next = seg + 2 < shaped.Count ? shaped[seg + 2] : p3 + (p3 - p0);
+            var p1 = p0 + (p3 - prev) / 6f;
+            var p2 = p3 - (next - p0) / 6f;
+            float u = 1f - localTau;
+            return u * u * u * p0 + 3f * u * u * localTau * p1 + 3f * u * localTau * localTau * p2 + localTau * localTau * localTau * p3;
         }
 
         // ─────────────────────────────────────────────────────────────────────────
@@ -1143,13 +1277,36 @@ namespace Gaiden.App
             l.RemoveFromHierarchy();
         }
 
-        /// <summary>Action/status banner above the board; long text steps the font down so it never runs off-stage.</summary>
+        /// <summary>
+        /// Action/status banner above the board; long text steps the font down, then wraps, and if it still doesn't
+        /// fit its viewport it's shown, paused, then slowly scrolled so the whole message gets read.
+        /// </summary>
         private void ShowBanner(string text)
         {
             if (banner == null) return;
             text ??= "";
             banner.text = text;
             banner.style.fontSize = text.Length > 44 ? 32 : text.Length > 32 ? 38 : 48;
+            banner.style.top = 0;
+            if (bannerScrollRoutine != null) { App.StopCoroutine(bannerScrollRoutine); bannerScrollRoutine = null; }
+            if (text.Length > 0) bannerScrollRoutine = App.StartCoroutine(ScrollBannerIfNeeded());
+        }
+
+        private IEnumerator ScrollBannerIfNeeded()
+        {
+            yield return null; // one frame so the wrapped text has been laid out and resolvedStyle.height is current
+            float content = banner.resolvedStyle.height;
+            if (content <= BannerViewportHeight)
+            {
+                banner.style.top = (BannerViewportHeight - content) / 2f;
+                bannerScrollRoutine = null;
+                yield break;
+            }
+            float travel = content - BannerViewportHeight;
+            yield return Tween.Wait(1.1f); // let the reader start before it moves
+            yield return Tween.Run(Mathf.Clamp(travel / 40f, 0.8f, 4f), k => banner.style.top = -travel * k);
+            yield return Tween.Wait(0.8f); // hold on the tail before the next message replaces it
+            bannerScrollRoutine = null;
         }
     }
 }

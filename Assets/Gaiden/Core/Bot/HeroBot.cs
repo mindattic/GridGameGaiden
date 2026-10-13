@@ -17,6 +17,16 @@ namespace Gaiden.Core.Bot
         /// <summary>0 = always best move, 1 = always random legal move.</summary>
         public float Randomness;
 
+        /// <summary>
+        /// 0-100, default 100 (unchanged, strict-best behavior — headless soak tests and balance records never
+        /// see this move). Below 100, move selection softens from a hard argmax into a Boltzmann/softmax draw
+        /// over every candidate's score (owner request: a demo bot that plays with a believable range of skill,
+        /// from a perfect campaign down to "only basic understanding of the game"). Decision quality only —
+        /// execution precision (whether a drag lands clean, a diagonal slip lands clean) is a separate concern
+        /// handled by the simulated cursor in BattleScreen, not here.
+        /// </summary>
+        public float SkillLevel = 100f;
+
         public HeroBot(int seed, float randomness = 0f)
         {
             rng = new Rng(seed);
@@ -80,7 +90,37 @@ namespace Gaiden.Core.Bot
                 else if (Math.Abs(score - best) <= 0.001f) bestList.Add(cmd);
             }
             if (!movesOnly && best < 0.5f && rng.Chance(0.2f)) return new ShieldCommand();
+            if (SkillLevel < 99.9f) return SkillWeightedPick(candidates, best);
             return bestList[rng.Range(0, bestList.Count)];
+        }
+
+        /// <summary>
+        /// Boltzmann/softmax draw over every candidate, temperature scaled by (100 - SkillLevel): at 100 this is
+        /// never called (strict best); as skill falls the pool of plausible picks widens smoothly from "always
+        /// the best" toward "near-uniform random legal move" — the same mechanism as the HeroBot's Randomness
+        /// knob, but continuous and driven by one skill number instead of an all-or-nothing coin flip.
+        /// </summary>
+        private BattleCommand SkillWeightedPick(List<(BattleCommand cmd, float score)> candidates, float best)
+        {
+            float skill01 = Math.Max(0f, Math.Min(100f, SkillLevel)) / 100f;
+            const float maxTemperature = 12f;
+            float temperature = Math.Max(0.05f, maxTemperature * (1f - skill01) * (1f - skill01));
+            float sum = 0f;
+            var weights = new float[candidates.Count];
+            for (int i = 0; i < candidates.Count; i++)
+            {
+                float w = (float)Math.Exp((candidates[i].score - best) / temperature);
+                weights[i] = w;
+                sum += w;
+            }
+            float roll = rng.NextFloat() * sum;
+            float acc = 0f;
+            for (int i = 0; i < candidates.Count; i++)
+            {
+                acc += weights[i];
+                if (roll <= acc) return candidates[i].cmd;
+            }
+            return candidates[candidates.Count - 1].cmd;
         }
 
         public static IEnumerable<List<Coord>> LPaths(Coord from, Coord to)
@@ -120,6 +160,11 @@ namespace Gaiden.Core.Bot
                     if (o.HpFraction < 0.4f) score += 3f;
                 }
                 score += 2f * (p.SupportersA.Count + p.SupportersB.Count);
+                // Power Amplifier (owner direction 2026-10-11): a pincer attacker (never a supporter)
+                // who ends this move standing on the amplifier strikes amplified — worth real priority.
+                if (s.Amplifier.HasValue)
+                    foreach (var att in new[] { p.A, p.B })
+                        if (pv.Positions.TryGetValue(att.Id, out var ap) && ap == s.Amplifier.Value) score += 8f;
             }
             // Pickups along the path (§13.3.1): worth a detour, more so a tonic for a hurt hero.
             foreach (var step in pv.StepsTaken)

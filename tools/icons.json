@@ -364,6 +364,254 @@
     "cleave": [
       "lorc/axe-swing",
       "steel"
+    ],
+    "knight_oath": [
+      "lorc/checked-shield",
+      "silver"
+    ],
+    "paladin_bulwark": [
+      "lorc/beams-aura",
+      "holy"
+    ],
+    "defender_wall": [
+      "delapouite/shield-bash",
+      "steel"
+    ],
+    "myrmidon_phalanx": [
+      "lorc/spear-hook",
+      "iron"
+    ],
+    "shieldmaiden_valkyrie": [
+      "lorc/winged-emblem",
+      "gold"
+    ],
+    "tank_juggernaut": [
+      "lorc/quake-stomp",
+      "earth"
+    ],
+    "warchief_banner": [
+      "lorc/shouting",
+      "crimson"
+    ],
+    "jadeknight_resolve": [
+      "sbed/regeneration",
+      "jade"
+    ],
+    "darktemplar_rite": [
+      "lorc/ghost",
+      "shadow"
+    ],
+    "alchemist_transmute": [
+      "lorc/round-bottom-flask",
+      "poison"
+    ],
+    "cleric_grace": [
+      "delapouite/shield-bash",
+      "heal"
+    ],
+    "doctor_triage": [
+      "lorc/heart-bottle",
+      "heal"
+    ],
+    "monk_peace": [
+      "sbed/regeneration",
+      "sleep"
+    ],
+    "sage_insight": [
+      "lorc/silence",
+      "arcane"
+    ],
+    "sister_benediction": [
+      "zeromancer/heart-plus",
+      "heal"
+    ],
+    "whiteninja_moonlit": [
+      "lorc/feather",
+      "sleep"
+    ],
+    "whitewitch_ward": [
+      "lorc/beams-aura",
+      "arcane"
+    ],
+    "blackwitch_shadowbolt": [
+      "lorc/ghost",
+      "arcane"
+    ],
+    "drifter_frostnova": [
+      "lorc/frozen-orb",
+      "ice"
+    ],
+    "harbinger_omen": [
+      "lorc/crossed-bones",
+      "arcane"
+    ],
+    "operative_shock": [
+      "lorc/focused-lightning",
+      "spark"
+    ],
+    "redmage_fury": [
+      "lorc/crossed-swords",
+      "fire"
+    ],
+    "ritualist_bloodrite": [
+      "lorc/poison-bottle",
+      "poison"
+    ],
+    "bluelion_roar": [
+      "lorc/wolf-howl",
+      "gold"
+    ],
+    "courier_relay": [
+      "lorc/sprint",
+      "teal"
+    ],
+    "dervish_whirl": [
+      "lorc/aura",
+      "steel"
+    ],
+    "engineer_overclock": [
+      "lorc/rune-stone",
+      "spark"
+    ],
+    "machinist_turret": [
+      "lorc/grenade",
+      "iron"
+    ],
+    "technician_diagnostic": [
+      "lorc/magnifying-glass",
+      "spark"
+    ],
+    "tinkerer_juryrig": [
+      "lorc/crystal-cluster",
+      "iron"
+    ],
+    "wildchild_howl": [
+      "lorc/wolf-howl",
+      "green"
+    ],
+    "redninja_flamefang": [
+      "skoll/fangs",
+      "fire"
+    ],
+    "blueninja_frostfang": [
+      "skoll/fangs",
+      "ice"
+    ],
+    "greenninja_venomfang": [
+      "skoll/fangs",
+      "poison"
+    ],
+    "yellowninja_shockfang": [
+      "skoll/fangs",
+      "spark"
+    ],
+    "blackninja_shadowfang": [
+      "skoll/fangs",
+      "shadow"
+    ],
+    "chromaninja_prismfang": [
+      "skoll/fangs",
+      "silver"
+    ],
+    "assassain_killingblow": [
+      "lorc/plain-dagger",
+      "crimson"
+    ],
+    "nighthunter_nightstalk": [
+      "lorc/wolf-head",
+      "shadow"
+    ],
+    "odachi_iaijutsu": [
+      "lorc/sword-wound",
+      "steel"
+    ],
+    "ripper_rend": [
+      "lorc/axe-swing",
+      "crimson"
+    ],
+    "slasher_flurry": [
+      "lorc/crossed-swords",
+      "crimson"
+    ],
+    "thief_snatch": [
+      "darkzaitzev/robber-hand",
+      "shadow"
+    ],
+    "barbarian_reckless": [
+      "lorc/axe-swing",
+      "rust"
+    ],
+    "basher_skullcrack": [
+      "lorc/fist",
+      "iron"
+    ],
+    "bruiser_haymaker": [
+      "lorc/punch",
+      "crimson"
+    ],
+    "duelist_riposte": [
+      "lorc/sword-clash",
+      "silver"
+    ],
+    "fencer_fleche": [
+      "lorc/broadsword",
+      "steel"
+    ],
+    "fighter_combo": [
+      "lorc/fist",
+      "gold"
+    ],
+    "lancer_chargeline": [
+      "lorc/spear-hook",
+      "steel"
+    ],
+    "martialartist_palm": [
+      "lorc/fist",
+      "earth"
+    ],
+    "pandagirl_slam": [
+      "lorc/punch",
+      "green"
+    ],
+    "prizefighter_knockout": [
+      "lorc/punch",
+      "gold"
+    ],
+    "pugilist_jabcross": [
+      "lorc/fist",
+      "crimson"
+    ],
+    "raider_plunder": [
+      "darkzaitzev/robber-hand",
+      "bronze"
+    ],
+    "ronin_masterless": [
+      "lorc/broadsword",
+      "gray"
+    ],
+    "sellsword_contract": [
+      "lorc/crossed-swords",
+      "gold"
+    ],
+    "speedster_blitz": [
+      "lorc/sprint",
+      "spark"
+    ],
+    "streetfighter_dirtytrick": [
+      "lorc/powder",
+      "earth"
+    ],
+    "striker_finishingblow": [
+      "lorc/sword-clash",
+      "crimson"
+    ],
+    "swordmaster_perfectcut": [
+      "lorc/broadsword",
+      "gold"
+    ],
+    "vampire_enervate": [
+      "delapouite/vampire-dracula",
+      "shadow"
     ]
   },
   "item": {

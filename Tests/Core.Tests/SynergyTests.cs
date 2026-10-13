@@ -238,13 +238,38 @@ namespace Gaiden.Tests
             Assert.Equal((int)System.Math.Round(BattleConfig.PincerChargePerHp), charge.Amount); // the whole foe: share 1, two heroes ×1
             Assert.Equal(charge.Amount / BattleConfig.ManaChargePerOrb, ev.OfType<OrbMintedEvent>().Count(o => o.Reason == "pincer")); // one per 100, not one per hero
         }
-    
+
+        [Fact] // owner direction 2026-10-11: "more combos more xp and mana get generated" — chain depth already paid mana, now XP too
+        public void A_kill_deeper_in_a_pincer_chain_earns_bonus_xp()
+        {
+            var db = Mini();
+            // One cleric drag forms two pincers in sequence (knight+cleric, then cleric+mage): chainIndex 0 then 1.
+            var (s, _) = Battle(db, Stage(("goblin", 1, 0), ("goblin", 3, 0)), ("knight", 0, 0), ("cleric", 2, 1), ("mage", 4, 0));
+            var goblins = s.Units.Where(u => u.Def.Id == "goblin").ToList();
+            var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = Hero(s, "cleric").Id, Path = P((2, 0)) });
+            var pincers = ev.OfType<PincerFormedEvent>().OrderBy(p => p.ChainIndex).ToList();
+            Assert.Equal(2, pincers.Count);
+            var loots = ev.OfType<LootEvent>().ToList();
+            Assert.Equal(2, loots.Count);
+            foreach (var p in pincers)
+            {
+                var deadId = p.Opponents.Single();
+                var goblin = goblins.Single(g => g.Id == deadId);
+                var loot = loots.Single(l => l.FromUnitId == deadId);
+                int baseXp = Formulas.XpReward(goblin);
+                int expected = (int)System.Math.Round(baseXp * (1f + BattleConfig.ChargeChainBonus * p.ChainIndex));
+                Assert.Equal(expected, loot.Xp);
+            }
+            Assert.True(loots.Single(l => l.FromUnitId == pincers[1].Opponents.Single()).Xp >
+                        loots.Single(l => l.FromUnitId == pincers[0].Opponents.Single()).Xp, "deeper in the chain should pay out more XP");
+        }
+
         [Fact]
-        public void The_first_battle_has_twenty_waves_of_rising_difficulty()
+        public void The_first_battle_has_five_waves_of_rising_difficulty()
         {
             var c = Real;
             var first = c.CampaignStages()[0];
-            Assert.Equal(20, first.Waves.Count);
+            Assert.Equal(5, first.Waves.Count);
             int Weight(WaveDef w) => w.Enemies.Sum(e => { var d = c.Classes[e.Class]; return (int)(d.BaseStats.Vitality + d.BaseStats.Strength) * e.Level + (d.ChargeAbility != null ? 5 : 0) + (d.Trap != null ? 5 : 0); });
             for (int i = 1; i < first.Waves.Count; i++)
                 Assert.True(Weight(first.Waves[i]) > Weight(first.Waves[i - 1]), $"wave {i + 1} should be harder than wave {i}");
@@ -257,7 +282,7 @@ namespace Gaiden.Tests
         {
             var c = Real;
             var sig = new Dictionary<string, string>();
-            foreach (var d in c.Classes.Values.Where(x => x.Team == Team.Enemy && !x.HasTag("Remains")))
+            foreach (var d in c.Classes.Values.Where(x => x.Team == Team.Enemy && !x.HasTag("Remains") && !x.HasTag("Egg")))
             {
                 string fam = System.Text.RegularExpressions.Regex.Replace(d.Id, @"\d+$", "");
                 string key = string.Join("|", d.Brain, EnemyPlanner.TargetingOf(new Unit { Def = d, Team = Team.Enemy, LevelStats = d.BaseStats.Clone() }), d.MoveRange, d.AttackRange,

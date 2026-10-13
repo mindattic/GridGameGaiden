@@ -69,6 +69,7 @@ namespace Gaiden.Core.Content
         {
             foreach (var item in items)
             {
+                if (item == null) throw new FormatException($"{typeof(T).Name}: null entry");
                 var k = key(item);
                 if (string.IsNullOrEmpty(k)) throw new FormatException($"{typeof(T).Name} with empty Id");
                 if (map.ContainsKey(k)) throw new FormatException($"Duplicate {typeof(T).Name} id '{k}'");
@@ -91,16 +92,21 @@ namespace Gaiden.Core.Content
                 foreach (var a in c.Abilities) NeedAbility(a, $"class {c.Id} abilities");
                 foreach (var s in c.DefaultLoadout)
                 {
+                    if (s == null) { p.Add($"class {c.Id} loadout: null entry"); continue; }
                     if (s.StartsWith("item:")) NeedItem(s.Substring(5), $"class {c.Id} loadout");
                     else NeedAbility(s, $"class {c.Id} loadout");
                 }
                 NeedAbility(c.ChargeAbility, $"class {c.Id} charge");
                 if (c.Trap != null && !db.Traps.ContainsKey(c.Trap)) p.Add($"class {c.Id}: unknown trap '{c.Trap}'");
+                if (c.Trail != null && !db.Traps.ContainsKey(c.Trail)) p.Add($"class {c.Id}: unknown trail '{c.Trail}'");
+                NeedBuff(c.OnHitBuff, $"class {c.Id} on-hit buff");
+                NeedClass(c.Remains, $"class {c.Id} remains");
+                NeedClass(c.LaysEgg, $"class {c.Id} egg");
                 foreach (var ph in c.BossPhases) NeedAbility(ph.OnEnterAbility, $"class {c.Id} boss phase");
             }
-            foreach (var a in db.Abilities.Values) NeedBuff(a.ApplyBuff, $"ability {a.Id}");
+            foreach (var a in db.Abilities.Values) { NeedBuff(a.ApplyBuff, $"ability {a.Id}"); NeedBuff(a.RemovesBuff, $"ability {a.Id} removes"); }
             foreach (var b in db.Buffs.Values) NeedBuff(b.OnExpireApply, $"buff {b.Id}");
-            foreach (var i in db.Items.Values) NeedAbility(i.OnUseAbility, $"item {i.Id}");
+            foreach (var i in db.Items.Values) { NeedAbility(i.OnUseAbility, $"item {i.Id}"); NeedBuff(i.CuresBuff, $"item {i.Id} cures"); }
             foreach (var r in db.Recipes.Values)
             {
                 NeedItem(r.Result, $"recipe {r.Id}");
@@ -111,7 +117,11 @@ namespace Gaiden.Core.Content
                 foreach (var e in d.Entries) NeedItem(e.Item, $"droptable {d.Id}");
             foreach (var s in db.Stages.Values)
                 foreach (var w in s.Waves)
+                {
                     foreach (var e in w.Enemies) NeedClass(e.Class, $"stage {s.Id}");
+                    foreach (var g in w.Guests) NeedClass(g.Class, $"stage {s.Id} guest");
+                    NeedClass(w.SurpriseSpeaker, $"stage {s.Id} surprise speaker");
+                }
             foreach (var t in db.Campaign.Themes)
                 foreach (var s in t.Stages)
                     if (!db.Stages.ContainsKey(s)) p.Add($"theme {t.Id}: unknown stage '{s}'");

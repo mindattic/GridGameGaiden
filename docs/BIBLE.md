@@ -186,6 +186,8 @@ A story is ✅ only with evidence a script produced: a named test in `Tests/Core
 - **Suites** (`Tests/Core.Tests/`): `BoardRulesTests` (slide, pincer geometry, chains, supporters, 2×2 boss, waves, victory/loot), `TimelineAndAbilityTests` (act-advanced clock, enemy turns, shield, pushback, spells, cast queue + cap, Frozen/Wet/Steam/Shock, potion, teleport, Quicken, enemy charge, Sleep, weapon wear, Double Attack / Counter passives), `CatalogTests` (every hero ability, every enemy charge, every consumable's effect, every recipe, every class through the real engine; Smoke Bomb escape; Camp potion/Tent), `ContentAndSoakTests` (content validation, bot soak over every stage, deterministic replay), `MetaLoopTests` (new game, save round-trip, full loop through every Camp service, defeat), `BalanceReport` (plays the whole campaign with natural progression for greedy / casual / button-masher bots, with and without `CampRoutine`, and prints a win% / actions / HP-left table per stage; asserts a greedy bot can finish), shared fixtures in `TestKit.cs` (`Mini()` content, `AssertInvariants`).
 - **Bot soak:** `Bots_play_every_stage_without_breaking_invariants` plays all 19 stages × 12 seeds at bot randomness 0 and 0.6 (300-action cap) asserting structural invariants after every command (HP in range, one unit per tile, in bounds, bank ≤ 12, no timeline entry owned by a dead unit, both teams alive while the battle runs). `BotRunner` throws on a soft-lock (6 refusals in a row).
 - **Automation harness:** dev players compile in `AutomationServer` (localhost HTTP, `-automation <port>`); `tools/harness.py smoke` plays title → new game → camp → Adventure → crawl → battle on Auto → results; `sweep` screenshots and layout-audits 15 Camp screens. Artifacts: `artifacts/smoke1/`, `artifacts/sweep/`, `artifacts/run1/` (ad-hoc drag/pincer captures).
+- **`-demo`:** boots straight into a scripted self-play loop with no harness attached — character select (auto-picks 5 at random, §25.15) → crawl (auto-skipped) → battle (autoplayed) → results (auto-advances to the next stage, or retries on defeat) → …, restarting with a fresh save and a fresh random party when the campaign ends or nothing is launchable (`GameApp.DemoMode`). Formalizes what `tools/harness.py campaign` drives over HTTP as a startup flag, for unattended soak-play or a demo reel.
+- **Tile-invariant safety net (added 2026-10-11):** `BattleRunner.Apply` calls `EnforceTileInvariant` after every command — the same "one unit per tile" check `AssertInvariants` runs in tests, but live, on every real battle. It has never fired in the soak suite (300-action cap), but a real played-out battle can run past that (one `-demo` run needed 412 turns), so if some unseen interaction ever violates it deep into a long battle, the board self-heals (the more recently spawned/moved unit nudges to the nearest free tile with a visible `DisplacedEvent`) and logs a `TileConflictEvent` with the stage/wave/clock instead of shipping a visibly broken board.
 
 **Proven working** (evidence per story in [`USER_STORIES.md`](USER_STORIES.md)):
 
@@ -359,6 +361,8 @@ INVALID — diagonal: no.
 
 The scan (`PincerDetector.Detect`) is **board-wide** — every valid pair resolves, not only pairs involving the dropped hero. Enemies run the same scan for their own team on their turn ([§14](#14-ai)).
 
+**Amended 2026-10-11** (owner: a manual drag out and back into the start tile wasn't pincering): a drag that ends with no position/HP/trap/pickup change is normally a free cancel ([§1.1](#11-movement), `Noop_drag_costs_no_time`) — but if the hero's final tile (even its own start tile) completes a pincer, that always counts as the turn; `DoMove` checks `PincerDetector.Detect` before deciding a drag was a no-op. *(Test: `Dragging_out_and_back_to_the_start_tile_still_pincers_if_it_lands_back_in_position`.)*
+
 #### 1.2.2 Ordering of multiple pincers
 
 **Amended 2026-10-09** (`PincerDetector.Order`):
@@ -476,11 +480,13 @@ When a **hero** damages an **enemy** whose turn icon is in the Zone (`BattleRunn
 - **Damage is always applied**; pushback only moves the icon.
 - `frac = (IP − 650) / 350` (how deep in the Zone).
 - `strMult = max(0.5, 1 + (attacker STR − 10) / 40)`.
-- `push = min(PushbackMaxU 0.40, PushbackBaseU 0.18 × (0.5 + frac) × strMult)` (in u); IP drops by `round(push × 1000)`, floored at 0.
-- `StunTicks = max(1, round(BaseStunTicks 8 / (1 + target AGI / 50)))`.
-- Environmental damage (DOT, traps, shatter) never pushes. Every landing hit re-checks, so a second hit on an icon already pushed out of the Zone does nothing.
+- `push = min(PushbackMaxU 0.15, PushbackBaseU 0.07 × (0.5 + frac) × strMult)` (in u); IP drops by `round(push × 1000)`, floored at 0.
+- `StunTicks = max(1, round(BaseStunTicks 4 / (1 + target AGI / 50)))`.
+- Environmental damage (DOT, traps, shatter) never pushes. Every landing hit re-checks, so a second hit on an icon already pushed out of the Zone does nothing — but a big pincer's supporters each land their own hit, so one busy commit can still re-trigger pushback several times on the same target before it finally drops below the Zone.
 
 **Amended 2026-10-09:** the old floor "newU ≥ 0.55" is gone; the cap is 0.40 u. *(Tests: `Pincer_on_in_zone_enemy_pushes_its_icon_back`, `Pincer_outside_zone_has_no_pushback`.)*
+
+**Amended 2026-10-11 (owner: "the pushback on monsters needs to be less; they almost never get to take a turn"):** `PushbackBaseU` 0.18→0.07 and `PushbackMaxU` 0.40→0.15 (both ~60% weaker), `BaseStunTicks` 8→4. A single large party could otherwise re-trigger pushback on the same in-Zone enemy several times in one pincer (once per attacker/supporter hit) before it fell out of the Zone, effectively denying it a turn for most of a battle — this is a magnitude tuning, not a rule change; the mechanic and its relative ordering (deeper in the Zone / higher STR pushes harder) are unchanged.
 
 ### 2.4 Turn order = arrival order
 
@@ -742,6 +748,8 @@ Targeting is cancelled by tapping the same slot again, the hardware/Escape **Bac
 ### 4.7 Progressive slot unlock
 
 **Amended 2026-10-11 (owner: "give each character 2 stacks of full life potions and unlock the slots to put them in … the 2 healing potion is two stacks of 5x"):** all five slots are open from the start (`Progression.StartingSlots`). Every hero's default bar is two abilities, **two X-Potion stacks (5 each, full heal, usable on any ally)**, then more abilities; a new game stocks a full stack per potion slot (5 heroes × 2 × 5). The threshold rule below is kept for reference but no longer gates anything.
+
+**Amended 2026-10-11 (later the same day, owner direction) — one X-Potion stack, one new skill per class:** the two X-Potion slots collapsed into **one** (still a full stack of 5; a new game now stocks 5 heroes × 1 × 5), freeing the 5th bar slot for a **brand-new, genuinely unique skill per hero class** — all 62 classes, even ones that otherwise share an identical kit (e.g. the 19 "war_cry bruiser" strikers), each got their own ability authored to that class's own name/flavor rather than just its Role. All 62 are purely data-driven (`abilities.json`, `Kind: Skill` for non-casters / `Kind: Spell` for the 6 Mage-role classes), reusing the existing generic resolver and the 13 existing buffs — no new engine code. Every one has a real pixel icon (`tools/icons.json` + `tools/make_icons.py`, reusing already-cached silhouettes), not the orb fallback. *(Tests: `New_game_has_starting_trio_gold_and_loadouts`, `A_recorded_battle_round_trips_as_json_with_every_turn`; every new ability is also auto-exercised by `CatalogTests.Every_hero_ability_resolves_against_a_live_board`.)*
 
 `Progression.UnlockedSlots(save)`: **2** on a fresh save, +1 when `HighestClearedStage` reaches **0, 2 and 5** (`UnlockThresholds`), max 5. The battle reads it via `BattleSetup.UnlockedSlots`; the Abilities screen renders locked cells and `Abilities.Assign` refuses them. The post-battle screen announces "Ability slot unlocked!". *(Tests: `New_game_has_starting_trio_gold_and_loadouts`, `Full_loop_battle_commit_then_every_vendor`.)*
 
@@ -1021,7 +1029,7 @@ Source (spell, item, charge, trap, expire chain, Shield) → `ApplyBuff` (refres
 ```
 
 - **Banner** (`ShowBanner`) carries announcements, refusal reasons, "PINCER!", "X's turn", "Wave n/m", "VICTORY!". **Amended 2026-10-09:** it replaces the old AnnouncementWindow + combat feed. ⬜ Not yet built: the 7-line combat feed with inline icons.
-- **Pincer group outline (amended 2026-10-10, owner):** instead of a line across the character art, a rounded outline *draws itself* around the whole group — Hero, foe…, Hero (e.g. a 4-tile-long box) — in 0.24 s, in gold (red for enemy pincers); each supporter is joined to its partner by a short blue link that bridges the gap between their frames, edge to edge. The drag preview shows the same outline.
+- **Pincer group outline (amended 2026-10-10, owner):** instead of a line across the character art, a rounded outline *draws itself* around the whole group — Hero, foe…, Hero (e.g. a 4-tile-long box) — in 0.24 s, in gold (red for enemy pincers); each supporter is joined to its partner by a short blue link that bridges the gap between their frames, edge to edge. The drag preview shows the same outline. **Amended 2026-10-11** (owner: the shape needs a beat of realization before the cut-in, not to appear alongside it): the outline draw is now *awaited* in full (it used to fire detached and overlap the cut-in) and is followed by a short 0.18 s pause — "caught" reads before the portraits slam in — before any cut-in or pop-up card starts (`BattleScreen.PincerAnim`).
 - **Combat presentation (amended 2026-10-10, owner: "keep the frenzy and chaos of multiple attackers … each attack layered up like an accumulating math problem before exploding into the final damage number, and a clear announcement billboard … like Final Fantasy VI"):**
   - **Billboard:** an FF VI–style blue window at the top of the board names everything as it happens — "Paladin & Barbarian — Pincer", "Chain ×2", "Support: Cleric", "Power Amplifier ×1.75", each spell/skill/item with its pixel icon ("Fireball → Slime"), enemy charges ("Witch: Poison Cloud on Paladin"). Up to 3 lines; each fades after 1.6 s (÷ battle speed).
   - **Damage tally:** inside a pincer, every hit on a target adds a term to a tally above it ("10 + 5", crits as "8!", "×AMP" when amplified); when the pincer ends (its orbs mint, the next link starts, or time advances) each tally collapses and **bursts into the total** at 120 px with a screen shake. Single hits keep their normal floating number.
@@ -1051,7 +1059,7 @@ A hero has five equipment slots (`EquipmentSlot`: Weapon, Armor, Relic1–3) sto
 
 ### 11.2 Screen list
 
-`TitleScreen`, `SaveSlotScreen` (new/load), `HubScreen` (Camp), `StageSelectScreen` ("Adventure"), `StoryCrawlScreen`, `BattleScreen`, `PostBattleScreen`, `ItemsScreen`, `StatusScreen`, `EquipScreen`, `AbilitiesScreen`, `PartyScreen`, `ShopScreen` ("Merchant"), `BlacksmithScreen`, `AlchemistScreen`, `SummonScreen`, `BountyScreen`, `BestiaryScreen`, `SettingsScreen`, `CreditsScreen`, plus the `Confirm` modal. `Automation/StartScreens` maps ids → screens for `-start` and the `goto` endpoint.
+`TitleScreen`, `SaveSlotScreen` (new/load), `HubScreen` (Camp), `StageSelectScreen` ("Adventure"), `StoryCrawlScreen`, `BattleScreen`, `LevelUpScreen`, `PostBattleScreen`, `ItemsScreen`, `StatusScreen`, `EquipScreen`, `AbilitiesScreen`, `PartyScreen`, `ShopScreen` ("Merchant"), `BlacksmithScreen`, `AlchemistScreen`, `SummonScreen`, `BountyScreen`, `BestiaryScreen`, `SettingsScreen`, `CreditsScreen`, plus the `Confirm` modal. `Automation/StartScreens` maps ids → screens for `-start` and the `goto` endpoint.
 
 #### 11.2.1 Screen transition graph
 
@@ -1372,6 +1380,16 @@ No two families share brain + targeting + kit (`Every_enemy_family_plays_differe
 
 Beasts and humanoids of several families (wolves, gangers, soldiers, oni, werewolf, mountain troll, yeti, goblin thug, toad, captain, lurkers, scorpion) leave a **corpse** (`Remains: "corpse"`, tags Remains + Corpse) on their tile: it blocks movement like any remains, sits in pincer lines (a pincer through it clears it — "Cleared away"), takes area spells, has no turn and never rises, **does not hold up a wave clear**, earns no mana or loot, and **rots away after 6 player actions**. It's drawn as the fallen unit's own art, greyed and laid on its side; its card says whose body it is and when it rots. *(Tests: `A_fallen_foe_leaves_a_corpse_that_blocks_the_way_but_not_the_win`, `A_corpse_blocks_movement_and_rots_away`.)*
 
+### 14.8 Reinforcements and eggs (added 2026-10-12, owner direction)
+
+Owner: "sometimes enemies can lay eggs that hatch, sometimes new enemies don't spawn on the first turn... every wave can offer a surprise like fighting monsters then suddenly soldiers show up."
+
+**Delayed mid-wave spawns.** `SpawnDef.DelayTicks` (default 0 = today's immediate spawn, unchanged for every untouched wave) queues an entry into `BattleState.PendingSpawns` instead of spawning it at wave start; `BattleRunner.Tick` resolves any entry whose `TriggerClock` has arrived via `ResolvePendingSpawns`, spawning it exactly like a normal wave arrival. A wave with an unresolved pending entry **holds the wave open** even once the board is clear (`CheckEnd` checks `PendingSpawns` alongside living units), so the wave never advances out from under a reinforcement still inbound.
+
+**The surprise beat.** `WaveDef.SurpriseSpeaker`/`SurpriseLine` (optional, wave-scoped) fire once — on the *first* delayed entry a wave triggers, not per enemy — as a `ReinforcementsArrivedEvent`. The App layer plays a quick, per-class entrance (burst-up for `Brain.Burrower`, drop-from-above for `Flying`-tagged classes, fade-in for `Undead`-tagged classes, the ordinary wave fade+drop otherwise — derived entirely from existing `Tags`/`Brain`, no new content fields needed), then, if a line is set, a held narrative card: the speaker's portrait and name beside the line (reusing the same 360×400 bordered-frame convention as the character-select reveal and the level-up fanfare), dismissed by a tap or ~2.6s, same dual-exit idiom as the story crawl. Green Valley I's wave 4 is the flagship example: a goblin/bandit skirmish that a captain's soldier squad reinforces mid-fight. Automation: `/demosurprise?speaker=&line=` plays the beat on demand for testing.
+
+**Eggs.** An egg-laying class sets `ClassDef.LaysEgg` (the egg's class id) and `EggInterval` (lay every Nth own turn, default 4); `BattleRunner.Enemy.LayEgg` drops the egg on a free adjacent tile, mirroring how `LeaveRemains` drops a grave marker. The egg class is tagged `Egg` (`Unit.IsEgg`, the `IsRemains` pattern's sibling) and is otherwise built exactly like a gravestone/bone pile (`Brain.Sentinel`, immobile, no turn except its own). When the egg's timeline turn arrives, `Hatch` spawns its `RisesAs`/`RisesLevel` class on the same tile **at full HP** (a fresh enemy, unlike a risen undead's half-HP second life) and leaves normal loot. `naga00` (Mireholt Fens II's solo finale) is the one showcase of this so far. *(Tests: `A_delayed_spawn_arrives_partway_through_its_wave_not_at_wave_start`, `A_waves_reinforcement_dialogue_fires_once_even_with_multiple_delayed_entries`, `An_egg_hatches_into_its_real_enemy_at_full_hp_on_schedule`.)*
+
 ## 15. Save
 
 ### 15.1 Data model
@@ -1518,7 +1536,7 @@ A Beast `{"Id":"frostwolf","Team":"Enemy","Tags":["Beast"],"Resistances":{"Ice":
 ## 22. The Macro Loop
 
 ```
-Title ─▶ (Continue | New Game → slot | Load Game → slot)
+Title ─▶ (Continue | New Game → slot → CharacterSelect (pick 5) | Load Game → slot)
    ▼
 Camp (HubScreen)  ◀══════════════════════════════════════════╗
    │  Adventure ─▶ stage list (newest-first)                 ║
@@ -1527,12 +1545,14 @@ StoryCrawl (first entry into a theme only)                   ║
    ▼                                                         ║
 Battle — clear every wave                                    ║
    ▼                                                         ║
-PostBattle — gold, XP, level-ups, items, unlocks, bounty ════╝
+LevelUp — one hero at a time, only when someone leveled ═════╣
+   ▼                                                         ║
+PostBattle — gold, items, unlocks, bounty ════════════════════╝
              (Continue → Camp · Next stage › → Battle · Retry → Battle)
 ```
 
 - **Stage = waves.** Clearing a wave spawns the next immediately inside the same action; clearing the last wave is victory.
-- **Reward beat.** `BattleFactory.Commit` writes XP, gold, items, kills, unlocks and bounty progress, then the save is persisted and `PostBattleScreen` shows the report.
+- **Reward beat.** `BattleFactory.Commit` writes XP, gold, items, kills, unlocks and bounty progress, then the save is persisted and `PostBattleScreen.RouteFrom` opens `LevelUpScreen` first if anyone leveled, else `PostBattleScreen` directly.
 - **No Overworld** ([§28](#28-no-overworld)).
 
 ### 22.1 Per-transition state contract
@@ -1540,21 +1560,22 @@ PostBattle — gold, XP, level-ups, items, unlocks, bounty ════╝
 | From → To | Commit before | Hydrate on arrival |
 |---|---|---|
 | Camp → Battle | nothing (every Camp action already persisted) | `BattleFactory.Build`: party specs (level from XP, carried HP, weapon + durability, equipped items, bar), inventory counts for item stacks, unlocked slots, recommended level = campaign index + 1 |
-| Battle → PostBattle | `BattleFactory.Commit` + `Persist` | `PostBattleScreen` renders the `BattleReport` |
+| Battle → LevelUp → PostBattle | `BattleFactory.Commit` + `Persist` | `LevelUpScreen` (only if `BattleReport.LevelUps` is non-empty) then `PostBattleScreen` render the `BattleReport` |
 | PostBattle → Camp / Battle | already saved | screens rebuild from `App.Save` |
 
-**Commit rules** (`BattleFactory.Commit`) — **Amended 2026-10-09** where marked:
+**Commit rules** (`BattleFactory.Commit`) — **Amended 2026-10-09** where marked, **Amended 2026-10-11** (Retreat) where marked:
 - Always: deduct consumed items; record Seen/Scanned.
 - **Victory**: gold += coins (also `LifetimeCoins`); add item drops; add kills to Bestiary; **every party hero — alive or fallen — gains the battle's full XP total** (not split, *Amended*); HP: level-up → full, survivor keeps wounds, fallen → 1 HP; weapon durability written back (a shattered weapon is removed); stage marked cleared, `HighestClearedStage` raised, next stage named as unlocked; bounty kills recorded.
-- **Defeat / Retreat**: nothing gained; party HP reset to full.
+- **Defeat**: nothing gained but hard-won XP (below); party HP reset to full.
+- **Retreat** (*Amended* — no longer a Defeat): keeps hard-won XP plus `BattleConfig.RetreatKeepFraction` (50%) of the battle's gold and item counts so far, floored; party HP reset to full, same as Defeat.
 - **Escaped** (*Amended*): nothing gained; wounds kept (fallen → 1 HP).
 
 ### 22.2 Failure path detail
 
 **Amended 2026-10-11 — hard-won experience:** a defeat now keeps the XP of every foe felled (gold and loot are still lost); the results screen shows "Hard-won experience +N each" and any level-ups. Found with the battle records: with a 20-wave first battle and no reward for losing, a learning player could never get stronger.
 
-- **Defeat** (all heroes down): "DEFEAT", no rewards, party restored to full, PostBattle offers **Retry** and **Continue**.
-- **Retreat** (pause menu → Retreat, confirmed): committed as a defeat. **Amended 2026-10-09** (new).
+- **Defeat** (all heroes down): "DEFEAT", no rewards but hard-won XP, party restored to full, PostBattle offers **Retry** and **Continue**.
+- **Retreat** (pause menu → Retreat, confirmed) — **Amended 2026-10-11: FFIV-style partial loss, no longer a Defeat.** Its own `BattlePhase.Retreated` (mirrors how `Escaped` already gets its own phase); `BattleFactory.Commit` keeps hard-won XP plus `RetreatKeepFraction` (50%) of the battle's `Results.Coins`/`Results.Items` accumulated so far, lost otherwise. PostBattle shows "RETREATED" and the partial haul. The pause-menu row and confirm dialog quote the exact kept percentage. Mid-expedition, a retreat still ends the expedition via the normal non-victory path ([§22.5](#225-expeditions)).
 - **Escape** (Smoke Bomb): "ESCAPED", no rewards, wounds remain. **Amended 2026-10-09** (new). No permadeath ([§29](#29-open-design-questions)).
 
 ### 22.3 Adventure — the stage list
@@ -1569,7 +1590,7 @@ PostBattle — gold, XP, level-ups, items, unlocks, bounty ════╝
 
 **Difficulty curve:** `Progression.RecommendedLevel(i) = i + 1`; spawned enemy levels are `max(authored, recommended)`; test stages are exempt. XP and coins scale with enemy level.
 
-Campaign (`campaign.json`): Green Valley, Sandsea Reaches, Mireholt Fens, Frostmaw Caverns, Veshker Ruins — 3 stages each, 1–3 waves per stage. Final boss: the Vampire Lord (`vampire`, level 10, Veshker Ruins III).
+Campaign (`campaign.json`): Green Valley, Sandsea Reaches, Mireholt Fens, Frostmaw Caverns, Veshker Ruins — 3 stages each, **5 hand-authored waves per stage** ([§22.7](#227-the-first-battle), amended 2026-10-12 — every stage normalized to 5, including Green Valley I, which had been 20), generally grouped by enemy family (frogs with frogs, goblins with goblins) rather than mixed. Final boss: the Vampire Lord (`vampire`, level 10, Veshker Ruins III).
 
 ### 22.4 Bounty board
 
@@ -1590,11 +1611,11 @@ Campaign (`campaign.json`): Green Valley, Sandsea Reaches, Mireholt Fens, Frostm
 
 `BattleRecorder` (Core) writes one JSON document per battle, schema v1: `source` (player / bot:greedy / bot:casual / bot:autoplay / player+autoplay), stage, seed, waves, the party (class, role, level, stats, gear, bar), the opening state and events, then every turn — the full state **before** (units with position, HP, buffs, cooldowns, bar, brain, timeline position, casts; pickups, traps, blocks, amplifier, bank, mana charge), the **command**, whether it was accepted, **every event** it produced (type + fields), and a summary after — and finally the outcome (phase, wave reached, actions, coins, XP, kills, items used, heroes standing).
 - The game saves every battle (victory, defeat, retreat) to `persistentDataPath/battle-records/` (or `<artifacts>/records` under the harness, or `-records <dir>`).
-- `RecordTests.Record_soak_of_the_first_battle` with `GAIDEN_RECORDS=<dir>` writes bot-played battles; `tools/records.py` prints per-wave tables (turns, damage taken, deaths, potions, pincers, chains, mana, pickups, taunts), each role's damage/healing, damage taken by enemy brain, and the most-used abilities. The 20-wave first battle and several rules (skirmisher dart, last stand, taunt valuation, hard-won experience) were tuned from these tables.
+- `RecordTests.Record_soak_of_the_first_battle` with `GAIDEN_RECORDS=<dir>` writes bot-played battles; `tools/records.py` prints per-wave tables (turns, damage taken, deaths, potions, pincers, chains, mana, pickups, taunts), each role's damage/healing, damage taken by enemy brain, and the most-used abilities. The original 20-wave first battle (since compressed to 5, [§22.7](#227-the-first-battle)) and several rules (skirmisher dart, last stand, taunt valuation, hard-won experience) were tuned from these tables.
 
-### 22.7 The first battle (amended 2026-10-11, owner: "make the first battle 20 rounds with increasing difficulty")
+### 22.7 The first battle (amended 2026-10-12, owner: superseding "make the first battle 20 rounds" — every stage, including this one, normalized to 5 waves)
 
-Green Valley I is **20 waves**: the five tutorial waves, then a ramp through frogs, gangers, skelepedes, the toad, soldiers, flyers, undead, a captain's squad and a final captain + soldiers + toad (levels 1 → 5; every wave outweighs the one before it — test `The_first_battle_has_twenty_waves_of_rising_difficulty`). Measured: a strong bot wins it 8/8 in ~290 actions with the party of five; a casual bot clears it on about half its attempts (with hard-won experience between tries).
+Green Valley I is **5 waves**, levels 1 → 5, each wave outweighing the one before it (test `The_first_battle_has_five_waves_of_rising_difficulty`): an ooze opener (slimes), a beast wave (wolves, bat), a frog/toad wave, a goblin-and-bandit skirmish that a captain's soldier squad **reinforces mid-fight** — the flagship example of the delayed-spawn/surprise mechanic ([§14.8](#148-reinforcements-and-eggs-added-2026-10-12-owner-direction)) — and a captain's-squad finale.
 
 ### 22.5 Expeditions (added 2026-10-10, owner direction)
 
@@ -1604,9 +1625,44 @@ Owner: "the game should be grouped in sets of battles, where a battle has X batt
 - **Starting:** an expedition starts on its theme's first battle (`Expeditions.CanLaunch` / `Begin`); only one at a time; battles 2+ open only as the next step.
 - **Between battles:** wounds carry (as always), **leftover mana orbs carry** into the next battle's bank (`BattleSetup.StartOrbs`, minted as "carried"), consumables spent are gone. The caravan's merchant, blacksmith and alchemist stay open — that is why the shops are always there — but the **inn is closed on the road** (`Inn.Rest` refuses; Tents still work).
 - **Finishing:** the last battle won completes the expedition: **+50% of its coins as a bonus**, the caravan makes camp and the party rests (full HP), the next expedition unlocks.
-- **Failing:** a defeat ends the expedition (the party falls back and recovers); it restarts from battle 1. **Abandon** (Adventure) or escaping also ends it, wounds kept.
+- **Failing:** a defeat ends the expedition (the party falls back and recovers); it restarts from battle 1. **Abandon** (Adventure), a voluntary Retreat (in-fight, or the "Retreat early" button below) or escaping also ends it, wounds kept.
+- **Amended 2026-10-11 — bailing out early costs nothing already earned:** every battle won in an expedition is paid out immediately by that battle's own `Commit` call — `s.Expedition.Coins`/`CarriedOrbs` are bookkeeping for the completion bonus only, not an escrow. So mid-expedition, `PostBattleScreen`'s button row offers **"Retreat early"** next to **Next battle ›** (shown whenever a next battle is pending): it's a plain `Expeditions.Abandon` with no partial-loss math, forfeiting only the *not-yet-earned* completion bonus. An in-fight Retreat (pause menu) is different — it DOES apply the FFIV-style partial-loss formula ([§22.2](#222-failure-path-detail)), but only to that one battle's own in-progress `Results`; gold from earlier battles in the same expedition is untouched either way.
 - UI: Adventure groups battles under "<Theme> Expedition" headers with status ("Battle 2/3 · 4 orbs carried", "★ Completed"); results show "Expedition: battle 1 of 3 won — 4 orbs carry over" and **Next battle ›**; camp shows the expedition strip and "Inn — On the road".
-- *(Tests: `An_expedition_runs_its_battles_in_order_carrying_mana_with_the_inn_closed`, `Finishing_an_expedition_pays_a_bonus_and_rests_the_party_while_defeat_restarts_it`.)*
+- *(Tests: `An_expedition_runs_its_battles_in_order_carrying_mana_with_the_inn_closed`, `Finishing_an_expedition_pays_a_bonus_and_rests_the_party_while_defeat_restarts_it`, `Retreating_mid_expedition_ends_it_without_touching_already_banked_gold`.)*
+
+### 22.8 Level-up fanfare (added 2026-10-11, owner: "pomp and circumstance... the same tempo and pause that makes video games enjoyable")
+
+`LevelUpScreen` sits between `BattleScreen` and `PostBattleScreen` whenever `BattleReport.LevelUps` is
+non-empty (`PostBattleScreen.RouteFrom` decides; skipped entirely otherwise). One hero at a time:
+- The portrait slams into place (`Art.Portrait`, the same bombastic reveal `CharacterSelectScreen` uses).
+- The XP bar ticks fully through every level crossed in this one battle (fill → "Lv N" pop → reset)
+  before a true partial fill for the level actually landed on — a hero who jumped two levels visibly
+  climbs through both, not one smooth lerp.
+- Stat deltas (`Formulas.StatsAtLevel` before vs. after) reveal one at a time, staggered.
+- Auto-advances after a hold, but a tap anywhere or "Skip ›" jumps straight ahead — the same dual-input
+  idiom `StoryCrawlScreen` already uses, not a new one.
+
+### 22.9 Difficulty settings (scaffolding, added 2026-10-11, owner direction)
+
+Owner: a Difficulty selection with presets and a Custom mode "so when you read the telemetry you can ML
+it and learn what multipliers affect what; for right now just keep everything at 1.0."
+
+- `SettingsSave.Difficulty` (`DifficultySettings`): a `Preset` (`"Easy"`/`"Normal"`/`"Hard"`/`"Custom"`,
+  default `"Normal"`) plus six multipliers — `EnemyHp`, `EnemyDamage`, `EnemySpeed`, `RewardGold`,
+  `RewardXp`, `ItemDropRate` — all defaulting to, and today permanently pinned at, **1.0 for every
+  built-in preset**. Landing on Easy/Normal/Hard resets all six to 1.0; only **Custom** lets the player
+  move them (Settings → Difficulty → Custom reveals six more rows, each cycling ×0.5/×0.75/×1/×1.25/×1.5/×2).
+- **None of the six multipliers are consumed by `BattleRunner`/`Formulas`/`BattleFactory` yet.** This is
+  intentionally pure scaffolding: the selection UI, persistence and telemetry tagging exist now so that
+  (a) later balance work has a lever already wired to Settings instead of needing new UI, and (b)
+  telemetry sessions are already tagged with the active preset and every multiplier
+  (`difficultyPreset`/`diffEnemyHp`/`diffEnemyDamage`/`diffEnemySpeed`/`diffRewardGold`/`diffRewardXp`/
+  `diffItemDropRate` tags on every `TelemetryUnity.Begin`, `BattleScreen.Build`), so once the multipliers
+  do something, there's already a history of battles to learn from.
+- **Future direction, not yet built:** higher difficulty should mean better rewards (`RewardGold`/
+  `RewardXp`/`ItemDropRate` scaling up as `EnemyHp`/`EnemyDamage`/`EnemySpeed` scale up) — this amendment
+  only lands once the six multipliers are actually wired into combat and loot math.
+
 ## 23. Character Classes
 
 All classes share `classes.json`; `Team` separates heroes (62) from enemies (110). **Amended 2026-10-09:** the spawn side decides the team — a hero class placed in a stage wave fights as an enemy (the Vampire Lord is the `vampire` class, which is also recruitable).
@@ -1847,7 +1903,15 @@ The caravan is the party's moving base — its wagons are the shops between batt
 *(Test: `Caravan_upgrades_cost_gold_and_change_how_expeditions_play`.)*
 ### 25.14 The party of five (added 2026-10-11, owner: "add a fourth and fifth hero onto the team … a 5 player team seems about right for max")
 
-`MaxPartySize` = **5**; a new game starts with one of each role: Paladin (Tank), Barbarian (Striker), Cleric (Healer), Red Mage (Mage), Engineer (Support). Recruits and rescued guests wait in reserve when the party is full. Camp shows the five in a two-column grid; class blurbs render their [keywords] as highlights.
+`MaxPartySize` = **5**; a new game's five are picked on `CharacterSelectScreen` (§25.15) rather than fixed. Recruits and rescued guests wait in reserve when the party is full. Camp shows the five in a two-column grid; class blurbs render their [keywords] as highlights.
+
+### 25.15 Character select (added 2026-10-11, owner: "unlock all character and select a random cross section of heros, make character selection like a fighting came where you have a grid at the bottom then you select a tile then the full artwork appears on top and you lock in that character")
+
+`New Game → slot` now pushes `CharacterSelectScreen` instead of calling `Progression.NewGame` with the fixed five directly. Every hero-team class in content (62, not just `StartingRoster`) is an open tile in a scrollable grid at the bottom — tiles are 164px with an even 10px margin on all sides and the row centred (`Justify.Center`), so the gutter reads the same left, right and between tiles regardless of how many columns fit or the window's width. Tapping a tile previews it — full `Art.Portrait` art, name, role badge, description — in a reveal panel above, framed in that role's colour, which **slams** into place (oversized and tilted, a `Tween.Back` overshoot down to rest plus a small landing shake and an impact cue) rather than popping in cold, matching the cut-ins' bombastic feel (bible law: no single-frame swaps). Tapping the same tile again (or "Lock In") commits it to the party strip at the top. Five locks → `Progression.NewGame(c, name, party)` (an overload taking the chosen roster; the old 2-arg form still exists for automation/tests and defaults to `StartingRoster`). `-demo` drives the identical screen itself (`auto: true`): it previews a random not-yet-picked class, pauses, locks it in, five times, so every attract-mode run shows a different squad. *(Verified: `tools/harness.py` launch, screenshot of the live grid showing even gutters, and a frame-by-frame `record` capture of the reveal panel mid-slam — tilted/oversized mid-flight, not instant.)*
+
+### 25.16 Diagonal slip (added 2026-10-11, owner: Terra Battle's fast-swipe diagonal move — "if you moved quickly and accurately you could move diagonally between two squares… it takes skill… allow the game to skip the collision detection")
+
+Player hero drags only (never AI — enemies/bots use the separate `StepEnemy`/`EnemyPlanner` path and never submit a diagonal step). Gated by `BattleConfig.DiagonalSlipEnabled` (mutable, default **on**; `-noDiagonalSlip` at the command line turns it off). A diagonal step is legal, destination tile fully free (no unit, no movable — never a swap, never onto anything: a glide into open space, same "two units never share a tile" invariant §(tile-conflict safety net) protects), with no softened "at most one corner" rule — the two flanking tiles' occupancy is never consulted, matching the owner's framing of the original as skipping a check rather than a designed exception. `WalkPath` (`BattleRunner.Combat.cs`, the single path both the committed move and the live drag-ghost preview run through) accepts `Coord.IsDiagonalNeighbor` alongside the existing cardinal check when the flag is on. The client (`BattleScreen.Input.ExtendPath`) only ever offers a diagonal candidate when the raw drag gesture between polled pointer-move frames is both fast (> `Tile×6` px/s) and close to a true 45° (within 12°) — a careful/slow drag always still resolves as today's safe two-cardinal-step route, so the skill gate is pointer-timing, not a toggle the player can rely on deliberately. *(Tests: `Diagonal_is_not_a_pincer_and_diagonal_step_is_refused_when_slip_is_disabled`, `Diagonal_slip_glides_onto_a_free_tile_when_enabled`, `Diagonal_slip_is_still_refused_onto_an_occupied_tile_even_when_enabled`. The engine contract is machine-verified; the client's speed/angle gesture gate is pointer-timing and was confirmed by hand, not by the automation harness — its synthetic `drag` endpoint deliberately smooths input into ~30px sub-steps for clean recordings, which never reproduces a real fast flick, so a drag through it always falls back to the safe two-step route exactly as before, with zero regression.)*
 
 ### 25.13 Roles (added 2026-10-11, owner direction: "a healer should need to heal, a magician should have ranged spells, a tank should be able to taunt")
 
@@ -1891,7 +1955,7 @@ One UI-only camera (`cullingMask = 0`, black clear); the board is UI Toolkit, so
 
 `StoryCrawlScreen`: the theme name (Cinzel) and its `campaign.json` `Crawl` text scroll upward at 95 design-px/s over a dimmed theme backdrop; **Skip ›** or a tap anywhere ends it and replaces it with the battle. It plays on the **first** launch of any stage in a theme — from Adventure or from the results screen's "Next stage ›" (both go through `StageLauncher.Launch`); the theme is recorded in `SaveData.SeenCrawls` (and saved) when the crawl starts. **Amended 2026-10-09** (timing by scroll speed instead of a 26 s duration). Writers edit `campaign.json` only.
 
-No dialog system: no character dialogue, no branching, no cutscenes.
+No dialog system: no character dialogue, no branching, no cutscenes. This is scoped to the overworld/story layer — the in-battle "surprise" reinforcement beat ([§14.8](#148-reinforcements-and-eggs-added-2026-10-12-owner-direction)) is a lightweight one-line announcement card, not a dialogue/narrative system, and doesn't change this.
 
 ## 28. No Overworld
 
@@ -1933,7 +1997,9 @@ Target: **60 fps** on a 4-year-old mid-tier phone; `GameApp.Awake` pins `targetF
 - **Touch targets:** slots 216×196 and tiles 180² design px clear 44 dp at every supported scale; a dragged hero lifts above the finger.
 - **Readability:** 40-px body text, white on deep-blue windows, HP as gauge + numbers on the panel.
 - **Audio:** every important event also has text. 🟡 Music/SFX volume cycles in Settings; `MuteMusic`/`MuteSfx` exist in the save and are honored by `Audio.Apply` but have no toggle.
-- Status: colorblind 🟡 · reduce motion 🟡 · volume 🟡 · safe area ⬜ · tooltips ⬜.
+- **Menu themes (added 2026-10-11, owner: "the gradient on all the menus is generated... make multiple Themes... updated in Settings and remembers it"):** `Art.MenuTheme` is two chosen base colors (`ColorA`/`ColorB`); the accent used for every window's border (`Ui.Window`) is never hand-picked — it's the complement of the two base colors' circular-mean hue, pushed toward full saturation/brightness since it frames thin borders, not large fills (`Art.MenuTheme`'s constructor). Presets (`Art.Themes`): **Classic** (the original deep blue, now just the default preset), **Cyberpunk** (magenta → neon cyan, gold-green accent), **Ember** (mindattic.com's coral → teal), **Verdant** (MindAttic.Launcher's green → near-black). `SettingsSave.MenuTheme` persists the pick; "Menu theme" in Settings cycles it (`Art.ApplyTheme`, called from `GameApp.ApplySettings` on every load and every Settings change) and repaints the shared `Art.Window`/`Art.WindowDark` gradient textures **in place** — every already-open window updates with no rebuild, since they all hold the same `Texture2D` reference.
+- **Fonts (added 2026-10-11, owner: "allow a selection of different Fonts to change look and feel"):** `Fonts.Presets` (`Assets/Gaiden/App/Services/Fonts.cs`) — **Classic** (Outfit, the original/default), **Lato**, **Roboto**, **Play**, **Montserrat**, **Inter**. Calibri and Aptos were named but are Microsoft-proprietary (not freely bundleable); Inter fills that "clean modern UI sans" role instead. "Attic" isn't a real distributable family; Montserrat fills that slot (its Google Fonts build is a variable font whose default instance renders a bit lighter than Regular — a known, purely cosmetic quirk, not a bug). Only the **body** font is selectable; the Display font (Cinzel, used on ~7 headline/name labels) stays fixed across every preset. `SettingsSave.FontName` persists the pick; "Font" in Settings cycles it the same way "Menu theme" does (`Fonts.ApplyFont`, called from `GameApp.ApplySettings`). Unlike themes, no texture-repaint trick is needed: `unityFontDefinition` is an inherited UI Toolkit style property, so re-applying the body font to the UI root (`Fonts.UseBody`) cascades to every element that doesn't explicitly override it, instantly, with no screen rebuild. Roboto/Montserrat/Inter are Google's current variable-font TTFs (no static cut is published any more); Unity's dynamic SDF pipeline (`FontAsset.CreateFontAsset`) renders their default instance correctly.
+- Status: colorblind 🟡 · reduce motion 🟡 · volume 🟡 · menu themes 🟡 · fonts 🟡 · safe area ⬜ · tooltips ⬜.
 
 ---
 

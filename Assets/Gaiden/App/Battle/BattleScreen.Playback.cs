@@ -5,6 +5,9 @@ using Gaiden.Core;
 using Gaiden.Core.Battle;
 using Gaiden.Core.Content;
 using Gaiden.Meta;
+using MindAttic.Capture;
+using MindAttic.Capture.Unity;
+using MindAttic.Telemetry.Unity;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -28,10 +31,25 @@ namespace Gaiden.App
             int i = 0;
             if (skipMovePrefix)
             {
-                // The drag already showed these steps live; only replay their side effects.
-                while (i < events.Count && (events[i] is ActionBeganEvent || events[i] is SteppedEvent || events[i] is DisplacedEvent || events[i] is StepBlockedEvent)) i++;
+                // The drag already showed these steps live; only replay their side effects. Snap only the
+                // units this prefix actually moved — not every alive unit — so an enemy whose own turn
+                // resolves later in this same command's event list (common: a drag-move can run a full
+                // enemy turn via AdvanceClock) is still at its true pre-move tile when its SteppedEvent
+                // plays, instead of already sitting at its destination and animating zero distance.
+                var touched = new HashSet<int>();
+                while (i < events.Count && (events[i] is ActionBeganEvent || events[i] is SteppedEvent || events[i] is DisplacedEvent || events[i] is StepBlockedEvent))
+                {
+                    switch (events[i])
+                    {
+                        case ActionBeganEvent ab: touched.Add(ab.ActorId); break;
+                        case SteppedEvent se: touched.Add(se.UnitId); break;
+                        case DisplacedEvent de: touched.Add(de.UnitId); break;
+                        case StepBlockedEvent sb: touched.Add(sb.UnitId); break;
+                    }
+                    i++;
+                }
                 foreach (var u in State.Units)
-                    if (u.Alive && board.Units.TryGetValue(u.Id, out var v)) { board.Place(v, u.Pos); }
+                    if (u.Alive && touched.Contains(u.Id) && board.Units.TryGetValue(u.Id, out var v)) { board.Place(v, u.Pos); }
             }
             for (; i < events.Count; i++)
             {
@@ -133,10 +151,14 @@ namespace Gaiden.App
                 case WeaponSwappedEvent sw: App.Audio.Sfx("dash"); SyncBar(); return FloatText(sw.UnitId, "⭾ " + (App.Content.TryItem(sw.ToWeapon)?.Name ?? "Swap"), new Color(0.85f, 0.9f, 1f), 0.3f, 54);
                 case BossPhaseEvent bp: return BossAnim(bp);
                 case WaveStartedEvent wv: TutorialWaveStarted(); return WaveAnim(wv);
+                case ReinforcementsArrivedEvent ra: return ReinforcementsAnim(ra);
+                case EggLaidEvent el: return EggLaidAnim(el);
+                case EggHatchedEvent eh: return HatchAnim(eh);
                 case WaveClearedEvent wc: FlushTallies(); ShowBanner("Wave cleared!"); return Tween.Wait(0.4f);
-                case BattleEndedEvent be: ShowBanner(be.Victory ? "VICTORY!" : be.Escaped ? "ESCAPED" : "DEFEAT"); App.Audio.Sfx(be.Victory ? "victory" : be.Escaped ? "dash" : "defeat"); return Tween.Wait(1.0f);
+                case BattleEndedEvent be: lastEnded = be; ShowBanner(be.Victory ? "VICTORY!" : be.Escaped ? "ESCAPED" : "DEFEAT"); App.Audio.Sfx(be.Victory ? "victory" : be.Escaped ? "dash" : "defeat"); return Tween.Wait(1.0f);
                 case RevivedEvent rv: return ReviveAnim(rv);
                 case PlayerControlEvent _: FlushTallies(); ShowBanner(""); SyncAll(); return null;
+                case TileConflictEvent tc: Debug.LogError($"[BattleRunner] {tc} — stage {State.Stage.Id}, wave {State.Wave}, clock {State.Clock}"); return null;
             }
             return null;
         }
@@ -182,13 +204,16 @@ namespace Gaiden.App
                 var partner = s.IsAdjacentTo(a) ? a : b;
                 links.Add(BoardView.EdgeLink(s.Pos, partner.Pos));
             }
-            App.StartCoroutine(Tween.Run(ReduceMotion ? 0.05f : 0.24f, k =>
+            App.Audio.Sfx("pincer", 1f, 1f + 0.08f * (chainCount - 1));
+            // The outline draws itself fully around the trapped line before anything else happens — a beat of
+            // realization — so the pincer reads as "caught" before the cut-in slams in (owner request).
+            yield return Tween.Run(ReduceMotion ? 0.05f : 0.24f, k =>
             {
                 board.Lines.ClearLines();
                 board.Lines.Outline(rect, color, 9f, k);
                 if (k >= 0.6f) foreach (var (la, lb) in links) board.Lines.Add(la, Vector2.Lerp(la, lb, (k - 0.6f) / 0.4f), new Color(0.4f, 0.8f, 1f, 0.95f), 12f);
-            }));
-            App.Audio.Sfx("pincer", 1f, 1f + 0.08f * (chainCount - 1));
+            });
+            if (!ReduceMotion) yield return Tween.Wait(0.18f);
             tallying = true;
             string label = p.Team == Team.Hero ? (chainCount > 1 ? $"CHAIN ×{chainCount}!" : "PINCER!") : "Enemy pincer!";
             Billboard($"{a.Name} & {b.Name} — {(chainCount > 1 ? $"Chain ×{chainCount}" : "Pincer")}", null, p.Team == Team.Hero ? new Color(1f, 0.9f, 0.5f) : new Color(1f, 0.55f, 0.5f));
@@ -232,6 +257,12 @@ namespace Gaiden.App
         {
             var heroes = State.Units.Where(u => u.IsHero && u.Alive).Take(2).ToList();
             if (heroes.Count == 2) App.StartCoroutine(PincerCutIn(heroes[0], heroes[1], Team.Hero));
+        }
+
+        /// <summary>Debug/automation: play the mid-wave surprise narrative beat (§14.8) on demand.</summary>
+        public void DemoSurprise(string speakerClassId, string line)
+        {
+            App.StartCoroutine(SurpriseAnnounce(speakerClassId, line));
         }
 
         private sealed class CutInPortrait
@@ -575,6 +606,144 @@ namespace Gaiden.App
             yield return Tween.Run(0.3f, k => { v.Root.style.translate = new Translate(0, 60f * (1f - k)); v.Root.style.opacity = k; });
         }
 
+        /// <summary>An egg drops onto a free tile beside its layer (§14.8).</summary>
+        private IEnumerator EggLaidAnim(EggLaidEvent e)
+        {
+            var r = State.UnitById(e.EggId);
+            if (r == null) yield break;
+            if (!board.Units.TryGetValue(r.Id, out var v)) v = board.Add(r);
+            board.Place(v, r.Pos);
+            v.SetHp(r.Hp, r.MaxHp);
+            SyncTimeline(null);
+            App.Audio.Sfx("pickup", 0.6f, 0.8f);
+            v.Root.style.translate = new Translate(0, -60);
+            yield return Tween.Run(0.18f, k => v.Root.style.translate = new Translate(0, -60f * (1f - k * k)));
+            Billboard($"{State.UnitById(e.FromUnitId)?.Name} lays an egg!", null, new Color(0.85f, 1f, 0.75f));
+        }
+
+        /// <summary>The egg splits open and the real enemy climbs out, at full strength.</summary>
+        private IEnumerator HatchAnim(EggHatchedEvent e)
+        {
+            if (board.Units.TryGetValue(e.EggId, out var ev))
+            {
+                yield return Tween.Run(0.2f, k => { ev.Root.style.opacity = 1f - k; ev.Root.style.scale = new Scale(Vector2.one * (1f - 0.3f * k)); });
+                ev.Root.RemoveFromHierarchy(); ev.Dead = true;
+            }
+            var u = State.UnitById(e.UnitId);
+            if (u == null) yield break;
+            var v = board.Units.TryGetValue(u.Id, out var existing) ? existing : board.Add(u);
+            board.Place(v, u.Pos);
+            v.SetHp(u.Hp, u.MaxHp);
+            SyncTimeline(null);
+            App.Audio.Sfx("crit", 0.8f, 1.1f);
+            Billboard($"{u.Name} hatches!", null, new Color(1f, 0.85f, 0.6f));
+            v.Root.style.scale = new Scale(Vector2.zero);
+            yield return Tween.Run(0.25f, k => v.Root.style.scale = new Scale(Vector2.one * Mathf.Clamp01(k * 1.3f)));
+            v.Root.style.scale = new Scale(Vector2.one);
+        }
+
+        /// <summary>Mid-wave reinforcements arrive (§14.8): each spawns with an entrance matched to its kind, then — on
+        /// the first delayed entry a wave authored a line for — a held narrative beat announces the twist.</summary>
+        private IEnumerator ReinforcementsAnim(ReinforcementsArrivedEvent ra)
+        {
+            foreach (var id in ra.Spawned)
+            {
+                var u = State.UnitById(id);
+                if (u == null || board.Units.ContainsKey(id)) continue;
+                var v = board.Add(u);
+                v.SetHp(u.Hp, u.MaxHp);
+                App.StartCoroutine(EntranceAnim(v, u.Def));
+            }
+            SyncTimeline(null);
+            if (ra.Spawned.Count > 0) yield return Tween.Wait(0.3f);
+            if (!string.IsNullOrEmpty(ra.Line)) yield return SurpriseAnnounce(ra.SpeakerClassId, ra.Line);
+        }
+
+        /// <summary>A quick spawn-entrance styled by the class's own tags/brain (§14.8) — no new content fields needed.</summary>
+        private IEnumerator EntranceAnim(UnitView v, ClassDef def)
+        {
+            if (def.Brain == Brain.Burrower)
+            {
+                App.Audio.Sfx("trap", 0.8f, 0.7f);
+                v.Root.style.opacity = 0;
+                yield return Tween.Run(0.3f, k => { v.Root.style.opacity = k; v.Root.style.scale = new Scale(Vector2.one * (0.7f + 0.3f * k)); });
+                App.StartCoroutine(Tween.Shake(v.Root, 8f * Fx, 0.15f));
+            }
+            else if (def.HasTag("Flying"))
+            {
+                App.Audio.Sfx("dash", 0.7f, 0.8f);
+                v.Root.style.opacity = 0;
+                yield return Tween.Run(0.3f, k => { v.Root.style.opacity = k; v.Root.style.translate = new Translate(0, -160f * (1f - k)); }, Tween.EaseOut);
+            }
+            else if (def.HasTag("Undead"))
+            {
+                App.Audio.Sfx("debuff", 0.7f, 0.7f);
+                v.Root.style.opacity = 0;
+                yield return Tween.Run(0.35f, k => v.Root.style.opacity = k);
+            }
+            else
+            {
+                App.Audio.Sfx("shatter", 0.5f, 0.7f);
+                v.Root.style.opacity = 0;
+                yield return Tween.Run(0.3f, k => { v.Root.style.opacity = k; v.Root.style.translate = new Translate(0, -80f * (1f - k)); }, Tween.EaseOut);
+            }
+        }
+
+        /// <summary>A held narrative beat (§14.8): the speaker's portrait, name and a line, dismissed by a tap or a timer
+        /// (StoryCrawlScreen's dual-exit idiom), reusing the 360×400 bordered-frame convention (CharacterSelectScreen,
+        /// LevelUpScreen) without leaving the battle screen.</summary>
+        private IEnumerator SurpriseAnnounce(string speakerClassId, string line)
+        {
+            var def = App.Content.TryClass(speakerClassId);
+            var veil = Ui.El("fill veil col center", App.Overlay);
+            veil.pickingMode = PickingMode.Position;
+            veil.style.backgroundColor = new Color(0.01f, 0.01f, 0.05f, 0.7f);
+
+            var row = Ui.El("row", veil);
+            row.style.opacity = 0f;
+            var frame = Ui.El(null, row);
+            frame.style.width = 360; frame.style.height = 400;
+            frame.style.borderTopWidth = frame.style.borderBottomWidth = frame.style.borderLeftWidth = frame.style.borderRightWidth = 4;
+            var bandColor = BandColor(Team.Enemy);
+            frame.style.borderTopColor = frame.style.borderBottomColor = frame.style.borderLeftColor = frame.style.borderRightColor = bandColor;
+            frame.style.backgroundColor = new Color(0.1f, 0.1f, 0.15f, 0.6f);
+            if (def != null)
+            {
+                frame.style.backgroundImage = new StyleBackground(Art.Portrait(def.Id));
+                frame.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Contain);
+                var crop = def.Crop;
+                frame.style.backgroundPositionX = new BackgroundPosition(BackgroundPositionKeyword.Left, Length.Percent(crop?.X ?? 50f));
+                frame.style.backgroundPositionY = new BackgroundPosition(BackgroundPositionKeyword.Top, Length.Percent(crop?.Y ?? 0f));
+            }
+
+            var info = Ui.El("col", row);
+            info.style.marginLeft = 24; info.style.width = 420;
+            var nm = Ui.Text(def?.Name ?? "???", "h1 shadow", info);
+            Fonts.UseDisplay(nm);
+            nm.style.color = bandColor;
+            var body = Ui.Text(line, "h2 shadow", info);
+            body.style.whiteSpace = WhiteSpace.Normal;
+            body.style.marginTop = 12;
+
+            bool done = false;
+            void Finish() { if (done) return; done = true; }
+            veil.RegisterCallback<ClickEvent>(_ => Finish());
+
+            App.Audio.Sfx("shatter", 0.5f);
+            yield return Tween.Run(0.22f, k =>
+            {
+                row.style.opacity = Mathf.Clamp01(k * 2.2f);
+                row.style.scale = new Scale(Vector2.one * Mathf.LerpUnclamped(1.15f, 1f, Tween.Back(k)));
+            });
+            row.style.opacity = 1f; row.style.scale = new Scale(Vector2.one);
+
+            float t = 0f;
+            while (!done && t < 2.6f) { t += Tween.Dt; yield return null; }
+
+            yield return Tween.Run(0.15f, k => row.style.opacity = 1f - k);
+            veil.RemoveFromHierarchy();
+        }
+
         private IEnumerator AmpSpawnAnim(AmplifierSpawnedEvent e)
         {
             board.SyncAmplifier(e.At);
@@ -625,7 +794,8 @@ namespace Gaiden.App
             tl.Terms.Add(crit ? amount + "!" : amount.ToString());
             if (ampTally && tl.Terms.Count == 1) tl.Terms.Add("AMP");
             tl.Total += amount; tl.Crit |= crit;
-            tl.El.text = string.Join(" + ", tl.Terms).Replace("+ AMP", "×AMP");
+            // Each hit lands on its own line below the last, stacking downward like a fighting-game combo list.
+            tl.El.text = string.Join("\n+ ", tl.Terms).Replace("+ AMP", "×AMP");
             tl.El.style.color = tl.Crit ? new Color(1f, 0.9f, 0.4f) : Color.white;
             App.StartCoroutine(Tween.Pop(tl.El, 1.25f, 0.12f));
         }
@@ -704,6 +874,7 @@ namespace Gaiden.App
             var l = Ui.Text(text, "h2 shadow", row);
             l.style.color = color;
             l.style.fontSize = text.Length > 30 ? 36 : 44;
+            l.style.whiteSpace = WhiteSpace.Normal; // a wider font should wrap here, never overflow the window
             while (billboard.childCount > 3) billboard[0].RemoveFromHierarchy();
             App.StartCoroutine(Tween.Pop(row, 1.12f, 0.12f));
             billboard.schedule.Execute(() =>
@@ -1353,7 +1524,23 @@ namespace Gaiden.App
         private IEnumerator EndBattle()
         {
             ended = true;
+            CaptureUnity.Raise("battle-end", new CaptureData
+            {
+                ["stage"] = State.Stage.Id,
+                ["result"] = lastEnded == null ? "unknown" : lastEnded.Victory ? "victory" : lastEnded.Escaped ? "escaped" : "defeat",
+            });
             SaveRecord();
+            TelemetryUnity.Finish(new
+            {
+                stage = State.Stage.Id,
+                result = lastEnded == null ? "unknown" : lastEnded.Victory ? "victory" : lastEnded.Escaped ? "escaped" : "defeat",
+                waveReached = State.Wave + 1,
+                actions = State.Results.ActionsTaken,
+                ticks = State.Results.TicksElapsed,
+                coins = State.Results.Coins,
+                xp = State.Results.Xp,
+                heroesStanding = State.Units.Count(u => u.IsHero && u.Alive),
+            });
             yield return Tween.Wait(0.6f);
             if (setupOverride != null || App.Save == null)
             {
@@ -1362,7 +1549,7 @@ namespace Gaiden.App
             }
             var report = BattleFactory.Commit(App.Content, App.Save, State);
             App.Persist();
-            App.Router.Replace(new PostBattleScreen(report, State.Stage.Id));
+            PostBattleScreen.RouteFrom(report, State.Stage.Id);
         }
     }
 }

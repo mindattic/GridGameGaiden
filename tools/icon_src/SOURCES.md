@@ -89,6 +89,7 @@ Authors: carl-olsen, darkzaitzev, delapouite, faithtoken, lorc, sbed, skoll, zer
 - lorc/winged-emblem
 - lorc/wizard-staff
 - lorc/wolf-head
+- lorc/wolf-howl
 - sbed/regeneration
 - sbed/vial
 - skoll/fangs

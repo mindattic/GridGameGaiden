@@ -41,7 +41,8 @@ def fetch(ref):
     if os.path.exists(dst):
         return dst
     url = f"https://game-icons.net/icons/ffffff/transparent/1x1/{ref}.svg"
-    data = urllib.request.urlopen(url, timeout=30).read()
+    with urllib.request.urlopen(url, timeout=30) as resp:
+        data = resp.read()
     if not data.lstrip().startswith(b"<svg"):
         raise RuntimeError(f"not an svg: {ref}")
     os.makedirs(SRC, exist_ok=True)

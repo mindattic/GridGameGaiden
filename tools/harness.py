@@ -141,7 +141,7 @@ def campaign(run="campaign", stages=6, speed=3):
     results = []
     for n in range(stages):
         call("autoplay", on=1)
-        t0 = time.time(); last_clock = -1; stuck = 0; shot_taken = False
+        t0 = time.time(); last_clock = -1; stuck = 0; shot_taken = False; stalled = False
         while time.time() - t0 < 240:
             time.sleep(1.0)
             st = call("state")
@@ -153,11 +153,15 @@ def campaign(run="campaign", stages=6, speed=3):
             stuck = stuck + 1 if b["clock"] == last_clock and not b["busy"] else 0
             last_clock = b["clock"]
             if stuck > 12:
-                results.append({"stage": n, "result": "STALLED", "state": b}); break
+                results.append({"stage": n, "result": "STALLED", "state": b})
+                stalled = True
+                break
+        if stalled:
+            # Battle never reached postbattle; recording a second entry below would misrepresent the run.
+            continue
         time.sleep(1.2)
         st = call("state")
         shot(f"stage{n}-result")
-        title = "?"
         results.append({"stage": n, "screen": st["screen"], "gold": st.get("save", {}).get("Gold"), "levels": st.get("save", {}).get("levels")})
         if st["screen"] != "postbattle":
             break

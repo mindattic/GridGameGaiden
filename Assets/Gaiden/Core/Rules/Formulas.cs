@@ -31,7 +31,7 @@ namespace Gaiden.Core.Rules
             if (level < 1) level = 1;
             var s = def.BaseStats.Clone();
             var milestones = new Dictionary<int, Stats>();
-            foreach (var m in def.Milestones) milestones[m.Level] = m.Growth;
+            foreach (var m in def.Milestones) if (m != null) milestones[m.Level] = m.Growth;
             for (int l = 2; l <= level; l++)
             {
                 s = s + def.Growth;

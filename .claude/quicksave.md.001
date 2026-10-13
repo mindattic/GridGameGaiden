@@ -1,0 +1,141 @@
+# Quicksave — /bughunt full-codebase pass on GridGameGaiden: search done, fix phase complete, report delivered
+_Printed: 2026-10-12_
+
+## Current task
+`/bughunt` (no time argument → exhaustive single pass, then unlimited fix phase) was run against
+the whole GridGameGaiden repo. **Both phases are done and the final report has already been given
+to the user in this session.** There is no pending work unless the user asks a follow-up (e.g.
+"now commit this" or "go fix the architecture issue you flagged as needs-human-input"). If resuming
+cold, the most likely next ask is one of those two, or reviewing the diff before committing.
+
+## Decisions locked this session
+- No time budget given → did one exhaustive pass across all tracked source, not a clock-bounded one.
+- Used 6 parallel fresh `general-purpose` subagents (not forks) to read-only-review disjoint module
+  sets in parallel, each reporting file:line findings back; then fixed everything myself directly
+  (Read/Edit) in the main thread rather than delegating fixes.
+- Did **not** commit or push anything — bughunt instructions say leave fixes in the working tree for
+  the user to review. All fixes are uncommitted in the working tree alongside the large pre-existing
+  uncommitted diff that was already there before this session started (see `git status` — ~40+ files
+  were already modified/untracked before I touched anything).
+- Dropped two "findings" as false positives after verifying against `docs/BIBLE.md`:
+  - `Camp.Use`'s whole-party heal bypassing the expedition inn-lock — bible line 1626 explicitly says
+    "the inn is closed on the road; **Tents still work**." Intentional, not a bug.
+  - Several Core/Rules agent findings (EnemyPlanner footprint-step shove behavior, PincerDetector,
+    TargetResolver, Formulas combat math) — all matched documented/bible behavior on inspection.
+- Left exactly one thing unfixed as a genuine architecture decision (see Open questions below)
+  rather than risk changing the battle engine's command/event contract without owner sign-off.
+- Verification gate used throughout: `dotnet test Tests/Core.Tests/Core.Tests.csproj` (287 tests)
+  plus, at the very end, the full `tools/test.ps1 -Compile` (Unity batchmode compile + all 287 tests
+  + glyph check + asset check) since Unity Editor was NOT running at the time (checked via `tasklist`).
+  Everything is green: 287/287 passed, 0 `error CS`, glyph check OK (37 files), asset check OK.
+
+## State / where we are
+Search phase (6 parallel subagents, each briefed with the relevant bible Laws) covered:
+1. Core/Battle (BattleEngine, BattleRunner*, BattleState, Commands, ManaBank, Timeline, Unit,
+   BattleConfig, BattleEvents, BattleRecorder)
+2. Core/Rules + Core/Bot + Core/Content (EnemyPlanner, Formulas, PincerDetector, TargetResolver,
+   Coord, Rng, HeroBot, MetaBot, ContentDb, ContentLoader, ContentModels)
+3. Meta (CampRoutine, MetaServices, SaveData)
+4. App/Battle (BattleScreen*.cs, BoardView, GameApp)
+5. App/Screens + Services + UI + Automation (HubScreens, MenuScreens, PostBattleScreen, Art, Audio,
+   Fonts, SaveStore, ScreenRouter, Tween, Ui, AutomationServer, StartScreens)
+6. Python tooling (androidcheck, artreview, check_assets, check_glyphs, eyesheet, eyezoom, harness,
+   import_art, make_icons, make_pixel_icons, make_sfx, make_tiles, records, uicheck)
+
+Fix phase: ~24 candidate findings reviewed; the vast majority were real and got fixed. Full
+bug→fix→verification table was already delivered to the user in the previous message — not
+repeated here in full, but every fixed file is listed under Anchors below with what changed.
+
+One standout bug worth remembering if asked about this session: a **live, currently-shipping
+tofu-box bug** was found and fixed — under the "Roboto" or "Play" body-font presets (added
+2026-10-11), the combat feed's `→` (U+2192) glyph was covered by neither that font nor
+NotoSans/NotoSansSymbols2, so it would render as a missing-glyph box. Root-caused to `Fonts.cs`
+only giving the "Classic"(Outfit) preset an implicit Outfit fallback; fixed by making every preset
+fall back through Outfit as a final step, and updated `tools/check_glyphs.py`'s coverage set to
+match (was previously checking Outfit+NotoSans+NotoSansSymbols2 as a flat union, which accidentally
+masked the regression — now correctly mirrors the real runtime fallback chain). Verified concretely
+with a one-off fontTools script showing U+2192 missing from Roboto/Play/NotoSans/NotoSansSymbols2
+but present in Outfit/Lato/Montserrat/Inter.
+
+Another standout: `SwapWeapon` in `BattleRunner.Abilities.cs` always reset an incoming bar-weapon to
+its **factory** durability, meaning repeatedly swapping a weapon to the bar and back was a free,
+unlimited "repair" exploit defeating the whole weapon-durability/shatter economy. Fixed by adding
+`AbilitySlot.WeaponDurability` so swaps now preserve each weapon's actual wear.
+
+## Open questions / pending
+- **`BattleScreen.cs:1043`** (`Retreat()`) sets `State.Phase = BattlePhase.Retreated` directly,
+  bypassing `BattleEngine.Apply` entirely — the one confirmed violation of GG-LAW-9 ("presentation
+  never mutates state"). Correct fix = add a `RetreatCommand` through the Core command/event
+  contract, which changes `BattleRecorder`/replay semantics — judged too architecturally
+  significant to auto-fix under a bughunt pass. **Left as needs-human-input.** Immediate practical
+  risk (abandoned coroutines bleeding into the next screen) was mitigated by making `Retreat()`
+  no-op while `playing` is true (same `Busy` gating convention as `CanCommand()`), but the law
+  violation itself is still there if the user wants it properly fixed.
+- Related, lower-priority: `BattleScreen`'s many `App.StartCoroutine`-owned animations (CutIns.cs,
+  Fx.cs, Playback.cs) aren't tracked/cancelled as a group on screen teardown — only the Retreat path
+  was closed off. A full fix means a broader coroutine-ownership refactor; left as a design decision.
+- `AutomationServer.cs`'s dev-only `DevGiveMana`/`DevSetBar`/`DevHp`/`DevBuff`/`DevQueueCast` mutate
+  `BattleState` directly (also a law violation) — but these are explicitly-labeled dev cheats gated
+  behind `DEVELOPMENT_BUILD`, judged accepted debt, not fixed.
+- Nothing has been committed. If the user wants this committed, need to decide whether to bundle it
+  with the large pre-existing uncommitted diff or split it into its own commit — not yet discussed.
+
+## Next concrete steps
+1. If the user says "commit this" — run `git status`/`git diff` first to separate the bughunt fixes
+   from the pre-existing uncommitted work if they want them split; otherwise just commit per
+   instructions (never `git add -A`; add specific files).
+2. If the user says "fix the Retreat architecture issue" — design a `RetreatCommand` through
+   `Core/Battle/Commands.cs` → `BattleEngine.Apply` dispatch → `BattleRunner.cs`, emit a
+   `BattleEvent` for it, then update `BattleScreen.Retreat()` to call `Commit(new RetreatCommand())`
+   instead of mutating `State.Phase` directly. Re-run `tools/test.ps1 -Compile` after.
+3. Otherwise, nothing pending — the bughunt is complete and was already reported to the user in
+   full in this conversation.
+
+## Anchors
+- Files fixed this session (all uncommitted in working tree):
+  - `Assets/Gaiden/App/Automation/AutomationServer.cs` — path traversal (SafeName helper), swallowed
+    exceptions in Serve(), unguarded response write, leaked log handler subscription
+  - `Assets/Gaiden/App/UI/ScreenRouter.cs` — added `transitionToken` to fix stale-transition replay race
+  - `Assets/Gaiden/App/Screens/PostBattleScreen.cs` — track+stop reveal coroutines in `OnHidden`
+  - `Assets/Gaiden/App/UI/Ui.cs` — `KitTraits` empty-ability-name guard
+  - `Assets/Gaiden/Meta/MetaServices.cs` — `TryClass` fallback in `Camp.Use`/`Abilities.Learnable`;
+    weapon/armor durability write-back guard symmetry
+  - `Assets/Gaiden/App/Screens/HubScreens.cs` — same `TryClass` fallback pattern
+  - `Assets/Gaiden/App/Services/SaveStore.cs` — new dedicated `SaveSettings` (MissingMemberHandling.Ignore)
+    instead of reusing `ContentLoader.Settings` for saves
+  - `Assets/Gaiden/Core/Battle/Unit.cs` — added `AbilitySlot.WeaponDurability`
+  - `Assets/Gaiden/Core/Battle/BattleRunner.Abilities.cs` — `SwapWeapon` preserves real durability
+  - `Assets/Gaiden/Core/Battle/BattleRunner.Setup.cs` — `MakeSlot` initializes spare-weapon durability
+  - `Assets/Gaiden/Core/Battle/BattleRunner.cs` — `TickTurnBuffs`/`TickTimedBuffs` snapshot+Contains fix
+  - `Assets/Gaiden/Core/Battle/BattleRecorder.cs` — records serialize error message instead of swallowing
+  - `Assets/Gaiden/Core/Util/Rng.cs` — `Pick<T>` throws clear `ArgumentException` on empty list
+  - `Assets/Gaiden/Core/Rules/Formulas.cs` — `StatsAtLevel` skips null milestone entries
+  - `Assets/Gaiden/Core/Content/ContentLoader.cs` — null-entry guards in `AddAll`/`DefaultLoadout`
+    loop; added 8 missing cross-reference checks (Trail, OnHitBuff, Remains, LaysEgg, RemovesBuff,
+    CuresBuff, wave Guests[].Class, SurpriseSpeaker)
+  - `Assets/Gaiden/App/Battle/BattleScreen.Playback.cs` — `Play()` skip-prefix only snaps units the
+    prefix actually touched (fixes enemy-teleport-instead-of-walk visual bug)
+  - `Assets/Gaiden/App/Battle/BattleScreen.cs` — `Retreat()` no-ops while `playing`
+  - `Assets/Gaiden/App/Services/Fonts.cs` — every body-font preset now also falls back through Outfit
+  - `tools/check_glyphs.py` — coverage set corrected to NotoSans+NotoSansSymbols2+Outfit; crash-safe
+    missing-glyph report (no longer prints the raw unicode char, which crashed on cp1252 consoles)
+  - `tools/androidcheck.py` — fixed stale port docstring (7777→7787); added `Assert` to error gate
+  - `tools/uicheck.py` — added `Assert` to error gate; safe-area check now polls + uses `.get()`
+    instead of a fixed sleep + unguarded indexing
+  - `tools/harness.py` — `campaign()` stalled-stage no longer appends a duplicate misleading result
+  - `tools/make_icons.py` — `fetch()` HTTP response now closed via `with`
+- Commands to re-run:
+  - `dotnet test Tests/Core.Tests/Core.Tests.csproj -v minimal` — quick Core/Meta check (~2 min)
+  - `.\tools\test.ps1 -Compile` (from repo root, Windows PowerShell; Unity Editor must be closed) —
+    full gate: Unity batchmode compile + all 287 tests + glyph check + asset check (~2 min)
+  - `python tools/check_glyphs.py` — standalone glyph check (fast)
+  - One-off verification script used mid-session (not saved anywhere, recreate if needed):
+    ```python
+    from fontTools.ttLib import TTFont
+    import os
+    FONTS = 'Assets/Gaiden/Resources/Fonts'
+    for f in ['Outfit','Lato','Roboto','Play','Montserrat','Inter','NotoSans','NotoSansSymbols2']:
+        cmap = TTFont(os.path.join(FONTS, f+'.ttf')).getBestCmap()
+        print(f, 'arrow(U+2192):', 0x2192 in cmap)
+    ```
+- Repo root: `D:\Projects\MindAttic\GridGameGaiden`. Branch: `main`. No commits made this session.

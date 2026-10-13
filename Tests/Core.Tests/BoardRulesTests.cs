@@ -55,6 +55,27 @@ namespace Gaiden.Tests
         }
 
         [Fact]
+        public void Dragging_out_and_back_to_the_start_tile_still_pincers_if_it_lands_back_in_position()
+        {
+            // K(0,0) g(1,0) C(2,0) from the start (no pincer has fired yet — nothing moved there). Dragging K
+            // out to (0,1) and straight back to (0,0) ends on the same tile it started, but that tile still
+            // completes a pincer on g — it must fire, not be refused as a no-op cancel.
+            var db = Mini();
+            var (s, _) = Battle(db, Stage(("goblin", 1, 0)), ("knight", 0, 0), ("cleric", 2, 0));
+            var knight = Hero(s, "knight");
+            var goblin = At(s, 1, 0);
+            var hpBefore = goblin.Hp;
+            var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = knight.Id, Path = P((0, 1), (0, 0)) });
+            Assert.DoesNotContain(ev, e => e is AbilityRefusedEvent);
+            var pincer = ev.OfType<PincerFormedEvent>().Single();
+            Assert.Contains(pincer.Attacker1, new[] { knight.Id, Hero(s, "cleric").Id });
+            Assert.True(goblin.Hp < hpBefore);
+            Assert.Equal(new Coord(0, 0), knight.Pos);
+            Assert.Equal(1, s.Results.ActionsTaken);
+            AssertInvariants(s);
+        }
+
+        [Fact]
         public void Gap_or_ally_in_line_breaks_pincer()
         {
             var db = Mini();
@@ -65,14 +86,55 @@ namespace Gaiden.Tests
         }
 
         [Fact]
-        public void Diagonal_is_not_a_pincer_and_diagonal_step_is_refused()
+        public void Diagonal_is_not_a_pincer_and_diagonal_step_is_refused_when_slip_is_disabled()
         {
-            var db = Mini();
-            var (s, _) = Battle(db, Stage(("tank", 1, 1)), ("knight", 0, 0), ("cleric", 3, 3));
-            var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = Hero(s, "cleric").Id, Path = P((2, 2)) });
-            Assert.Contains(ev, e => e is StepBlockedEvent);
-            Assert.Empty(ev.OfType<PincerFormedEvent>());
-            Assert.Equal(new Coord(3, 3), Hero(s, "cleric").Pos);
+            bool was = BattleConfig.DiagonalSlipEnabled;
+            BattleConfig.DiagonalSlipEnabled = false;
+            try
+            {
+                var db = Mini();
+                var (s, _) = Battle(db, Stage(("tank", 1, 1)), ("knight", 0, 0), ("cleric", 3, 3));
+                var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = Hero(s, "cleric").Id, Path = P((2, 2)) });
+                Assert.Contains(ev, e => e is StepBlockedEvent);
+                Assert.Empty(ev.OfType<PincerFormedEvent>());
+                Assert.Equal(new Coord(3, 3), Hero(s, "cleric").Pos);
+            }
+            finally { BattleConfig.DiagonalSlipEnabled = was; }
+        }
+
+        [Fact]
+        public void Diagonal_slip_glides_onto_a_free_tile_when_enabled()
+        {
+            bool was = BattleConfig.DiagonalSlipEnabled;
+            BattleConfig.DiagonalSlipEnabled = true;
+            try
+            {
+                var db = Mini();
+                var (s, _) = Battle(db, Stage(("tank", 5, 5)), ("cleric", 3, 3));
+                var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = Hero(s, "cleric").Id, Path = P((2, 2)) });
+                Assert.Contains(ev, e => e is SteppedEvent st && st.From == new Coord(3, 3) && st.To == new Coord(2, 2));
+                Assert.DoesNotContain(ev, e => e is StepBlockedEvent);
+                Assert.Equal(new Coord(2, 2), Hero(s, "cleric").Pos);
+                AssertInvariants(s);
+            }
+            finally { BattleConfig.DiagonalSlipEnabled = was; }
+        }
+
+        [Fact]
+        public void Diagonal_slip_is_still_refused_onto_an_occupied_tile_even_when_enabled()
+        {
+            bool was = BattleConfig.DiagonalSlipEnabled;
+            BattleConfig.DiagonalSlipEnabled = true;
+            try
+            {
+                var db = Mini();
+                var (s, _) = Battle(db, Stage(("tank", 2, 2)), ("cleric", 3, 3));
+                var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = Hero(s, "cleric").Id, Path = P((2, 2)) });
+                Assert.Contains(ev, e => e is StepBlockedEvent b && b.Reason == "occupied");
+                Assert.Equal(new Coord(3, 3), Hero(s, "cleric").Pos);
+                AssertInvariants(s);
+            }
+            finally { BattleConfig.DiagonalSlipEnabled = was; }
         }
 
         [Fact]
@@ -181,6 +243,48 @@ namespace Gaiden.Tests
             Assert.Equal(1, s.Wave);
             Assert.False(s.IsOver);
             Assert.NotNull(At(s, 4, 4));
+        }
+
+        // ── Delayed mid-wave reinforcements (§14.8) ─────────────────────────────
+
+        [Fact]
+        public void A_delayed_spawn_arrives_partway_through_its_wave_not_at_wave_start()
+        {
+            var db = Mini();
+            var stage = new StageDef { Id = "t", Name = "T", IsTest = true };
+            var wave = new WaveDef();
+            wave.Enemies.Add(new SpawnDef { Class = "goblin", Level = 1, X = 4, Y = 4 });
+            wave.Enemies.Add(new SpawnDef { Class = "wolf", Level = 1, X = 5, Y = 5, DelayTicks = 15 });
+            stage.Waves.Add(wave);
+            var (s, _) = Battle(db, stage, ("knight", 0, 0), ("cleric", 2, 1));
+            Assert.Null(At(s, 5, 5));
+            Assert.Single(s.PendingSpawns);
+            var c = Hero(s, "cleric");
+            BattleEngine.Apply(s, new MoveCommand { HeroId = c.Id, Path = P((2, 0)) });
+            var wolf = At(s, 5, 5);
+            Assert.NotNull(wolf);
+            Assert.Equal("wolf", wolf.Def.Id);
+            Assert.Empty(s.PendingSpawns);
+        }
+
+        [Fact]
+        public void A_waves_reinforcement_dialogue_fires_once_even_with_multiple_delayed_entries()
+        {
+            var db = Mini();
+            var stage = new StageDef { Id = "t", Name = "T", IsTest = true };
+            var wave = new WaveDef { SurpriseSpeaker = "goblin", SurpriseLine = "Reinforcements!" };
+            wave.Enemies.Add(new SpawnDef { Class = "goblin", Level = 1, X = 4, Y = 4 });
+            wave.Enemies.Add(new SpawnDef { Class = "wolf", Level = 1, X = 5, Y = 5, DelayTicks = 15 });
+            wave.Enemies.Add(new SpawnDef { Class = "tank", Level = 1, X = 3, Y = 5, DelayTicks = 15 });
+            stage.Waves.Add(wave);
+            var (s, _) = Battle(db, stage, ("knight", 0, 0), ("cleric", 2, 1));
+            var c = Hero(s, "cleric");
+            var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = c.Id, Path = P((2, 0)) });
+            var arrivals = ev.OfType<ReinforcementsArrivedEvent>().ToList();
+            Assert.Single(arrivals);
+            Assert.Equal(2, arrivals[0].Spawned.Count);
+            Assert.Equal("goblin", arrivals[0].SpeakerClassId);
+            Assert.Equal("Reinforcements!", arrivals[0].Line);
         }
 
         // ── Physical blocks (§1.1.1) ────────────────────────────────────────────

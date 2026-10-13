@@ -39,6 +39,17 @@ namespace Gaiden.Core.Battle
         public override string ToString() => $"StepBlocked {UnitId} at {At} ({Reason})";
     }
 
+    /// <summary>
+    /// Defense in depth (two units must never share a tile): the engine caught one anyway after
+    /// <see cref="Command"/>, so it's a bug upstream — this is the diagnostic marker; the board
+    /// self-heals in the same beat via the accompanying <see cref="DisplacedEvent"/>.
+    /// </summary>
+    public sealed class TileConflictEvent : BattleEvent
+    {
+        public int UnitId; public int OtherUnitId; public Coord At; public string Command;
+        public override string ToString() => $"TileConflict {UnitId} vs {OtherUnitId} at {At} (after {Command})";
+    }
+
     public sealed class TeleportedEvent : BattleEvent
     {
         public int UnitId; public Coord From; public Coord To;
@@ -318,6 +329,27 @@ namespace Gaiden.Core.Battle
     {
         public int UnitId; public Coord At;
         public override string ToString() => $"Guest {UnitId} joins at {At}";
+    }
+
+    /// <summary>An egg is laid mid-battle (§14.8): solid, never acts except to hatch when its turn arrives.</summary>
+    public sealed class EggLaidEvent : BattleEvent
+    {
+        public int EggId; public int FromUnitId; public Coord At;
+        public override string ToString() => $"Egg {EggId} laid by {FromUnitId} at {At}";
+    }
+
+    public sealed class EggHatchedEvent : BattleEvent
+    {
+        public int EggId; public int UnitId; public Coord At;
+        public override string ToString() => $"Unit {UnitId} hatched from egg {EggId} at {At}";
+    }
+
+    /// <summary>A delayed mid-wave spawn arrives (§14.8), optionally with a narrative blurb on the first one per wave.</summary>
+    public sealed class ReinforcementsArrivedEvent : BattleEvent
+    {
+        public int Wave; public List<int> Spawned = new List<int>();
+        public string SpeakerClassId; public string Line;
+        public override string ToString() => $"Reinforcements wave {Wave + 1} [{string.Join(",", Spawned)}]";
     }
 
     /// <summary>Mana charge gained (§3.1.9). <see cref="Total"/> is the meter afterwards; whole orbs it made follow as OrbMinted.</summary>

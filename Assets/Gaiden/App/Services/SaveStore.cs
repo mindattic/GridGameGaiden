@@ -1,9 +1,9 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
-using Gaiden.Core.Content;
 using Gaiden.Meta;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using UnityEngine;
 
 namespace Gaiden.App
@@ -13,6 +13,20 @@ namespace Gaiden.App
     {
         public const int Slots = 3;
         public readonly string Root;
+
+        /// <summary>
+        /// Save files get their own settings rather than reusing <see cref="ContentLoader.Settings"/>: that one's
+        /// MissingMemberHandling.Error is right for strict content validation, but applied to a save it would throw
+        /// on deserialization the moment any field is renamed/removed — before SaveMigrations.Migrate ever runs,
+        /// defeating the migration path SaveData documents. Saves tolerate unknown/stale properties instead.
+        /// </summary>
+        private static readonly JsonSerializerSettings SaveSettings = new JsonSerializerSettings
+        {
+            Converters = { new StringEnumConverter() },
+            MissingMemberHandling = MissingMemberHandling.Ignore,
+            NullValueHandling = NullValueHandling.Ignore,
+            ObjectCreationHandling = ObjectCreationHandling.Replace,
+        };
 
         public SaveStore(string root = null)
         {
@@ -30,7 +44,7 @@ namespace Gaiden.App
             if (!File.Exists(p)) return null;
             try
             {
-                var s = JsonConvert.DeserializeObject<SaveData>(File.ReadAllText(p), ContentLoader.Settings);
+                var s = JsonConvert.DeserializeObject<SaveData>(File.ReadAllText(p), SaveSettings);
                 return SaveMigrations.Migrate(s);
             }
             catch (Exception e)
@@ -45,7 +59,7 @@ namespace Gaiden.App
             s.UpdatedUtc = DateTime.UtcNow;
             var p = PathFor(slot);
             var tmp = p + ".tmp";
-            File.WriteAllText(tmp, JsonConvert.SerializeObject(s, Formatting.Indented, ContentLoader.Settings));
+            File.WriteAllText(tmp, JsonConvert.SerializeObject(s, Formatting.Indented, SaveSettings));
             try
             {
                 if (File.Exists(p)) File.Replace(tmp, p, null);

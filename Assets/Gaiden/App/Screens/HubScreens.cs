@@ -126,7 +126,7 @@ namespace Gaiden.App
             foreach (var id in S.Party)
             {
                 var hero = id;
-                Ui.Button(C.Class(id).Name, () => { selected = it; Done(Camp.Use(C, S, it.Id, hero)); }, "btn--small", row);
+                Ui.Button(C.TryClass(id)?.Name ?? id, () => { selected = it; Done(Camp.Use(C, S, it.Id, hero)); }, "btn--small", row);
             }
         }
     }
@@ -793,6 +793,55 @@ namespace Gaiden.App
             {
                 int i = Array.FindIndex(opts, o => Mathf.Abs(o - value) < 0.01f);
                 Ui.MenuRow(label, string.Format(fmt, value), () => { set(opts[(i + 1) % opts.Length]); App.ApplySettings(); App.Persist(); Refresh(); }, w);
+            }
+            void CycleTheme()
+            {
+                var names = Art.Themes.Select(t => t.Name).ToArray();
+                int i = Array.IndexOf(names, st.MenuTheme);
+                st.MenuTheme = names[(i + 1) % names.Length];
+                App.ApplySettings(); App.Persist(); Refresh();
+            }
+            Ui.MenuRow("Menu theme", st.MenuTheme, CycleTheme, w);
+            void CycleFont()
+            {
+                var names = Fonts.Presets.Select(p => p.Name).ToArray();
+                int i = Array.IndexOf(names, st.FontName);
+                st.FontName = names[(i + 1) % names.Length];
+                App.ApplySettings(); App.Persist(); Refresh();
+            }
+            Ui.MenuRow("Font", st.FontName, CycleFont, w);
+            var diff = st.Difficulty;
+            void CycleDifficulty()
+            {
+                var presets = new[] { "Easy", "Normal", "Hard", "Custom" };
+                int i = Array.IndexOf(presets, diff.Preset);
+                diff.Preset = presets[(i + 1) % presets.Length];
+                // Built-in presets are inert scaffolding for now (§22.9): landing on one resets every
+                // multiplier to 1.0 so Custom is the only place values can actually move.
+                if (diff.Preset != "Custom")
+                {
+                    diff.EnemyHp = diff.EnemyDamage = diff.EnemySpeed = diff.RewardGold = diff.RewardXp = diff.ItemDropRate = 1f;
+                }
+                App.Persist(); Refresh();
+            }
+            Ui.MenuRow("Difficulty", diff.Preset, CycleDifficulty, w);
+            if (diff.Preset == "Custom")
+            {
+                var mults = new[] { 0.5f, 0.75f, 1f, 1.25f, 1.5f, 2f };
+                void CycleMult(string label, float value, Action<float> set)
+                {
+                    int i = Array.FindIndex(mults, o => Mathf.Abs(o - value) < 0.01f);
+                    if (i < 0) i = 2; // default to the ×1 slot if the stored value doesn't land on a step
+                    var row = Ui.MenuRow(label, $"×{value:0.##}", () => { set(mults[(i + 1) % mults.Length]); App.Persist(); Refresh(); }, w);
+                    row.style.marginLeft = 40;
+                }
+                CycleMult("Enemy HP", diff.EnemyHp, v => diff.EnemyHp = v);
+                CycleMult("Enemy damage", diff.EnemyDamage, v => diff.EnemyDamage = v);
+                CycleMult("Enemy speed", diff.EnemySpeed, v => diff.EnemySpeed = v);
+                CycleMult("Reward gold", diff.RewardGold, v => diff.RewardGold = v);
+                CycleMult("Reward XP", diff.RewardXp, v => diff.RewardXp = v);
+                CycleMult("Item drop rate", diff.ItemDropRate, v => diff.ItemDropRate = v);
+                Ui.Text("Not wired into battles yet — these numbers don't do anything, but your picks are saved.", "tiny dim", w).style.whiteSpace = WhiteSpace.Normal;
             }
             Cycle("Music volume", st.MusicVolume, new[] { 0f, 0.2f, 0.4f, 0.6f, 0.8f, 1f }, "{0:P0}", v => st.MusicVolume = v);
             Cycle("Sound volume", st.SfxVolume, new[] { 0f, 0.25f, 0.5f, 0.85f, 1f }, "{0:P0}", v => st.SfxVolume = v);

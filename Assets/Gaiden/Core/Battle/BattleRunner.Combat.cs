@@ -24,10 +24,12 @@ namespace Gaiden.Core.Battle
             var taken = new List<Coord>();
             WalkPath(hero, m.Path, taken);
             bool nothingHappened = taken.Count == 0
-                || (hero.Alive && hero.Hp == hpBefore && S.Traps.Count == trapsBefore && S.Pickups.Count == pickupsBefore && SamePositions(before));
+                || (hero.Alive && hero.Hp == hpBefore && S.Traps.Count == trapsBefore && S.Pickups.Count == pickupsBefore && SamePositions(before)
+                    && !WouldFormPincer(hero));
             if (nothingHappened)
             {
-                // A drag that changes nothing is a cancel, not a turn (no clock cost).
+                // A drag that changes nothing is a cancel, not a turn (no clock cost) — unless walking out and
+                // back onto the start tile re-forms a pincer (a deliberate, skillful tactic): that always counts.
                 Emit(new AbilityRefusedEvent { CasterId = hero.Id, Reason = "No move" });
                 return false;
             }
@@ -39,6 +41,10 @@ namespace Gaiden.Core.Battle
             CheckEnd();
             return true;
         }
+
+        /// <summary>Pure geometry check (no mutation): would resolving pincers right now actually strike something?</summary>
+        private bool WouldFormPincer(Unit hero) =>
+            PincerDetector.Detect(S, Team.Hero, hero).Exists(p => p.A.Alive && p.B.Alive && p.Opponents.Exists(o => o.Alive));
 
         private static bool BreaksOnMove(Unit u)
         {
@@ -66,7 +72,8 @@ namespace Gaiden.Core.Battle
             foreach (var next in path)
             {
                 if (!hero.Alive) return false;
-                if (!hero.Pos.IsCardinalNeighbor(next))
+                bool diagonal = hero.Pos.IsDiagonalNeighbor(next);
+                if (!hero.Pos.IsCardinalNeighbor(next) && !(diagonal && BattleConfig.DiagonalSlipEnabled))
                 {
                     Emit(new StepBlockedEvent { UnitId = hero.Id, At = next, Reason = "not adjacent" });
                     return false;
@@ -79,6 +86,12 @@ namespace Gaiden.Core.Battle
                 if (S.IsBlock(next))
                 {
                     Emit(new StepBlockedEvent { UnitId = hero.Id, At = next, Reason = "block" });
+                    return false;
+                }
+                // A diagonal slip glides into open space only — never a swap, never onto anything at all.
+                if (diagonal && (S.UnitAt(next) != null || S.MovableAt(next) != null))
+                {
+                    Emit(new StepBlockedEvent { UnitId = hero.Id, At = next, Reason = "occupied" });
                     return false;
                 }
                 var occ = S.UnitAt(next);
@@ -151,8 +164,16 @@ namespace Gaiden.Core.Battle
             }
         }
 
+        /// <summary>
+        /// Chain depth of the pincer currently resolving (0 outside one), read by <see cref="AwardLoot"/> so a kill
+        /// mid-chain earns bonus XP the same way <see cref="BattleConfig.ChargeChainBonus"/> already rewards mana
+        /// (owner direction 2026-10-11: deeper combos should pay out more of both, not just mana).
+        /// </summary>
+        private int chainBonusDepth;
+
         private void ResolvePincer(Pincer p, Team team, int chainIndex)
         {
+            chainBonusDepth = team == Team.Hero ? chainIndex : 0;
             var supporters = new List<Unit>();
             foreach (var x in p.SupportersA) if (!supporters.Contains(x)) supporters.Add(x);
             foreach (var x in p.SupportersB) if (!supporters.Contains(x)) supporters.Add(x);
@@ -211,6 +232,7 @@ namespace Gaiden.Core.Battle
                     AddCharge(Math.Max(BattleConfig.MinPincerCharge, (int)Math.Round(BattleConfig.PincerChargePerHp * share * chainMult / divisor)), p.A.Id, "pincer", participants, chainIndex + 1);
                 if (amplified != null && amplified.Alive) AddCharge(BattleConfig.AmplifierCharge, amplified.Id, "amplifier");
             }
+            chainBonusDepth = 0;
         }
 
         private bool HasPassive(Unit u, string id)
@@ -393,6 +415,7 @@ namespace Gaiden.Core.Battle
 
         private void Pushback(Unit enemy, Unit attacker)
         {
+            if (!pushedThisAction.Add(enemy.Id)) return; // one push per enemy per action — a chained pincer shouldn't stack it
             var entry = S.TurnEntryOf(enemy.Id);
             if (entry == null || !entry.InZone) return;
             float zoneWidth = BattleConfig.BarLength - BattleConfig.ZoneStart;

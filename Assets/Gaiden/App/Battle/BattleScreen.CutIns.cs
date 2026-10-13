@@ -88,7 +88,9 @@ namespace Gaiden.App
             portrait.style.left = -w * 0.25f; portrait.style.right = -w * 0.25f; portrait.style.top = -h * 0.04f; portrait.style.height = h * 2.0f;
             portrait.style.backgroundImage = new StyleBackground(Art.Portrait(u.Def.Id));
             portrait.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Contain);
-            portrait.style.backgroundPositionY = new BackgroundPosition(BackgroundPositionKeyword.Top);
+            var crop = u.Def.Crop;
+            portrait.style.backgroundPositionX = new BackgroundPosition(BackgroundPositionKeyword.Left, Length.Percent(crop?.X ?? 50f));
+            portrait.style.backgroundPositionY = new BackgroundPosition(BackgroundPositionKeyword.Top, Length.Percent(crop?.Y ?? 0f));
             portrait.style.rotate = new Rotate(-tilt); // keep the hero upright inside the tilted window
             portrait.style.unityBackgroundImageTintColor = team == Team.Hero ? Color.white : new Color(1f, 0.88f, 0.88f);
             window.Add(portrait);

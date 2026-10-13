@@ -15,7 +15,11 @@ namespace Gaiden.Core.Battle
             Emit(new TurnStartedEvent { UnitId = enemy.Id });
 
             if (enemy.IsRemains) { RiseAgain(enemy); return; }
+            if (enemy.IsEgg) { Hatch(enemy); return; }
             enemy.TurnsTaken++;
+
+            if (!string.IsNullOrEmpty(enemy.Def.LaysEgg) && enemy.TurnsTaken % Math.Max(1, enemy.Def.EggInterval) == 0)
+                LayEgg(enemy);
 
             var phase = AdvanceBossPhases(enemy);
             if (S.IsOver || !enemy.Alive) return;
@@ -134,6 +138,41 @@ namespace Gaiden.Core.Battle
             u.NoLoot = true;
             Emit(new RoseAgainEvent { RemainsId = remains.Id, UnitId = u.Id, At = u.Pos });
             Announce($"{u.Name} rises again!", u.Id);
+        }
+
+        /// <summary>An egg layer drops a solid egg (§14.8) on a free adjacent tile; it hatches when its own turn arrives.</summary>
+        private void LayEgg(Unit layer)
+        {
+            var def = C.TryClass(layer.Def.LaysEgg);
+            if (def == null) return;
+            var spots = new List<Coord>();
+            foreach (var d in Coord.Cardinals)
+            {
+                var c = layer.Pos + d;
+                if (S.FreeForSpawn(c)) spots.Add(c);
+            }
+            if (spots.Count == 0) return;
+            var at = spots[S.Rng.Range(0, spots.Count)];
+            var egg = SpawnEnemy(def, layer.Level, at.X, at.Y);
+            if (egg == null) return;
+            egg.RisesAs = layer.Def.Id;
+            egg.RisesLevel = layer.Level;
+            Emit(new EggLaidEvent { EggId = egg.Id, FromUnitId = layer.Id, At = at });
+            Announce($"{layer.Name} lays an egg!", layer.Id);
+        }
+
+        /// <summary>An egg whose turn arrives hatches into its real enemy on the same tile, at full HP.</summary>
+        private void Hatch(Unit egg)
+        {
+            var def = C.TryClass(egg.RisesAs);
+            var at = egg.Pos;
+            egg.Hp = 0; egg.OnBoard = false;
+            S.Timeline.RemoveAll(e => e.OwnerId == egg.Id);
+            if (def == null) return;
+            var u = SpawnEnemy(def, egg.RisesLevel, at.X, at.Y);
+            if (u == null) return;
+            Emit(new EggHatchedEvent { EggId = egg.Id, UnitId = u.Id, At = u.Pos });
+            Announce($"{u.Name} hatches!", u.Id);
         }
 
         private void EndEnemyTurn(Unit enemy)

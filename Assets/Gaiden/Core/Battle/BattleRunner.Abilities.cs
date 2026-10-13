@@ -267,21 +267,24 @@ namespace Gaiden.Core.Battle
             }
         }
 
-        /// <summary>Bar weapon swap: the slot's weapon goes in hand at factory durability; the old one takes the slot.</summary>
+        /// <summary>Bar weapon swap: the slot's weapon goes in hand at the durability it was stowed with; the old one takes the slot, keeping its own wear.</summary>
         private void SwapWeapon(Unit hero, AbilitySlot slot)
         {
             var incoming = C.TryItem(slot.WeaponId);
             var outgoing = C.TryItem(hero.WeaponId);
+            int outgoingDurability = hero.WeaponDurability;
+            int incomingDurability = slot.WeaponDurability;
             if (outgoing != null) hero.GearStats = hero.GearStats + outgoing.Stats * -1f;
             if (incoming != null)
             {
                 hero.GearStats = hero.GearStats + incoming.Stats;
                 hero.WeaponId = incoming.Id;
                 hero.WeaponPower = incoming.BaseDamage;
-                hero.WeaponDurability = incoming.Durability;
+                hero.WeaponDurability = incomingDurability;
             }
             Emit(new WeaponSwappedEvent { UnitId = hero.Id, FromWeapon = outgoing?.Id, ToWeapon = incoming?.Id });
             slot.WeaponId = outgoing?.Id;
+            slot.WeaponDurability = outgoingDurability;
         }
 
         /// <summary>Phoenix Down: the first fallen hero returns on the free tile nearest the user.</summary>

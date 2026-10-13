@@ -17,7 +17,8 @@ namespace Gaiden.Core.Battle
     /// </summary>
     public sealed class BattleRecorder
     {
-        public const int SchemaVersion = 1;
+        /// <summary>v2 (2026-10-12): added optional per-turn "skillLevel"/"perfectCommand" (BotSkillProfile demo mode).</summary>
+        public const int SchemaVersion = 2;
 
         private static readonly JsonSerializer Json = JsonSerializer.Create(new JsonSerializerSettings
         {
@@ -65,11 +66,17 @@ namespace Gaiden.Core.Battle
             return events;
         }
 
-        /// <summary>Record a command that was applied elsewhere (the battle screen applies it itself).</summary>
-        public void Add(JObject before, BattleCommand cmd, List<BattleEvent> events, BattleState after)
+        /// <summary>
+        /// Record a command that was applied elsewhere (the battle screen applies it itself).
+        /// <paramref name="perfectCmd"/>, <paramref name="skillLevel"/>: demo/capture only (owner request,
+        /// BotSkillProfile) — when a simulated imperfect player is driving, the strict-best move the same
+        /// decision point would have picked at full skill, recorded alongside what was actually played, so ML
+        /// can learn the cost of imperfect play instead of only ever seeing optimal or only ever seeing noisy.
+        /// </summary>
+        public void Add(JObject before, BattleCommand cmd, List<BattleEvent> events, BattleState after, BattleCommand perfectCmd = null, float? skillLevel = null)
         {
             bool acted = events.Exists(e => e is PlayerControlEvent || e is BattleEndedEvent);
-            turns.Add(new JObject
+            var turn = new JObject
             {
                 ["index"] = turns.Count,
                 ["wave"] = before["wave"],
@@ -84,7 +91,10 @@ namespace Gaiden.Core.Battle
                     ["heroHp"] = new JArray(after.Units.Where(u => u.IsHero).Select(u => u.Alive ? u.Hp : 0)),
                     ["enemiesAlive"] = after.Units.Count(u => u.Alive && u.Team == Team.Enemy && !u.IsRemains),
                 },
-            });
+            };
+            if (skillLevel.HasValue) turn["skillLevel"] = skillLevel.Value;
+            if (perfectCmd != null) turn["perfectCommand"] = Command(perfectCmd);
+            turns.Add(turn);
         }
 
         /// <summary>Close the record with the outcome; returns the finished document.</summary>
@@ -163,7 +173,7 @@ namespace Gaiden.Core.Battle
             ["int"] = st.Intelligence, ["wis"] = st.Wisdom, ["lck"] = st.Luck,
         };
 
-        private static JObject Command(BattleCommand cmd)
+        public static JObject Command(BattleCommand cmd)
         {
             switch (cmd)
             {
@@ -174,7 +184,7 @@ namespace Gaiden.Core.Battle
             }
         }
 
-        private static JArray Events(List<BattleEvent> events)
+        public static JArray Events(List<BattleEvent> events)
         {
             var a = new JArray();
             if (events == null) return a;
@@ -182,7 +192,7 @@ namespace Gaiden.Core.Battle
             {
                 JObject o;
                 try { o = JObject.FromObject(e, Json); }
-                catch (Exception) { o = new JObject(); }
+                catch (Exception ex) { o = new JObject { ["serializeError"] = ex.Message }; }
                 var name = e.GetType().Name;
                 o.AddFirst(new JProperty("type", name.EndsWith("Event") ? name.Substring(0, name.Length - 5) : name));
                 a.Add(o);

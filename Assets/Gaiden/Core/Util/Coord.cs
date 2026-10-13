@@ -25,6 +25,7 @@ namespace Gaiden.Core
         public int Manhattan(Coord o) => Math.Abs(X - o.X) + Math.Abs(Y - o.Y);
         public int Chebyshev(Coord o) => Math.Max(Math.Abs(X - o.X), Math.Abs(Y - o.Y));
         public bool IsCardinalNeighbor(Coord o) => Manhattan(o) == 1;
+        public bool IsDiagonalNeighbor(Coord o) => Chebyshev(o) == 1 && Manhattan(o) == 2;
 
         public bool Equals(Coord o) => X == o.X && Y == o.Y;
         public override bool Equals(object obj) => obj is Coord c && Equals(c);

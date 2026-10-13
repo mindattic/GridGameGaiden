@@ -10,6 +10,14 @@ namespace Gaiden.Core.Battle
         public const int Cols = 6;
         public const int Rows = 8;
 
+        /// <summary>
+        /// Terra Battle-style skill tech: a fast, precise ~45° drag can slip a hero diagonally into an open
+        /// tile, skipping the usual cardinal-only path instead of a softened "corner" rule. Player drags only
+        /// (see <c>BattleScreen.Input.ExtendPath</c>) — enemies/bots never submit a diagonal step. Mutable, not
+        /// const, so it's trivially flippable (`-noDiagonalSlip` at the command line).
+        /// </summary>
+        public static bool DiagonalSlipEnabled = true;
+
         // ── Timeline ────────────────────────────────────────────────────────────────
         public const int TicksPerSecond = 10;
         public const int BarLength = 1000;                 // u = ip / BarLength
@@ -26,10 +34,11 @@ namespace Gaiden.Core.Battle
         /// <summary>Max random head-start IP for icons at wave spawn (staggered entry).</summary>
         public const int SpawnStaggerIp = 250;
 
-        // ── Pushback (§2.3 / §2.7) ─────────────────────────────────────────────────
-        public const float PushbackBaseU = 0.18f;
-        public const float PushbackMaxU = 0.40f;
-        public const int BaseStunTicks = 8;
+        // ── Pushback (§2.3 / §2.7, owner direction 2026-10-11: monsters almost never reached ACT — a pincer's
+        //    hits could each re-trigger pushback on the same in-zone target, repeatedly erasing its progress) ──
+        public const float PushbackBaseU = 0.07f;
+        public const float PushbackMaxU = 0.15f;
+        public const int BaseStunTicks = 4;
 
         // ── Hasten (§2.7.1) ─────────────────────────────────────────────────────────
         public const float DefaultHastenU = 0.30f;
@@ -78,6 +87,12 @@ namespace Gaiden.Core.Battle
 
         // ── Enemy AI (§14.1) ────────────────────────────────────────────────────────
         public const float RetreatHpThreshold = 0.30f;
+
+        // ── Voluntary retreat (§22.2, FFIV-style partial loss, owner direction 2026-10-11) ──
+        /// <summary>A voluntary Retreat (BattlePhase.Retreated) keeps this fraction of the battle's
+        /// as-yet-uncommitted Results.Coins and each item stack (floored). A true party wipe (Defeat)
+        /// still keeps nothing but hard-won XP, unchanged.</summary>
+        public const float RetreatKeepFraction = 0.5f;
 
         // ── Power Amplifier (owner request 2026-10-10, from Terra Battle) ────────────
         /// <summary>Chance per player action that an amplifier appears (when none is on the board)…</summary>

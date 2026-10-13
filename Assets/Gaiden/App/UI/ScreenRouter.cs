@@ -48,6 +48,7 @@ namespace Gaiden.App
         private readonly VisualElement fade;
         private readonly Stack<GameScreen> stack = new Stack<GameScreen>();
         private bool busy;
+        private int transitionToken;
 
         public GameScreen Current => stack.Count > 0 ? stack.Peek() : null;
         public IEnumerable<GameScreen> Stack => stack;
@@ -80,13 +81,14 @@ namespace Gaiden.App
 
         private void Go(Action mutate)
         {
-            if (busy) { mutate(); MountTop(); return; }
+            if (busy) { transitionToken++; mutate(); MountTop(); return; }
             GameApp.I.StartCoroutine(Transition(mutate));
         }
 
         private IEnumerator Transition(Action mutate)
         {
             busy = true;
+            int myToken = ++transitionToken;
             bool hasScreen = host.childCount > 0;
             if (hasScreen)
             {
@@ -94,8 +96,14 @@ namespace Gaiden.App
                 fade.pickingMode = PickingMode.Position;
                 yield return new WaitForSecondsRealtime(0.2f);
             }
-            mutate();
-            MountTop();
+            // A later Go() call may have taken the busy-shortcut above and already applied
+            // its own mutation while this coroutine was waiting out the fade; skip re-applying
+            // this stale one so the screen stack doesn't get mutated/mounted twice.
+            if (myToken == transitionToken)
+            {
+                mutate();
+                MountTop();
+            }
             yield return null;
             fade.RemoveFromClassList("fade--on");
             fade.pickingMode = PickingMode.Ignore;

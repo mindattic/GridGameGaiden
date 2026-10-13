@@ -1,4 +1,5 @@
-"""Plays a session on an Android device/emulator through the dev-build automation endpoint (adb forward tcp:7777)."""
+"""Plays a session on an Android device/emulator through the dev-build automation endpoint
+(adb forward tcp:7787 tcp:7787 — or forward to match GAIDEN_PORT if you've overridden it)."""
 import json, sys, time, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import harness as h
@@ -23,6 +24,6 @@ check("the battle plays to its results on Android", h.call("state")["screen"] ==
 h.call("clicktext", text="Continue"); time.sleep(3)
 save = h.call("state").get("save", {})
 check("the result is saved (gold earned, stage cleared)", save.get("HighestClearedStage", -1) >= 0 and save.get("Gold", 0) > 200, json.dumps(save)[:200])
-errs = [l for l in h.call("logs") if l.startswith(("Error", "Exception"))]
+errs = [l for l in h.call("logs") if l.startswith(("Error", "Exception", "Assert"))]
 check("no errors or exceptions logged", not errs, " | ".join(e[:150] for e in errs[:4]))
 print(f"{sum(res)}/{len(res)} Android checks passed"); sys.exit(0 if all(res) else 1)

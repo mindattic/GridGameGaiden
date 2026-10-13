@@ -40,6 +40,7 @@ namespace Gaiden.App
         {
             var w = El("window " + (classes ?? ""), parent);
             w.style.backgroundImage = new StyleBackground(Art.Window);
+            w.style.borderTopColor = w.style.borderBottomColor = w.style.borderLeftColor = w.style.borderRightColor = Art.ThemeAccent;
             if (title != null) Text(title, "window-title", w);
             return w;
         }
@@ -318,7 +319,7 @@ namespace Gaiden.App
             if (!string.IsNullOrEmpty(d.OnHitBuff)) t.Add($"hits may inflict {c.TryBuff(d.OnHitBuff)?.Name ?? d.OnHitBuff} ({Mathf.RoundToInt(d.OnHitChance * 100)}%)");
             if (d.DeathBurst > 0) t.Add($"explodes when killed ({d.DeathBurst})");
             foreach (var id in d.Abilities)
-                if (c.TryAbility(id) is AbilityDef a && a.Kind == AbilityKind.Passive) t.Add(a.Name.ToLowerInvariant());
+                if (c.TryAbility(id) is AbilityDef a && a.Kind == AbilityKind.Passive && !string.IsNullOrEmpty(a.Name)) t.Add(a.Name.ToLowerInvariant());
             if (d.ImmuneBuffs != null && d.ImmuneBuffs.Count > 0) t.Add("immune to " + string.Join("/", d.ImmuneBuffs));
             return t.Count == 0 ? "" : char.ToUpper(t[0][0]) + string.Join(" · ", t).Substring(1);
         }

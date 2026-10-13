@@ -53,6 +53,9 @@ namespace Gaiden.Core.Battle
             S.Clock++;
             ticksSinceReport++;
 
+            ResolvePendingSpawns();
+            if (S.IsOver) return;
+
             foreach (var e in S.Timeline)
             {
                 var owner = S.UnitById(e.OwnerId);

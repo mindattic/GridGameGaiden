@@ -39,10 +39,13 @@ namespace Gaiden.Meta
         public static readonly int[] UnlockThresholds = { };
         public const int StartingSlots = MaxBarSlots;
 
-        public static SaveData NewGame(ContentDb c, string name)
+        public static SaveData NewGame(ContentDb c, string name) => NewGame(c, name, StartingRoster);
+
+        /// <summary>A custom party (e.g. from the character-select screen) in place of the fixed starting five.</summary>
+        public static SaveData NewGame(ContentDb c, string name, IReadOnlyList<string> party)
         {
             var s = new SaveData { Name = string.IsNullOrWhiteSpace(name) ? "Lightbearer" : name.Trim(), Gold = StartingGold };
-            foreach (var id in StartingRoster)
+            foreach (var id in party)
             {
                 if (c.TryClass(id) == null) continue;
                 var h = NewHero(c, id);
@@ -121,6 +124,8 @@ namespace Gaiden.Meta
     {
         public bool Victory;
         public bool Escaped;
+        /// <summary>A voluntary pause-menu Retreat (FFIV-style partial loss, §22.2) — distinct from Defeat.</summary>
+        public bool Retreated;
         public string StageId;
         public int Gold;
         public int XpEach;
@@ -304,7 +309,13 @@ namespace Gaiden.Meta
         public static BattleReport Commit(ContentDb c, SaveData s, BattleState battle)
         {
             var r = battle.Results;
-            var rep = new BattleReport { Victory = battle.Phase == BattlePhase.Victory, Escaped = battle.Phase == BattlePhase.Escaped, StageId = battle.Stage.Id };
+            var rep = new BattleReport
+            {
+                Victory = battle.Phase == BattlePhase.Victory,
+                Escaped = battle.Phase == BattlePhase.Escaped,
+                Retreated = battle.Phase == BattlePhase.Retreated,
+                StageId = battle.Stage.Id,
+            };
             int slotsBefore = Progression.UnlockedSlots(s);
 
             foreach (var kv in r.ItemsConsumed) s.AddItem(kv.Key, -kv.Value);
@@ -316,14 +327,7 @@ namespace Gaiden.Meta
                 rep.Gold = r.Coins;
                 s.Gold += r.Coins;
                 s.LifetimeCoins += r.Coins;
-                foreach (var kv in r.Items)
-                {
-                    var def = c.TryItem(kv.Key);
-                    int room = def == null ? kv.Value : Math.Max(0, def.MaxStack - s.Count(kv.Key));
-                    int keep = Math.Min(room, kv.Value), extra = kv.Value - keep;
-                    if (keep > 0) { s.AddItem(kv.Key, keep); rep.Items[kv.Key] = keep; }
-                    if (extra > 0 && def != null) { int g = extra * Shop.SellPrice(def); s.Gold += g; rep.Gold += g; rep.AutoSold += extra; }
-                }
+                GrantItems(c, s, rep, r.Items);
                 foreach (var kv in r.Kills) Entry(s, kv.Key).Defeated += kv.Value;
 
                 var heroes = battle.Units.Where(u => u.IsHero).ToList();
@@ -352,7 +356,7 @@ namespace Gaiden.Meta
                     if (r.WeaponDurability.TryGetValue(u.Def.Id, out var dur))
                     {
                         if (dur < 0 && h.WeaponId != null && u.WeaponId == null) { h.WeaponId = null; h.WeaponDurability = 0; h.WeaponRepairs = 0; }
-                        else if (dur >= 0) h.WeaponDurability = dur;
+                        else if (dur >= 0 && h.WeaponId != null) h.WeaponDurability = dur;
                     }
                     if (r.ArmorDurability.TryGetValue(u.Def.Id, out var adur))
                     {
@@ -382,23 +386,29 @@ namespace Gaiden.Meta
                     if (h != null) h.Hp = u.Alive ? (u.Hp >= u.MaxHp ? 0 : u.Hp) : 1;
                 }
             }
+            else if (rep.Retreated)
+            {
+                // FFIV-style partial loss (owner direction 2026-10-11): a voluntary retreat keeps a
+                // fraction of this fight's uncommitted gold/loot plus hard-won XP — better than a wipe,
+                // but not free. Still resets to full HP like a Defeat (you fall back and recover).
+                foreach (var id in s.Party) { var h = s.Hero(id); if (h != null) h.Hp = 0; }
+                int keepCoins = (int)Math.Floor(r.Coins * BattleConfig.RetreatKeepFraction);
+                rep.Gold = keepCoins;
+                s.Gold += keepCoins;
+                s.LifetimeCoins += keepCoins;
+                var kept = new Dictionary<string, int>();
+                foreach (var kv in r.Items)
+                {
+                    int n = (int)Math.Floor(kv.Value * BattleConfig.RetreatKeepFraction);
+                    if (n > 0) kept[kv.Key] = n;
+                }
+                GrantItems(c, s, rep, kept);
+                GrantHardWonXp(c, s, battle, r, rep);
+            }
             else
             {
                 foreach (var id in s.Party) { var h = s.Hero(id); if (h != null) h.Hp = 0; } // defeat = retry at full (§22.2)
-                // Hard-won experience (amended 2026-10-11): the XP of every foe felled is kept, so each retry of a long
-                // gauntlet leaves the party stronger. Gold and loot are still lost.
-                var heroes = battle.Units.Where(u => u.IsHero && !u.IsGuest).ToList();
-                rep.XpEach = heroes.Count > 0 ? r.Xp : 0;
-                foreach (var u in heroes)
-                {
-                    var h = s.Hero(u.Def.Id);
-                    if (h == null || rep.XpEach <= 0) continue;
-                    int before = Progression.Level(h);
-                    h.TotalXp += rep.XpEach;
-                    int after = Progression.Level(h);
-                    if (after > before) rep.LevelUps.Add((h.ClassId, before, after));
-                }
-                foreach (var kv in r.Kills) Entry(s, kv.Key).Defeated += kv.Value;
+                GrantHardWonXp(c, s, battle, r, rep);
             }
             // Guests: alive at a victory → they join the caravan; fallen at any point → lost forever.
             foreach (var g in battle.Units.Where(u => u.IsGuest))
@@ -417,6 +427,38 @@ namespace Gaiden.Meta
             s.LastStage = battle.Stage.Id;
             s.UpdatedUtc = DateTime.UtcNow;
             return rep;
+        }
+
+        /// <summary>Grants items into the save, respecting stack caps (overflow auto-sells, US-245). Shared by
+        /// Victory's full haul and a voluntary Retreat's partial one.</summary>
+        private static void GrantItems(ContentDb c, SaveData s, BattleReport rep, Dictionary<string, int> items)
+        {
+            foreach (var kv in items)
+            {
+                var def = c.TryItem(kv.Key);
+                int room = def == null ? kv.Value : Math.Max(0, def.MaxStack - s.Count(kv.Key));
+                int keep = Math.Min(room, kv.Value), extra = kv.Value - keep;
+                if (keep > 0) { s.AddItem(kv.Key, keep); rep.Items[kv.Key] = keep; }
+                if (extra > 0 && def != null) { int g = extra * Shop.SellPrice(def); s.Gold += g; rep.Gold += g; rep.AutoSold += extra; }
+            }
+        }
+
+        /// <summary>Hard-won experience (amended 2026-10-11): the XP of every foe felled is kept on a non-victory
+        /// end, so each retry of a long gauntlet leaves the party stronger. Shared by Defeat and Retreat.</summary>
+        private static void GrantHardWonXp(ContentDb c, SaveData s, BattleState battle, BattleResults r, BattleReport rep)
+        {
+            var heroes = battle.Units.Where(u => u.IsHero && !u.IsGuest).ToList();
+            rep.XpEach = heroes.Count > 0 ? r.Xp : 0;
+            foreach (var u in heroes)
+            {
+                var h = s.Hero(u.Def.Id);
+                if (h == null || rep.XpEach <= 0) continue;
+                int before = Progression.Level(h);
+                h.TotalXp += rep.XpEach;
+                int after = Progression.Level(h);
+                if (after > before) rep.LevelUps.Add((h.ClassId, before, after));
+            }
+            foreach (var kv in r.Kills) Entry(s, kv.Key).Defeated += kv.Value;
         }
 
         private static BestiaryEntry Entry(SaveData s, string id)
@@ -450,13 +492,14 @@ namespace Gaiden.Meta
             }
             var hero = s.Hero(heroId);
             if (hero == null) return Result.Fail("Pick a hero");
+            string heroName = c.TryClass(hero.ClassId)?.Name ?? hero.ClassId;
             int max = Progression.Preview(c, hero).MaxHp;
-            if (hero.Hp <= 0 || hero.Hp >= max) return Result.Fail($"{c.Class(hero.ClassId).Name} is already healthy");
+            if (hero.Hp <= 0 || hero.Hp >= max) return Result.Fail($"{heroName} is already healthy");
             int healed = Math.Min(max - hero.Hp, item.BaseHealing);
             hero.Hp += healed;
             if (hero.Hp >= max) hero.Hp = 0;
             s.AddItem(itemId, -1);
-            return Result.Success($"{c.Class(hero.ClassId).Name} recovers {healed} HP");
+            return Result.Success($"{heroName} recovers {healed} HP");
         }
     }
 
@@ -764,13 +807,14 @@ namespace Gaiden.Meta
         /// <summary>What a hero could learn: its class list plus the general spell catalog (hero spells only).</summary>
         public static List<AbilityDef> Learnable(ContentDb c, HeroSave h)
         {
-            var def = c.Class(h.ClassId);
+            var def = c.TryClass(h.ClassId);
             var set = new List<AbilityDef>();
-            foreach (var id in def.Abilities)
-            {
-                var a = c.TryAbility(id);
-                if (a != null && IsHeroUsable(a) && !h.Known.Contains(a.Id) && !set.Contains(a)) set.Add(a);
-            }
+            if (def != null)
+                foreach (var id in def.Abilities)
+                {
+                    var a = c.TryAbility(id);
+                    if (a != null && IsHeroUsable(a) && !h.Known.Contains(a.Id) && !set.Contains(a)) set.Add(a);
+                }
             foreach (var a in c.Abilities.Values)
                 if (a.Kind == AbilityKind.Spell && IsHeroUsable(a) && !h.Known.Contains(a.Id) && !set.Contains(a)) set.Add(a);
             return set.OrderBy(a => Price(a)).ThenBy(a => a.Name).ToList();
