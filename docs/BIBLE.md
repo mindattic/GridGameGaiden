@@ -123,11 +123,11 @@ GridGame Gaiden is **NOT**:
 | `recipes.json` | 116 `RecipeDef`s — station (Forge / Alchemy / Enchant), inputs, gold, optional base item, result |
 | `droptables.json` | 16 `DropTableDef`s — optional coin range, weighted item entries (chance, min, max) |
 | `stages.json` | 19 `StageDef`s — 15 campaign + 4 test (`IsTest`), theme, waves of `SpawnDef` (class, level, optional fixed tile) |
-| `campaign.json` | 5 themes × 3 stages, in play order, with each theme's story-crawl text |
+| `campaign.json` | 5 main themes × 3 stages + 5 postgame themes × 2 bonus stages (added 2026-10-13, GG-T7/T10; each bonus stage carries a `StageDef.LevelOverride` instead of relying on flattened-index `RecommendedLevel`), in play order, with each theme's story-crawl text |
 | `traps.json` | 1 `TrapDef` (`venom_snare`: 6 dmg + Poisoned, lay chance 0.45) |
 | `bounties.json` | 5 `BountyDef`s — target class, kill count, gold + item reward |
 | `summon.json` | Summon Circle pool (7 classes), base price 250, step 250 |
-| `enchants.json` | 4 `EnchantDef`s (Flame/Frost/Spark/Shadow) — reference data; the actual enchant crafts are `Station: Enchant` recipes |
+| `enchants.json` | 6 `EnchantDef`s (Flame/Frost/Spark/Shadow/Poison/Holy, the last 2 added 2026-10-13) — reference data; the actual enchant crafts are `Station: Enchant` recipes |
 
 ### 4.5 The command → event contract
 
@@ -287,7 +287,7 @@ The game is a **deterministic pure-C# simulation** (`Gaiden.Core`) with a **code
 | One **session** (5–8 stages) | 20–30 min | A commute, a couch break |
 | Full **playthrough** (15 campaign stages + farming) | 6–10 h | A weekend campaign |
 
-**Amended 2026-10-09:** battle length is measured in actions because wall-clock time now depends on the player and on Settings → Battle speed. `BalanceReport.Campaign_pacing_table` is the tuning dashboard: it plays the 15-stage campaign in order with natural progression (XP, carried wounds, Inn, retries) for bots of three skill levels, with and without `CampRoutine`, and prints win %, average actions and HP left per stage.
+**Amended 2026-10-09:** battle length is measured in actions because wall-clock time now depends on the player and on Settings → Battle speed. `BalanceReport.Campaign_pacing_table` is the tuning dashboard: it plays the campaign (15 main + 10 postgame stages, as of 2026-10-13) in order with natural progression (XP, carried wounds, Inn, retries) for bots of three skill levels, with and without `CampRoutine`, and prints win %, average actions and HP left per stage.
 
 ---
 
@@ -1917,15 +1917,24 @@ Player hero drags only (never AI — enemies/bots use the separate `StepEnemy`/`
 
 ### 25.13 Roles (added 2026-10-11, owner direction: "a healer should need to heal, a magician should have ranged spells, a tank should be able to taunt")
 
-Every hero class has a `Role` (validated): **Tank** (9), **Healer** (8), **Mage** (6), **Striker** (31), **Support** (8). The role sets the default bar and the learn list; caster power (§13.1.5) makes the stats matter.
+Every hero class has a `Role` (validated): **Tank** (9), **Healer** (8), **Mage** (6), **Striker** (31), **Support** (8), **Ranged** (2). The role sets the default bar and the learn list; caster power (§13.1.5) makes the stats matter.
 
-| Role | Default bar | Job |
-|---|---|---|
-| Tank | Taunt, Shield Bash, potion, Scan, Silence | draw the enemies, protect casters |
-| Healer | Heal, Mass Heal, potion, Antidote, Regen | mend and cleanse (WIS) |
-| Mage | Fireball, Frost, potion, Bolt, Meteor (dark mages: Poison/Sleep) | ranged elemental damage (INT) |
-| Striker | Cleave, War Cry, potion, Mug, Steal (ninjas: Teleport; thieves: Poison) | pincer damage, Cleave (24, adjacent, CD 2), War Cry (party Empowered, CD 4) (STR) |
-| Support | Quicken, Slow, potion, War Cry, Scan (or Regen kits) | tempo |
+**Amended 2026-10-13 — archetype sub-kits:** each role (except the 2-member Ranged, not yet subdivided) splits into 3-5 WoW-style sub-archetypes that play differently within the same role (owner: "every combination of tanking type... find Paladin, Warrior, and Druid do things differently"). Every class keeps slot 0 (the role's shared baseline, e.g. Tank's `taunt`) and slot 2 (`item:x_potion`) in common; slots 1 and 4 carry two bespoke abilities per sub-archetype, and slot 3 is the class's own unique signature (unchanged from the original per-class kit pass). A fourth bespoke ability per cluster ("Core") is learnable but not in the starting bar, so there's room to customize without disturbing the default. Sub-archetypes: Tank — Aegis Guard (pure mitigation + cleanse), Juggernaut (knockback aggression), Warlord (party buffs), Deathguard (drain/poison); Healer — Aegis Wardens (preemptive wards), Hexmenders (damage-for-heal), Skirmish-Menders (mobile support); Support — Primal Pack, Tempo Weavers, Field Engineers; Mage — Spellblades, Field Casters; Striker — Berserkers, Duelists, Skirmishers, Combo Brawlers, Attrition, Shadowsteps, Opportunists, Brawlers. Full id list: `tools/icons.json`'s `ability` map, or `docs/USER_STORIES.md` ticket GG-T3.
+
+**Amended 2026-10-13 — a role-wide invariant, found by live play (GG-T14):** every Tank's default bar must keep at least one damage-dealing ability. A lone tank (party wiped around it) can't pincer by itself, so if every bar slot is non-damage or on cooldown/unaffordable, it can soft-lock against a weak enemy neither side can finish — this actually happened to the Aegis Guard cluster's first cut (fixed by swapping its Capstone for its own damage-dealing Core ability). Asserted by `SynergyTests.Every_hero_has_a_role_and_kits_match_it`.
+
+**Amended 2026-10-13 — Ranged (new 6th role):** a precision-attacker archetype distinct from Striker (melee, `AdjacentOnly`) and Mage (AoE elemental) — no ability in a Ranged hero's bar may be `AdjacentOnly`. Two classes so far, `hexsniper` and `hexwarden`, reusing the portraits of the existing `Ranged`-tagged enemies `hag00`/`hag01` (`AttackRange` 3) rather than new art — see GG-T11.
+
+Universal cross-class pool (added 2026-10-13, GG-T4): `AbilityDef.Universal` — any hero can learn a `Universal`-flagged Skill regardless of role, extending the pre-existing rule that every `Spell` is already learnable by any class (`Abilities.Learnable`).
+
+| Role | Job |
+|---|---|
+| Tank | draw the enemies, protect casters, at least one damage option always in the bar |
+| Healer | mend and cleanse (WIS) |
+| Mage | ranged elemental AoE damage (INT) |
+| Striker | pincer damage, melee skills (STR) |
+| Support | tempo — Quicken allies, Slow foes, rally the party |
+| Ranged | precision single-target/line damage that never needs to be adjacent |
 
 The starting trio is a full triangle: Paladin (Tank), Barbarian (Striker), Cleric (Healer). Role badges show on the Camp cards, Party, Status (with a one-line "what it's for") and the battle panel. The Abilities screen can **move** a slot along the bar (`Abilities.Swap`). *(Tests: `Every_hero_has_a_role_and_kits_match_it`, `The_bar_can_be_reordered_within_unlocked_slots`.)*
 
