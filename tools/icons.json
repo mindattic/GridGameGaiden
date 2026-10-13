@@ -612,6 +612,318 @@
     "vampire_enervate": [
       "delapouite/vampire-dracula",
       "shadow"
+    ],
+    "aegisguard_sacred_challenge": [
+      "lorc/beams-aura",
+      "holy"
+    ],
+    "aegisguard_judgment_of_warding": [
+      "lorc/beams-aura",
+      "holy"
+    ],
+    "aegisguard_hands_of_mercy": [
+      "lorc/beams-aura",
+      "holy"
+    ],
+    "juggernaut_war_stomp": [
+      "lorc/wolf-howl",
+      "crimson"
+    ],
+    "juggernaut_unstoppable_momentum": [
+      "lorc/beams-aura",
+      "holy"
+    ],
+    "juggernaut_overrun": [
+      "lorc/fist",
+      "bronze"
+    ],
+    "warlord_battle_cry": [
+      "lorc/wolf-howl",
+      "crimson"
+    ],
+    "warlord_rally_point": [
+      "lorc/crown",
+      "gold"
+    ],
+    "warlord_marked_for_warband": [
+      "lorc/magnifying-glass",
+      "silver"
+    ],
+    "deathguard_mana_siphon": [
+      "lorc/checked-shield",
+      "steel"
+    ],
+    "deathguard_venomous_grip": [
+      "lorc/checked-shield",
+      "steel"
+    ],
+    "deathguard_dark_communion": [
+      "delapouite/healing",
+      "heal"
+    ],
+    "aegiswardens_preemptiveward": [
+      "lorc/beams-aura",
+      "holy"
+    ],
+    "aegiswardens_cleansingvigil": [
+      "lorc/beams-aura",
+      "holy"
+    ],
+    "aegiswardens_sanctuaryrite": [
+      "lorc/beams-aura",
+      "holy"
+    ],
+    "hexmenders_thornedhex": [
+      "delapouite/healing",
+      "heal"
+    ],
+    "hexmenders_harmintohope": [
+      "delapouite/healing",
+      "heal"
+    ],
+    "hexmenders_mirrorcurse": [
+      "delapouite/healing",
+      "heal"
+    ],
+    "skirmishmenders_guardiansrush": [
+      "delapouite/healing",
+      "heal"
+    ],
+    "skirmishmenders_flowingcurrent": [
+      "delapouite/healing",
+      "heal"
+    ],
+    "skirmishmenders_coveringwithdrawal": [
+      "delapouite/healing",
+      "heal"
+    ],
+    "primalpack_challenge": [
+      "lorc/wolf-howl",
+      "crimson"
+    ],
+    "primalpack_rally": [
+      "lorc/crown",
+      "gold"
+    ],
+    "primalpack_denmother": [
+      "lorc/checked-shield",
+      "steel"
+    ],
+    "tempoweave_shortcut": [
+      "lorc/fist",
+      "bronze"
+    ],
+    "tempoweave_stumble": [
+      "lorc/snail",
+      "earth"
+    ],
+    "tempoweave_swap": [
+      "lorc/teleport",
+      "arcane"
+    ],
+    "fieldeng_mine": [
+      "lorc/thunderball",
+      "spark"
+    ],
+    "fieldeng_patch": [
+      "lorc/crossed-swords",
+      "steel"
+    ],
+    "fieldeng_overdrive": [
+      "lorc/sprint",
+      "gold"
+    ],
+    "hexweaver_festeringmark": [
+      "lorc/poison-gas",
+      "poison"
+    ],
+    "hexweaver_curseoffate": [
+      "lorc/ghost",
+      "shadow"
+    ],
+    "hexweaver_bloodharvest": [
+      "delapouite/healing",
+      "heal"
+    ],
+    "spellblade_quickstrike": [
+      "lorc/crossed-swords",
+      "steel"
+    ],
+    "spellblade_overchannel": [
+      "lorc/magnifying-glass",
+      "silver"
+    ],
+    "spellblade_followthrough": [
+      "lorc/sprint",
+      "gold"
+    ],
+    "fieldcaster_trapline": [
+      "lorc/fist",
+      "bronze"
+    ],
+    "fieldcaster_wardgrid": [
+      "lorc/beams-aura",
+      "holy"
+    ],
+    "fieldcaster_resupplydrone": [
+      "delapouite/healing",
+      "heal"
+    ],
+    "berserker_wildswing": [
+      "lorc/checked-shield",
+      "steel"
+    ],
+    "berserker_skullrattle": [
+      "lorc/crossed-swords",
+      "steel"
+    ],
+    "berserker_lastmanswinging": [
+      "lorc/crossed-swords",
+      "steel"
+    ],
+    "duelist_probingthrust": [
+      "lorc/checked-shield",
+      "steel"
+    ],
+    "duelist_guardstance": [
+      "lorc/checked-shield",
+      "steel"
+    ],
+    "duelist_decisivecut": [
+      "lorc/checked-shield",
+      "steel"
+    ],
+    "skirmisher_blindside": [
+      "darkzaitzev/smoke-bomb",
+      "shadow"
+    ],
+    "skirmisher_hitandrun": [
+      "darkzaitzev/smoke-bomb",
+      "shadow"
+    ],
+    "skirmisher_runningriot": [
+      "lorc/sprint",
+      "gold"
+    ],
+    "combobrawler_openingjab": [
+      "lorc/magnifying-glass",
+      "silver"
+    ],
+    "combobrawler_onetwoflurry": [
+      "lorc/magnifying-glass",
+      "silver"
+    ],
+    "combobrawler_knockoutcombo": [
+      "lorc/sprint",
+      "gold"
+    ],
+    "attrition_bloodletting": [
+      "delapouite/healing",
+      "heal"
+    ],
+    "attrition_dreadaura": [
+      "lorc/beams-aura",
+      "holy"
+    ],
+    "attrition_soulfeast": [
+      "delapouite/healing",
+      "heal"
+    ],
+    "duelist_riposte_thrust": [
+      "lorc/snail",
+      "earth"
+    ],
+    "duelist_exploit_opening": [
+      "lorc/magnifying-glass",
+      "silver"
+    ],
+    "duelist_cut_the_casting_hand": [
+      "lorc/sword-wound",
+      "crimson"
+    ],
+    "shadowstep_fade_step": [
+      "lorc/ghost",
+      "shadow"
+    ],
+    "shadowstep_smoke_veil": [
+      "lorc/ghost",
+      "shadow"
+    ],
+    "shadowstep_vanishing_cut": [
+      "lorc/ghost",
+      "shadow"
+    ],
+    "opportunist_exploit": [
+      "lorc/magnifying-glass",
+      "silver"
+    ],
+    "opportunist_chain_the_opening": [
+      "lorc/magnifying-glass",
+      "silver"
+    ],
+    "opportunist_collect_the_debt": [
+      "sbed/regeneration",
+      "heal"
+    ],
+    "brawler_guard_break": [
+      "lorc/checked-shield",
+      "steel"
+    ],
+    "brawler_wide_cleave": [
+      "lorc/teleport",
+      "arcane"
+    ],
+    "brawler_second_wind": [
+      "delapouite/sparkles",
+      "gold"
+    ],
+    "second_wind": [
+      "delapouite/healing",
+      "heal"
+    ],
+    "sprint": [
+      "lorc/sprint",
+      "gold"
+    ],
+    "opportunist": [
+      "lorc/magnifying-glass",
+      "silver"
+    ],
+    "guard_stance": [
+      "lorc/checked-shield",
+      "steel"
+    ],
+    "adrenaline_rush": [
+      "lorc/sprint",
+      "gold"
+    ],
+    "focus_breath": [
+      "delapouite/sparkles",
+      "gold"
+    ],
+    "disengage": [
+      "delapouite/night-sleep",
+      "sleep"
+    ],
+    "feint": [
+      "lorc/fist",
+      "bronze"
+    ],
+    "bolster": [
+      "lorc/wolf-howl",
+      "crimson"
+    ],
+    "shake_it_off": [
+      "delapouite/sparkles",
+      "gold"
+    ],
+    "last_stand": [
+      "delapouite/sparkles",
+      "gold"
+    ],
+    "pressure_point": [
+      "lorc/teleport",
+      "arcane"
     ]
   },
   "item": {

@@ -392,3 +392,7 @@ Open design questions that gate future stories live in [BIBLE §29](BIBLE.md#29-
 |---|---|---|---|---|---|
 | GG-T1 | 2026-10-12 | docs | closed | Start the permanent ticket log in USER_STORIES.md | — |
 | GG-T2 | 2026-10-12 | chore | closed | Gitignore local scratch art (content-drafts, portrait-repair working copies) so ~270 MB of PNGs never reaches LFS | — |
+| GG-T3 | 2026-10-13 | feature | closed | Archetype sub-kit pass: 3-5 sub-archetypes per role (Tank/Healer/Support/Mage/Striker), 2 new bespoke abilities per cluster in DefaultLoadout slots 1+4 (slot 0 role baseline kept per SynergyTests), 66 new abilities total | `Every_hero_has_a_role_and_kits_match_it`, `Every_hero_ability_resolves_against_a_live_board`, `CatalogTests.Every_class_can_be_instantiated_and_has_art_reference` |
+| GG-T4 | 2026-10-13 | feature | closed | Universal cross-class Skill pool: `AbilityDef.Universal` flag + `Abilities.Learnable` now includes universal Skills for any role (previously only Spells were cross-class); 12 new universal abilities | `ContentAndSoakTests.Real_content_loads_and_cross_references_resolve` |
+| GG-T5 | 2026-10-13 | feature | closed | Wire Scan/Cleanse(dispel)/Hasten-only spells to bespoke gold VFX bursts instead of the generic purple ring; BIBLE §6.1/§6.2/§23.2.2/§7 stale-doc fixes | full dotnet suite (365/365) |
+| GG-T6 | 2026-10-13 | chore | closed | Icon mappings + generated pixel icons (`tools/icons.json`, `tools/make_icons.py`) for all 78 new abilities, reusing only already-cached SVG silhouettes (no network fetch) | `tools/check_assets.py` |

@@ -232,6 +232,10 @@ namespace Gaiden.Core.Content
         public string ImpactVfx;
         public string LingerVfx;
         public string Sfx;
+        /// <summary>Class-agnostic Skill: learnable by any hero regardless of class, like every Spell already is
+        /// (<see cref="Gaiden.Meta.MetaServices.Abilities.Learnable"/>). Ignored on Spell/Passive, which already
+        /// have their own universal/owning-class rules.</summary>
+        public bool Universal;
     }
 
     public sealed class BuffDef

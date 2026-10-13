@@ -1203,10 +1203,21 @@ namespace Gaiden.App
             });
             foreach (var (glow, core) in heads.Values) { glow.RemoveFromHierarchy(); core.RemoveFromHierarchy(); }
             App.Audio.Sfx("whoosh", 0.5f, 1.3f);
-            foreach (var t in targets) ImpactSplash(BoardView.CenterOf(t.Pos, t.W, t.H), c, a.BaseDamage > 0 ? 0.8f : 1f);
-            if (a.BaseDamage <= 0) App.Audio.Sfx("splash", 0.6f, 1.2f);
+            // Scan and pure cleanse/hasten utility spells read as their own bespoke burst rather than the
+            // generic ring (bible §6.2 future-pass VFX wiring) — plain damage/heal/debuff spells keep it.
+            bool isCleanse = a.BaseDamage <= 0 && a.BaseHeal <= 0 && (a.RemovesDebuffs || a.RemovesBuff != null);
+            bool isHastenOnly = a.BaseDamage <= 0 && a.BaseHeal <= 0 && a.HastenU > 0f && a.ApplyBuff == null;
+            foreach (var t in targets)
+            {
+                var at = BoardView.CenterOf(t.Pos, t.W, t.H);
+                if (a.IsScan) App.StartCoroutine(ScanBurst(at));
+                else if (isCleanse) App.StartCoroutine(CleanseBurst(at));
+                else if (isHastenOnly) App.StartCoroutine(HastenBurst(at));
+                else ImpactSplash(at, c, a.BaseDamage > 0 ? 0.8f : 1f);
+            }
+            if (a.BaseDamage <= 0 && !a.IsScan) App.Audio.Sfx("splash", 0.6f, 1.2f);
             foreach (var kv in ends) strikeFrom[kv.Key] = kv.Value;
-            if (a.BaseHeal > 0 || a.Filter == TargetFilter.AllyOnly)
+            if (a.BaseHeal > 0 || (a.Filter == TargetFilter.AllyOnly && !isCleanse && !isHastenOnly && !a.IsScan))
                 foreach (var t in targets) App.StartCoroutine(HealBurst(BoardView.CenterOf(t.Pos, t.W, t.H)));
         }
 
@@ -1241,7 +1252,66 @@ namespace Gaiden.App
             if (a.DamageType != DamageType.Physical && a.DamageType != DamageType.Arcane) return ColorFor(a.DamageType);
             var b = App.Content.TryBuff(a.ApplyBuff);
             if (b != null) return Art.HexColor(b.Color, Art.SpellColor(id));
+            // Non-damage utility spells read gold (scan's god-rays, cleanse's breaking chains, hasten's sparkle)
+            // instead of falling through to a generic arcane purple (bible §6.2 future-pass VFX wiring).
+            if (a.IsScan || a.RemovesDebuffs || a.RemovesBuff != null || a.HastenU > 0f) return new Color(1f, 0.85f, 0.4f);
             return Art.SpellColor(id);
+        }
+
+        /// <summary>Scan: vertical light rays sweep down over the target as its stats are read (bible §6.2 GodRays/ScanRays).</summary>
+        private IEnumerator ScanBurst(Vector2 at)
+        {
+            App.Audio.Sfx("cast", 0.6f, 1.5f);
+            var gold = new Color(1f, 0.92f, 0.55f);
+            for (int i = 0; i < 6; i++)
+            {
+                var p = Particle(10f, gold);
+                float x0 = at.x + (i - 2.5f) * 24f;
+                App.StartCoroutine(Tween.Run(0.4f, k =>
+                {
+                    p.style.left = x0 - 5; p.style.top = at.y - 160f + 220f * k - 5;
+                    p.style.opacity = Mathf.Sin(k * Mathf.PI);
+                    if (k >= 1f) p.RemoveFromHierarchy();
+                }));
+            }
+            yield return Tween.Run(0.35f, k => { board.Lines.Rings.Clear(); board.Lines.Ring(at, 20f + 90f * k, new Color(gold.r, gold.g, gold.b, 1f - k), 6f); });
+            board.Lines.Rings.Clear(); board.Lines.MarkDirtyRepaint();
+        }
+
+        /// <summary>Cleanse / dispel: every debuff burns off as breaking gold motes (bible §6.2 AntidoteSparkle).</summary>
+        private IEnumerator CleanseBurst(Vector2 at)
+        {
+            App.Audio.Sfx("heal", 0.7f, 1.3f);
+            var gold = new Color(1f, 0.88f, 0.5f);
+            for (int i = 0; i < 10; i++)
+            {
+                var p = Particle(Random.Range(12f, 20f), gold);
+                float ang = Random.Range(0f, 6.28f), dist = Random.Range(50f, 110f);
+                App.StartCoroutine(Tween.Run(0.45f, k =>
+                {
+                    var pos = at + new Vector2(Mathf.Cos(ang), Mathf.Sin(ang)) * dist * Tween.EaseOut(k) + Vector2.up * (-40f * k);
+                    p.style.left = pos.x - 9; p.style.top = pos.y - 9; p.style.opacity = 1f - k; if (k >= 1f) p.RemoveFromHierarchy();
+                }));
+            }
+            yield return Tween.Wait(0.3f);
+        }
+
+        /// <summary>Hasten-only spells (Quicken): a gold updraft nudges the target's timeline icon forward.</summary>
+        private IEnumerator HastenBurst(Vector2 at)
+        {
+            App.Audio.Sfx("cast", 0.6f, 1.6f);
+            var gold = new Color(1f, 0.82f, 0.3f);
+            for (int i = 0; i < 8; i++)
+            {
+                var p = Particle(Random.Range(10f, 16f), gold);
+                float x0 = Random.Range(-40f, 40f);
+                App.StartCoroutine(Tween.Run(0.4f, k =>
+                {
+                    p.style.left = at.x + x0 - 7; p.style.top = at.y - 120f * Tween.EaseOut(k) - 7;
+                    p.style.opacity = 1f - k; if (k >= 1f) p.RemoveFromHierarchy();
+                }));
+            }
+            yield return Tween.Wait(0.25f);
         }
 
         private static Color ColorFor(DamageType t)

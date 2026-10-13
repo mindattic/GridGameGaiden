@@ -99,14 +99,17 @@
       "silence",
       "scan",
       "sleep",
-      "alchemist_transmute"
+      "alchemist_transmute",
+      "aegiswardens_preemptiveward",
+      "aegiswardens_cleansingvigil",
+      "aegiswardens_sanctuaryrite"
     ],
     "DefaultLoadout": [
       "heal",
-      "regen",
+      "aegiswardens_preemptiveward",
       "item:x_potion",
       "alchemist_transmute",
-      "rejuvenate"
+      "aegiswardens_sanctuaryrite"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -216,14 +219,17 @@
       "teleport",
       "quicken",
       "poison",
-      "assassain_killingblow"
+      "assassain_killingblow",
+      "duelist_riposte_thrust",
+      "duelist_exploit_opening",
+      "duelist_cut_the_casting_hand"
     ],
     "DefaultLoadout": [
       "cleave",
-      "mug",
+      "duelist_riposte_thrust",
       "item:x_potion",
       "assassain_killingblow",
-      "steal"
+      "duelist_cut_the_casting_hand"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -332,14 +338,17 @@
       "steal",
       "teleport",
       "quicken",
-      "barbarian_reckless"
+      "barbarian_reckless",
+      "berserker_wildswing",
+      "berserker_skullrattle",
+      "berserker_lastmanswinging"
     ],
     "DefaultLoadout": [
       "cleave",
-      "war_cry",
+      "berserker_wildswing",
       "item:x_potion",
       "barbarian_reckless",
-      "mug"
+      "berserker_lastmanswinging"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -448,14 +457,17 @@
       "steal",
       "teleport",
       "quicken",
-      "basher_skullcrack"
+      "basher_skullcrack",
+      "berserker_wildswing",
+      "berserker_skullrattle",
+      "berserker_lastmanswinging"
     ],
     "DefaultLoadout": [
       "cleave",
-      "war_cry",
+      "berserker_wildswing",
       "item:x_potion",
       "basher_skullcrack",
-      "mug"
+      "berserker_lastmanswinging"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -884,14 +896,17 @@
       "steal",
       "teleport",
       "quicken",
-      "blackninja_shadowfang"
+      "blackninja_shadowfang",
+      "shadowstep_fade_step",
+      "shadowstep_smoke_veil",
+      "shadowstep_vanishing_cut"
     ],
     "DefaultLoadout": [
       "cleave",
-      "teleport",
+      "shadowstep_fade_step",
       "item:x_potion",
       "blackninja_shadowfang",
-      "steal"
+      "shadowstep_vanishing_cut"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -1005,14 +1020,17 @@
       "sleep",
       "slow",
       "charge_fireball",
-      "blackwitch_shadowbolt"
+      "blackwitch_shadowbolt",
+      "hexweaver_festeringmark",
+      "hexweaver_curseoffate",
+      "hexweaver_bloodharvest"
     ],
     "DefaultLoadout": [
       "poison",
-      "fireball",
+      "hexweaver_festeringmark",
       "item:x_potion",
       "blackwitch_shadowbolt",
-      "sleep"
+      "hexweaver_bloodharvest"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -1123,14 +1141,17 @@
       "rejuvenate",
       "frost",
       "antidote",
-      "bluelion_roar"
+      "bluelion_roar",
+      "primalpack_challenge",
+      "primalpack_rally",
+      "primalpack_denmother"
     ],
     "DefaultLoadout": [
       "regen",
-      "war_cry",
+      "primalpack_challenge",
       "item:x_potion",
       "bluelion_roar",
-      "rejuvenate"
+      "primalpack_denmother"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -1239,14 +1260,17 @@
       "steal",
       "teleport",
       "quicken",
-      "blueninja_frostfang"
+      "blueninja_frostfang",
+      "shadowstep_fade_step",
+      "shadowstep_smoke_veil",
+      "shadowstep_vanishing_cut"
     ],
     "DefaultLoadout": [
       "cleave",
-      "teleport",
+      "shadowstep_fade_step",
       "item:x_potion",
       "blueninja_frostfang",
-      "steal"
+      "shadowstep_vanishing_cut"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -1355,14 +1379,17 @@
       "steal",
       "teleport",
       "quicken",
-      "bruiser_haymaker"
+      "bruiser_haymaker",
+      "berserker_wildswing",
+      "berserker_skullrattle",
+      "berserker_lastmanswinging"
     ],
     "DefaultLoadout": [
       "cleave",
-      "war_cry",
+      "berserker_wildswing",
       "item:x_potion",
       "bruiser_haymaker",
-      "mug"
+      "berserker_lastmanswinging"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -2369,14 +2396,17 @@
       "steal",
       "teleport",
       "quicken",
-      "chromaninja_prismfang"
+      "chromaninja_prismfang",
+      "shadowstep_fade_step",
+      "shadowstep_smoke_veil",
+      "shadowstep_vanishing_cut"
     ],
     "DefaultLoadout": [
       "cleave",
-      "teleport",
+      "shadowstep_fade_step",
       "item:x_potion",
       "chromaninja_prismfang",
-      "steal"
+      "shadowstep_vanishing_cut"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -2488,14 +2518,17 @@
       "silence",
       "scan",
       "sleep",
-      "cleric_grace"
+      "cleric_grace",
+      "aegiswardens_preemptiveward",
+      "aegiswardens_cleansingvigil",
+      "aegiswardens_sanctuaryrite"
     ],
     "DefaultLoadout": [
       "heal",
-      "mass_heal",
+      "aegiswardens_preemptiveward",
       "item:x_potion",
       "cleric_grace",
-      "antidote"
+      "aegiswardens_sanctuaryrite"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -2606,14 +2639,17 @@
       "rejuvenate",
       "frost",
       "antidote",
-      "courier_relay"
+      "courier_relay",
+      "tempoweave_shortcut",
+      "tempoweave_stumble",
+      "tempoweave_swap"
     ],
     "DefaultLoadout": [
       "regen",
-      "war_cry",
+      "tempoweave_shortcut",
       "item:x_potion",
       "courier_relay",
-      "rejuvenate"
+      "tempoweave_swap"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -3925,14 +3961,17 @@
       "sleep",
       "antidote",
       "poison",
-      "darktemplar_rite"
+      "darktemplar_rite",
+      "deathguard_mana_siphon",
+      "deathguard_venomous_grip",
+      "deathguard_dark_communion"
     ],
     "DefaultLoadout": [
       "taunt",
-      "shield_bash",
+      "deathguard_mana_siphon",
       "item:x_potion",
       "darktemplar_rite",
-      "poison"
+      "deathguard_dark_communion"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -4041,14 +4080,17 @@
       "silence",
       "sleep",
       "antidote",
-      "defender_wall"
+      "defender_wall",
+      "aegisguard_sacred_challenge",
+      "aegisguard_judgment_of_warding",
+      "aegisguard_hands_of_mercy"
     ],
     "DefaultLoadout": [
       "taunt",
-      "shield_bash",
+      "aegisguard_sacred_challenge",
       "item:x_potion",
       "defender_wall",
-      "scan"
+      "aegisguard_hands_of_mercy"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -4265,14 +4307,17 @@
       "rejuvenate",
       "frost",
       "antidote",
-      "dervish_whirl"
+      "dervish_whirl",
+      "tempoweave_shortcut",
+      "tempoweave_stumble",
+      "tempoweave_swap"
     ],
     "DefaultLoadout": [
       "regen",
-      "war_cry",
+      "tempoweave_shortcut",
       "item:x_potion",
       "dervish_whirl",
-      "rejuvenate"
+      "tempoweave_swap"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -4384,14 +4429,17 @@
       "silence",
       "scan",
       "sleep",
-      "doctor_triage"
+      "doctor_triage",
+      "aegiswardens_preemptiveward",
+      "aegiswardens_cleansingvigil",
+      "aegiswardens_sanctuaryrite"
     ],
     "DefaultLoadout": [
       "heal",
-      "mass_heal",
+      "aegiswardens_preemptiveward",
       "item:x_potion",
       "doctor_triage",
-      "antidote"
+      "aegiswardens_sanctuaryrite"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -4503,14 +4551,17 @@
       "poison",
       "sleep",
       "slow",
-      "drifter_frostnova"
+      "drifter_frostnova",
+      "fieldcaster_trapline",
+      "fieldcaster_wardgrid",
+      "fieldcaster_resupplydrone"
     ],
     "DefaultLoadout": [
       "frost",
-      "bolt",
+      "fieldcaster_trapline",
       "item:x_potion",
       "drifter_frostnova",
-      "slow"
+      "fieldcaster_resupplydrone"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -4619,14 +4670,17 @@
       "steal",
       "teleport",
       "quicken",
-      "duelist_riposte"
+      "duelist_riposte",
+      "duelist_probingthrust",
+      "duelist_guardstance",
+      "duelist_decisivecut"
     ],
     "DefaultLoadout": [
       "cleave",
-      "war_cry",
+      "duelist_probingthrust",
       "item:x_potion",
       "duelist_riposte",
-      "mug"
+      "duelist_decisivecut"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -4737,14 +4791,17 @@
       "rejuvenate",
       "frost",
       "antidote",
-      "engineer_overclock"
+      "engineer_overclock",
+      "fieldeng_mine",
+      "fieldeng_patch",
+      "fieldeng_overdrive"
     ],
     "DefaultLoadout": [
       "quicken",
-      "slow",
+      "fieldeng_mine",
       "item:x_potion",
       "engineer_overclock",
-      "war_cry"
+      "fieldeng_overdrive"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -4853,14 +4910,17 @@
       "steal",
       "teleport",
       "quicken",
-      "fencer_fleche"
+      "fencer_fleche",
+      "duelist_probingthrust",
+      "duelist_guardstance",
+      "duelist_decisivecut"
     ],
     "DefaultLoadout": [
       "cleave",
-      "war_cry",
+      "duelist_probingthrust",
       "item:x_potion",
       "fencer_fleche",
-      "mug"
+      "duelist_decisivecut"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -4969,14 +5029,17 @@
       "steal",
       "teleport",
       "quicken",
-      "fighter_combo"
+      "fighter_combo",
+      "combobrawler_openingjab",
+      "combobrawler_onetwoflurry",
+      "combobrawler_knockoutcombo"
     ],
     "DefaultLoadout": [
       "cleave",
-      "war_cry",
+      "combobrawler_openingjab",
       "item:x_potion",
       "fighter_combo",
-      "mug"
+      "combobrawler_knockoutcombo"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -6562,14 +6625,17 @@
       "steal",
       "teleport",
       "quicken",
-      "greenninja_venomfang"
+      "greenninja_venomfang",
+      "shadowstep_fade_step",
+      "shadowstep_smoke_veil",
+      "shadowstep_vanishing_cut"
     ],
     "DefaultLoadout": [
       "cleave",
-      "teleport",
+      "shadowstep_fade_step",
       "item:x_potion",
       "greenninja_venomfang",
-      "steal"
+      "shadowstep_vanishing_cut"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -7105,14 +7171,17 @@
       "poison",
       "sleep",
       "slow",
-      "harbinger_omen"
+      "harbinger_omen",
+      "spellblade_quickstrike",
+      "spellblade_overchannel",
+      "spellblade_followthrough"
     ],
     "DefaultLoadout": [
       "poison",
-      "bolt",
+      "spellblade_quickstrike",
       "item:x_potion",
       "harbinger_omen",
-      "sleep"
+      "spellblade_followthrough"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -7330,14 +7399,17 @@
       "silence",
       "sleep",
       "antidote",
-      "jadeknight_resolve"
+      "jadeknight_resolve",
+      "deathguard_mana_siphon",
+      "deathguard_venomous_grip",
+      "deathguard_dark_communion"
     ],
     "DefaultLoadout": [
       "taunt",
-      "shield_bash",
+      "deathguard_mana_siphon",
       "item:x_potion",
       "jadeknight_resolve",
-      "scan"
+      "deathguard_dark_communion"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -7446,14 +7518,17 @@
       "silence",
       "sleep",
       "antidote",
-      "knight_oath"
+      "knight_oath",
+      "aegisguard_sacred_challenge",
+      "aegisguard_judgment_of_warding",
+      "aegisguard_hands_of_mercy"
     ],
     "DefaultLoadout": [
       "taunt",
-      "shield_bash",
+      "aegisguard_sacred_challenge",
       "item:x_potion",
       "knight_oath",
-      "scan"
+      "aegisguard_hands_of_mercy"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -7562,14 +7637,17 @@
       "steal",
       "teleport",
       "quicken",
-      "lancer_chargeline"
+      "lancer_chargeline",
+      "skirmisher_blindside",
+      "skirmisher_hitandrun",
+      "skirmisher_runningriot"
     ],
     "DefaultLoadout": [
       "cleave",
-      "war_cry",
+      "skirmisher_blindside",
       "item:x_potion",
       "lancer_chargeline",
-      "mug"
+      "skirmisher_runningriot"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -7998,14 +8076,17 @@
       "rejuvenate",
       "frost",
       "antidote",
-      "machinist_turret"
+      "machinist_turret",
+      "fieldeng_mine",
+      "fieldeng_patch",
+      "fieldeng_overdrive"
     ],
     "DefaultLoadout": [
       "quicken",
-      "slow",
+      "fieldeng_mine",
       "item:x_potion",
       "machinist_turret",
-      "war_cry"
+      "fieldeng_overdrive"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -8537,14 +8618,17 @@
       "steal",
       "teleport",
       "quicken",
-      "martialartist_palm"
+      "martialartist_palm",
+      "combobrawler_openingjab",
+      "combobrawler_onetwoflurry",
+      "combobrawler_knockoutcombo"
     ],
     "DefaultLoadout": [
       "cleave",
-      "war_cry",
+      "combobrawler_openingjab",
       "item:x_potion",
       "martialartist_palm",
-      "mug"
+      "combobrawler_knockoutcombo"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -8977,14 +9061,17 @@
       "silence",
       "scan",
       "sleep",
-      "monk_peace"
+      "monk_peace",
+      "skirmishmenders_guardiansrush",
+      "skirmishmenders_flowingcurrent",
+      "skirmishmenders_coveringwithdrawal"
     ],
     "DefaultLoadout": [
       "heal",
-      "mass_heal",
+      "skirmishmenders_guardiansrush",
       "item:x_potion",
       "monk_peace",
-      "antidote"
+      "skirmishmenders_coveringwithdrawal"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -9200,14 +9287,17 @@
       "silence",
       "sleep",
       "antidote",
-      "myrmidon_phalanx"
+      "myrmidon_phalanx",
+      "juggernaut_war_stomp",
+      "juggernaut_unstoppable_momentum",
+      "juggernaut_overrun"
     ],
     "DefaultLoadout": [
       "taunt",
-      "shield_bash",
+      "juggernaut_war_stomp",
       "item:x_potion",
       "myrmidon_phalanx",
-      "scan"
+      "juggernaut_overrun"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -9425,14 +9515,17 @@
       "teleport",
       "quicken",
       "poison",
-      "nighthunter_nightstalk"
+      "nighthunter_nightstalk",
+      "opportunist_exploit",
+      "opportunist_chain_the_opening",
+      "opportunist_collect_the_debt"
     ],
     "DefaultLoadout": [
       "cleave",
-      "mug",
+      "opportunist_exploit",
       "item:x_potion",
       "nighthunter_nightstalk",
-      "steal"
+      "opportunist_collect_the_debt"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -9542,14 +9635,17 @@
       "teleport",
       "quicken",
       "poison",
-      "odachi_iaijutsu"
+      "odachi_iaijutsu",
+      "brawler_guard_break",
+      "brawler_wide_cleave",
+      "brawler_second_wind"
     ],
     "DefaultLoadout": [
       "cleave",
-      "mug",
+      "brawler_guard_break",
       "item:x_potion",
       "odachi_iaijutsu",
-      "steal"
+      "brawler_second_wind"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -9979,14 +10075,17 @@
       "poison",
       "sleep",
       "slow",
-      "operative_shock"
+      "operative_shock",
+      "fieldcaster_trapline",
+      "fieldcaster_wardgrid",
+      "fieldcaster_resupplydrone"
     ],
     "DefaultLoadout": [
       "poison",
-      "frost",
+      "fieldcaster_trapline",
       "item:x_potion",
       "operative_shock",
-      "sleep"
+      "fieldcaster_resupplydrone"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -10096,14 +10195,17 @@
       "sleep",
       "antidote",
       "heal",
-      "paladin_bulwark"
+      "paladin_bulwark",
+      "aegisguard_sacred_challenge",
+      "aegisguard_judgment_of_warding",
+      "aegisguard_hands_of_mercy"
     ],
     "DefaultLoadout": [
       "taunt",
-      "shield_bash",
+      "aegisguard_sacred_challenge",
       "item:x_potion",
       "paladin_bulwark",
-      "heal"
+      "aegisguard_hands_of_mercy"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -10212,14 +10314,17 @@
       "steal",
       "teleport",
       "quicken",
-      "pandagirl_slam"
+      "pandagirl_slam",
+      "berserker_wildswing",
+      "berserker_skullrattle",
+      "berserker_lastmanswinging"
     ],
     "DefaultLoadout": [
       "cleave",
-      "war_cry",
+      "berserker_wildswing",
       "item:x_potion",
       "pandagirl_slam",
-      "mug"
+      "berserker_lastmanswinging"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -10433,14 +10538,17 @@
       "steal",
       "teleport",
       "quicken",
-      "prizefighter_knockout"
+      "prizefighter_knockout",
+      "combobrawler_openingjab",
+      "combobrawler_onetwoflurry",
+      "combobrawler_knockoutcombo"
     ],
     "DefaultLoadout": [
       "cleave",
-      "war_cry",
+      "combobrawler_openingjab",
       "item:x_potion",
       "prizefighter_knockout",
-      "mug"
+      "combobrawler_knockoutcombo"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -10549,14 +10657,17 @@
       "steal",
       "teleport",
       "quicken",
-      "pugilist_jabcross"
+      "pugilist_jabcross",
+      "combobrawler_openingjab",
+      "combobrawler_onetwoflurry",
+      "combobrawler_knockoutcombo"
     ],
     "DefaultLoadout": [
       "cleave",
-      "war_cry",
+      "combobrawler_openingjab",
       "item:x_potion",
       "pugilist_jabcross",
-      "mug"
+      "combobrawler_knockoutcombo"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -11190,14 +11301,17 @@
       "steal",
       "teleport",
       "quicken",
-      "raider_plunder"
+      "raider_plunder",
+      "skirmisher_blindside",
+      "skirmisher_hitandrun",
+      "skirmisher_runningriot"
     ],
     "DefaultLoadout": [
       "cleave",
-      "war_cry",
+      "skirmisher_blindside",
       "item:x_potion",
       "raider_plunder",
-      "mug"
+      "skirmisher_runningriot"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -11416,14 +11530,17 @@
       "sleep",
       "slow",
       "charge_fireball",
-      "redmage_fury"
+      "redmage_fury",
+      "spellblade_quickstrike",
+      "spellblade_overchannel",
+      "spellblade_followthrough"
     ],
     "DefaultLoadout": [
       "fireball",
-      "frost",
+      "spellblade_quickstrike",
       "item:x_potion",
       "redmage_fury",
-      "bolt"
+      "spellblade_followthrough"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -11532,14 +11649,17 @@
       "steal",
       "teleport",
       "quicken",
-      "redninja_flamefang"
+      "redninja_flamefang",
+      "shadowstep_fade_step",
+      "shadowstep_smoke_veil",
+      "shadowstep_vanishing_cut"
     ],
     "DefaultLoadout": [
       "cleave",
-      "teleport",
+      "shadowstep_fade_step",
       "item:x_potion",
       "redninja_flamefang",
-      "steal"
+      "shadowstep_vanishing_cut"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -11649,14 +11769,17 @@
       "teleport",
       "quicken",
       "poison",
-      "ripper_rend"
+      "ripper_rend",
+      "opportunist_exploit",
+      "opportunist_chain_the_opening",
+      "opportunist_collect_the_debt"
     ],
     "DefaultLoadout": [
       "cleave",
-      "mug",
+      "opportunist_exploit",
       "item:x_potion",
       "ripper_rend",
-      "steal"
+      "opportunist_collect_the_debt"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -11770,14 +11893,17 @@
       "sleep",
       "slow",
       "charge_fireball",
-      "ritualist_bloodrite"
+      "ritualist_bloodrite",
+      "hexweaver_festeringmark",
+      "hexweaver_curseoffate",
+      "hexweaver_bloodharvest"
     ],
     "DefaultLoadout": [
       "poison",
-      "fireball",
+      "hexweaver_festeringmark",
       "item:x_potion",
       "ritualist_bloodrite",
-      "sleep"
+      "hexweaver_bloodharvest"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -11886,14 +12012,17 @@
       "steal",
       "teleport",
       "quicken",
-      "ronin_masterless"
+      "ronin_masterless",
+      "duelist_probingthrust",
+      "duelist_guardstance",
+      "duelist_decisivecut"
     ],
     "DefaultLoadout": [
       "cleave",
-      "war_cry",
+      "duelist_probingthrust",
       "item:x_potion",
       "ronin_masterless",
-      "mug"
+      "duelist_decisivecut"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -12007,14 +12136,17 @@
       "scan",
       "sleep",
       "charge_fireball",
-      "sage_insight"
+      "sage_insight",
+      "hexmenders_thornedhex",
+      "hexmenders_harmintohope",
+      "hexmenders_mirrorcurse"
     ],
     "DefaultLoadout": [
       "heal",
-      "mass_heal",
+      "hexmenders_thornedhex",
       "item:x_potion",
       "sage_insight",
-      "antidote"
+      "hexmenders_mirrorcurse"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -12335,14 +12467,17 @@
       "steal",
       "teleport",
       "quicken",
-      "sellsword_contract"
+      "sellsword_contract",
+      "duelist_probingthrust",
+      "duelist_guardstance",
+      "duelist_decisivecut"
     ],
     "DefaultLoadout": [
       "cleave",
-      "war_cry",
+      "duelist_probingthrust",
       "item:x_potion",
       "sellsword_contract",
-      "mug"
+      "duelist_decisivecut"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -12451,14 +12586,17 @@
       "silence",
       "sleep",
       "antidote",
-      "shieldmaiden_valkyrie"
+      "shieldmaiden_valkyrie",
+      "warlord_battle_cry",
+      "warlord_rally_point",
+      "warlord_marked_for_warband"
     ],
     "DefaultLoadout": [
       "taunt",
-      "shield_bash",
+      "warlord_battle_cry",
       "item:x_potion",
       "shieldmaiden_valkyrie",
-      "scan"
+      "warlord_marked_for_warband"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -12570,14 +12708,17 @@
       "silence",
       "scan",
       "sleep",
-      "sister_benediction"
+      "sister_benediction",
+      "skirmishmenders_guardiansrush",
+      "skirmishmenders_flowingcurrent",
+      "skirmishmenders_coveringwithdrawal"
     ],
     "DefaultLoadout": [
       "heal",
-      "mass_heal",
+      "skirmishmenders_guardiansrush",
       "item:x_potion",
       "sister_benediction",
-      "antidote"
+      "skirmishmenders_coveringwithdrawal"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -13008,14 +13149,17 @@
       "teleport",
       "quicken",
       "poison",
-      "slasher_flurry"
+      "slasher_flurry",
+      "brawler_guard_break",
+      "brawler_wide_cleave",
+      "brawler_second_wind"
     ],
     "DefaultLoadout": [
       "cleave",
-      "mug",
+      "brawler_guard_break",
       "item:x_potion",
       "slasher_flurry",
-      "steal"
+      "brawler_second_wind"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -13960,14 +14104,17 @@
       "steal",
       "teleport",
       "quicken",
-      "speedster_blitz"
+      "speedster_blitz",
+      "skirmisher_blindside",
+      "skirmisher_hitandrun",
+      "skirmisher_runningriot"
     ],
     "DefaultLoadout": [
       "cleave",
-      "war_cry",
+      "skirmisher_blindside",
       "item:x_potion",
       "speedster_blitz",
-      "mug"
+      "skirmisher_runningriot"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -14601,14 +14748,17 @@
       "steal",
       "teleport",
       "quicken",
-      "streetfighter_dirtytrick"
+      "streetfighter_dirtytrick",
+      "skirmisher_blindside",
+      "skirmisher_hitandrun",
+      "skirmisher_runningriot"
     ],
     "DefaultLoadout": [
       "cleave",
-      "war_cry",
+      "skirmisher_blindside",
       "item:x_potion",
       "streetfighter_dirtytrick",
-      "mug"
+      "skirmisher_runningriot"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -14717,14 +14867,17 @@
       "steal",
       "teleport",
       "quicken",
-      "striker_finishingblow"
+      "striker_finishingblow",
+      "skirmisher_blindside",
+      "skirmisher_hitandrun",
+      "skirmisher_runningriot"
     ],
     "DefaultLoadout": [
       "cleave",
-      "war_cry",
+      "skirmisher_blindside",
       "item:x_potion",
       "striker_finishingblow",
-      "mug"
+      "skirmisher_runningriot"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -14940,14 +15093,17 @@
       "steal",
       "teleport",
       "quicken",
-      "swordmaster_perfectcut"
+      "swordmaster_perfectcut",
+      "duelist_probingthrust",
+      "duelist_guardstance",
+      "duelist_decisivecut"
     ],
     "DefaultLoadout": [
       "cleave",
-      "war_cry",
+      "duelist_probingthrust",
       "item:x_potion",
       "swordmaster_perfectcut",
-      "mug"
+      "duelist_decisivecut"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -15056,14 +15212,17 @@
       "silence",
       "sleep",
       "antidote",
-      "tank_juggernaut"
+      "tank_juggernaut",
+      "juggernaut_war_stomp",
+      "juggernaut_unstoppable_momentum",
+      "juggernaut_overrun"
     ],
     "DefaultLoadout": [
       "taunt",
-      "shield_bash",
+      "juggernaut_war_stomp",
       "item:x_potion",
       "tank_juggernaut",
-      "scan"
+      "juggernaut_overrun"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -15483,14 +15642,17 @@
       "rejuvenate",
       "frost",
       "antidote",
-      "technician_diagnostic"
+      "technician_diagnostic",
+      "fieldeng_mine",
+      "fieldeng_patch",
+      "fieldeng_overdrive"
     ],
     "DefaultLoadout": [
       "quicken",
-      "slow",
+      "fieldeng_mine",
       "item:x_potion",
       "technician_diagnostic",
-      "war_cry"
+      "fieldeng_overdrive"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -16242,14 +16404,17 @@
       "teleport",
       "quicken",
       "poison",
-      "thief_snatch"
+      "thief_snatch",
+      "duelist_riposte_thrust",
+      "duelist_exploit_opening",
+      "duelist_cut_the_casting_hand"
     ],
     "DefaultLoadout": [
       "cleave",
-      "mug",
+      "duelist_riposte_thrust",
       "item:x_potion",
       "thief_snatch",
-      "steal"
+      "duelist_cut_the_casting_hand"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -16360,14 +16525,17 @@
       "rejuvenate",
       "frost",
       "antidote",
-      "tinkerer_juryrig"
+      "tinkerer_juryrig",
+      "fieldeng_mine",
+      "fieldeng_patch",
+      "fieldeng_overdrive"
     ],
     "DefaultLoadout": [
       "quicken",
-      "slow",
+      "fieldeng_mine",
       "item:x_potion",
       "tinkerer_juryrig",
-      "war_cry"
+      "fieldeng_overdrive"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -17680,14 +17848,17 @@
       "steal",
       "teleport",
       "quicken",
-      "vampire_enervate"
+      "vampire_enervate",
+      "attrition_bloodletting",
+      "attrition_dreadaura",
+      "attrition_soulfeast"
     ],
     "DefaultLoadout": [
       "cleave",
-      "war_cry",
+      "attrition_bloodletting",
       "item:x_potion",
       "vampire_enervate",
-      "mug"
+      "attrition_soulfeast"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -17900,14 +18071,17 @@
       "silence",
       "sleep",
       "antidote",
-      "warchief_banner"
+      "warchief_banner",
+      "warlord_battle_cry",
+      "warlord_rally_point",
+      "warlord_marked_for_warband"
     ],
     "DefaultLoadout": [
       "taunt",
-      "shield_bash",
+      "warlord_battle_cry",
       "item:x_potion",
       "warchief_banner",
-      "scan"
+      "warlord_marked_for_warband"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -18132,14 +18306,17 @@
       "scan",
       "sleep",
       "teleport",
-      "whiteninja_moonlit"
+      "whiteninja_moonlit",
+      "skirmishmenders_guardiansrush",
+      "skirmishmenders_flowingcurrent",
+      "skirmishmenders_coveringwithdrawal"
     ],
     "DefaultLoadout": [
       "heal",
-      "teleport",
+      "skirmishmenders_guardiansrush",
       "item:x_potion",
       "whiteninja_moonlit",
-      "antidote"
+      "skirmishmenders_coveringwithdrawal"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -18253,14 +18430,17 @@
       "scan",
       "sleep",
       "charge_fireball",
-      "whitewitch_ward"
+      "whitewitch_ward",
+      "hexmenders_thornedhex",
+      "hexmenders_harmintohope",
+      "hexmenders_mirrorcurse"
     ],
     "DefaultLoadout": [
       "heal",
-      "mass_heal",
+      "hexmenders_thornedhex",
       "item:x_potion",
       "whitewitch_ward",
-      "antidote"
+      "hexmenders_mirrorcurse"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -18371,14 +18551,17 @@
       "rejuvenate",
       "frost",
       "antidote",
-      "wildchild_howl"
+      "wildchild_howl",
+      "primalpack_challenge",
+      "primalpack_rally",
+      "primalpack_denmother"
     ],
     "DefaultLoadout": [
       "regen",
-      "war_cry",
+      "primalpack_challenge",
       "item:x_potion",
       "wildchild_howl",
-      "rejuvenate"
+      "primalpack_denmother"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -18927,14 +19110,17 @@
       "steal",
       "teleport",
       "quicken",
-      "yellowninja_shockfang"
+      "yellowninja_shockfang",
+      "shadowstep_fade_step",
+      "shadowstep_smoke_veil",
+      "shadowstep_vanishing_cut"
     ],
     "DefaultLoadout": [
       "cleave",
-      "teleport",
+      "shadowstep_fade_step",
       "item:x_potion",
       "yellowninja_shockfang",
-      "steal"
+      "shadowstep_vanishing_cut"
     ],
     "DropTable": null,
     "MoveRange": 1,

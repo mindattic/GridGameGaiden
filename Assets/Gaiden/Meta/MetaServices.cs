@@ -816,7 +816,9 @@ namespace Gaiden.Meta
                     if (a != null && IsHeroUsable(a) && !h.Known.Contains(a.Id) && !set.Contains(a)) set.Add(a);
                 }
             foreach (var a in c.Abilities.Values)
-                if (a.Kind == AbilityKind.Spell && IsHeroUsable(a) && !h.Known.Contains(a.Id) && !set.Contains(a)) set.Add(a);
+                if (IsHeroUsable(a) && !h.Known.Contains(a.Id) && !set.Contains(a) &&
+                    (a.Kind == AbilityKind.Spell || a.Universal))
+                    set.Add(a);
             return set.OrderBy(a => Price(a)).ThenBy(a => a.Name).ToList();
         }
 
