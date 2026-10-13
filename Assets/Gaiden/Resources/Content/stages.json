@@ -2155,5 +2155,1175 @@
         ]
       }
     ]
+  },
+  {
+    "Id": "greenvalley-04",
+    "Name": "Green Valley IV",
+    "Theme": "greenvalley",
+    "Background": null,
+    "Music": "Battle",
+    "IsTest": false,
+    "Waves": [
+      {
+        "Enemies": [
+          {
+            "Class": "slime00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "slime01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "ganger00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "ganger01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "ganger02",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "wolf00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "wolf01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "wolf02",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "skelepede00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "skelepede01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "undead00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "goblinthug00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "goblinthug00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "ganger03",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "ganger04",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Id": "greenvalley-05",
+    "Name": "Green Valley V",
+    "Theme": "greenvalley",
+    "Background": null,
+    "Music": "Battle",
+    "IsTest": false,
+    "Waves": [
+      {
+        "Enemies": [
+          {
+            "Class": "frog00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "frog01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "frog02",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "ganger03",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "ganger04",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "ganger05",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "wolf02",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "wolf03",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "skelepede00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "soldier00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "soldier01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "soldier02",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "captain",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "soldier03",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "werewolf00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "toad00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Id": "desert-04",
+    "Name": "Sandsea Reaches IV",
+    "Theme": "desert",
+    "Background": null,
+    "Music": "Battle",
+    "IsTest": false,
+    "Waves": [
+      {
+        "Enemies": [
+          {
+            "Class": "techgremlin00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "techgremlin01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "soldier00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "soldier01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "soldier02",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "mechaarmor00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "mechaarmor01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "vulture",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "vulture",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "flyingmonkey",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "scorpion",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "sandmaw",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "techgremlin02",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Id": "desert-05",
+    "Name": "Sandsea Reaches V",
+    "Theme": "desert",
+    "Background": null,
+    "Music": "Battle",
+    "IsTest": false,
+    "Waves": [
+      {
+        "Enemies": [
+          {
+            "Class": "purpleprototype00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "purpleprototype01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "purpleprototype02",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "mechaarmor01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "mechaarmor02",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "soldier03",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "scorpion",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "scorpion",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "vulture",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "purpleprototype03",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "purpleprototype04",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "techgremlin00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "captain",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "soldier00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "soldier01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "sandmaw",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Id": "swamp-04",
+    "Name": "Mireholt Fens IV",
+    "Theme": "swamp",
+    "Background": null,
+    "Music": "Battle",
+    "IsTest": false,
+    "Waves": [
+      {
+        "Enemies": [
+          {
+            "Class": "toad00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "frog00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "frog01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "lurker00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "lurker01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "hag00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "hag01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "hag02",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "treegolem00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "treegolem01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "marshshambler00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "marshshambler01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "lurker02",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Id": "swamp-05",
+    "Name": "Mireholt Fens V",
+    "Theme": "swamp",
+    "Background": null,
+    "Music": "Battle",
+    "IsTest": false,
+    "Waves": [
+      {
+        "Enemies": [
+          {
+            "Class": "frog02",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "frog03",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "toad00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "treegolem02",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "treegolem03",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "treegolem04",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "hag02",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "hag03",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "marshshambler03",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "lurker00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "lurker01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "lurker02",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "swampmistress00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "hag00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "hag01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Id": "cave-04",
+    "Name": "Frostmaw Caverns IV",
+    "Theme": "cave",
+    "Background": null,
+    "Music": "Battle",
+    "IsTest": false,
+    "Waves": [
+      {
+        "Enemies": [
+          {
+            "Class": "skelepede00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "skelepede01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "skelepede02",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "ceramicknight00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "ceramicknight01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "oni00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "oni01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "cyclops00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "cyclops01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "mountaintroll",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "goblinthug00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "icemauler",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "oni02",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Id": "cave-05",
+    "Name": "Frostmaw Caverns V",
+    "Theme": "cave",
+    "Background": null,
+    "Music": "Battle",
+    "IsTest": false,
+    "Waves": [
+      {
+        "Enemies": [
+          {
+            "Class": "ceramicknight02",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "ceramicknight03",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "ceramicknight04",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "cyclops02",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "cyclops03",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "cyclops04",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "oni00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "oni01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "oni02",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "ceramicknight05",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "ceramicknight06",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "mountaintroll",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "yeti",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "icemauler",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "cyclops06",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Id": "cityruins-04",
+    "Name": "Veshker Ruins IV",
+    "Theme": "cityruins",
+    "Background": null,
+    "Music": "Battle",
+    "IsTest": false,
+    "Waves": [
+      {
+        "Enemies": [
+          {
+            "Class": "undead00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "undead01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "ghost",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "cyberzombie00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "cyberzombie01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "templar00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "templar01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "templar02",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "bat00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "bat01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "phantom",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "mannequin",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "cyberzombie02",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "undead02",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Id": "cityruins-05",
+    "Name": "Veshker Ruins V",
+    "Theme": "cityruins",
+    "Background": null,
+    "Music": "Battle",
+    "IsTest": false,
+    "Waves": [
+      {
+        "Enemies": [
+          {
+            "Class": "cyberzombie02",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "cyberzombie03",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "cyberzombie04",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "templar03",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "templar04",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "templar05",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "undead04",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "ghost",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "phantom",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "bat00",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "bat01",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "mannequin",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      },
+      {
+        "Enemies": [
+          {
+            "Class": "vampire",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "reaper",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          },
+          {
+            "Class": "demonlord",
+            "Level": 1,
+            "X": -1,
+            "Y": -1
+          }
+        ]
+      }
+    ]
   }
 ]
