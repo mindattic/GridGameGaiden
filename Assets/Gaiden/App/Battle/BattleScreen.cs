@@ -41,6 +41,9 @@ namespace Gaiden.App
         public Coord? PendingTarget { get; private set; }
         public bool Confirming => PendingTarget.HasValue;
         private bool ConfirmActions => App.Save?.Settings.ConfirmActions ?? true;
+        /// <summary>HeroBot plays this battle. Forced on by <c>-autobattle</c> or <c>-demo</c>/<c>-autoplay</c>
+        /// (the tour, see GameApp.DemoMode); otherwise toggled from the pause menu or the automation
+        /// "autoplay" endpoint.</summary>
         public bool AutoPlay { get; set; }
 
         private readonly string stageId;
@@ -167,10 +170,10 @@ namespace Gaiden.App
 
             foreach (var u in State.Units) if (u.Alive) board.Add(u);
             SelectedHeroId = State.Units.FirstOrDefault(u => u.IsHero && u.Alive)?.Id ?? -1;
-            if (setupOverride == null && App.Save != null && !App.Save.TutorialDone && App.Save.HighestClearedStage < 0 && !CommandLine.Has("-autoplay") && !DemoMode.Active) TutorialStep = 0;
+            if (setupOverride == null && App.Save != null && !App.Save.TutorialDone && App.Save.HighestClearedStage < 0 && !CommandLine.Has("-autobattle") && !DemoMode.Active) TutorialStep = 0;
             SyncAll();
             App.StartCoroutine(Play(initial, false));
-            if (CommandLine.Has("-autoplay") || DemoMode.Active) AutoPlay = true;
+            if (CommandLine.Has("-autobattle") || DemoMode.Active) AutoPlay = true;
             CaptureUnity.Raise("battle-start", new CaptureData { ["stage"] = State.Stage.Id });
         }
 

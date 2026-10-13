@@ -262,14 +262,17 @@ namespace Gaiden.App
     }
 
     /// <summary>
-    /// `-demo`: boots straight into a scripted self-play loop (new game → battle, autoplayed → next
-    /// stage → …, looping with a fresh save when the campaign ends or nothing is launchable). This is
-    /// the same path tools/harness.py campaign drives over HTTP, formalized as a startup flag so the
-    /// game can demo or soak-test itself with no external driver attached.
+    /// `-demo` or `-autoplay`: boots straight into a scripted self-play loop (new game → battle,
+    /// autoplayed → next stage → …, looping with a fresh save when the campaign ends or nothing is
+    /// launchable) — this is the tour, the same flag name used for it in every MindAttic Unity
+    /// project. `-demo` is the original name, kept because tools/harness.py campaign drives the same
+    /// path over HTTP under that name; `-autoplay` is an alias. (The narrower, pre-existing meaning of
+    /// "auto-resolve the current battle" was renamed to `-autobattle` — see BattleScreen.AutoPlay —
+    /// to free `-autoplay` up for this.)
     /// </summary>
     public static class DemoMode
     {
-        public static bool Active => CommandLine.Has("-demo");
+        public static bool Active => CommandLine.Has("-demo") || CommandLine.Has("-autoplay");
 
         public static void Start()
         {
