@@ -169,7 +169,14 @@ namespace Gaiden.Tests
                 var bar = h.DefaultLoadout.Where(x => !x.StartsWith("item:")).ToList();
                 switch (h.Role)
                 {
-                    case "Tank": Assert.Contains("taunt", bar); break;
+                    case "Tank":
+                        Assert.Contains("taunt", bar);
+                        // A lone tank (party wiped around it) can't pincer by itself — it needs some non-pincer
+                        // damage source in its own bar or it can soft-lock against a weak enemy neither side can
+                        // finish (found live 2026-10-13: a paladin with every bar slot non-damage/on
+                        // cooldown/unaffordable stalled ~40 simulated minutes against a 7-HP straggler).
+                        Assert.True(bar.Any(x => c.Abilities[x].BaseDamage > 0), h.Id);
+                        break;
                     case "Healer": Assert.Contains("heal", bar); break;
                     case "Mage": Assert.True(bar.Count(x => c.Abilities[x].Kind == AbilityKind.Spell && c.Abilities[x].BaseDamage > 0) >= 2, h.Id); break;
                     case "Striker": Assert.Contains("cleave", bar); break;

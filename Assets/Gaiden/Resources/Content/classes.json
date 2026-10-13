@@ -4090,7 +4090,7 @@
       "aegisguard_sacred_challenge",
       "item:x_potion",
       "defender_wall",
-      "aegisguard_hands_of_mercy"
+      "aegisguard_judgment_of_warding"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -7528,7 +7528,7 @@
       "aegisguard_sacred_challenge",
       "item:x_potion",
       "knight_oath",
-      "aegisguard_hands_of_mercy"
+      "aegisguard_judgment_of_warding"
     ],
     "DropTable": null,
     "MoveRange": 1,
@@ -10205,7 +10205,7 @@
       "aegisguard_sacred_challenge",
       "item:x_potion",
       "paladin_bulwark",
-      "aegisguard_hands_of_mercy"
+      "aegisguard_judgment_of_warding"
     ],
     "DropTable": null,
     "MoveRange": 1,
