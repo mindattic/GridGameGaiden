@@ -49,6 +49,51 @@
         "cityruins-02",
         "cityruins-03"
       ]
+    },
+    {
+      "Id": "greenvalley2",
+      "Name": "Green Valley, Deeper In",
+      "Crawl": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n\nUt enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\n\nDuis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+      "Stages": [
+        "greenvalley-04",
+        "greenvalley-05"
+      ]
+    },
+    {
+      "Id": "desert2",
+      "Name": "Sandsea Reaches, Further Out",
+      "Crawl": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n\nUt enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\n\nDuis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+      "Stages": [
+        "desert-04",
+        "desert-05"
+      ]
+    },
+    {
+      "Id": "swamp2",
+      "Name": "Mireholt Fens, Past the Mire",
+      "Crawl": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n\nUt enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\n\nDuis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+      "Stages": [
+        "swamp-04",
+        "swamp-05"
+      ]
+    },
+    {
+      "Id": "cave2",
+      "Name": "Frostmaw Caverns, Lower Depths",
+      "Crawl": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n\nUt enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\n\nDuis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+      "Stages": [
+        "cave-04",
+        "cave-05"
+      ]
+    },
+    {
+      "Id": "cityruins2",
+      "Name": "Veshker Ruins, Inner Wards",
+      "Crawl": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n\nUt enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\n\nDuis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+      "Stages": [
+        "cityruins-04",
+        "cityruins-05"
+      ]
     }
   ]
 }

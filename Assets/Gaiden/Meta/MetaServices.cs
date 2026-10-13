@@ -288,7 +288,7 @@ namespace Gaiden.Meta
                 Stage = stage,
                 Seed = seed,
                 UnlockedSlots = Progression.UnlockedSlots(s),
-                RecommendedLevel = index >= 0 ? Progression.RecommendedLevel(index) : 1,
+                RecommendedLevel = stage.LevelOverride ?? (index >= 0 ? Progression.RecommendedLevel(index) : 1),
                 NewGamePlus = s.NewGamePlus,
                 StartOrbs = Expeditions.StartOrbs(c, s, stageId) + (int)CaravanUpgrades.Value(c, s, "mana_casks"),
             };

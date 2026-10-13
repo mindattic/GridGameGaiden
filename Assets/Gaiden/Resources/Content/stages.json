@@ -2274,7 +2274,8 @@
           }
         ]
       }
-    ]
+    ],
+    "LevelOverride": 15
   },
   {
     "Id": "greenvalley-05",
@@ -2400,7 +2401,8 @@
           }
         ]
       }
-    ]
+    ],
+    "LevelOverride": 15
   },
   {
     "Id": "desert-04",
@@ -2508,7 +2510,8 @@
           }
         ]
       }
-    ]
+    ],
+    "LevelOverride": 15
   },
   {
     "Id": "desert-05",
@@ -2634,7 +2637,8 @@
           }
         ]
       }
-    ]
+    ],
+    "LevelOverride": 15
   },
   {
     "Id": "swamp-04",
@@ -2742,7 +2746,8 @@
           }
         ]
       }
-    ]
+    ],
+    "LevelOverride": 15
   },
   {
     "Id": "swamp-05",
@@ -2862,7 +2867,8 @@
           }
         ]
       }
-    ]
+    ],
+    "LevelOverride": 15
   },
   {
     "Id": "cave-04",
@@ -2970,7 +2976,8 @@
           }
         ]
       }
-    ]
+    ],
+    "LevelOverride": 15
   },
   {
     "Id": "cave-05",
@@ -3090,7 +3097,8 @@
           }
         ]
       }
-    ]
+    ],
+    "LevelOverride": 15
   },
   {
     "Id": "cityruins-04",
@@ -3204,7 +3212,8 @@
           }
         ]
       }
-    ]
+    ],
+    "LevelOverride": 15
   },
   {
     "Id": "cityruins-05",
@@ -3324,6 +3333,7 @@
           }
         ]
       }
-    ]
+    ],
+    "LevelOverride": 15
   }
 ]

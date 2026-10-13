@@ -378,6 +378,10 @@ namespace Gaiden.Core.Content
         public string Background;
         public string Music;
         public bool IsTest;
+        /// <summary>Overrides the flattened-campaign-index-derived RecommendedLevel (Progression.RecommendedLevel)
+        /// when set — for postgame/bonus stages appended after the main campaign, whose difficulty shouldn't keep
+        /// climbing just because of where they sit in CampaignStages()'s flattened order (§7 frontier note).</summary>
+        public int? LevelOverride;
         /// <summary>Physical blocks (rocks, pillars, wreckage): tiles no unit may enter, land on, be pushed into or spawn on (§1.1.1).</summary>
         public List<Coord> Blocks = new List<Coord>();
         public List<WaveDef> Waves = new List<WaveDef>();
