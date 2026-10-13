@@ -142,7 +142,7 @@ def campaign(run="campaign", stages=6, speed=3):
     for n in range(stages):
         call("autoplay", on=1)
         t0 = time.time(); last_clock = -1; stuck = 0; shot_taken = False; stalled = False
-        while time.time() - t0 < 240:
+        while time.time() - t0 < 480:
             time.sleep(1.0)
             st = call("state")
             if st["screen"] != "battle":

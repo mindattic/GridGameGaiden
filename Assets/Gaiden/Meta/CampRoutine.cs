@@ -49,7 +49,7 @@ namespace Gaiden.Meta
             foreach (var id in s.Party)
             {
                 var h = s.Hero(id);
-                var learn = Abilities.Learnable(c, h).FirstOrDefault(a => a.Kind == AbilityKind.Spell && Abilities.Price(a) <= s.Gold / 3);
+                var learn = Abilities.Learnable(c, h).FirstOrDefault(a => (a.Kind == AbilityKind.Spell || a.Universal) && Abilities.Price(a) <= s.Gold / 3);
                 if (learn != null) Note(Abilities.Learn(c, s, h, learn.Id));
                 for (int i = 0; i < unlocked; i++)
                 {
