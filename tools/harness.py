@@ -161,13 +161,22 @@ def campaign(run="campaign", stages=6, speed=3):
             continue
         time.sleep(1.2)
         st = call("state")
+        for _ in range(8):  # one "Skip" per hero that leveled up (LevelUpScreen.Advance), capped at MaxPartySize
+            if st["screen"] != "levelup":
+                break
+            call("clicktext", text="Skip"); time.sleep(0.7)
+            st = call("state")
         shot(f"stage{n}-result")
         results.append({"stage": n, "screen": st["screen"], "gold": st.get("save", {}).get("Gold"), "levels": st.get("save", {}).get("levels")})
         if st["screen"] != "postbattle":
             break
-        r = call("clicktext", text="Next stage")
+        # PostBattleScreen (owner's Expedition rework) names its continuation button "next" whether
+        # its text reads "Next battle ›" (mid-expedition) or "Next expedition ›" (crossing into the
+        # next one) — there is no literal "Next stage" button. Only a dead-end (last unlocked content)
+        # lacks a "next" element, in which case "Continue" is the only way forward (back to the Hub).
+        r = call("click", name="next")
         if isinstance(r, dict) and r.get("error"):
-            call("clicktext", text="Retry")
+            call("clicktext", text="Continue")
         time.sleep(1.5)
         if call("state")["screen"] == "crawl":
             call("clicktext", text="Skip"); time.sleep(1.2)
