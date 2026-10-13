@@ -70,5 +70,41 @@
       "Wisdom": 0,
       "Luck": 3
     }
+  },
+  {
+    "Id": "poison",
+    "Name": "Poison",
+    "Element": "Poison",
+    "Essence": "mat_essence_poison",
+    "ArcaneDust": 2,
+    "Gold": 150,
+    "Bonus": {
+      "Strength": 0,
+      "Vitality": 3,
+      "Agility": 0,
+      "Speed": 0,
+      "Stamina": 0,
+      "Intelligence": 0,
+      "Wisdom": 0,
+      "Luck": 2
+    }
+  },
+  {
+    "Id": "holy",
+    "Name": "Holy",
+    "Element": "Holy",
+    "Essence": "mat_essence_holy",
+    "ArcaneDust": 2,
+    "Gold": 150,
+    "Bonus": {
+      "Strength": 0,
+      "Vitality": 0,
+      "Agility": 0,
+      "Speed": 0,
+      "Stamina": 0,
+      "Intelligence": 0,
+      "Wisdom": 5,
+      "Luck": 0
+    }
   }
 ]

@@ -96,7 +96,8 @@ NAME_PALETTE = [("Rusty", "rust"), ("Iron", "iron"), ("Steel", "steel"), ("Bronz
                 ("Mystic", "arcane"), ("Starfall", "holy"), ("Hunter", "wood"), ("War", "iron"), ("Jade", "jade"), ("Bone", "bone"),
                 ("Dragon", "crimson"), ("Leather", "leather"), ("Padded", "cloth"), ("Chain", "iron"), ("Plate", "steel"),
                 ("Wizard", "arcane"), ("Mage", "arcane"), ("Horned", "iron"), ("Wind", "teal"), ("Crown", "gold")]
-ENCHANT_PALETTE = {"(Flame)": "fire", "(Frost)": "ice", "(Spark)": "spark", "(Shadow)": "shadow"}
+ENCHANT_PALETTE = {"(Flame)": "fire", "(Frost)": "ice", "(Spark)": "spark", "(Shadow)": "shadow",
+                   "(Poison)": "poison", "(Holy)": "holy"}
 
 
 def item_rule(it, manifest):

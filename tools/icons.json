@@ -1102,6 +1102,14 @@
     "mat_essence_shadow": [
       "delapouite/sparkles",
       "shadow"
+    ],
+    "mat_essence_poison": [
+      "delapouite/sparkles",
+      "poison"
+    ],
+    "mat_essence_holy": [
+      "delapouite/sparkles",
+      "holy"
     ]
   },
   "ui": {

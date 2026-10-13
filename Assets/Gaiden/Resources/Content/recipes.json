@@ -2194,5 +2194,473 @@
     "BaseItem": "eq_mace_starfall",
     "Result": "eq_mace_starfall_ench_shadow",
     "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_axe_rune_poison",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_poison",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_axe_rune",
+    "Result": "eq_axe_rune_ench_poison",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_axe_rune_holy",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_holy",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_axe_rune",
+    "Result": "eq_axe_rune_ench_holy",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_bow_hunter_poison",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_poison",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_bow_hunter",
+    "Result": "eq_bow_hunter_ench_poison",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_bow_hunter_holy",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_holy",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_bow_hunter",
+    "Result": "eq_bow_hunter_ench_holy",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_dagger_bronze_poison",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_poison",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_dagger_bronze",
+    "Result": "eq_dagger_bronze_ench_poison",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_dagger_bronze_holy",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_holy",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_dagger_bronze",
+    "Result": "eq_dagger_bronze_ench_holy",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_hammer_war_poison",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_poison",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_hammer_war",
+    "Result": "eq_hammer_war_ench_poison",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_hammer_war_holy",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_holy",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_hammer_war",
+    "Result": "eq_hammer_war_ench_holy",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_mace_starfall_poison",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_poison",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_mace_starfall",
+    "Result": "eq_mace_starfall_ench_poison",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_mace_starfall_holy",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_holy",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_mace_starfall",
+    "Result": "eq_mace_starfall_ench_holy",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_spear_serpent_poison",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_poison",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_spear_serpent",
+    "Result": "eq_spear_serpent_ench_poison",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_spear_serpent_holy",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_holy",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_spear_serpent",
+    "Result": "eq_spear_serpent_ench_holy",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_staff_mystic_poison",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_poison",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_staff_mystic",
+    "Result": "eq_staff_mystic_ench_poison",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_staff_mystic_holy",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_holy",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_staff_mystic",
+    "Result": "eq_staff_mystic_ench_holy",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_sword_flame_poison",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_poison",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_sword_flame",
+    "Result": "eq_sword_flame_ench_poison",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_sword_flame_holy",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_holy",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_sword_flame",
+    "Result": "eq_sword_flame_ench_holy",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_sword_iron_poison",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_poison",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_sword_iron",
+    "Result": "eq_sword_iron_ench_poison",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_sword_iron_holy",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_holy",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_sword_iron",
+    "Result": "eq_sword_iron_ench_holy",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_sword_rusty_poison",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_poison",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_sword_rusty",
+    "Result": "eq_sword_rusty_ench_poison",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_sword_rusty_holy",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_holy",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_sword_rusty",
+    "Result": "eq_sword_rusty_ench_holy",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_sword_shadow_poison",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_poison",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_sword_shadow",
+    "Result": "eq_sword_shadow_ench_poison",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_sword_shadow_holy",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_holy",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_sword_shadow",
+    "Result": "eq_sword_shadow_ench_holy",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_sword_steel_poison",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_poison",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_sword_steel",
+    "Result": "eq_sword_steel_ench_poison",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_sword_steel_holy",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_holy",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_sword_steel",
+    "Result": "eq_sword_steel_ench_holy",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_wand_crystal_poison",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_poison",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_wand_crystal",
+    "Result": "eq_wand_crystal_ench_poison",
+    "ResultCount": 1
+  },
+  {
+    "Id": "enchant_eq_wand_crystal_holy",
+    "Station": "Enchant",
+    "Inputs": [
+      {
+        "Item": "mat_essence_holy",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": "eq_wand_crystal",
+    "Result": "eq_wand_crystal_ench_holy",
+    "ResultCount": 1
   }
 ]
