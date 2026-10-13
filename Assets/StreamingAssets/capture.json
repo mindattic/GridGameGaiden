@@ -1,0 +1,9 @@
+{
+  "enabled": false,
+  "tapeQuality": "HighQuality",
+  "audio": "App",
+  "rules": [
+    { "on": "battle-start", "action": "start-recording", "tag": "battle" },
+    { "on": "battle-end", "action": "stop-recording" }
+  ]
+}

@@ -40,6 +40,13 @@ python tools/import_art.py       # regenerate art/audio from the GridGame2026 re
 
 Unity **6000.4.3f1**. Design docs: [`docs/BIBLE.md`](docs/BIBLE.md), backlog: [`docs/USER_STORIES.md`](docs/USER_STORIES.md).
 
+## Capture
+
+[MindAttic.Capture](../MindAttic.Capture) auto-starts in Editor Play sessions and development
+builds (not gated by `-capture`); `Assets/StreamingAssets/capture.json` records a battle clip on
+`battle-start`/`battle-end`. Currently disabled project-wide: `"enabled": false` in that same
+file. Flip it to `true` (or remove the key) to re-enable.
+
 ## Credits
 
 See [`Assets/Gaiden/Resources/Credits.txt`](Assets/Gaiden/Resources/Credits.txt).
