@@ -1146,6 +1146,7 @@ namespace Gaiden.App
                     }
                 });
                 board.Lines.ClearLines();
+                foreach (var t in targets) NamedImpactFlourish(a.ImpactVfx, BoardView.CenterOf(t.Pos, t.W, t.H), c);
             }
             else yield return Tween.Wait(0.12f);
             App.StartCoroutine(ClearMarksLater(0.35f));
@@ -1213,7 +1214,11 @@ namespace Gaiden.App
                 if (a.IsScan) App.StartCoroutine(ScanBurst(at));
                 else if (isCleanse) App.StartCoroutine(CleanseBurst(at));
                 else if (isHastenOnly) App.StartCoroutine(HastenBurst(at));
-                else ImpactSplash(at, c, a.BaseDamage > 0 ? 0.8f : 1f);
+                else
+                {
+                    ImpactSplash(at, c, a.BaseDamage > 0 ? 0.8f : 1f);
+                    NamedImpactFlourish(a.ImpactVfx, at, c);
+                }
             }
             if (a.BaseDamage <= 0 && !a.IsScan) App.Audio.Sfx("splash", 0.6f, 1.2f);
             foreach (var kv in ends) strikeFrom[kv.Key] = kv.Value;
