@@ -174,6 +174,7 @@ namespace Gaiden.Tests
                     case "Mage": Assert.True(bar.Count(x => c.Abilities[x].Kind == AbilityKind.Spell && c.Abilities[x].BaseDamage > 0) >= 2, h.Id); break;
                     case "Striker": Assert.Contains("cleave", bar); break;
                     case "Support": Assert.True(bar.Contains("quicken") || bar.Contains("regen"), h.Id); break;
+                    case "Ranged": Assert.True(bar.All(x => !c.Abilities[x].AdjacentOnly), h.Id); break;
                 }
                 foreach (var a in bar) Assert.Contains(a, h.Abilities);
             }

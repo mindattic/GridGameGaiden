@@ -249,6 +249,7 @@ namespace Gaiden.App
                 case "Mage": return new Color(0.55f, 0.6f, 1f);
                 case "Striker": return new Color(1f, 0.66f, 0.25f);
                 case "Support": return new Color(0.35f, 0.85f, 0.85f);
+                case "Ranged": return new Color(0.68f, 0.85f, 0.35f);
                 default: return new Color(0.8f, 0.8f, 0.85f);
             }
         }
@@ -263,6 +264,7 @@ namespace Gaiden.App
                 case "Mage": return "Ranged elemental spells. Damage grows with INT.";
                 case "Striker": return "Pincer damage, Cleave and War Cry. Grows with STR.";
                 case "Support": return "Bends the timeline: Quicken allies, Slow foes, rally the party.";
+                case "Ranged": return "Precision shots from distance — never needs to be adjacent to strike.";
                 default: return "";
             }
         }

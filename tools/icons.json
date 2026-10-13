@@ -924,6 +924,26 @@
     "pressure_point": [
       "lorc/teleport",
       "arcane"
+    ],
+    "ranged_quickshot": [
+      "delapouite/bow-arrow",
+      "wood"
+    ],
+    "ranged_calledshot": [
+      "delapouite/bow-arrow",
+      "bronze"
+    ],
+    "ranged_suppressingfire": [
+      "lorc/grenade",
+      "rust"
+    ],
+    "hexsniper_piercingshot": [
+      "delapouite/dart",
+      "shadow"
+    ],
+    "hexwarden_snareshot": [
+      "lorc/poison-bottle",
+      "poison"
     ]
   },
   "item": {

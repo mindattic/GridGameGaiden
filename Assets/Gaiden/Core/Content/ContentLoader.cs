@@ -131,9 +131,9 @@ namespace Gaiden.Core.Content
                 NeedBuff(pk.ApplyBuff, $"pickup {pk.Id}");
                 if (pk.Weight <= 0) p.Add($"pickup {pk.Id}: weight must be positive");
             }
-            var roles = new HashSet<string> { "Tank", "Healer", "Mage", "Striker", "Support" };
+            var roles = new HashSet<string> { "Tank", "Healer", "Mage", "Striker", "Support", "Ranged" };
             foreach (var c in db.Classes.Values)
-                if (c.Team == Team.Hero && (c.Role == null || !roles.Contains(c.Role))) p.Add($"class {c.Id}: hero needs a Role (Tank/Healer/Mage/Striker/Support), has '{c.Role}'");
+                if (c.Team == Team.Hero && (c.Role == null || !roles.Contains(c.Role))) p.Add($"class {c.Id}: hero needs a Role (Tank/Healer/Mage/Striker/Support/Ranged), has '{c.Role}'");
             foreach (var b in db.Bounties.Values) { NeedClass(b.TargetClass, $"bounty {b.Id}"); NeedItem(b.RewardItem, $"bounty {b.Id}"); }
             foreach (var c in db.Summon.Pool) NeedClass(c, "summon pool");
             foreach (var e in db.Enchants.Values) NeedItem(e.Essence, $"enchant {e.Id}");

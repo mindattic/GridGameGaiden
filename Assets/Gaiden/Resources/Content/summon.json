@@ -6,7 +6,9 @@
     "ronin",
     "sellsword",
     "thief",
-    "vampire"
+    "vampire",
+    "hexsniper",
+    "hexwarden"
   ],
   "BasePrice": 250,
   "PriceStep": 250
