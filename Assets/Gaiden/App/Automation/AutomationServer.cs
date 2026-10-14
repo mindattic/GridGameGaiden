@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading;
 using Gaiden.Core;
 using Gaiden.Core.Battle;
+using Gaiden.Core.Content;
 using Gaiden.Meta;
 using Newtonsoft.Json;
 using UnityEngine;
@@ -222,6 +223,33 @@ namespace Gaiden.App.Automation
                     var stage = q["stage"] ?? app.Content.CampaignStages()[0].Id;
                     app.Router.Push(new BattleScreen(stage));
                     return new { ok = true, stage };
+                }
+                case "randombattle":
+                {
+                    // Battle-clip demo: picks a random real stage (any theme, main or postgame) and a
+                    // random wave from it — one enemy family grouping, per the house "never mix families
+                    // in a wave" convention — as a single-wave skirmish. Registers a throwaway synthetic
+                    // StageDef in the in-memory ContentDb (never touches the JSON on disk) so the normal
+                    // BattleFactory.Build path — party, LevelOverride-aware recommended level, everything —
+                    // works exactly like a real stage. capture.json's battle-start/battle-end rules turn
+                    // every one of these into its own short clip automatically.
+                    var realStages = app.Content.Stages.Values.Where(s => !s.IsTest && s.Waves.Count > 0).ToList();
+                    if (realStages.Count == 0) return new { error = "no stages available" };
+                    var src = realStages[UnityEngine.Random.Range(0, realStages.Count)];
+                    var wave = src.Waves[UnityEngine.Random.Range(0, src.Waves.Count)];
+                    int srcIndex = app.Content.CampaignStages().FindIndex(x => x.Id == src.Id);
+                    int level = src.LevelOverride ?? (srcIndex >= 0 ? Progression.RecommendedLevel(srcIndex) : 5);
+                    var synthId = "skirmish-" + Guid.NewGuid().ToString("N").Substring(0, 8);
+                    app.Content.Stages[synthId] = new StageDef
+                    {
+                        Id = synthId, Name = $"{src.Name} Skirmish", Theme = src.Theme, Background = src.Background,
+                        Music = src.Music, IsTest = false, LevelOverride = level, Waves = new List<WaveDef> { wave },
+                    };
+                    if (app.Save == null) { app.Save = Progression.NewGame(app.Content, "Bot"); app.Slot = 2; }
+                    // ResetTo, not Push: this is meant to be called over and over for "tons of clips" —
+                    // Push would grow the screen stack by two (battle, then its postbattle) every time.
+                    app.Router.ResetTo(new BattleScreen(synthId));
+                    return new { ok = true, stage = synthId, source = src.Id, level, enemies = wave.Enemies.Select(e => e.Class).ToList() };
                 }
                 case "autoplay":
                     if (app.Router.Current is BattleScreen bs) { bs.AutoPlay = q["on"] != "0"; return new { ok = true }; }
