@@ -185,6 +185,19 @@ namespace Gaiden.App.Automation
                     return Pending;
                 }
                 case "back": app.Router.Back(); return new { ok = true };
+                case "resetinput":
+                    // GG-T16 recovery: click()/clicktext() have been seen going silently unresponsive
+                    // (ok:true, plausible coordinates, but the tap never registers) after a long-running
+                    // session's worth of automation traffic, with no error anywhere to react to. Not
+                    // root-caused — this gives a harness that detects the stuck pattern (screen doesn't
+                    // advance after a click) a cheap recovery to try before resorting to a full process
+                    // restart: tear down and recreate the virtual mouse device, in case some InputSystem-
+                    // side state (not UI Toolkit's, since a fresh device still shares the same panel) has
+                    // gone stale.
+                    if (mouse != null) { InputSystem.RemoveDevice(mouse); }
+                    mouse = InputSystem.AddDevice<Mouse>("AutomationMouse");
+                    InputSystem.QueueStateEvent(mouse, new MouseState { position = new Vector2(1, 1) });
+                    return new { ok = true };
                 case "wait":
                     StartCoroutine(WaitIdle(F(q["ms"], 0) / 1000f, reply));
                     return Pending;

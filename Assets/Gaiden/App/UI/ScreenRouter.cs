@@ -81,6 +81,11 @@ namespace Gaiden.App
 
         private void Go(Action mutate)
         {
+            // A Confirm veil answers a question about the screen it was raised on; if we're navigating
+            // away (however that happened — a real Cancel/Yes click already removes it, so this only
+            // ever catches a screen change that left one stranded) it must not outlive that screen, or
+            // it silently blocks every future click with no error anywhere (see Confirm.DismissStale).
+            Confirm.DismissStale();
             if (busy) { transitionToken++; mutate(); MountTop(); return; }
             GameApp.I.StartCoroutine(Transition(mutate));
         }

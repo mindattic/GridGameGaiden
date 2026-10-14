@@ -181,6 +181,10 @@ def campaign(run="campaign", stages=6, speed=3):
         # actually did something — screen left "postbattle" — and retry a few times before giving up,
         # rather than silently looping on a dead click for the rest of the run.
         for attempt in range(5):
+            if attempt == 3:  # GG-T16 recovery: try recreating the virtual mouse device before giving up
+                print(f"stage{n}: resetting automation input device before final retries")
+                call("resetinput")
+                time.sleep(0.5)
             r = call("click", name="next")
             if isinstance(r, dict) and r.get("error"):
                 call("clicktext", text="Continue")

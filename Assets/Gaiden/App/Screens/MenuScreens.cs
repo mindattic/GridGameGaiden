@@ -352,10 +352,13 @@ namespace Gaiden.App
     /// <summary>Modal confirm dialog on the overlay layer.</summary>
     public static class Confirm
     {
+        private const string VeilName = "confirm-veil";
+
         public static void Show(string question, string yes, Action onYes, Action onNo = null)
         {
             var overlay = GameApp.I.Overlay;
             var veil = Ui.El("fill veil col center", overlay);
+            veil.name = VeilName;
             veil.pickingMode = PickingMode.Position;
             var w = Ui.Window(null, veil);
             w.style.width = 860;
@@ -366,6 +369,19 @@ namespace Gaiden.App
             row.style.justifyContent = Justify.FlexEnd;
             Ui.Button("Cancel", () => { veil.RemoveFromHierarchy(); onNo?.Invoke(); }, null, row);
             Ui.Button(yes, () => { veil.RemoveFromHierarchy(); onYes?.Invoke(); }, "btn--primary", row);
+        }
+
+        /// <summary>A confirm veil answers a question about the screen it was raised on — if that screen
+        /// changes from under it (any navigation, or an automation call that swaps screens directly) with
+        /// the veil never explicitly answered, it would otherwise stay in Overlay forever: a full-screen
+        /// PickingMode.Position layer silently eating every future click with no error anywhere (the real
+        /// root cause behind GG-T16 — not an Input System/UI Toolkit staleness bug as first suspected).
+        /// ScreenRouter calls this on every navigation so a stale veil can never outlive its screen.</summary>
+        public static void DismissStale()
+        {
+            var overlay = GameApp.I?.Overlay;
+            if (overlay == null) return;
+            foreach (var veil in overlay.Query(VeilName).ToList()) veil.RemoveFromHierarchy();
         }
     }
 
