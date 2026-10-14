@@ -231,8 +231,11 @@ namespace Gaiden.App.Automation
                     // in a wave" convention — as a single-wave skirmish. Registers a throwaway synthetic
                     // StageDef in the in-memory ContentDb (never touches the JSON on disk) so the normal
                     // BattleFactory.Build path — party, LevelOverride-aware recommended level, everything —
-                    // works exactly like a real stage. capture.json's battle-start/battle-end rules turn
-                    // every one of these into its own short clip automatically.
+                    // works exactly like a real stage. Launch with -capture-config pointing at
+                    // capture.json (its "enabled" still true) to turn each one into its own short
+                    // clip via its battle-start/battle-end rules — MindAttic.Capture only reads that
+                    // file when told to with -capture-config, never just because it sits in
+                    // StreamingAssets (see tools/harness.py's battle_clips()).
                     var realStages = app.Content.Stages.Values.Where(s => !s.IsTest && s.Waves.Count > 0).ToList();
                     if (realStages.Count == 0) return new { error = "no stages available" };
                     var src = realStages[UnityEngine.Random.Range(0, realStages.Count)];

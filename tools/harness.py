@@ -3,6 +3,7 @@ Self-play harness: launches the development player with the automation endpoint 
 
     python tools/harness.py smoke            # title → new game → hub → battle (autoplay) → results
     python tools/harness.py sweep            # screenshot + layout-audit every menu screen
+    python tools/harness.py clips N          # generate N random-stage/random-wave battle clips
     python tools/harness.py shot NAME        # screenshot the running player
     python tools/harness.py call PATH [k=v]  # raw endpoint call, e.g. call state
 
@@ -180,11 +181,12 @@ def campaign(run="campaign", stages=6, speed=3, extra=()):
         # next one) — there is no literal "Next stage" button. Only a dead-end (last unlocked content)
         # lacks a "next" element, in which case "Continue" is the only way forward (back to the Hub).
         #
-        # AutomationServer's click/clicktext occasionally go silently unresponsive on a long-lived
-        # player process (GG-T16, not yet root-caused): the HTTP call replies ok:true with plausible
-        # coordinates, but the tap never registers and the screen never advances. Verify the click
-        # actually did something — screen left "postbattle" — and retry a few times before giving up,
-        # rather than silently looping on a dead click for the rest of the run.
+        # AutomationServer's click/clicktext could occasionally go silently unresponsive on a
+        # long-lived player process (GG-T16): the HTTP call replies ok:true with plausible coordinates,
+        # but the tap never registers and the screen never advances. Root-caused and fixed in GG-T20
+        # (an orphaned Confirm veil eating every click) — this verify-and-retry is kept as defense in
+        # depth rather than ripped out, since it's cheap and a real human-facing path could still leave
+        # some other UI element in a dead state we haven't found yet.
         for attempt in range(5):
             if attempt == 3:  # GG-T16 recovery: try recreating the virtual mouse device before giving up
                 print(f"stage{n}: resetting automation input device before final retries")
@@ -207,6 +209,58 @@ def campaign(run="campaign", stages=6, speed=3, extra=()):
     print("errors:", [l[:300] for l in logs if l.startswith(("Error", "Exception")) and "first mouse" not in l])
 
 
+def battle_clips(run="clips", count=10, speed=3, timeout=240, capture=True):
+    """Generates many short, independent battle clips via the randombattle endpoint: a random real
+    stage + a random wave from it (one enemy family per clip, per the house wave convention), at that
+    stage's real recommended level. No UI clicks are involved in the loop at all (ResetTo tears down
+    whatever screen a prior clip left behind), so this sidesteps the click-reliability concerns (GG-T16,
+    root-caused and fixed as the orphaned-Confirm-veil bug in GG-T20) that campaign() has to guard against.
+    capture.json's battle-start/battle-end rules are NOT auto-loaded just by sitting in StreamingAssets —
+    MindAttic.Capture only reads a config file when told to with -capture-config (confirmed by reading
+    CaptureUnity.Boot()/CaptureOptions.Apply() in the package; the literal -capture flag is NOT required
+    for rule-triggered recording, only -capture-config is). So this passes -capture-config pointing at the
+    built player's own copy of capture.json, which still needs "enabled": true to actually record — set
+    that before calling this, and back to false afterward, then rebuild so the committed state matches."""
+    extra = ("-capture-config", os.path.join(os.path.dirname(EXE), "GridGameGaiden_Data",
+                                              "StreamingAssets", "capture.json")) if capture else ()
+    launch(run, extra=extra)
+    call("speed", x=speed)
+    clips = []
+    for n in range(count):
+        info = call("randombattle")
+        if not isinstance(info, dict) or not info.get("ok"):
+            print(f"clip{n}: randombattle failed: {info}")
+            break
+        print(f"clip{n}: {info['source']} -> {info['stage']} lvl{info['level']} {info['enemies']}")
+        # ResetTo's fade transition (ScreenRouter.Go) takes ~0.2s+ to actually mount BattleScreen;
+        # calling autoplay before that lands hits "not in battle" and silently never turns it on.
+        for _ in range(20):
+            if call("state")["screen"] == "battle":
+                break
+            time.sleep(0.2)
+        r = call("autoplay", on=1)
+        if isinstance(r, dict) and r.get("error"):
+            print(f"clip{n}: autoplay failed to engage: {r}")
+        t0 = time.time(); last_clock = -1; stuck = 0; result = "TIMEOUT"
+        while time.time() - t0 < timeout:
+            time.sleep(1.0)
+            st = call("state")
+            if st["screen"] != "battle":
+                result = st["screen"]
+                break
+            b = st["battle"]
+            stuck = stuck + 1 if b["clock"] == last_clock and not b["busy"] else 0
+            last_clock = b["clock"]
+            if stuck > 12:
+                result = "STALLED"
+                break
+        clips.append({**info, "result": result})
+    logs = call("logs")
+    print(json.dumps(clips, indent=1))
+    print("errors:", [l[:300] for l in logs if l.startswith(("Error", "Exception")) and "first mouse" not in l])
+    return clips
+
+
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "smoke"
     if cmd == "smoke":
@@ -215,6 +269,8 @@ if __name__ == "__main__":
         campaign(stages=int(sys.argv[2]) if len(sys.argv) > 2 else 6)
     elif cmd == "sweep":
         sweep(sys.argv[2] if len(sys.argv) > 2 else "sweep")
+    elif cmd == "clips":
+        battle_clips(count=int(sys.argv[2]) if len(sys.argv) > 2 else 10)
     elif cmd == "shot":
         print(shot(sys.argv[2]))
     elif cmd == "call":

@@ -43,9 +43,11 @@ Unity **6000.4.3f1**. Design docs: [`docs/BIBLE.md`](docs/BIBLE.md), backlog: [`
 ## Capture
 
 [MindAttic.Capture](../MindAttic.Capture) auto-starts in Editor Play sessions and development
-builds (not gated by `-capture`); `Assets/StreamingAssets/capture.json` records a battle clip on
-`battle-start`/`battle-end`. Currently disabled project-wide: `"enabled": false` in that same
-file. Flip it to `true` (or remove the key) to re-enable.
+builds (not gated by `-capture`), but its trigger rules are never auto-loaded just because
+`Assets/StreamingAssets/capture.json` exists — the package only reads a config file when launched
+with `-capture-config <path>` pointing at it. Pass that (see `tools/harness.py`'s `battle_clips()`)
+to get a battle clip on `battle-start`/`battle-end`. Currently disabled project-wide regardless:
+`"enabled": false` in that same file. Flip it to `true` (or remove the key) to re-enable.
 
 ## Credits
 
