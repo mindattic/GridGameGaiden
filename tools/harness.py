@@ -128,9 +128,14 @@ def sweep(run="sweep"):
     print("errors:", [l for l in logs if l.startswith(("Error", "Exception"))])
 
 
-def campaign(run="campaign", stages=6, speed=3):
-    """Autoplays consecutive stages through the real UI (Next stage / Retry), checking for stalls and errors."""
-    launch(run)
+def campaign(run="campaign", stages=6, speed=3, extra=()):
+    """Autoplays consecutive stages through the real UI (Next stage / Retry), checking for stalls and errors.
+    Pass extra=("-capture", "video", "screen", "5") to record the run (capture.json must have "enabled": true).
+    The raw tape grows fast at HighQuality — ~500MB+/minute of real time observed on one run — so a
+    continuous capture of more than a handful of stages means a very large .mkv before it's finalized
+    into the much smaller .mp4; capture.json's battle-start/battle-end rules (separate per-battle clips)
+    are the safer default for anything longer than a short highlight."""
+    launch(run, extra=extra)
     call("newgame", slot=0)
     time.sleep(1)
     call("speed", x=speed)
