@@ -236,13 +236,20 @@ namespace Gaiden.App.Automation
                     // clip via its battle-start/battle-end rules — MindAttic.Capture only reads that
                     // file when told to with -capture-config, never just because it sits in
                     // StreamingAssets (see tools/harness.py's battle_clips()).
+                    // Earlier calls' throwaway stages must not re-enter the pool — a prior run of this
+                    // same endpoint, left running, fed itself its own synthetic stages as "random real"
+                    // sources within a few dozen calls, compounding (skirmish of a skirmish of a...) and
+                    // collapsing variety toward whatever got picked early. Prune them before picking.
+                    const string SynthPrefix = "skirmish-";
+                    foreach (var oldId in app.Content.Stages.Keys.Where(k => k.StartsWith(SynthPrefix)).ToList())
+                        app.Content.Stages.Remove(oldId);
                     var realStages = app.Content.Stages.Values.Where(s => !s.IsTest && s.Waves.Count > 0).ToList();
                     if (realStages.Count == 0) return new { error = "no stages available" };
                     var src = realStages[UnityEngine.Random.Range(0, realStages.Count)];
                     var wave = src.Waves[UnityEngine.Random.Range(0, src.Waves.Count)];
                     int srcIndex = app.Content.CampaignStages().FindIndex(x => x.Id == src.Id);
                     int level = src.LevelOverride ?? (srcIndex >= 0 ? Progression.RecommendedLevel(srcIndex) : 5);
-                    var synthId = "skirmish-" + Guid.NewGuid().ToString("N").Substring(0, 8);
+                    var synthId = SynthPrefix + Guid.NewGuid().ToString("N").Substring(0, 8);
                     app.Content.Stages[synthId] = new StageDef
                     {
                         Id = synthId, Name = $"{src.Name} Skirmish", Theme = src.Theme, Background = src.Background,
