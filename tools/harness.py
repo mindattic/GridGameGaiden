@@ -174,10 +174,23 @@ def campaign(run="campaign", stages=6, speed=3):
         # its text reads "Next battle ›" (mid-expedition) or "Next expedition ›" (crossing into the
         # next one) — there is no literal "Next stage" button. Only a dead-end (last unlocked content)
         # lacks a "next" element, in which case "Continue" is the only way forward (back to the Hub).
-        r = call("click", name="next")
-        if isinstance(r, dict) and r.get("error"):
-            call("clicktext", text="Continue")
-        time.sleep(1.5)
+        #
+        # AutomationServer's click/clicktext occasionally go silently unresponsive on a long-lived
+        # player process (GG-T16, not yet root-caused): the HTTP call replies ok:true with plausible
+        # coordinates, but the tap never registers and the screen never advances. Verify the click
+        # actually did something — screen left "postbattle" — and retry a few times before giving up,
+        # rather than silently looping on a dead click for the rest of the run.
+        for attempt in range(5):
+            r = call("click", name="next")
+            if isinstance(r, dict) and r.get("error"):
+                call("clicktext", text="Continue")
+            time.sleep(1.5)
+            if call("state")["screen"] != "postbattle":
+                break
+            print(f"stage{n}: click(next)/Continue didn't advance, retry {attempt + 1}/5")
+        else:
+            print(f"stage{n}: click retries exhausted, screen still postbattle — stopping run")
+            break
         if call("state")["screen"] == "crawl":
             call("clicktext", text="Skip"); time.sleep(1.2)
     logs = call("logs")

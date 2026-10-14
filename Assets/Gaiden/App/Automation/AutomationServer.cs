@@ -164,7 +164,11 @@ namespace Gaiden.App.Automation
                 case "click":
                 {
                     var e = app.Stage.Q(q["name"]);
-                    if (e == null) return new { error = $"no element named '{q["name"]}'" };
+                    // Q(name) isn't filtered by visibility like clicktext's Query<>() is — without this,
+                    // a hidden/zero-size/off-stage match (e.g. mid-transition, or a same-named element
+                    // elsewhere not currently shown) taps nothing and still replies ok:true (GG-T16).
+                    if (e == null || e.resolvedStyle.display == DisplayStyle.None || e.worldBound.width <= 0 || !Opaque(e))
+                        return new { error = $"no visible element named '{q["name"]}'" };
                     var c = DesignPoint(e.worldBound.center);
                     StartCoroutine(Tap(c.x, c.y, reply));
                     return Pending;
