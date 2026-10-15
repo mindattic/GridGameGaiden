@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Gaiden.Core.Battle;
 using Gaiden.Core.Content;
+using Gaiden.Core.Rules;
 using Gaiden.Meta;
 using Xunit;
 using static Gaiden.Tests.TestKit;
@@ -199,6 +200,23 @@ namespace Gaiden.Tests
             Assert.Equal(0, leveler.Hp); // 0 = full
             Assert.Equal(1, Progression.Level(fallen));
             Assert.Equal(1, fallen.Hp);
+        }
+
+        [Fact] // GG-T49
+        public void Leveling_up_in_battle_grants_skill_points_including_the_milestone_bonus()
+        {
+            var c = Real; var s = Progression.NewGame(c, "SP");
+            var leveler = s.Hero(s.Party[0]);
+            leveler.TotalXp = Formulas.TotalXpForLevel(5) - 5; // level 4, 5 XP short of hitting level 5 (a milestone)
+            leveler.SkillPoints = 0;
+
+            var st = DirectWin(c, s, c.CampaignStages()[0].Id);
+            st.Results.Xp = 10; // pushes the leveler across the level-5 milestone
+            BattleFactory.Commit(c, s, st);
+
+            Assert.Equal(5, Progression.Level(leveler));
+            Assert.Equal(Formulas.SkillPointsForLevelUp(4, 5), leveler.SkillPoints);
+            Assert.Equal(2, leveler.SkillPoints); // 1 per level + the milestone bonus
         }
 
         [Fact]

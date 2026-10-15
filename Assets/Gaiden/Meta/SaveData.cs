@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Gaiden.Core.Rules;
 
 namespace Gaiden.Meta
 {
@@ -21,7 +22,7 @@ namespace Gaiden.Meta
 
     public sealed class SaveData
     {
-        public const int CurrentVersion = 1;
+        public const int CurrentVersion = 2;
 
         public int Version = CurrentVersion;
         public string Name = "Lightbearer";
@@ -106,6 +107,9 @@ namespace Gaiden.Meta
         public List<string> Known = new List<string>();
         /// <summary>Five ability-bar entries: ability id, "item:id", or null.</summary>
         public List<string> Bar = new List<string> { null, null, null, null, null };
+        /// <summary>Unspent skill points (§15.1, GG-T49), earned per level plus milestone bonuses
+        /// (<see cref="Formulas.SkillPointsForLevelUp"/>). Spent on skill-tree nodes (GG-T50).</summary>
+        public int SkillPoints;
 
         public string WeaponId;
         public int WeaponDurability;
@@ -192,7 +196,16 @@ namespace Gaiden.Meta
         {
             if (s == null) return null;
             if (s.Version > SaveData.CurrentVersion) throw new InvalidOperationException($"Save version {s.Version} is newer than this build");
-            // v1 is the first shape; future steps go here: if (s.Version == 1) { ...; s.Version = 2; }
+            // v1 is the first shape.
+            if (s.Version < 2)
+            {
+                // GG-T49: skill points didn't exist before v2, so a hero already past level 1 is
+                // backfilled once with the points they'd have earned leveling up to here — otherwise
+                // every existing save would start the new economy at a permanent deficit.
+                foreach (var h in s.Roster)
+                    h.SkillPoints += Formulas.SkillPointsForLevelUp(1, Formulas.LevelFromTotalXp(h.TotalXp).level);
+                s.Version = 2;
+            }
             s.Bounty ??= new BountySave();
             s.Worn ??= new Dictionary<string, List<WornGear>>();
             s.Broken ??= new Dictionary<string, int>();

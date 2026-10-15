@@ -1403,7 +1403,7 @@ SaveData                       (Meta/SaveData.cs; one per slot)
 ├─ Version (1), Name ("Player"), CreatedUtc, UpdatedUtc, PlaySeconds
 ├─ Gold (wallet), LifetimeCoins (ticker)
 ├─ HighestClearedStage (campaign index, −1 = none), ClearedStages{}, SeenCrawls{}, LastStage
-├─ Roster[]  HeroSave: ClassId, TotalXp, Hp (0 = full), Known[], Bar[5],
+├─ Roster[]  HeroSave: ClassId, TotalXp, Hp (0 = full), Known[], Bar[5], SkillPoints,
 │                       WeaponId/Durability/Repairs, ArmorId/Durability/Repairs, Relics[3]
 ├─ Party[]   class ids of the active squad (≤ 4)
 ├─ Inventory { itemId → count }, Recruits
@@ -1413,6 +1413,8 @@ SaveData                       (Meta/SaveData.cs; one per slot)
 ```
 
 Level is **derived** from `TotalXp` (`Formulas.LevelFromTotalXp`, `XpToNext(L) = 50 + 10·L²`), so the curve can change without migration. `SaveMigrations.Migrate` upgrades in place (v1 is the first shape; it backfills missing sections and pads Bar/Relics) and rejects saves newer than the build. Dictionaries and sets serialize natively (Newtonsoft) — the old "lists only" limit is gone.
+
+**Amended 2026-10-15 (GG-T49):** every level gained now also earns **skill points** — `HeroSave.SkillPoints`, an unspent balance spent on skill-tree nodes (content and UI land in GG-T50). `Formulas.SkillPointsForLevelUp(from, to)` awards `SkillPointsPerLevel` (1) for each level crossed, plus a `SkillPointMilestoneBonus` (1) on every `SkillPointMilestoneInterval`th level (5, 10, 15…) — summed per level so a multi-level jump still hits every milestone in between. It's applied everywhere a hero's level can move: a battle-end level-up, hard-won XP kept on a defeat/retreat, a guest who survives joining the roster, and a Summon Circle recruit arriving above level 1. Save shape bumped to **v2**: `SaveMigrations` backfills each existing hero once with the points they'd already have earned up to their current level, so no save is retroactively shorted by the mechanic not existing yet; re-migrating a current-version save does not grant them twice. *(Tests: `Leveling_up_in_battle_grants_skill_points_including_the_milestone_bonus`, `Hard_won_xp_on_defeat_still_grants_skill_points_when_it_crosses_a_level`, `Migrating_a_v1_save_backfills_skill_points_once_for_heroes_already_past_level_1`, `A_guest_who_survives_a_victory_joins_the_roster`, `Full_loop_battle_commit_then_every_vendor`.)*
 
 ### 15.2 Persistence flow
 
@@ -1880,6 +1882,8 @@ ENEMIES ─▶ drop tables ─▶ Inventory ─┬▶ Blacksmith (forge / upgrad
 - **Learn** — **Amended 2026-10-09 (owner decision):** buy new abilities with gold. Learnable = the class's own `Abilities` list plus **every hero spell in the general catalog**, minus what is known (enemy charges, `enrage` and passives excluded). Price: **spells 120 + 80 per orb of cost, skills 300** (`Abilities.Price`). Confirm dialog, then the ability is Known.
 
 `Abilities.Assign` accepts only Known abilities or consumables, refuses locked slots, and moves an entry already on the bar to the new slot (no duplicates via assignment). "Clear slot" empties it.
+
+**Amended 2026-10-15 (GG-T49, owner decision):** heroes now also earn skill points on level-up ([§15.1](#151-data-model)) to spend on skill-tree nodes. Decision: once the tree exists (content, `ClassDef` home tree and UI are GG-T50's job), its nodes **replace gold-bought Learn for a hero's own class/off-class abilities and passives** — gold Learn above stays only for the **general spell catalog**. Until GG-T50 lands there is no tree to spend points on yet, so Learn's current gold-for-class-abilities behavior is deliberately left unchanged rather than blocking progression mid-rollout; `StatusScreen` (the Camp's Status row, [§25.0](#250-camp-navigation)) already shows the running skill-point balance (`HeroSave.SkillPoints`) so the currency is visible before there's anywhere to spend it.
 
 ### 25.7 Shared Camp utilities
 

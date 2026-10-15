@@ -188,6 +188,25 @@ namespace Gaiden.Core.Rules
             return total;
         }
 
+        /// <summary>Skill points earned per level (GG-T49), plus a bonus every milestone level.</summary>
+        public const int SkillPointsPerLevel = 1;
+        public const int SkillPointMilestoneInterval = 5;
+        public const int SkillPointMilestoneBonus = 1;
+
+        /// <summary>Skill points earned crossing from <paramref name="fromLevel"/> to <paramref name="toLevel"/>
+        /// (exclusive/inclusive) — summed per level so a multi-level jump (a big XP grant, a guest or recruit
+        /// arriving above level 1) still hits every milestone along the way.</summary>
+        public static int SkillPointsForLevelUp(int fromLevel, int toLevel)
+        {
+            int total = 0;
+            for (int l = fromLevel + 1; l <= toLevel; l++)
+            {
+                total += SkillPointsPerLevel;
+                if (l % SkillPointMilestoneInterval == 0) total += SkillPointMilestoneBonus;
+            }
+            return total;
+        }
+
         /// <summary>Per-action chance that a Power Amplifier appears, from the living party's combined Luck (§1.2.6).</summary>
         public static float AmplifierChance(float partyLuck) =>
             Clamp(BattleConfig.AmplifierBaseChance + partyLuck * BattleConfig.AmplifierChancePerLuck, 0f, BattleConfig.AmplifierMaxChance);

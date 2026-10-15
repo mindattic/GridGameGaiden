@@ -4,6 +4,7 @@ using Gaiden.Core;
 using Gaiden.Core.Battle;
 using Gaiden.Core.Bot;
 using Gaiden.Core.Content;
+using Gaiden.Core.Rules;
 using Gaiden.Meta;
 using Newtonsoft.Json;
 using Xunit;
@@ -38,12 +39,32 @@ namespace Gaiden.Tests
             var s = Progression.NewGame(Real, "Round");
             s.ClearedStages.Add("greenvalley-01");
             s.Bestiary["slime00"] = new BestiaryEntry { Seen = true, Defeated = 2 };
+            s.Roster[0].SkillPoints = 3;
             var json = JsonConvert.SerializeObject(s, Formatting.Indented, ContentLoader.Settings);
             var back = SaveMigrations.Migrate(JsonConvert.DeserializeObject<SaveData>(json, ContentLoader.Settings));
             Assert.Equal(s.Gold, back.Gold);
             Assert.Contains("greenvalley-01", back.ClearedStages);
             Assert.Equal(2, back.Bestiary["slime00"].Defeated);
             Assert.Equal(s.Roster[0].Bar, back.Roster[0].Bar);
+            Assert.Equal(3, back.Roster[0].SkillPoints); // a current-version save isn't re-backfilled
+        }
+
+        [Fact] // GG-T49
+        public void Migrating_a_v1_save_backfills_skill_points_once_for_heroes_already_past_level_1()
+        {
+            var s = Progression.NewGame(Real, "SPMigrate");
+            var hero = s.Hero(s.Party[0]);
+            hero.TotalXp = Formulas.TotalXpForLevel(6); // already level 6 under the pre-GG-T49 save shape
+            hero.SkillPoints = 0;
+            s.Version = 1; // simulate a save written before skill points existed
+
+            var migrated = SaveMigrations.Migrate(s);
+            int expected = Formulas.SkillPointsForLevelUp(1, 6);
+            Assert.Equal(SaveData.CurrentVersion, migrated.Version);
+            Assert.Equal(expected, hero.SkillPoints);
+
+            SaveMigrations.Migrate(migrated); // re-migrating a current save must not grant the points twice
+            Assert.Equal(expected, hero.SkillPoints);
         }
 
         [Fact]
@@ -119,6 +140,9 @@ namespace Gaiden.Tests
             int price = Summon.Price(c, s);
             Assert.True(Summon.Recruit(c, s, recruit.Id).Ok);
             Assert.Equal(price + 250, Summon.Price(c, s));
+            // GG-T49: a recruit arrives with the skill points its arrival level would already have earned.
+            var recruited = s.Hero(recruit.Id);
+            Assert.Equal(Formulas.SkillPointsForLevelUp(1, Progression.Level(recruited)), recruited.SkillPoints);
 
             // Party cap
             while (s.Party.Count < Progression.MaxPartySize)
@@ -249,6 +273,7 @@ namespace Gaiden.Tests
 
             Assert.Equal(40, rep.XpEach);
             Assert.All(s.Party, id => Assert.True(s.Hero(id).TotalXp >= 40));
+            Assert.All(s.Party, id => Assert.Equal(0, s.Hero(id).SkillPoints)); // GG-T49: no level crossed, no points yet
         }
 
         [Fact]
@@ -289,6 +314,21 @@ namespace Gaiden.Tests
             Assert.Equal(40, rep.XpEach);
         }
 
+        [Fact] // GG-T49
+        public void Hard_won_xp_on_defeat_still_grants_skill_points_when_it_crosses_a_level()
+        {
+            var c = Real; var s = Progression.NewGame(c, "Defeat2");
+            var hero = s.Hero(s.Party[0]);
+            hero.TotalXp = Formulas.TotalXpForLevel(2) - 5; // 5 XP short of level 2
+            var st = DirectBattle(c, s, c.CampaignStages()[0].Id);
+            st.Results.Xp = 10;
+            st.Phase = BattlePhase.Defeat;
+            BattleFactory.Commit(c, s, st);
+
+            Assert.Equal(2, Progression.Level(hero));
+            Assert.Equal(Formulas.SkillPointsForLevelUp(1, 2), hero.SkillPoints);
+        }
+
         // ── Guest allies (§25.11) ──
 
         private static StageDef GuestStage(string guest) => new StageDef { Id = "g", Name = "G", IsTest = true, Waves = { new WaveDef { Enemies = { new SpawnDef { Class = "slime00", Level = 1, X = 2, Y = 1 } }, Guests = { new SpawnDef { Class = guest, Level = 3, X = 0, Y = 5 } } } } };
@@ -309,6 +349,8 @@ namespace Gaiden.Tests
             Assert.Contains("dervish", rep.GuestsJoined);
             Assert.NotNull(s.Hero("dervish"));
             Assert.Equal(Progression.MaxPartySize, s.Party.Count); // a full party: the rescued guest waits in reserve
+            // GG-T49: a rescued guest arrives with the skill points its battle level would already have earned.
+            Assert.Equal(Formulas.SkillPointsForLevelUp(1, guest.Level), s.Hero("dervish").SkillPoints);
         }
 
         [Fact]

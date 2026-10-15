@@ -227,6 +227,7 @@ namespace Gaiden.App
             var (lvl, into) = Gaiden.Core.Rules.Formulas.LevelFromTotalXp(h.TotalXp);
             Ui.Text($"Level {lvl}", "h2 gold", stats);
             Ui.Text($"Next: {Gaiden.Core.Rules.Formulas.XpToNext(lvl) - into} XP", "small dim", stats);
+            Ui.Text($"Skill Points: {h.SkillPoints}", "small dim", stats).style.marginBottom = 12;
             var e = u.Effective;
             void Stat(string n, float v) { var r = Ui.El("row", stats); Ui.Text(n, "small dim", r).style.width = 120; Ui.Text($"{v:0}", "h2", r); }
             Stat("STR", e.Strength); Stat("VIT", e.Vitality); Stat("AGI", e.Agility); Stat("SPD", e.Speed);

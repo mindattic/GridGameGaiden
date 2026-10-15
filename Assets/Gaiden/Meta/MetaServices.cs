@@ -346,6 +346,7 @@ namespace Gaiden.Meta
                     h.TotalXp += rep.XpEach;
                     int after = Progression.Level(h);
                     if (after > before) rep.LevelUps.Add((h.ClassId, before, after));
+                    h.SkillPoints += Formulas.SkillPointsForLevelUp(before, after);
                     // Wounds carry; a hero who fell revives at 1 HP; a level-up refreshes to full.
                     h.Hp = after > before ? 0 : (u.Alive ? (u.Hp >= u.MaxHp ? 0 : u.Hp) : 1);
                     r.BrokenWeapons.TryGetValue(u.Def.Id, out var shatteredWeapons);
@@ -430,6 +431,7 @@ namespace Gaiden.Meta
                 if (!rep.Victory || s.Hero(g.Def.Id) != null) continue;
                 var h = Progression.NewHero(c, g.Def.Id);
                 h.TotalXp = Formulas.TotalXpForLevel(g.Level);
+                h.SkillPoints += Formulas.SkillPointsForLevelUp(1, g.Level);
                 h.Hp = g.Hp >= g.MaxHp ? 0 : g.Hp;
                 s.Roster.Add(h);
                 if (s.Party.Count < Progression.MaxPartySize) s.Party.Add(h.ClassId);
@@ -476,6 +478,7 @@ namespace Gaiden.Meta
                 h.TotalXp += rep.XpEach;
                 int after = Progression.Level(h);
                 if (after > before) rep.LevelUps.Add((h.ClassId, before, after));
+                h.SkillPoints += Formulas.SkillPointsForLevelUp(before, after);
             }
             foreach (var kv in r.Kills) Entry(s, kv.Key).Defeated += kv.Value;
         }
@@ -1328,6 +1331,7 @@ namespace Gaiden.Meta
             var h = Progression.NewHero(c, classId);
             int avg = s.Roster.Count == 0 ? 0 : (int)s.Roster.Average(x => x.TotalXp);
             h.TotalXp = avg; // recruits arrive at the roster's average experience
+            h.SkillPoints += Formulas.SkillPointsForLevelUp(1, Progression.Level(h));
             s.Roster.Add(h);
             if (s.Party.Count < Progression.MaxPartySize) s.Party.Add(h.ClassId);
             return Result.Success($"{c.Class(classId).Name} joins you!");
