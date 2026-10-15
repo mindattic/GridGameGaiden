@@ -15,6 +15,7 @@ namespace Gaiden.Core.Battle
         {
             var hero = S.UnitById(m.HeroId);
             if (hero == null || !hero.Alive || !hero.IsHero) { Emit(new AbilityRefusedEvent { CasterId = m.HeroId, Reason = "No such hero" }); return false; }
+            AutoEquipBackupWeapon(hero);
             if (hero.IsImmobile) { Emit(new AbilityRefusedEvent { CasterId = hero.Id, Reason = "Can't move" }); return false; }
 
             var before = SnapshotPositions();

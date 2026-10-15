@@ -59,6 +59,7 @@ namespace Gaiden.Core.Battle
         {
             var hero = S.UnitById(cmd.HeroId);
             if (hero == null || !hero.Alive || !hero.IsHero) return Refuse(null, "No such hero");
+            AutoEquipBackupWeapon(hero);
             var status = BattleEngine.GetSlotStatus(S, hero.Id, cmd.Slot);
             switch (status)
             {
@@ -265,6 +266,17 @@ namespace Gaiden.Core.Battle
                     ApplyBuff(t, buff, dur);
                 }
             }
+        }
+
+        /// <summary>GG-T40: a shattered weapon's slotted backup equips for free the moment this hero is next given a command — no turn cost, no player input.</summary>
+        private void AutoEquipBackupWeapon(Unit hero)
+        {
+            if (hero.WeaponId != null) return;
+            AbilitySlot backup = null;
+            for (int i = 0; i < hero.UnlockedSlots && i < hero.Bar.Count; i++)
+                if (hero.Bar[i].IsWeapon) { backup = hero.Bar[i]; break; }
+            if (backup == null) return;
+            SwapWeapon(hero, backup);
         }
 
         /// <summary>Bar weapon swap: the slot's weapon goes in hand at the durability it was stowed with; the old one takes the slot, keeping its own wear.</summary>

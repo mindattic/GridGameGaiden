@@ -298,7 +298,34 @@ namespace Gaiden.Tests
             Assert.Contains(all, e => e is WeaponShatteredEvent);
             Assert.Null(Hero(s, "knight").WeaponId);
         }
-    
+
+        [Fact] // GG-T40
+        public void Shattered_weapon_auto_equips_the_bar_backup_on_the_hero_s_next_action()
+        {
+            var db = Mini();
+            db.Items["dagger"] = new ItemDef { Id = "dagger", Name = "Dagger", Type = ItemType.Equipment, Slot = EquipmentSlot.Weapon, Durability = 9, BaseDamage = 1, Stats = new Stats { Strength = 1 } };
+            var stage = Stage(("tank", 2, 3));
+            var setup = new BattleSetup { Stage = stage, Seed = 3, UnlockedSlots = 2 };
+            setup.Party.Add(new HeroSpec { ClassId = "knight", Start = new Coord(1, 3), WeaponId = "sword", WeaponDurability = 2, Bar = { "weapon:dagger" }, ItemCounts = { ["dagger"] = 1 } });
+            setup.Party.Add(new HeroSpec { ClassId = "cleric", Start = new Coord(3, 4) });
+            var s = BattleEngine.Create(db, setup, new());
+            var knight = Hero(s, "knight");
+            var cleric = Hero(s, "cleric");
+            Assert.Equal("dagger", knight.Bar[0].WeaponId);
+
+            var all = new System.Collections.Generic.List<BattleEvent>();
+            for (int i = 0; i < 4; i++)
+                all.AddRange(BattleEngine.Apply(s, new MoveCommand { HeroId = cleric.Id, Path = cleric.Pos.Y == 4 ? P((3, 3)) : P((3, 4)) }));
+            Assert.Contains(all, e => e is WeaponShatteredEvent);
+            Assert.Null(knight.WeaponId);
+            Assert.Equal("dagger", knight.Bar[0].WeaponId); // backup still stowed, waiting for the knight's own next action
+
+            var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = knight.Id, Path = P((0, 3)) });
+            Assert.Contains(ev, e => e is WeaponSwappedEvent w && w.ToWeapon == "dagger" && w.FromWeapon == null);
+            Assert.Equal("dagger", knight.WeaponId);
+            Assert.True(knight.Bar[0].IsEmpty);
+        }
+
 
         [Fact]
         public void Double_attack_passive_strikes_twice_and_counter_strikes_back()
