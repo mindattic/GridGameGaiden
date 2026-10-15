@@ -110,9 +110,12 @@ namespace Gaiden.Meta
         public string WeaponId;
         public int WeaponDurability;
         public int WeaponRepairs;
+        /// <summary>Masterwork stat multiplier (§24.6.2, GG-T46); 1 = normal gear.</summary>
+        public float WeaponMastery = 1f;
         public string ArmorId;
         public int ArmorDurability;
         public int ArmorRepairs;
+        public float ArmorMastery = 1f;
         public List<string> Relics = new List<string> { null, null, null };
     }
 
@@ -120,6 +123,8 @@ namespace Gaiden.Meta
     {
         public int Durability;
         public int Repairs;
+        /// <summary>Masterwork stat multiplier this specific copy rolled at craft time (§24.6.2, GG-T46); 1 = normal.</summary>
+        public float Mastery = 1f;
     }
 
     public sealed class BountySave

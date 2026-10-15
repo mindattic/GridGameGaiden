@@ -123,6 +123,10 @@ namespace Gaiden.Core.Battle
         /// <summary>Global weight on enemy physical strikes (difficulty knob; tuned with BalanceReport after the brains, §14.6).</summary>
         public const float EnemyStrikeMultiplier = 0.9f;
 
+        // ── Masterwork crafting (§24.6.2, GG-T46) ────────────────────────────────────
+        /// <summary>A Masterwork piece's durability ceiling over the content baseline.</summary>
+        public const float MasterworkDurabilityMultiplier = 1.25f;
+
         // ── Armor plates (§13.5) and corpses (§14.7) ─────────────────────────────────
         /// <summary>Plate HP grows this much per enemy level above 1.</summary>
         public const float PlatePerLevel = 0.15f;

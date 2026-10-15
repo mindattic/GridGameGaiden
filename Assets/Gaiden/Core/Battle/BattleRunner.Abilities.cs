@@ -286,13 +286,14 @@ namespace Gaiden.Core.Battle
             var outgoing = C.TryItem(hero.WeaponId);
             int outgoingDurability = hero.WeaponDurability;
             int incomingDurability = slot.WeaponDurability;
-            if (outgoing != null) hero.GearStats = hero.GearStats + outgoing.Stats * -1f;
+            if (outgoing != null) hero.GearStats = hero.GearStats + outgoing.Stats * -hero.WeaponMastery;
             if (incoming != null)
             {
                 hero.GearStats = hero.GearStats + incoming.Stats;
                 hero.WeaponId = incoming.Id;
                 hero.WeaponPower = incoming.BaseDamage;
                 hero.WeaponDurability = incomingDurability;
+                hero.WeaponMastery = 1f; // bar backups always enter at factory spec (§24.5), never Masterwork
             }
             Emit(new WeaponSwappedEvent { UnitId = hero.Id, FromWeapon = outgoing?.Id, ToWeapon = incoming?.Id });
             slot.WeaponId = outgoing?.Id;

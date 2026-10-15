@@ -67,9 +67,13 @@ namespace Gaiden.Core.Battle
         public string WeaponId;
         public float WeaponPower;
         public int WeaponDurability;
+        /// <summary>Masterwork stat multiplier for the current weapon (1 = normal, §24.6.2, GG-T46).</summary>
+        public float WeaponMastery = 1f;
         public float ArmorRating;
         public string ArmorId;
         public int ArmorDurability;
+        /// <summary>Masterwork stat multiplier for the current armor (1 = normal, §24.6.2, GG-T46).</summary>
+        public float ArmorMastery = 1f;
         public float PincerDamageBonus;
         public int RegenPerTurn;
         public Dictionary<DamageType, float> GearResist = new Dictionary<DamageType, float>();

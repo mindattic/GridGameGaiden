@@ -271,7 +271,12 @@ namespace Gaiden.Meta
     {
         public static HeroSpec SpecFor(ContentDb c, HeroSave h)
         {
-            var spec = new HeroSpec { ClassId = h.ClassId, Level = Progression.Level(h), Hp = h.Hp, WeaponId = h.WeaponId, WeaponDurability = h.WeaponDurability, ArmorId = h.ArmorId, ArmorDurability = h.ArmorDurability };
+            var spec = new HeroSpec
+            {
+                ClassId = h.ClassId, Level = Progression.Level(h), Hp = h.Hp,
+                WeaponId = h.WeaponId, WeaponDurability = h.WeaponDurability, WeaponMastery = h.WeaponMastery,
+                ArmorId = h.ArmorId, ArmorDurability = h.ArmorDurability, ArmorMastery = h.ArmorMastery,
+            };
             if (h.WeaponId != null) spec.EquippedItemIds.Add(h.WeaponId);
             if (h.ArmorId != null) spec.EquippedItemIds.Add(h.ArmorId);
             foreach (var r in h.Relics) if (r != null) spec.EquippedItemIds.Add(r);
@@ -352,18 +357,19 @@ namespace Gaiden.Meta
                         s.AddItem(finalWeapon, -1);
                         h.WeaponId = finalWeapon;
                         h.WeaponRepairs = 0;
+                        h.WeaponMastery = 1f; // bar backups always enter at factory spec (§24.5), never Masterwork
                     }
                     if (r.FinalBar.TryGetValue(u.Def.Id, out var bar))
                         for (int i = 0; i < bar.Count && i < h.Bar.Count; i++)
                             if (h.Bar[i] != null && h.Bar[i].StartsWith("weapon:")) h.Bar[i] = bar[i];
                     if (r.WeaponDurability.TryGetValue(u.Def.Id, out var dur))
                     {
-                        if (dur < 0 && h.WeaponId != null && u.WeaponId == null) { h.WeaponId = null; h.WeaponDurability = 0; h.WeaponRepairs = 0; }
+                        if (dur < 0 && h.WeaponId != null && u.WeaponId == null) { h.WeaponId = null; h.WeaponDurability = 0; h.WeaponRepairs = 0; h.WeaponMastery = 1f; }
                         else if (dur >= 0 && h.WeaponId != null) h.WeaponDurability = dur;
                     }
                     if (r.ArmorDurability.TryGetValue(u.Def.Id, out var adur))
                     {
-                        if (adur < 0 && h.ArmorId != null && u.ArmorId == null) { h.ArmorId = null; h.ArmorDurability = 0; h.ArmorRepairs = 0; }
+                        if (adur < 0 && h.ArmorId != null && u.ArmorId == null) { h.ArmorId = null; h.ArmorDurability = 0; h.ArmorRepairs = 0; h.ArmorMastery = 1f; }
                         else if (adur >= 0 && h.ArmorId != null) h.ArmorDurability = adur;
                     }
                 }
@@ -691,6 +697,20 @@ namespace Gaiden.Meta
         public const int CraftXp = 15;
         public const int SalvageXp = 8;
 
+        // ── Masterwork variants (§24.6.2, GG-T46) ────────────────────────────────
+        /// <summary>Chance a Forge/Upgrade craft rolls Masterwork, before party Luck and station level…</summary>
+        public const float MasterworkBaseChance = 0.05f;
+        /// <summary>…plus this per point of the active party's combined Luck…</summary>
+        public const float MasterworkChancePerLuck = 0.002f;
+        /// <summary>…plus this per Blacksmith station level above Apprentice…</summary>
+        public const float MasterworkChancePerStationLevel = 0.05f;
+        /// <summary>…capped here.</summary>
+        public const float MasterworkMaxChance = 0.35f;
+        public const float MasterworkStatBonusMin = 0.10f;
+        public const float MasterworkStatBonusMax = 0.20f;
+
+        private static int masterworkSeed = Environment.TickCount;
+
         public static StationKind StationFor(CraftStation station) => station == CraftStation.Forge ? StationKind.Blacksmith : StationKind.Alchemist;
 
         public static List<RecipeDef> Recipes(ContentDb c, CraftStation station) =>
@@ -706,7 +726,30 @@ namespace Gaiden.Meta
 
         public static bool IsUnlocked(SaveData s, RecipeDef r) => StationProgress.IsUnlocked(s, StationFor(r.Station), r.Tier);
 
-        public static Result Craft(ContentDb c, SaveData s, RecipeDef r)
+        private static float PartyLuck(ContentDb c, SaveData s)
+        {
+            float luck = 0f;
+            foreach (var id in s.Party)
+            {
+                var h = s.Hero(id);
+                var def = h != null ? c.TryClass(h.ClassId) : null;
+                if (def != null) luck += Formulas.StatsAtLevel(def, Progression.Level(h)).Luck;
+            }
+            return luck;
+        }
+
+        /// <summary>Chance this save's next Forge/Upgrade craft rolls a Masterwork result (party Luck + Blacksmith level).</summary>
+        public static float MasterworkChance(ContentDb c, SaveData s)
+        {
+            int stationLevel = StationProgress.Level(s, StationKind.Blacksmith);
+            float chance = MasterworkBaseChance + PartyLuck(c, s) * MasterworkChancePerLuck + (stationLevel - 1) * MasterworkChancePerStationLevel;
+            return Math.Max(0f, Math.Min(MasterworkMaxChance, chance));
+        }
+
+        private static bool MasterworkEligible(ItemDef item) =>
+            item.Type == ItemType.Equipment && item.Durability > 0 && (item.Slot == EquipmentSlot.Weapon || item.Slot == EquipmentSlot.Armor);
+
+        public static Result Craft(ContentDb c, SaveData s, RecipeDef r, Rng rng = null)
         {
             if (!IsUnlocked(s, r)) return Result.Fail($"Requires {StationProgress.TierName(r.Tier)}");
             if (s.Gold < r.Gold) return Result.Fail("Not enough gold");
@@ -718,7 +761,20 @@ namespace Gaiden.Meta
             if (r.BaseItem != null) s.AddItem(r.BaseItem, -1);
             s.AddItem(result.Id, r.ResultCount);
             StationProgress.Gain(s, StationFor(r.Station), CraftXp);
-            return Result.Success($"Made {result.Name}");
+            bool masterwork = false;
+            if (r.Station == CraftStation.Forge && r.ResultCount == 1 && MasterworkEligible(result))
+            {
+                rng ??= new Rng(masterworkSeed++);
+                if (rng.Chance(MasterworkChance(c, s)))
+                {
+                    masterwork = true;
+                    float mastery = rng.Range(1f + MasterworkStatBonusMin, 1f + MasterworkStatBonusMax);
+                    int durability = (int)Math.Round(result.Durability * BattleConfig.MasterworkDurabilityMultiplier);
+                    if (!s.Worn.TryGetValue(result.Id, out var list)) s.Worn[result.Id] = list = new List<WornGear>();
+                    list.Add(new WornGear { Durability = durability, Repairs = 0, Mastery = mastery });
+                }
+            }
+            return Result.Success(masterwork ? $"★ Masterwork {result.Name}!" : $"Made {result.Name}");
         }
 
         /// <summary>Pieces without a base Forge recipe (upgrades, enchants, relics) fall back to a flat
@@ -828,8 +884,8 @@ namespace Gaiden.Meta
             if (yield.Count == 0) return Result.Fail("Can't be salvaged");
             switch (slot)
             {
-                case EquipmentSlot.Weapon: h.WeaponId = null; h.WeaponDurability = 0; h.WeaponRepairs = 0; break;
-                case EquipmentSlot.Armor: h.ArmorId = null; h.ArmorDurability = 0; h.ArmorRepairs = 0; break;
+                case EquipmentSlot.Weapon: h.WeaponId = null; h.WeaponDurability = 0; h.WeaponRepairs = 0; h.WeaponMastery = 1f; break;
+                case EquipmentSlot.Armor: h.ArmorId = null; h.ArmorDurability = 0; h.ArmorRepairs = 0; h.ArmorMastery = 1f; break;
                 default: return Result.Fail("Can't be salvaged");
             }
             foreach (var ic in yield) s.AddItem(ic.Item, ic.Count);
@@ -946,37 +1002,39 @@ namespace Gaiden.Meta
     {
         public const int RepairXp = 8;
 
-        public static int EffectiveMax(ItemDef item, int repairs) => Math.Max(1, item.Durability - repairs);
+        /// <summary>The piece's durability ceiling — raised by <see cref="BattleConfig.MasterworkDurabilityMultiplier"/> for a Masterwork copy (GG-T46).</summary>
+        public static int EffectiveMax(ItemDef item, int repairs, float mastery = 1f) =>
+            Math.Max(1, (int)Math.Round(item.Durability * (mastery > 1f ? BattleConfig.MasterworkDurabilityMultiplier : 1f)) - repairs);
 
         /// <summary>Repair price after the caravan's Armory Wagon discount.</summary>
-        public static int Cost(ContentDb c, SaveData s, ItemDef item, int current, int repairs)
+        public static int Cost(ContentDb c, SaveData s, ItemDef item, int current, int repairs, float mastery = 1f)
         {
-            int baseCost = Cost(item, current, repairs);
+            int baseCost = Cost(item, current, repairs, mastery);
             if (baseCost <= 0) return 0;
             return Math.Max(1, (int)Math.Ceiling(baseCost * (1f - CaravanUpgrades.Value(c, s, "armory"))));
         }
 
-        public static int Cost(ItemDef item, int current, int repairs)
+        public static int Cost(ItemDef item, int current, int repairs, float mastery = 1f)
         {
             if (item == null || item.Durability <= 0) return 0;
-            int missing = Math.Max(0, EffectiveMax(item, repairs) - current);
+            int missing = Math.Max(0, EffectiveMax(item, repairs, mastery) - current);
             if (missing == 0) return 0;
             float perPoint = (float)item.BaseCost / item.Durability;
             float mult = 0.30f * (float)Math.Pow(1.6f, Math.Max(0, repairs));
             return Math.Max(1, (int)Math.Ceiling(missing * perPoint * mult));
         }
 
-        public static bool IsUneconomical(ItemDef item, int current, int repairs) => Cost(item, current, repairs) >= item.BaseCost;
+        public static bool IsUneconomical(ItemDef item, int current, int repairs, float mastery = 1f) => Cost(item, current, repairs, mastery) >= item.BaseCost;
 
         public static Result RepairWeapon(ContentDb c, SaveData s, HeroSave h)
         {
             var item = c.TryItem(h.WeaponId);
             if (item == null || item.Durability <= 0) return Result.Fail("Nothing to repair");
-            int cost = Cost(c, s, item, h.WeaponDurability, h.WeaponRepairs);
+            int cost = Cost(c, s, item, h.WeaponDurability, h.WeaponRepairs, h.WeaponMastery);
             if (cost == 0) return Result.Fail("Already in top shape");
             if (s.Gold < cost) return Result.Fail("Not enough gold");
             s.Gold -= cost;
-            h.WeaponDurability = EffectiveMax(item, h.WeaponRepairs);
+            h.WeaponDurability = EffectiveMax(item, h.WeaponRepairs, h.WeaponMastery);
             h.WeaponRepairs++;
             StationProgress.Gain(s, StationKind.Blacksmith, RepairXp);
             return Result.Success($"Repaired {item.Name}");
@@ -986,11 +1044,11 @@ namespace Gaiden.Meta
         {
             var item = c.TryItem(h.ArmorId);
             if (item == null || item.Durability <= 0) return Result.Fail("Nothing to repair");
-            int cost = Cost(c, s, item, h.ArmorDurability, h.ArmorRepairs);
+            int cost = Cost(c, s, item, h.ArmorDurability, h.ArmorRepairs, h.ArmorMastery);
             if (cost == 0) return Result.Fail("Already in top shape");
             if (s.Gold < cost) return Result.Fail("Not enough gold");
             s.Gold -= cost;
-            h.ArmorDurability = EffectiveMax(item, h.ArmorRepairs);
+            h.ArmorDurability = EffectiveMax(item, h.ArmorRepairs, h.ArmorMastery);
             h.ArmorRepairs++;
             StationProgress.Gain(s, StationKind.Blacksmith, RepairXp);
             return Result.Success($"Repaired {item.Name}");
@@ -1061,6 +1119,10 @@ namespace Gaiden.Meta
         public static List<ItemDef> Candidates(ContentDb c, SaveData s, EquipmentSlot slot) =>
             s.Inventory.Where(kv => kv.Value > 0).Select(kv => c.TryItem(kv.Key)).Where(i => Fits(i, slot)).OrderByDescending(i => i.Rarity).ThenBy(i => i.Name).ToList();
 
+        /// <summary>True if the one owned (unequipped) copy of this item id is a Masterwork roll (§24.6.2, GG-T46).</summary>
+        public static bool IsMasterwork(SaveData s, string itemId) =>
+            itemId != null && s.Worn.TryGetValue(itemId, out var list) && list.Any(w => w.Mastery > 1f);
+
         public static Result Equip(ContentDb c, SaveData s, HeroSave h, EquipmentSlot slot, string itemId)
         {
             var item = c.TryItem(itemId);
@@ -1072,13 +1134,13 @@ namespace Gaiden.Meta
             s.AddItem(itemId, -1);
             switch (slot)
             {
-                case EquipmentSlot.Weapon: h.WeaponId = itemId; h.WeaponDurability = copy.Durability; h.WeaponRepairs = copy.Repairs; break;
-                case EquipmentSlot.Armor: h.ArmorId = itemId; h.ArmorDurability = copy.Durability; h.ArmorRepairs = copy.Repairs; break;
+                case EquipmentSlot.Weapon: h.WeaponId = itemId; h.WeaponDurability = copy.Durability; h.WeaponRepairs = copy.Repairs; h.WeaponMastery = copy.Mastery; break;
+                case EquipmentSlot.Armor: h.ArmorId = itemId; h.ArmorDurability = copy.Durability; h.ArmorRepairs = copy.Repairs; h.ArmorMastery = copy.Mastery; break;
                 case EquipmentSlot.Relic1: h.Relics[0] = itemId; break;
                 case EquipmentSlot.Relic2: h.Relics[1] = itemId; break;
                 case EquipmentSlot.Relic3: h.Relics[2] = itemId; break;
             }
-            return Result.Success($"Equipped {item.Name}");
+            return Result.Success(copy.Mastery > 1f ? $"Equipped ★ {item.Name}" : $"Equipped {item.Name}");
         }
 
         private static WornGear TakeCopy(SaveData s, ItemDef item)
@@ -1093,7 +1155,7 @@ namespace Gaiden.Meta
             return best;
         }
 
-        /// <summary>Returns the piece to the bag, remembering its wear and repairs if it isn't factory-fresh.</summary>
+        /// <summary>Returns the piece to the bag, remembering its wear, repairs and Masterwork roll if it isn't factory-fresh.</summary>
         public static Result Unequip(ContentDb c, SaveData s, HeroSave h, EquipmentSlot slot)
         {
             var id = Equipped(h, slot);
@@ -1101,16 +1163,17 @@ namespace Gaiden.Meta
             var item = c.TryItem(id);
             int dur = slot == EquipmentSlot.Weapon ? h.WeaponDurability : slot == EquipmentSlot.Armor ? h.ArmorDurability : 0;
             int reps = slot == EquipmentSlot.Weapon ? h.WeaponRepairs : slot == EquipmentSlot.Armor ? h.ArmorRepairs : 0;
+            float mastery = slot == EquipmentSlot.Weapon ? h.WeaponMastery : slot == EquipmentSlot.Armor ? h.ArmorMastery : 1f;
             s.AddItem(id, 1);
-            if (item != null && item.Durability > 0 && (dur < item.Durability || reps > 0))
+            if (item != null && item.Durability > 0 && (dur < item.Durability || reps > 0 || mastery > 1f))
             {
                 if (!s.Worn.TryGetValue(id, out var list)) s.Worn[id] = list = new List<WornGear>();
-                list.Add(new WornGear { Durability = dur, Repairs = reps });
+                list.Add(new WornGear { Durability = dur, Repairs = reps, Mastery = mastery });
             }
             switch (slot)
             {
-                case EquipmentSlot.Weapon: h.WeaponId = null; h.WeaponDurability = 0; h.WeaponRepairs = 0; break;
-                case EquipmentSlot.Armor: h.ArmorId = null; h.ArmorDurability = 0; h.ArmorRepairs = 0; break;
+                case EquipmentSlot.Weapon: h.WeaponId = null; h.WeaponDurability = 0; h.WeaponRepairs = 0; h.WeaponMastery = 1f; break;
+                case EquipmentSlot.Armor: h.ArmorId = null; h.ArmorDurability = 0; h.ArmorRepairs = 0; h.ArmorMastery = 1f; break;
                 case EquipmentSlot.Relic1: h.Relics[0] = null; break;
                 case EquipmentSlot.Relic2: h.Relics[1] = null; break;
                 case EquipmentSlot.Relic3: h.Relics[2] = null; break;

@@ -71,11 +71,14 @@ namespace Gaiden.Core.Battle
                 UnlockedSlots = Math.Max(0, Math.Min(MaxSlots, unlockedSlots)),
             };
             u.LevelStats = Formulas.StatsAtLevel(def, u.Level);
+            u.WeaponMastery = spec.WeaponMastery;
+            u.ArmorMastery = spec.ArmorMastery;
             foreach (var itemId in spec.EquippedItemIds)
             {
                 var item = C.TryItem(itemId);
                 if (item == null) continue;
-                u.GearStats = u.GearStats + item.Stats;
+                float mastery = itemId == spec.WeaponId ? spec.WeaponMastery : itemId == spec.ArmorId ? spec.ArmorMastery : 1f;
+                u.GearStats = u.GearStats + item.Stats * mastery;
                 pendingStartOrbs += Math.Max(0, item.BattleStartManaOrbs);
                 pendingBankBonus += Math.Max(0, item.BankCapacityBonus);
                 u.PincerDamageBonus += item.PincerDamageBonus;
@@ -91,11 +94,11 @@ namespace Gaiden.Core.Battle
             if (weapon != null)
             {
                 u.WeaponId = weapon.Id;
-                u.WeaponPower = weapon.BaseDamage;
+                u.WeaponPower = weapon.BaseDamage * spec.WeaponMastery;
                 u.WeaponDurability = weapon.Durability > 0 ? Math.Max(0, spec.WeaponDurability > 0 ? spec.WeaponDurability : weapon.Durability) : 0;
                 if (!spec.EquippedItemIds.Contains(weapon.Id))
                 {
-                    u.GearStats = u.GearStats + weapon.Stats;
+                    u.GearStats = u.GearStats + weapon.Stats * spec.WeaponMastery;
                 }
             }
             var armor = C.TryItem(spec.ArmorId);

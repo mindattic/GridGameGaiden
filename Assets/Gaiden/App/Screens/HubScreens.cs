@@ -59,11 +59,13 @@ namespace Gaiden.App
             return string.Join("   ", parts);
         }
 
-        /// <summary>Standard item row: glyph · rarity-colored name · right value.</summary>
-        public static VisualElement Row(ItemDef i, string value, Action onClick, VisualElement parent, bool enabled = true)
+        /// <summary>Standard item row: glyph · rarity-colored name · right value. <paramref name="masterwork"/> prefixes a ★ (GG-T46).</summary>
+        public static VisualElement Row(ItemDef i, string value, Action onClick, VisualElement parent, bool enabled = true, bool masterwork = false)
         {
             var icon = Art.ItemIcon(i.Id);
-            var row = Ui.MenuRow(icon != null ? i.Name : $"{Glyph(i)}  {i.Name}", value, onClick, parent, icon, enabled);
+            string label = (icon != null ? i.Name : $"{Glyph(i)}  {i.Name}");
+            if (masterwork) label = "★ " + label;
+            var row = Ui.MenuRow(label, value, onClick, parent, icon, enabled);
             row.Q<Label>("label").AddToClassList(Ui.RarityClass(i.Rarity));
             return row;
         }
@@ -113,7 +115,7 @@ namespace Gaiden.App
             foreach (var (item, n) in items)
             {
                 var it = item;
-                var row = ItemUi.Row(it, $"×{n}", () => { selected = it; selectedBroken = false; ShowDetail(detail, it, false); }, list.contentContainer);
+                var row = ItemUi.Row(it, $"×{n}", () => { selected = it; selectedBroken = false; ShowDetail(detail, it, false); }, list.contentContainer, true, Equipment.IsMasterwork(S, it.Id));
                 if (selected == it && !selectedBroken) Ui.Select(row);
             }
             foreach (var (item, n) in broken)
@@ -231,14 +233,16 @@ namespace Gaiden.App
             Stat("INT", e.Intelligence); Stat("WIS", e.Wisdom); Stat("LCK", e.Luck);
 
             var gear = Ui.El("col", w); gear.style.marginTop = 16;
-            void G(string slot, string id, int dur = -1)
+            void G(string slot, string id, int dur = -1, float mastery = 1f)
             {
                 var it = C.TryItem(id);
                 var r = Ui.El("row", gear);
                 Ui.Text(slot, "small dim", r).style.width = 180;
-                Ui.Text(it == null ? "—" : it.Name + (dur >= 0 && it.Durability > 0 ? $"  ({dur}/{Repair.EffectiveMax(it, slot == "Weapon" ? h.WeaponRepairs : h.ArmorRepairs)})" : ""), "small " + (it != null ? Ui.RarityClass(it.Rarity) : "dim"), r);
+                string name = it == null ? "—" : (mastery > 1f ? "★ " : "") + it.Name +
+                    (dur >= 0 && it.Durability > 0 ? $"  ({dur}/{Repair.EffectiveMax(it, slot == "Weapon" ? h.WeaponRepairs : h.ArmorRepairs, mastery)})" : "");
+                Ui.Text(name, "small " + (it != null ? Ui.RarityClass(it.Rarity) : "dim"), r);
             }
-            G("Weapon", h.WeaponId, h.WeaponDurability); G("Armor", h.ArmorId, h.ArmorDurability);
+            G("Weapon", h.WeaponId, h.WeaponDurability, h.WeaponMastery); G("Armor", h.ArmorId, h.ArmorDurability, h.ArmorMastery);
             for (int i = 0; i < 3; i++) G($"Relic {i + 1}", h.Relics[i]);
             var lore = Ui.Text(Ui.Keywords(def.Lore ?? def.Description ?? ""), "small dim", w);
             lore.style.whiteSpace = WhiteSpace.Normal; lore.style.marginTop = 16;
@@ -265,7 +269,8 @@ namespace Gaiden.App
             {
                 var s2 = sl;
                 var it = C.TryItem(Equipment.Equipped(h, sl));
-                var row = Ui.MenuRow(SlotName(sl), it?.Name ?? "—", () => { slot = s2; previewId = null; Refresh(); }, slotsW);
+                bool mastery = sl == EquipmentSlot.Weapon ? h.WeaponMastery > 1f : sl == EquipmentSlot.Armor && h.ArmorMastery > 1f;
+                var row = Ui.MenuRow(SlotName(sl), it == null ? "—" : (mastery ? "★ " : "") + it.Name, () => { slot = s2; previewId = null; Refresh(); }, slotsW);
                 if (it != null) row.Q<Label>("value").AddToClassList(Ui.RarityClass(it.Rarity));
                 if (sl == slot) Ui.Select(row);
             }
@@ -292,7 +297,7 @@ namespace Gaiden.App
                 {
                     if (previewId == item.Id) { previewId = null; Done(Equipment.Equip(C, S, h, slot, item.Id)); }
                     else { previewId = item.Id; Refresh(); App.Toast("Tap again to equip"); }
-                }, list.contentContainer);
+                }, list.contentContainer, true, Equipment.IsMasterwork(S, item.Id));
                 if (item.Id == previewId) Ui.Select(row);
             }
         }
@@ -648,6 +653,8 @@ namespace Gaiden.App
                 Ui.Text($"{(have >= ic.Count ? "✔" : "✘")} {it?.Name ?? ic.Item} ×{ic.Count}   (have {have})", "small " + (have >= ic.Count ? "good" : "bad"), need);
             }
             Ui.Text($"{(s.Gold >= r.Gold ? "✔" : "✘")} {Ui.Gold(r.Gold)}", "small " + (s.Gold >= r.Gold ? "good" : "bad"), need);
+            if (r.Station == CraftStation.Forge)
+                Ui.Text($"★ {Math.Round(Crafting.MasterworkChance(c, s) * 100)}% chance of a Masterwork result", "small gold", need).style.whiteSpace = WhiteSpace.Normal;
             var btn = Ui.Button(r.Station == CraftStation.Alchemy ? "Brew" : r.Station == CraftStation.Enchant ? "Enchant" : "Craft", () =>
             {
                 var res = Crafting.Craft(c, s, r);
@@ -670,7 +677,7 @@ namespace Gaiden.App
                 var item = it;
                 var yield = Crafting.SalvagePreview(C, S, item.Id);
                 string y = yield.Count == 0 ? "—" : string.Join(", ", yield.Select(ic => $"{C.TryItem(ic.Item)?.Name}×{ic.Count}"));
-                ItemUi.Row(item, $"×{S.Count(item.Id)}", () => Confirm.Show($"Salvage {item.Name} into {y}?", "Salvage", () => Done(Crafting.Salvage(C, S, item.Id))), list, yield.Count > 0);
+                ItemUi.Row(item, $"×{S.Count(item.Id)}", () => Confirm.Show($"Salvage {item.Name} into {y}?", "Salvage", () => Done(Crafting.Salvage(C, S, item.Id))), list, yield.Count > 0, Equipment.IsMasterwork(S, item.Id));
             }
             foreach (var it in broken)
             {
@@ -694,9 +701,10 @@ namespace Gaiden.App
                 if (w != null && w.Durability > 0)
                 {
                     any = true;
-                    int cost = Repair.Cost(C, S, w, h.WeaponDurability, h.WeaponRepairs);
-                    bool bad = cost > 0 && Repair.IsUneconomical(w, h.WeaponDurability, h.WeaponRepairs);
-                    var row = Ui.MenuRow($"{C.Class(h.ClassId).Name} — {w.Name}  {h.WeaponDurability}/{Repair.EffectiveMax(w, h.WeaponRepairs)}", cost > 0 ? Ui.Gold(cost) : "OK",
+                    int cost = Repair.Cost(C, S, w, h.WeaponDurability, h.WeaponRepairs, h.WeaponMastery);
+                    bool bad = cost > 0 && Repair.IsUneconomical(w, h.WeaponDurability, h.WeaponRepairs, h.WeaponMastery);
+                    string name = (h.WeaponMastery > 1f ? "★ " : "") + w.Name;
+                    var row = Ui.MenuRow($"{C.Class(h.ClassId).Name} — {name}  {h.WeaponDurability}/{Repair.EffectiveMax(w, h.WeaponRepairs, h.WeaponMastery)}", cost > 0 ? Ui.Gold(cost) : "OK",
                         () => Done(Repair.RepairWeapon(C, S, hero)), list, null, cost > 0);
                     if (bad) row.Q<Label>("value").AddToClassList("warn");
                     if (bad) SalvageInsteadRow(list, hero, EquipmentSlot.Weapon, w, h.WeaponDurability, cost);
@@ -705,9 +713,10 @@ namespace Gaiden.App
                 if (a != null && a.Durability > 0)
                 {
                     any = true;
-                    int cost = Repair.Cost(C, S, a, h.ArmorDurability, h.ArmorRepairs);
-                    bool bad = cost > 0 && Repair.IsUneconomical(a, h.ArmorDurability, h.ArmorRepairs);
-                    var row = Ui.MenuRow($"{C.Class(h.ClassId).Name} — {a.Name}  {h.ArmorDurability}/{Repair.EffectiveMax(a, h.ArmorRepairs)}", cost > 0 ? Ui.Gold(cost) : "OK",
+                    int cost = Repair.Cost(C, S, a, h.ArmorDurability, h.ArmorRepairs, h.ArmorMastery);
+                    bool bad = cost > 0 && Repair.IsUneconomical(a, h.ArmorDurability, h.ArmorRepairs, h.ArmorMastery);
+                    string name = (h.ArmorMastery > 1f ? "★ " : "") + a.Name;
+                    var row = Ui.MenuRow($"{C.Class(h.ClassId).Name} — {name}  {h.ArmorDurability}/{Repair.EffectiveMax(a, h.ArmorRepairs, h.ArmorMastery)}", cost > 0 ? Ui.Gold(cost) : "OK",
                         () => Done(Repair.RepairArmor(C, S, hero)), list, null, cost > 0);
                     if (bad) row.Q<Label>("value").AddToClassList("warn");
                     if (bad) SalvageInsteadRow(list, hero, EquipmentSlot.Armor, a, h.ArmorDurability, cost);

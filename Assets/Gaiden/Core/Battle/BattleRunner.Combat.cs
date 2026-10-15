@@ -383,7 +383,7 @@ namespace Gaiden.Core.Battle
             var armor = C.TryItem(hero.ArmorId);
             if (armor != null)
             {
-                hero.GearStats = hero.GearStats + armor.Stats * -1f;
+                hero.GearStats = hero.GearStats + armor.Stats * -hero.ArmorMastery;
                 foreach (var kv in armor.Resistances)
                     if (hero.GearResist.TryGetValue(kv.Key, out var cur) && kv.Value != 0f) hero.GearResist[kv.Key] = cur / kv.Value;
             }
@@ -391,6 +391,7 @@ namespace Gaiden.Core.Battle
             Announce("Armor broken!", hero.Id);
             RecordBroken(S.Results.BrokenArmors, hero.Def.Id, hero.ArmorId);
             hero.ArmorId = null;
+            hero.ArmorMastery = 1f;
         }
 
         /// <summary>One durability per pincer; at 0 the weapon shatters: the strike already dealt ×1.5, the wielder takes 15% MaxHP (§24.5).</summary>
@@ -405,10 +406,11 @@ namespace Gaiden.Core.Battle
             int self = Math.Max(1, (int)Math.Round(hero.MaxHp * BattleConfig.ShatterSelfDamageFraction));
             var weapon = C.TryItem(hero.WeaponId);
             Emit(new WeaponShatteredEvent { UnitId = hero.Id, WeaponId = hero.WeaponId, SelfDamage = self });
-            if (weapon != null) hero.GearStats = hero.GearStats + weapon.Stats * -1f;
+            if (weapon != null) hero.GearStats = hero.GearStats + weapon.Stats * -hero.WeaponMastery;
             RecordBroken(S.Results.BrokenWeapons, hero.Def.Id, hero.WeaponId);
             hero.WeaponId = null;
             hero.WeaponPower = 0f;
+            hero.WeaponMastery = 1f;
             Damage(hero, self, null, HitKind.Normal, DamageType.Physical, "Shatter!");
         }
 

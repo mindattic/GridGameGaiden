@@ -22,8 +22,11 @@ namespace Gaiden.Core.Battle
         public int Hp;
         public string WeaponId;
         public int WeaponDurability;
+        /// <summary>Masterwork stat multiplier carried from the save (§24.6.2, GG-T46); 1 = normal.</summary>
+        public float WeaponMastery = 1f;
         public string ArmorId;
         public int ArmorDurability;
+        public float ArmorMastery = 1f;
         public List<string> EquippedItemIds = new List<string>();
         /// <summary>Ability bar entries: ability id, or "item:id". Null/empty = empty slot.</summary>
         public List<string> Bar = new List<string>();

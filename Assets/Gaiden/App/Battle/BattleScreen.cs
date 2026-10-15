@@ -315,8 +315,10 @@ namespace Gaiden.App
                     var armorDef = u.ArmorId != null ? App.Content.TryItem(u.ArmorId) : null;
                     bool hasWeapon = weaponDef != null && weaponDef.Durability > 0;
                     bool hasArmor = armorDef != null && armorDef.Durability > 0;
-                    float wFrac = hasWeapon ? u.WeaponDurability / (float)weaponDef.Durability : 1f;
-                    float aFrac = hasArmor ? u.ArmorDurability / (float)armorDef.Durability : 1f;
+                    float wMax = hasWeapon ? weaponDef.Durability * (u.WeaponMastery > 1f ? BattleConfig.MasterworkDurabilityMultiplier : 1f) : 1f;
+                    float aMax = hasArmor ? armorDef.Durability * (u.ArmorMastery > 1f ? BattleConfig.MasterworkDurabilityMultiplier : 1f) : 1f;
+                    float wFrac = hasWeapon ? u.WeaponDurability / wMax : 1f;
+                    float aFrac = hasArmor ? u.ArmorDurability / aMax : 1f;
                     v.SetGear(hasWeapon, wFrac, hasWeapon && u.WeaponDurability == 1, hasArmor, aFrac, !ReduceMotion);
                 }
                 else v.SetGear(false, 0f, false, false, 0f, !ReduceMotion);

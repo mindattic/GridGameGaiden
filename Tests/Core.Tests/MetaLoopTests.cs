@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Gaiden.Core;
 using Gaiden.Core.Battle;
 using Gaiden.Core.Bot;
 using Gaiden.Core.Content;
@@ -455,6 +456,119 @@ namespace Gaiden.Tests
             s.Gold += t2.Gold;
             foreach (var ic in t2.Inputs) s.AddItem(ic.Item, ic.Count);
             Assert.False(Crafting.Craft(c, s, t2).Ok);
+        }
+
+        // ─────────────────────────────────────────────────────────────────────
+        // Masterwork crafting (§24.6.2, GG-T46)
+        // ─────────────────────────────────────────────────────────────────────
+
+        [Fact]
+        public void Masterwork_chance_grows_with_party_luck_and_blacksmith_level_and_caps()
+        {
+            var c = Real; var s = Progression.NewGame(c, "MW1");
+            float baseChance = Crafting.MasterworkChance(c, s);
+            Assert.True(baseChance >= Crafting.MasterworkBaseChance);
+
+            foreach (var h in s.Roster) h.TotalXp = Gaiden.Core.Rules.Formulas.TotalXpForLevel(20);
+            float leveledChance = Crafting.MasterworkChance(c, s);
+            Assert.True(leveledChance > baseChance, "higher party Luck should raise the chance");
+
+            s.StationXp["blacksmith"] = 9999;
+            float masterStationChance = Crafting.MasterworkChance(c, s);
+            Assert.True(masterStationChance > leveledChance, "a higher Blacksmith level should raise the chance further");
+            Assert.True(masterStationChance <= Crafting.MasterworkMaxChance);
+        }
+
+        private static RecipeDef FindMasterworkCandidate(ContentDb c) =>
+            Crafting.Recipes(c, CraftStation.Forge).First(r => r.BaseItem == null
+                && (c.Item(r.Result).Slot == EquipmentSlot.Weapon || c.Item(r.Result).Slot == EquipmentSlot.Armor)
+                && c.Item(r.Result).Durability > 1);
+
+        /// <summary>Hunts for a seed that rolls Masterwork (probabilistic by design), same pattern as
+        /// AiAndSystemsTests' clutch-chance hunt — deterministic given fixed seeds, so never flaky.</summary>
+        private static Result CraftUntilMasterwork(ContentDb c, SaveData s, RecipeDef r, string resultId)
+        {
+            Result craft = default;
+            for (int seed = 0; seed < 500; seed++)
+            {
+                foreach (var ic in r.Inputs) s.AddItem(ic.Item, ic.Count);
+                craft = Crafting.Craft(c, s, r, new Rng(seed));
+                if (Equipment.IsMasterwork(s, resultId)) return craft;
+                s.AddItem(resultId, -s.Count(resultId)); // free the MaxStack-1 slot for the next attempt
+            }
+            return craft;
+        }
+
+        private static float StatSum(Gaiden.Core.Content.Stats st) =>
+            st.Strength + st.Vitality + st.Agility + st.Speed + st.Stamina + st.Intelligence + st.Wisdom + st.Luck;
+
+        [Fact]
+        public void Forge_craft_can_roll_a_masterwork_variant_with_boosted_stats_and_durability()
+        {
+            var c = Real; var s = Progression.NewGame(c, "MW2");
+            var recipe = FindMasterworkCandidate(c);
+            var item = c.Item(recipe.Result);
+            s.Gold += 10_000_000;
+
+            var craft = CraftUntilMasterwork(c, s, recipe, item.Id);
+            Assert.True(Equipment.IsMasterwork(s, item.Id), "expected at least one Masterwork roll in 500 attempts");
+            Assert.Contains("★", craft.Message);
+
+            var worn = s.Worn[item.Id].Single();
+            Assert.InRange(worn.Mastery, 1f + Crafting.MasterworkStatBonusMin, 1f + Crafting.MasterworkStatBonusMax);
+            Assert.Equal((int)System.Math.Round(item.Durability * BattleConfig.MasterworkDurabilityMultiplier), worn.Durability);
+
+            var hero = s.Hero(s.Party[0]);
+            Assert.True(Equipment.Equip(c, s, hero, item.Slot, item.Id).Ok);
+            float mastery = item.Slot == EquipmentSlot.Weapon ? hero.WeaponMastery : hero.ArmorMastery;
+            int dur = item.Slot == EquipmentSlot.Weapon ? hero.WeaponDurability : hero.ArmorDurability;
+            Assert.Equal(worn.Mastery, mastery);
+            Assert.Equal(worn.Durability, dur);
+
+            // The bonus reaches battle: GearStats and (for a weapon) WeaponPower scale by the rolled multiplier.
+            var boosted = Progression.Preview(c, hero);
+            Assert.Equal((double)(StatSum(item.Stats) * worn.Mastery), (double)StatSum(boosted.GearStats), 2);
+            if (item.Slot == EquipmentSlot.Weapon) Assert.Equal((double)(item.BaseDamage * worn.Mastery), (double)boosted.WeaponPower, 2);
+        }
+
+        [Fact]
+        public void Unequipping_a_masterwork_weapon_remembers_its_roll_and_requipping_restores_it()
+        {
+            var c = Real; var s = Progression.NewGame(c, "MW3");
+            var recipe = Crafting.Recipes(c, CraftStation.Forge).First(r => r.BaseItem == null
+                && c.Item(r.Result).Slot == EquipmentSlot.Weapon && c.Item(r.Result).Durability > 1);
+            var item = c.Item(recipe.Result);
+            s.Gold += 10_000_000;
+
+            CraftUntilMasterwork(c, s, recipe, item.Id);
+            Assert.True(Equipment.IsMasterwork(s, item.Id));
+            float rolledMastery = s.Worn[item.Id].Single().Mastery;
+
+            var hero = s.Hero(s.Party[0]);
+            Assert.True(Equipment.Equip(c, s, hero, EquipmentSlot.Weapon, item.Id).Ok);
+            Assert.Equal(rolledMastery, hero.WeaponMastery);
+
+            Assert.True(Equipment.Unequip(c, s, hero, EquipmentSlot.Weapon).Ok);
+            Assert.Equal(1f, hero.WeaponMastery);
+            Assert.True(Equipment.IsMasterwork(s, item.Id)); // the bag copy still remembers its roll
+
+            Assert.True(Equipment.Equip(c, s, hero, EquipmentSlot.Weapon, item.Id).Ok);
+            Assert.Equal(rolledMastery, hero.WeaponMastery);
+        }
+
+        [Fact]
+        public void Enchant_crafts_never_roll_masterwork_even_though_they_also_touch_weapons()
+        {
+            var c = Real; var s = Progression.NewGame(c, "MW4");
+            s.Gold += 1_000_000;
+            s.StationXp["alchemist"] = 9999; // every Enchant recipe is Master tier (§24.6.1)
+            var recipe = Crafting.Recipes(c, CraftStation.Enchant).First();
+            foreach (var ic in recipe.Inputs) s.AddItem(ic.Item, ic.Count);
+            if (recipe.BaseItem != null) s.AddItem(recipe.BaseItem, 1);
+            var craft = Crafting.Craft(c, s, recipe);
+            Assert.True(craft.Ok, craft.Message);
+            Assert.False(Equipment.IsMasterwork(s, recipe.Result));
+            Assert.DoesNotContain("★", craft.Message);
         }
     }
 }
