@@ -16,6 +16,8 @@ namespace Gaiden.App
         protected VisualElement Body;
         protected abstract string Title { get; }
         protected virtual string Backdrop => "greenvalley";
+        /// <summary>Optional line shown under the header title (e.g. station level + next unlock, GG-T35).</summary>
+        protected virtual string Subtitle => null;
 
         protected override void Build(VisualElement root)
         {
@@ -24,6 +26,12 @@ namespace Gaiden.App
             bg.style.unityBackgroundImageTintColor = new Color(0.45f, 0.5f, 0.7f, 1f);
             var col = Ui.El("fill col", root);
             Ui.Header(Title, () => App.Router.Back(), col, out GoldLabel);
+            if (Subtitle != null)
+            {
+                var sub = Ui.Text(Subtitle, "small gold", col);
+                sub.style.marginLeft = 16;
+                sub.style.marginTop = -6;
+            }
             Body = Ui.El("col grow", col);
             Body.style.paddingLeft = Body.style.paddingRight = 10;
             Body.style.paddingBottom = 30;

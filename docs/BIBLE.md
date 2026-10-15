@@ -1776,9 +1776,11 @@ BonusVsTag, BonusMultiplier, Resistances{type→mult}, SoldByVendor, Icon
 
 *(Test: `Every_recipe_is_craftable_with_its_inputs`.)* **Salvage** (`Crafting.Salvage`): break one equipment piece into 50% of its base Forge recipe's inputs (floor, min 1); pieces without a base recipe can't be salvaged.
 
-#### 24.6.1 Tier ladder (design target)
+#### 24.6.1 Tier ladder (GG-T35, amended 2026-10-15)
 
-Iron Sword → Steel Sword (upgrade) → Mythril Blade → +1 (named passive). Upgrades exist as data and UI; ⬜ named passives not yet built.
+Each crafting station has its own level — **Apprentice → Journeyman → Master** — raised by XP from every craft, brew, repair and salvage done there (`StationProgress`, `SaveData.StationXp`; 150/450 total XP for Journeyman/Master). `RecipeDef.Tier` (1–3, default 1 when absent from content) gates `Crafting.Craft` to the station's current level, failing with "Requires Journeyman"/"Requires Master" below it; Repair and Salvage aren't recipes and are always available, but still feed the Blacksmith's XP. Deliberately independent of §25.12 caravan upgrades (gold-bought stat bonuses, never recipe gates) so the two never double-gate the same thing — tested by `Caravan_upgrades_and_station_tiers_never_double_gate_each_other`.
+
+Content assignment: Forge's 11 base (no-`BaseItem`) recipes are all Apprentice; its 39 Upgrade recipes split Journeyman (the first upgrade off a base item) / Master (the deeper `+1 → +2` chains); Alchemy's 14 brews split Apprentice/Journeyman/Master by gold cost; all 78 Enchant recipes are Master (Alchemist-side, alongside Brew). The original "Iron Sword → Steel Sword → Mythril Blade → +1" ladder sketch predates this data shape; upgrades exist as data and UI, ⬜ named passives not yet built. *(Tests: `A_station_starts_at_apprentice_and_levels_up_from_real_crafting_actions`, `Repair_and_salvage_grant_blacksmith_xp_but_never_alchemist`.)*
 
 ### 24.7 Drops
 
@@ -1822,11 +1824,11 @@ ENEMIES ─▶ drop tables ─▶ Inventory ─┬▶ Blacksmith (forge / upgrad
 
 ### 25.2 Blacksmith
 
-`BlacksmithScreen`: **Forge**, **Upgrade**, **Salvage**, **Repair** tabs ([§24.5](#245-weapon-durability), [§24.6](#246-crafting-recipes)). The recipe detail shows ✔/✘ per input with owned counts. Repair lists every roster hero's durable weapon/armor ("Paladin — Iron Sword 3/9", cost or "OK"), warning when uneconomical.
+`BlacksmithScreen`: **Forge**, **Upgrade**, **Salvage**, **Repair** tabs ([§24.5](#245-weapon-durability), [§24.6](#246-crafting-recipes)). The header shows the Blacksmith's station level and XP to its next tier ([§24.6.1](#2461-tier-ladder-gg-t35-amended-2026-10-15)); a tier-locked recipe shows a 🔒 and the level required instead of its price. The recipe detail shows ✔/✘ per input with owned counts. Repair lists every roster hero's durable weapon/armor ("Paladin — Iron Sword 3/9", cost or "OK"), warning when uneconomical.
 
 ### 25.3 Alchemist
 
-`AlchemistScreen`: **Brew** (Alchemy recipes), **Enchant** (Enchant recipes), **Heal** (same service as the Inn).
+`AlchemistScreen`: **Brew** (Alchemy recipes), **Enchant** (Enchant recipes), **Heal** (same service as the Inn). The header shows the Alchemist's station level and XP to its next tier ([§24.6.1](#2461-tier-ladder-gg-t35-amended-2026-10-15)); a tier-locked recipe shows a 🔒 and the level required instead of its price.
 
 ### 25.3.1 Inn
 

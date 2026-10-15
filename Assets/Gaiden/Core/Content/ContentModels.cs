@@ -329,6 +329,9 @@ namespace Gaiden.Core.Content
         public string BaseItem;
         public string Result;
         public int ResultCount = 1;
+        /// <summary>Tier ladder rung (§24.6.1): 1 Apprentice (from the start), 2 Journeyman, 3 Master —
+        /// gated by the crafting station's level (GG-T35). Missing from content = 1.</summary>
+        public int Tier = 1;
     }
 
     public sealed class DropEntry

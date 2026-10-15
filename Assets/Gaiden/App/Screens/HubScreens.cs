@@ -517,6 +517,7 @@ namespace Gaiden.App
         public override string Id => "blacksmith";
         protected override string Title => "Blacksmith";
         protected override string Backdrop => "cave";
+        protected override string Subtitle => StationProgress.HeaderText(S, StationKind.Blacksmith);
 
         protected override void BuildBody(VisualElement body)
         {
@@ -541,8 +542,9 @@ namespace Gaiden.App
             {
                 var rec = r;
                 var result = c.Item(r.Result);
-                bool can = Crafting.HasInputs(s, r) && s.Gold >= r.Gold;
-                var row = ItemUi.Row(result, $"{r.Gold} G", () => ShowRecipe(detail, c, s, rec, page), list, true);
+                bool locked = !Crafting.IsUnlocked(s, r);
+                bool can = !locked && Crafting.HasInputs(s, r) && s.Gold >= r.Gold;
+                var row = ItemUi.Row(result, locked ? $"🔒 {StationProgress.TierName(r.Tier)}" : $"{r.Gold} G", () => ShowRecipe(detail, c, s, rec, page), list, true);
                 if (!can) row.style.opacity = 0.55f;
                 if (sel == r) Ui.Select(row);
             }
@@ -555,6 +557,12 @@ namespace Gaiden.App
             w.Clear();
             var result = c.Item(r.Result);
             ItemUi.Detail(w, result);
+            bool locked = !Crafting.IsUnlocked(s, r);
+            if (locked)
+            {
+                var kind = Crafting.StationFor(r.Station);
+                Ui.Text($"🔒 Requires {StationProgress.TierName(r.Tier)} ({StationProgress.Id(kind)} is {StationProgress.LevelName(s, kind)})", "small bad", w).style.whiteSpace = WhiteSpace.Normal;
+            }
             var need = Ui.El("col", w); need.style.marginTop = 12;
             if (r.BaseItem != null)
             {
@@ -577,7 +585,7 @@ namespace Gaiden.App
                 if (res.Ok) GameApp.I.Persist();
                 page.Refresh();
             }, "btn--primary", w);
-            Ui.SetEnabled(btn, Crafting.HasInputs(s, r) && s.Gold >= r.Gold);
+            Ui.SetEnabled(btn, !locked && Crafting.HasInputs(s, r) && s.Gold >= r.Gold);
         }
 
         private void SalvageList(VisualElement list, VisualElement detail)
@@ -632,6 +640,7 @@ namespace Gaiden.App
         public override string Id => "alchemist";
         protected override string Title => "Alchemist";
         protected override string Backdrop => "swamp";
+        protected override string Subtitle => StationProgress.HeaderText(S, StationKind.Alchemist);
 
         protected override void BuildBody(VisualElement body)
         {

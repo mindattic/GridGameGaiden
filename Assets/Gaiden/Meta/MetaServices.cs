@@ -624,11 +624,63 @@ namespace Gaiden.Meta
     }
 
     // ─────────────────────────────────────────────────────────────────────────────
+    // Station progression (§24.6.1, GG-T35): craft/brew/repair/salvage levels up the
+    // station that did the work, unlocking the next tier of its own recipe ladder.
+    // Deliberately independent of §25.12 caravan upgrades (gold-bought stat bonuses,
+    // not recipe gates) so the two never double-gate the same thing.
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    public enum StationKind { Blacksmith, Alchemist }
+
+    public static class StationProgress
+    {
+        public static readonly string[] LevelNames = { "Apprentice", "Journeyman", "Master" };
+        /// <summary>Total XP needed to *reach* each level (index 0 = Apprentice, free).</summary>
+        private static readonly int[] Thresholds = { 0, 150, 450 };
+
+        public static string Id(StationKind k) => k == StationKind.Blacksmith ? "blacksmith" : "alchemist";
+
+        public static int Xp(SaveData s, StationKind k) => s.StationXp.TryGetValue(Id(k), out var n) ? n : 0;
+
+        public static int Level(SaveData s, StationKind k)
+        {
+            int xp = Xp(s, k);
+            int lvl = 1;
+            for (int i = 1; i < Thresholds.Length; i++) if (xp >= Thresholds[i]) lvl = i + 1;
+            return lvl;
+        }
+
+        public static string LevelName(SaveData s, StationKind k) => LevelNames[Level(s, k) - 1];
+        public static string TierName(int tier) => LevelNames[Math.Max(1, Math.Min(tier, LevelNames.Length)) - 1];
+
+        public static void Gain(SaveData s, StationKind k, int amount)
+        {
+            if (amount <= 0) return;
+            s.StationXp[Id(k)] = Xp(s, k) + amount;
+        }
+
+        public static bool IsUnlocked(SaveData s, StationKind k, int tier) => Level(s, k) >= tier;
+
+        /// <summary>"Journeyman — 40/450 XP to Master", or "Master — every tier unlocked" when maxed.</summary>
+        public static string HeaderText(SaveData s, StationKind k)
+        {
+            int lvl = Level(s, k);
+            if (lvl >= LevelNames.Length) return $"{LevelNames[lvl - 1]} — every recipe tier unlocked";
+            return $"{LevelNames[lvl - 1]} — {Xp(s, k)}/{Thresholds[lvl]} XP to {LevelNames[lvl]}";
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────────
     // Blacksmith & Alchemist crafting (§24.6, §25.2–25.3)
     // ─────────────────────────────────────────────────────────────────────────────
 
     public static class Crafting
     {
+        public const int CraftXp = 15;
+        public const int SalvageXp = 8;
+
+        public static StationKind StationFor(CraftStation station) => station == CraftStation.Forge ? StationKind.Blacksmith : StationKind.Alchemist;
+
         public static List<RecipeDef> Recipes(ContentDb c, CraftStation station) =>
             c.Recipes.Values.Where(r => r.Station == station && c.TryItem(r.Result) != null)
                 .OrderBy(r => r.BaseItem != null).ThenBy(r => r.Gold).ThenBy(r => c.Item(r.Result).Name).ToList();
@@ -640,8 +692,11 @@ namespace Gaiden.Meta
             return true;
         }
 
+        public static bool IsUnlocked(SaveData s, RecipeDef r) => StationProgress.IsUnlocked(s, StationFor(r.Station), r.Tier);
+
         public static Result Craft(ContentDb c, SaveData s, RecipeDef r)
         {
+            if (!IsUnlocked(s, r)) return Result.Fail($"Requires {StationProgress.TierName(r.Tier)}");
             if (s.Gold < r.Gold) return Result.Fail("Not enough gold");
             if (!HasInputs(s, r)) return Result.Fail("Missing materials");
             var result = c.Item(r.Result);
@@ -650,6 +705,7 @@ namespace Gaiden.Meta
             foreach (var ic in r.Inputs) s.AddItem(ic.Item, -ic.Count);
             if (r.BaseItem != null) s.AddItem(r.BaseItem, -1);
             s.AddItem(result.Id, r.ResultCount);
+            StationProgress.Gain(s, StationFor(r.Station), CraftXp);
             return Result.Success($"Made {result.Name}");
         }
 
@@ -671,6 +727,7 @@ namespace Gaiden.Meta
             if (yield.Count == 0) return Result.Fail("Can't be salvaged");
             s.AddItem(itemId, -1);
             foreach (var ic in yield) s.AddItem(ic.Item, ic.Count);
+            StationProgress.Gain(s, StationKind.Blacksmith, SalvageXp);
             return Result.Success($"Salvaged {item.Name}");
         }
     }
@@ -681,6 +738,8 @@ namespace Gaiden.Meta
 
     public static class Repair
     {
+        public const int RepairXp = 8;
+
         public static int EffectiveMax(ItemDef item, int repairs) => Math.Max(1, item.Durability - repairs);
 
         /// <summary>Repair price after the caravan's Armory Wagon discount.</summary>
@@ -713,6 +772,7 @@ namespace Gaiden.Meta
             s.Gold -= cost;
             h.WeaponDurability = EffectiveMax(item, h.WeaponRepairs);
             h.WeaponRepairs++;
+            StationProgress.Gain(s, StationKind.Blacksmith, RepairXp);
             return Result.Success($"Repaired {item.Name}");
         }
 
@@ -726,6 +786,7 @@ namespace Gaiden.Meta
             s.Gold -= cost;
             h.ArmorDurability = EffectiveMax(item, h.ArmorRepairs);
             h.ArmorRepairs++;
+            StationProgress.Gain(s, StationKind.Blacksmith, RepairXp);
             return Result.Success($"Repaired {item.Name}");
         }
     }

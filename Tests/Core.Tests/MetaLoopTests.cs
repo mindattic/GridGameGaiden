@@ -364,5 +364,97 @@ namespace Gaiden.Tests
             while (CaravanUpgrades.NextLevel(c, s, "scouts") != null) Assert.True(CaravanUpgrades.Buy(c, s, "scouts").Ok);
             Assert.False(CaravanUpgrades.Buy(c, s, "scouts").Ok);
         }
+
+        // ── Crafting station progression (§24.6.1, GG-T35) ──
+
+        [Fact]
+        public void A_station_starts_at_apprentice_and_levels_up_from_real_crafting_actions()
+        {
+            var c = Real; var s = Progression.NewGame(c, "Station1");
+            Assert.Equal("Apprentice", StationProgress.LevelName(s, StationKind.Blacksmith));
+            Assert.Equal("Apprentice — 0/150 XP to Journeyman", StationProgress.HeaderText(s, StationKind.Blacksmith));
+
+            var t1 = Crafting.Recipes(c, CraftStation.Forge).First(r => r.Tier == 1);
+            var t2 = Crafting.Recipes(c, CraftStation.Forge).First(r => r.Tier == 2);
+            var t3 = Crafting.Recipes(c, CraftStation.Forge).First(r => r.Tier == 3);
+            void Stock(RecipeDef r)
+            {
+                s.Gold += r.Gold;
+                foreach (var ic in r.Inputs) s.AddItem(ic.Item, ic.Count);
+                if (r.BaseItem != null) s.AddItem(r.BaseItem, 1);
+            }
+            void CraftT1()
+            {
+                Stock(t1);
+                Assert.True(Crafting.Craft(c, s, t1).Ok);
+                s.AddItem(t1.Result, -s.Count(t1.Result)); // clear the bag so MaxStack never blocks the next craft
+            }
+
+            Stock(t2);
+            var blocked = Crafting.Craft(c, s, t2);
+            Assert.False(blocked.Ok);
+            Assert.Contains("Journeyman", blocked.Message);
+
+            for (int i = 0; i < 20 && StationProgress.Level(s, StationKind.Blacksmith) < 2; i++) CraftT1();
+            Assert.Equal("Journeyman", StationProgress.LevelName(s, StationKind.Blacksmith));
+            Assert.True(Crafting.Craft(c, s, t2).Ok, "Journeyman should unlock the tier-2 recipe");
+
+            Stock(t3);
+            Assert.False(Crafting.Craft(c, s, t3).Ok, "tier-3 still needs Master");
+            for (int i = 0; i < 40 && StationProgress.Level(s, StationKind.Blacksmith) < 3; i++) CraftT1();
+            Assert.Equal("Master", StationProgress.LevelName(s, StationKind.Blacksmith));
+            Assert.Equal("Master — every recipe tier unlocked", StationProgress.HeaderText(s, StationKind.Blacksmith));
+            Stock(t3);
+            Assert.True(Crafting.Craft(c, s, t3).Ok);
+
+            Assert.Equal(0, StationProgress.Xp(s, StationKind.Alchemist)); // Forge crafting never touches the Alchemist
+        }
+
+        [Fact]
+        public void Repair_and_salvage_grant_blacksmith_xp_but_never_alchemist()
+        {
+            var c = Real; var s = Progression.NewGame(c, "Station2");
+            var recipe = Crafting.Recipes(c, CraftStation.Forge).First(r => r.Tier == 1
+                && (c.Item(r.Result).Slot == EquipmentSlot.Weapon || c.Item(r.Result).Slot == EquipmentSlot.Armor)
+                && c.Item(r.Result).Durability > 1);
+            s.Gold += recipe.Gold;
+            foreach (var ic in recipe.Inputs) s.AddItem(ic.Item, ic.Count);
+            Assert.True(Crafting.Craft(c, s, recipe).Ok);
+            Assert.Equal(Crafting.CraftXp, StationProgress.Xp(s, StationKind.Blacksmith));
+
+            var item = c.Item(recipe.Result);
+            var hero = s.Hero(s.Party[0]);
+            Assert.True(Equipment.Equip(c, s, hero, item.Slot, item.Id).Ok);
+            s.Gold += 1000;
+            Result repaired;
+            if (item.Slot == EquipmentSlot.Weapon) { hero.WeaponDurability = 1; repaired = Repair.RepairWeapon(c, s, hero); }
+            else { hero.ArmorDurability = 1; repaired = Repair.RepairArmor(c, s, hero); }
+            Assert.True(repaired.Ok, repaired.Message);
+            Assert.Equal(Crafting.CraftXp + Repair.RepairXp, StationProgress.Xp(s, StationKind.Blacksmith));
+
+            s.AddItem(recipe.Result, 1); // a spare copy to salvage
+            Assert.True(Crafting.Salvage(c, s, recipe.Result).Ok);
+            Assert.Equal(Crafting.CraftXp + Repair.RepairXp + Crafting.SalvageXp, StationProgress.Xp(s, StationKind.Blacksmith));
+            Assert.Equal(0, StationProgress.Xp(s, StationKind.Alchemist));
+        }
+
+        [Fact]
+        public void Caravan_upgrades_and_station_tiers_never_double_gate_each_other()
+        {
+            // §25.12 caravan upgrades are gold-bought stat bonuses, not recipe gates — GG-T35 must not
+            // make either system move the other.
+            var c = Real; var s = Progression.NewGame(c, "Station3");
+            s.Gold = 10000;
+            Assert.True(CaravanUpgrades.Buy(c, s, "armory").Ok);
+            Assert.True(CaravanUpgrades.Buy(c, s, "mana_casks").Ok);
+            Assert.Equal(1, StationProgress.Level(s, StationKind.Blacksmith));
+            Assert.Equal(1, StationProgress.Level(s, StationKind.Alchemist));
+
+            // Buying every caravan upgrade must not have unlocked a tier-2 recipe by itself.
+            var t2 = Crafting.Recipes(c, CraftStation.Alchemy).First(r => r.Tier == 2);
+            s.Gold += t2.Gold;
+            foreach (var ic in t2.Inputs) s.AddItem(ic.Item, ic.Count);
+            Assert.False(Crafting.Craft(c, s, t2).Ok);
+        }
     }
 }

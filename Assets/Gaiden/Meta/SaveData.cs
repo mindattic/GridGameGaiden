@@ -43,6 +43,8 @@ namespace Gaiden.Meta
         public int Recruits;
         /// <summary>Caravan upgrade id → level bought (§25.12).</summary>
         public Dictionary<string, int> Caravan = new Dictionary<string, int>();
+        /// <summary>Crafting station id ("blacksmith"/"alchemist") → accumulated XP (§24.6.1, GG-T35).</summary>
+        public Dictionary<string, int> StationXp = new Dictionary<string, int>();
         /// <summary>Guest allies who died in the battle they were met in — gone for good (§25.11).</summary>
         public HashSet<string> LostGuests = new HashSet<string>();
         /// <summary>Spare equipment that has been used: item id → its worn copies (per-instance durability, US-246).</summary>
@@ -173,6 +175,7 @@ namespace Gaiden.Meta
             s.Bounty ??= new BountySave();
             s.Worn ??= new Dictionary<string, List<WornGear>>();
             s.Settings ??= new SettingsSave();
+            s.StationXp ??= new Dictionary<string, int>();
             foreach (var h in s.Roster)
             {
                 while (h.Bar.Count < 5) h.Bar.Add(null);

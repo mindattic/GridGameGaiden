@@ -237,7 +237,8 @@
     "Gold": 60,
     "BaseItem": null,
     "Result": "hi_potion",
-    "ResultCount": 2
+    "ResultCount": 2,
+    "Tier": 2
   },
   {
     "Id": "recipe_potion_x",
@@ -259,7 +260,8 @@
     "Gold": 200,
     "BaseItem": null,
     "Result": "x_potion",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "recipe_ether",
@@ -273,7 +275,8 @@
     "Gold": 40,
     "BaseItem": null,
     "Result": "ether",
-    "ResultCount": 2
+    "ResultCount": 2,
+    "Tier": 2
   },
   {
     "Id": "recipe_ether_hi",
@@ -291,7 +294,8 @@
     "Gold": 120,
     "BaseItem": null,
     "Result": "hi_ether",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 2
   },
   {
     "Id": "recipe_phoenix_down",
@@ -313,7 +317,8 @@
     "Gold": 180,
     "BaseItem": null,
     "Result": "phoenix_down",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "recipe_antidote",
@@ -371,7 +376,8 @@
     "Gold": 100,
     "BaseItem": null,
     "Result": "remedy",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 2
   },
   {
     "Id": "recipe_smoke_bomb",
@@ -393,7 +399,8 @@
     "Gold": 40,
     "BaseItem": null,
     "Result": "smoke_bomb",
-    "ResultCount": 2
+    "ResultCount": 2,
+    "Tier": 2
   },
   {
     "Id": "recipe_tent",
@@ -415,7 +422,8 @@
     "Gold": 120,
     "BaseItem": null,
     "Result": "tent",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 2
   },
   {
     "Id": "recipe_holy_water",
@@ -433,7 +441,8 @@
     "Gold": 60,
     "BaseItem": null,
     "Result": "holy_water",
-    "ResultCount": 2
+    "ResultCount": 2,
+    "Tier": 2
   },
   {
     "Id": "recipe_flame_oil",
@@ -451,7 +460,8 @@
     "Gold": 50,
     "BaseItem": null,
     "Result": "flame_oil",
-    "ResultCount": 2
+    "ResultCount": 2,
+    "Tier": 2
   },
   {
     "Id": "upgrade_eq_sword_rusty",
@@ -469,7 +479,8 @@
     "Gold": 30,
     "BaseItem": "eq_sword_rusty",
     "Result": "eq_sword_rusty_plus1",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 2
   },
   {
     "Id": "upgrade_eq_sword_rusty_plus1",
@@ -491,7 +502,8 @@
     "Gold": 80,
     "BaseItem": "eq_sword_rusty_plus1",
     "Result": "eq_sword_rusty_plus2",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "upgrade_eq_sword_rusty_plus2",
@@ -513,7 +525,8 @@
     "Gold": 180,
     "BaseItem": "eq_sword_rusty_plus2",
     "Result": "eq_sword_rusty_plus3",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "upgrade_eq_sword_iron",
@@ -531,7 +544,8 @@
     "Gold": 30,
     "BaseItem": "eq_sword_iron",
     "Result": "eq_sword_iron_plus1",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 2
   },
   {
     "Id": "upgrade_eq_sword_iron_plus1",
@@ -553,7 +567,8 @@
     "Gold": 80,
     "BaseItem": "eq_sword_iron_plus1",
     "Result": "eq_sword_iron_plus2",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "upgrade_eq_sword_iron_plus2",
@@ -575,7 +590,8 @@
     "Gold": 180,
     "BaseItem": "eq_sword_iron_plus2",
     "Result": "eq_sword_iron_plus3",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "upgrade_eq_sword_steel",
@@ -593,7 +609,8 @@
     "Gold": 30,
     "BaseItem": "eq_sword_steel",
     "Result": "eq_sword_steel_plus1",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 2
   },
   {
     "Id": "upgrade_eq_sword_steel_plus1",
@@ -615,7 +632,8 @@
     "Gold": 80,
     "BaseItem": "eq_sword_steel_plus1",
     "Result": "eq_sword_steel_plus2",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "upgrade_eq_sword_steel_plus2",
@@ -637,7 +655,8 @@
     "Gold": 180,
     "BaseItem": "eq_sword_steel_plus2",
     "Result": "eq_sword_steel_plus3",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "upgrade_eq_staff_mystic",
@@ -655,7 +674,8 @@
     "Gold": 30,
     "BaseItem": "eq_staff_mystic",
     "Result": "eq_staff_mystic_plus1",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 2
   },
   {
     "Id": "upgrade_eq_staff_mystic_plus1",
@@ -677,7 +697,8 @@
     "Gold": 80,
     "BaseItem": "eq_staff_mystic_plus1",
     "Result": "eq_staff_mystic_plus2",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "upgrade_eq_staff_mystic_plus2",
@@ -699,7 +720,8 @@
     "Gold": 180,
     "BaseItem": "eq_staff_mystic_plus2",
     "Result": "eq_staff_mystic_plus3",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "upgrade_eq_bow_hunter",
@@ -717,7 +739,8 @@
     "Gold": 30,
     "BaseItem": "eq_bow_hunter",
     "Result": "eq_bow_hunter_plus1",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 2
   },
   {
     "Id": "upgrade_eq_bow_hunter_plus1",
@@ -739,7 +762,8 @@
     "Gold": 80,
     "BaseItem": "eq_bow_hunter_plus1",
     "Result": "eq_bow_hunter_plus2",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "upgrade_eq_bow_hunter_plus2",
@@ -761,7 +785,8 @@
     "Gold": 180,
     "BaseItem": "eq_bow_hunter_plus2",
     "Result": "eq_bow_hunter_plus3",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "upgrade_eq_hammer_war",
@@ -779,7 +804,8 @@
     "Gold": 30,
     "BaseItem": "eq_hammer_war",
     "Result": "eq_hammer_war_plus1",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 2
   },
   {
     "Id": "upgrade_eq_hammer_war_plus1",
@@ -801,7 +827,8 @@
     "Gold": 80,
     "BaseItem": "eq_hammer_war_plus1",
     "Result": "eq_hammer_war_plus2",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "upgrade_eq_hammer_war_plus2",
@@ -823,7 +850,8 @@
     "Gold": 180,
     "BaseItem": "eq_hammer_war_plus2",
     "Result": "eq_hammer_war_plus3",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "upgrade_eq_dagger_bronze",
@@ -841,7 +869,8 @@
     "Gold": 30,
     "BaseItem": "eq_dagger_bronze",
     "Result": "eq_dagger_bronze_plus1",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 2
   },
   {
     "Id": "upgrade_eq_dagger_bronze_plus1",
@@ -863,7 +892,8 @@
     "Gold": 80,
     "BaseItem": "eq_dagger_bronze_plus1",
     "Result": "eq_dagger_bronze_plus2",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "upgrade_eq_dagger_bronze_plus2",
@@ -885,7 +915,8 @@
     "Gold": 180,
     "BaseItem": "eq_dagger_bronze_plus2",
     "Result": "eq_dagger_bronze_plus3",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "upgrade_eq_sword_flame",
@@ -903,7 +934,8 @@
     "Gold": 30,
     "BaseItem": "eq_sword_flame",
     "Result": "eq_sword_flame_plus1",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 2
   },
   {
     "Id": "upgrade_eq_sword_flame_plus1",
@@ -925,7 +957,8 @@
     "Gold": 80,
     "BaseItem": "eq_sword_flame_plus1",
     "Result": "eq_sword_flame_plus2",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "upgrade_eq_sword_flame_plus2",
@@ -947,7 +980,8 @@
     "Gold": 180,
     "BaseItem": "eq_sword_flame_plus2",
     "Result": "eq_sword_flame_plus3",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "upgrade_eq_wand_crystal",
@@ -965,7 +999,8 @@
     "Gold": 30,
     "BaseItem": "eq_wand_crystal",
     "Result": "eq_wand_crystal_plus1",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 2
   },
   {
     "Id": "upgrade_eq_wand_crystal_plus1",
@@ -987,7 +1022,8 @@
     "Gold": 80,
     "BaseItem": "eq_wand_crystal_plus1",
     "Result": "eq_wand_crystal_plus2",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "upgrade_eq_wand_crystal_plus2",
@@ -1009,7 +1045,8 @@
     "Gold": 180,
     "BaseItem": "eq_wand_crystal_plus2",
     "Result": "eq_wand_crystal_plus3",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "upgrade_eq_spear_serpent",
@@ -1027,7 +1064,8 @@
     "Gold": 30,
     "BaseItem": "eq_spear_serpent",
     "Result": "eq_spear_serpent_plus1",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 2
   },
   {
     "Id": "upgrade_eq_spear_serpent_plus1",
@@ -1049,7 +1087,8 @@
     "Gold": 80,
     "BaseItem": "eq_spear_serpent_plus1",
     "Result": "eq_spear_serpent_plus2",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "upgrade_eq_spear_serpent_plus2",
@@ -1071,7 +1110,8 @@
     "Gold": 180,
     "BaseItem": "eq_spear_serpent_plus2",
     "Result": "eq_spear_serpent_plus3",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "upgrade_eq_axe_rune",
@@ -1089,7 +1129,8 @@
     "Gold": 30,
     "BaseItem": "eq_axe_rune",
     "Result": "eq_axe_rune_plus1",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 2
   },
   {
     "Id": "upgrade_eq_axe_rune_plus1",
@@ -1111,7 +1152,8 @@
     "Gold": 80,
     "BaseItem": "eq_axe_rune_plus1",
     "Result": "eq_axe_rune_plus2",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "upgrade_eq_axe_rune_plus2",
@@ -1133,7 +1175,8 @@
     "Gold": 180,
     "BaseItem": "eq_axe_rune_plus2",
     "Result": "eq_axe_rune_plus3",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "upgrade_eq_sword_shadow",
@@ -1151,7 +1194,8 @@
     "Gold": 30,
     "BaseItem": "eq_sword_shadow",
     "Result": "eq_sword_shadow_plus1",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 2
   },
   {
     "Id": "upgrade_eq_sword_shadow_plus1",
@@ -1173,7 +1217,8 @@
     "Gold": 80,
     "BaseItem": "eq_sword_shadow_plus1",
     "Result": "eq_sword_shadow_plus2",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "upgrade_eq_sword_shadow_plus2",
@@ -1195,7 +1240,8 @@
     "Gold": 180,
     "BaseItem": "eq_sword_shadow_plus2",
     "Result": "eq_sword_shadow_plus3",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "upgrade_eq_mace_starfall",
@@ -1213,7 +1259,8 @@
     "Gold": 30,
     "BaseItem": "eq_mace_starfall",
     "Result": "eq_mace_starfall_plus1",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 2
   },
   {
     "Id": "upgrade_eq_mace_starfall_plus1",
@@ -1235,7 +1282,8 @@
     "Gold": 80,
     "BaseItem": "eq_mace_starfall_plus1",
     "Result": "eq_mace_starfall_plus2",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "upgrade_eq_mace_starfall_plus2",
@@ -1257,7 +1305,8 @@
     "Gold": 180,
     "BaseItem": "eq_mace_starfall_plus2",
     "Result": "eq_mace_starfall_plus3",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_sword_rusty_flame",
@@ -1275,7 +1324,8 @@
     "Gold": 150,
     "BaseItem": "eq_sword_rusty",
     "Result": "eq_sword_rusty_ench_flame",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_sword_rusty_frost",
@@ -1293,7 +1343,8 @@
     "Gold": 150,
     "BaseItem": "eq_sword_rusty",
     "Result": "eq_sword_rusty_ench_frost",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_sword_rusty_spark",
@@ -1311,7 +1362,8 @@
     "Gold": 150,
     "BaseItem": "eq_sword_rusty",
     "Result": "eq_sword_rusty_ench_spark",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_sword_rusty_shadow",
@@ -1329,7 +1381,8 @@
     "Gold": 150,
     "BaseItem": "eq_sword_rusty",
     "Result": "eq_sword_rusty_ench_shadow",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_sword_iron_flame",
@@ -1347,7 +1400,8 @@
     "Gold": 150,
     "BaseItem": "eq_sword_iron",
     "Result": "eq_sword_iron_ench_flame",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_sword_iron_frost",
@@ -1365,7 +1419,8 @@
     "Gold": 150,
     "BaseItem": "eq_sword_iron",
     "Result": "eq_sword_iron_ench_frost",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_sword_iron_spark",
@@ -1383,7 +1438,8 @@
     "Gold": 150,
     "BaseItem": "eq_sword_iron",
     "Result": "eq_sword_iron_ench_spark",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_sword_iron_shadow",
@@ -1401,7 +1457,8 @@
     "Gold": 150,
     "BaseItem": "eq_sword_iron",
     "Result": "eq_sword_iron_ench_shadow",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_sword_steel_flame",
@@ -1419,7 +1476,8 @@
     "Gold": 150,
     "BaseItem": "eq_sword_steel",
     "Result": "eq_sword_steel_ench_flame",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_sword_steel_frost",
@@ -1437,7 +1495,8 @@
     "Gold": 150,
     "BaseItem": "eq_sword_steel",
     "Result": "eq_sword_steel_ench_frost",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_sword_steel_spark",
@@ -1455,7 +1514,8 @@
     "Gold": 150,
     "BaseItem": "eq_sword_steel",
     "Result": "eq_sword_steel_ench_spark",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_sword_steel_shadow",
@@ -1473,7 +1533,8 @@
     "Gold": 150,
     "BaseItem": "eq_sword_steel",
     "Result": "eq_sword_steel_ench_shadow",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_staff_mystic_flame",
@@ -1491,7 +1552,8 @@
     "Gold": 150,
     "BaseItem": "eq_staff_mystic",
     "Result": "eq_staff_mystic_ench_flame",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_staff_mystic_frost",
@@ -1509,7 +1571,8 @@
     "Gold": 150,
     "BaseItem": "eq_staff_mystic",
     "Result": "eq_staff_mystic_ench_frost",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_staff_mystic_spark",
@@ -1527,7 +1590,8 @@
     "Gold": 150,
     "BaseItem": "eq_staff_mystic",
     "Result": "eq_staff_mystic_ench_spark",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_staff_mystic_shadow",
@@ -1545,7 +1609,8 @@
     "Gold": 150,
     "BaseItem": "eq_staff_mystic",
     "Result": "eq_staff_mystic_ench_shadow",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_bow_hunter_flame",
@@ -1563,7 +1628,8 @@
     "Gold": 150,
     "BaseItem": "eq_bow_hunter",
     "Result": "eq_bow_hunter_ench_flame",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_bow_hunter_frost",
@@ -1581,7 +1647,8 @@
     "Gold": 150,
     "BaseItem": "eq_bow_hunter",
     "Result": "eq_bow_hunter_ench_frost",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_bow_hunter_spark",
@@ -1599,7 +1666,8 @@
     "Gold": 150,
     "BaseItem": "eq_bow_hunter",
     "Result": "eq_bow_hunter_ench_spark",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_bow_hunter_shadow",
@@ -1617,7 +1685,8 @@
     "Gold": 150,
     "BaseItem": "eq_bow_hunter",
     "Result": "eq_bow_hunter_ench_shadow",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_hammer_war_flame",
@@ -1635,7 +1704,8 @@
     "Gold": 150,
     "BaseItem": "eq_hammer_war",
     "Result": "eq_hammer_war_ench_flame",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_hammer_war_frost",
@@ -1653,7 +1723,8 @@
     "Gold": 150,
     "BaseItem": "eq_hammer_war",
     "Result": "eq_hammer_war_ench_frost",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_hammer_war_spark",
@@ -1671,7 +1742,8 @@
     "Gold": 150,
     "BaseItem": "eq_hammer_war",
     "Result": "eq_hammer_war_ench_spark",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_hammer_war_shadow",
@@ -1689,7 +1761,8 @@
     "Gold": 150,
     "BaseItem": "eq_hammer_war",
     "Result": "eq_hammer_war_ench_shadow",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_dagger_bronze_flame",
@@ -1707,7 +1780,8 @@
     "Gold": 150,
     "BaseItem": "eq_dagger_bronze",
     "Result": "eq_dagger_bronze_ench_flame",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_dagger_bronze_frost",
@@ -1725,7 +1799,8 @@
     "Gold": 150,
     "BaseItem": "eq_dagger_bronze",
     "Result": "eq_dagger_bronze_ench_frost",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_dagger_bronze_spark",
@@ -1743,7 +1818,8 @@
     "Gold": 150,
     "BaseItem": "eq_dagger_bronze",
     "Result": "eq_dagger_bronze_ench_spark",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_dagger_bronze_shadow",
@@ -1761,7 +1837,8 @@
     "Gold": 150,
     "BaseItem": "eq_dagger_bronze",
     "Result": "eq_dagger_bronze_ench_shadow",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_sword_flame_flame",
@@ -1779,7 +1856,8 @@
     "Gold": 150,
     "BaseItem": "eq_sword_flame",
     "Result": "eq_sword_flame_ench_flame",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_sword_flame_frost",
@@ -1797,7 +1875,8 @@
     "Gold": 150,
     "BaseItem": "eq_sword_flame",
     "Result": "eq_sword_flame_ench_frost",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_sword_flame_spark",
@@ -1815,7 +1894,8 @@
     "Gold": 150,
     "BaseItem": "eq_sword_flame",
     "Result": "eq_sword_flame_ench_spark",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_sword_flame_shadow",
@@ -1833,7 +1913,8 @@
     "Gold": 150,
     "BaseItem": "eq_sword_flame",
     "Result": "eq_sword_flame_ench_shadow",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_wand_crystal_flame",
@@ -1851,7 +1932,8 @@
     "Gold": 150,
     "BaseItem": "eq_wand_crystal",
     "Result": "eq_wand_crystal_ench_flame",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_wand_crystal_frost",
@@ -1869,7 +1951,8 @@
     "Gold": 150,
     "BaseItem": "eq_wand_crystal",
     "Result": "eq_wand_crystal_ench_frost",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_wand_crystal_spark",
@@ -1887,7 +1970,8 @@
     "Gold": 150,
     "BaseItem": "eq_wand_crystal",
     "Result": "eq_wand_crystal_ench_spark",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_wand_crystal_shadow",
@@ -1905,7 +1989,8 @@
     "Gold": 150,
     "BaseItem": "eq_wand_crystal",
     "Result": "eq_wand_crystal_ench_shadow",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_spear_serpent_flame",
@@ -1923,7 +2008,8 @@
     "Gold": 150,
     "BaseItem": "eq_spear_serpent",
     "Result": "eq_spear_serpent_ench_flame",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_spear_serpent_frost",
@@ -1941,7 +2027,8 @@
     "Gold": 150,
     "BaseItem": "eq_spear_serpent",
     "Result": "eq_spear_serpent_ench_frost",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_spear_serpent_spark",
@@ -1959,7 +2046,8 @@
     "Gold": 150,
     "BaseItem": "eq_spear_serpent",
     "Result": "eq_spear_serpent_ench_spark",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_spear_serpent_shadow",
@@ -1977,7 +2065,8 @@
     "Gold": 150,
     "BaseItem": "eq_spear_serpent",
     "Result": "eq_spear_serpent_ench_shadow",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_axe_rune_flame",
@@ -1995,7 +2084,8 @@
     "Gold": 150,
     "BaseItem": "eq_axe_rune",
     "Result": "eq_axe_rune_ench_flame",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_axe_rune_frost",
@@ -2013,7 +2103,8 @@
     "Gold": 150,
     "BaseItem": "eq_axe_rune",
     "Result": "eq_axe_rune_ench_frost",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_axe_rune_spark",
@@ -2031,7 +2122,8 @@
     "Gold": 150,
     "BaseItem": "eq_axe_rune",
     "Result": "eq_axe_rune_ench_spark",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_axe_rune_shadow",
@@ -2049,7 +2141,8 @@
     "Gold": 150,
     "BaseItem": "eq_axe_rune",
     "Result": "eq_axe_rune_ench_shadow",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_sword_shadow_flame",
@@ -2067,7 +2160,8 @@
     "Gold": 150,
     "BaseItem": "eq_sword_shadow",
     "Result": "eq_sword_shadow_ench_flame",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_sword_shadow_frost",
@@ -2085,7 +2179,8 @@
     "Gold": 150,
     "BaseItem": "eq_sword_shadow",
     "Result": "eq_sword_shadow_ench_frost",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_sword_shadow_spark",
@@ -2103,7 +2198,8 @@
     "Gold": 150,
     "BaseItem": "eq_sword_shadow",
     "Result": "eq_sword_shadow_ench_spark",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_sword_shadow_shadow",
@@ -2121,7 +2217,8 @@
     "Gold": 150,
     "BaseItem": "eq_sword_shadow",
     "Result": "eq_sword_shadow_ench_shadow",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_mace_starfall_flame",
@@ -2139,7 +2236,8 @@
     "Gold": 150,
     "BaseItem": "eq_mace_starfall",
     "Result": "eq_mace_starfall_ench_flame",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_mace_starfall_frost",
@@ -2157,7 +2255,8 @@
     "Gold": 150,
     "BaseItem": "eq_mace_starfall",
     "Result": "eq_mace_starfall_ench_frost",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_mace_starfall_spark",
@@ -2175,7 +2274,8 @@
     "Gold": 150,
     "BaseItem": "eq_mace_starfall",
     "Result": "eq_mace_starfall_ench_spark",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_mace_starfall_shadow",
@@ -2193,7 +2293,8 @@
     "Gold": 150,
     "BaseItem": "eq_mace_starfall",
     "Result": "eq_mace_starfall_ench_shadow",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_axe_rune_poison",
@@ -2211,7 +2312,8 @@
     "Gold": 150,
     "BaseItem": "eq_axe_rune",
     "Result": "eq_axe_rune_ench_poison",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_axe_rune_holy",
@@ -2229,7 +2331,8 @@
     "Gold": 150,
     "BaseItem": "eq_axe_rune",
     "Result": "eq_axe_rune_ench_holy",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_bow_hunter_poison",
@@ -2247,7 +2350,8 @@
     "Gold": 150,
     "BaseItem": "eq_bow_hunter",
     "Result": "eq_bow_hunter_ench_poison",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_bow_hunter_holy",
@@ -2265,7 +2369,8 @@
     "Gold": 150,
     "BaseItem": "eq_bow_hunter",
     "Result": "eq_bow_hunter_ench_holy",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_dagger_bronze_poison",
@@ -2283,7 +2388,8 @@
     "Gold": 150,
     "BaseItem": "eq_dagger_bronze",
     "Result": "eq_dagger_bronze_ench_poison",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_dagger_bronze_holy",
@@ -2301,7 +2407,8 @@
     "Gold": 150,
     "BaseItem": "eq_dagger_bronze",
     "Result": "eq_dagger_bronze_ench_holy",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_hammer_war_poison",
@@ -2319,7 +2426,8 @@
     "Gold": 150,
     "BaseItem": "eq_hammer_war",
     "Result": "eq_hammer_war_ench_poison",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_hammer_war_holy",
@@ -2337,7 +2445,8 @@
     "Gold": 150,
     "BaseItem": "eq_hammer_war",
     "Result": "eq_hammer_war_ench_holy",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_mace_starfall_poison",
@@ -2355,7 +2464,8 @@
     "Gold": 150,
     "BaseItem": "eq_mace_starfall",
     "Result": "eq_mace_starfall_ench_poison",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_mace_starfall_holy",
@@ -2373,7 +2483,8 @@
     "Gold": 150,
     "BaseItem": "eq_mace_starfall",
     "Result": "eq_mace_starfall_ench_holy",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_spear_serpent_poison",
@@ -2391,7 +2502,8 @@
     "Gold": 150,
     "BaseItem": "eq_spear_serpent",
     "Result": "eq_spear_serpent_ench_poison",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_spear_serpent_holy",
@@ -2409,7 +2521,8 @@
     "Gold": 150,
     "BaseItem": "eq_spear_serpent",
     "Result": "eq_spear_serpent_ench_holy",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_staff_mystic_poison",
@@ -2427,7 +2540,8 @@
     "Gold": 150,
     "BaseItem": "eq_staff_mystic",
     "Result": "eq_staff_mystic_ench_poison",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_staff_mystic_holy",
@@ -2445,7 +2559,8 @@
     "Gold": 150,
     "BaseItem": "eq_staff_mystic",
     "Result": "eq_staff_mystic_ench_holy",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_sword_flame_poison",
@@ -2463,7 +2578,8 @@
     "Gold": 150,
     "BaseItem": "eq_sword_flame",
     "Result": "eq_sword_flame_ench_poison",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_sword_flame_holy",
@@ -2481,7 +2597,8 @@
     "Gold": 150,
     "BaseItem": "eq_sword_flame",
     "Result": "eq_sword_flame_ench_holy",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_sword_iron_poison",
@@ -2499,7 +2616,8 @@
     "Gold": 150,
     "BaseItem": "eq_sword_iron",
     "Result": "eq_sword_iron_ench_poison",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_sword_iron_holy",
@@ -2517,7 +2635,8 @@
     "Gold": 150,
     "BaseItem": "eq_sword_iron",
     "Result": "eq_sword_iron_ench_holy",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_sword_rusty_poison",
@@ -2535,7 +2654,8 @@
     "Gold": 150,
     "BaseItem": "eq_sword_rusty",
     "Result": "eq_sword_rusty_ench_poison",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_sword_rusty_holy",
@@ -2553,7 +2673,8 @@
     "Gold": 150,
     "BaseItem": "eq_sword_rusty",
     "Result": "eq_sword_rusty_ench_holy",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_sword_shadow_poison",
@@ -2571,7 +2692,8 @@
     "Gold": 150,
     "BaseItem": "eq_sword_shadow",
     "Result": "eq_sword_shadow_ench_poison",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_sword_shadow_holy",
@@ -2589,7 +2711,8 @@
     "Gold": 150,
     "BaseItem": "eq_sword_shadow",
     "Result": "eq_sword_shadow_ench_holy",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_sword_steel_poison",
@@ -2607,7 +2730,8 @@
     "Gold": 150,
     "BaseItem": "eq_sword_steel",
     "Result": "eq_sword_steel_ench_poison",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_sword_steel_holy",
@@ -2625,7 +2749,8 @@
     "Gold": 150,
     "BaseItem": "eq_sword_steel",
     "Result": "eq_sword_steel_ench_holy",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_wand_crystal_poison",
@@ -2643,7 +2768,8 @@
     "Gold": 150,
     "BaseItem": "eq_wand_crystal",
     "Result": "eq_wand_crystal_ench_poison",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   },
   {
     "Id": "enchant_eq_wand_crystal_holy",
@@ -2661,6 +2787,7 @@
     "Gold": 150,
     "BaseItem": "eq_wand_crystal",
     "Result": "eq_wand_crystal_ench_holy",
-    "ResultCount": 1
+    "ResultCount": 1,
+    "Tier": 3
   }
 ]
