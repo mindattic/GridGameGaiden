@@ -121,6 +121,8 @@ namespace Gaiden.Core.Content
                 NeedItem(r.Result, $"recipe {r.Id}");
                 NeedItem(r.BaseItem, $"recipe {r.Id} base");
                 foreach (var ic in r.Inputs) NeedItem(ic.Item, $"recipe {r.Id}");
+                NeedItem(r.PotencyResult, $"recipe {r.Id} potency");
+                foreach (var ic in r.PotencyInputs) NeedItem(ic.Item, $"recipe {r.Id} potency");
             }
             foreach (var d in db.DropTables.Values)
                 foreach (var e in d.Entries) NeedItem(e.Item, $"droptable {d.Id}");

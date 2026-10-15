@@ -342,6 +342,12 @@
         "Chance": 0.12,
         "Min": 1,
         "Max": 1
+      },
+      {
+        "Item": "mat_pure_slime_gel",
+        "Chance": 0.06,
+        "Min": 1,
+        "Max": 1
       }
     ]
   },

@@ -228,6 +228,16 @@ namespace Gaiden.App.Automation
                     }
                     return new { ok = equipped > 0, equipped };
                 }
+                case "devgive":
+                {
+                    // Test-only: grants bag items for harness checks that need a specific reagent/material
+                    // without grinding a rare drop (e.g. GG-T45 potency-brew UI).
+                    if (app.Save == null) return new { error = "no save" };
+                    var itemId = q["item"];
+                    if (itemId == null) return new { error = "missing item" };
+                    app.Save.AddItem(itemId, (int)F(q["count"], 1));
+                    return new { ok = true, count = app.Save.Count(itemId) };
+                }
                 case "goto":
                     if (!StartScreens.TryGet(q["screen"], out var screen)) return new { error = "unknown screen" };
                     app.Router.Push(screen);

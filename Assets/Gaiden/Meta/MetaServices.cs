@@ -717,9 +717,11 @@ namespace Gaiden.Meta
             c.Recipes.Values.Where(r => r.Station == station && c.TryItem(r.Result) != null)
                 .OrderBy(r => r.BaseItem != null).ThenBy(r => r.Gold).ThenBy(r => c.Item(r.Result).Name).ToList();
 
-        public static bool HasInputs(SaveData s, RecipeDef r)
+        public static bool HasInputs(SaveData s, RecipeDef r) => HasInputs(s, r, r.Inputs);
+
+        private static bool HasInputs(SaveData s, RecipeDef r, List<ItemCount> inputs)
         {
-            foreach (var ic in r.Inputs) if (s.Count(ic.Item) < ic.Count) return false;
+            foreach (var ic in inputs) if (s.Count(ic.Item) < ic.Count) return false;
             if (r.BaseItem != null && s.Count(r.BaseItem) < 1) return false;
             return true;
         }
@@ -749,20 +751,28 @@ namespace Gaiden.Meta
         private static bool MasterworkEligible(ItemDef item) =>
             item.Type == ItemType.Equipment && item.Durability > 0 && (item.Slot == EquipmentSlot.Weapon || item.Slot == EquipmentSlot.Armor);
 
-        public static Result Craft(ContentDb c, SaveData s, RecipeDef r, Rng rng = null)
+        /// <summary>Whether this recipe has a reagent-quality variant (GG-T45) and the player holds its
+        /// higher-rarity inputs — e.g. a Pure Slime Gel in place of a plain one brews a Greater Healing Potion.</summary>
+        public static bool HasPotencyInputs(SaveData s, RecipeDef r) => r.PotencyResult != null && HasInputs(s, r, r.PotencyInputs);
+
+        public static Result Craft(ContentDb c, SaveData s, RecipeDef r, bool potency = false, Rng rng = null)
         {
             if (!IsUnlocked(s, r)) return Result.Fail($"Requires {StationProgress.TierName(r.Tier)}");
+            if (potency && r.PotencyResult == null) return Result.Fail("No greater version");
+            var inputs = potency ? r.PotencyInputs : r.Inputs;
+            var resultId = potency ? r.PotencyResult : r.Result;
+            var resultCount = potency ? r.PotencyResultCount : r.ResultCount;
             if (s.Gold < r.Gold) return Result.Fail("Not enough gold");
-            if (!HasInputs(s, r)) return Result.Fail("Missing materials");
-            var result = c.Item(r.Result);
-            if (s.Count(result.Id) + r.ResultCount > result.MaxStack) return Result.Fail("Can't carry more");
+            if (!HasInputs(s, r, inputs)) return Result.Fail("Missing materials");
+            var result = c.Item(resultId);
+            if (s.Count(result.Id) + resultCount > result.MaxStack) return Result.Fail("Can't carry more");
             s.Gold -= r.Gold;
-            foreach (var ic in r.Inputs) s.AddItem(ic.Item, -ic.Count);
+            foreach (var ic in inputs) s.AddItem(ic.Item, -ic.Count);
             if (r.BaseItem != null) s.AddItem(r.BaseItem, -1);
-            s.AddItem(result.Id, r.ResultCount);
+            s.AddItem(result.Id, resultCount);
             StationProgress.Gain(s, StationFor(r.Station), CraftXp);
             bool masterwork = false;
-            if (r.Station == CraftStation.Forge && r.ResultCount == 1 && MasterworkEligible(result))
+            if (!potency && r.Station == CraftStation.Forge && resultCount == 1 && MasterworkEligible(result))
             {
                 rng ??= new Rng(masterworkSeed++);
                 if (rng.Chance(MasterworkChance(c, s)))

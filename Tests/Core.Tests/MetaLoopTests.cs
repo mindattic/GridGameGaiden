@@ -492,7 +492,7 @@ namespace Gaiden.Tests
             for (int seed = 0; seed < 500; seed++)
             {
                 foreach (var ic in r.Inputs) s.AddItem(ic.Item, ic.Count);
-                craft = Crafting.Craft(c, s, r, new Rng(seed));
+                craft = Crafting.Craft(c, s, r, rng: new Rng(seed));
                 if (Equipment.IsMasterwork(s, resultId)) return craft;
                 s.AddItem(resultId, -s.Count(resultId)); // free the MaxStack-1 slot for the next attempt
             }

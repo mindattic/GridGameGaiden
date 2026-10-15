@@ -655,7 +655,8 @@ namespace Gaiden.App
             Ui.Text($"{(s.Gold >= r.Gold ? "✔" : "✘")} {Ui.Gold(r.Gold)}", "small " + (s.Gold >= r.Gold ? "good" : "bad"), need);
             if (r.Station == CraftStation.Forge)
                 Ui.Text($"★ {Math.Round(Crafting.MasterworkChance(c, s) * 100)}% chance of a Masterwork result", "small gold", need).style.whiteSpace = WhiteSpace.Normal;
-            var btn = Ui.Button(r.Station == CraftStation.Alchemy ? "Brew" : r.Station == CraftStation.Enchant ? "Enchant" : "Craft", () =>
+            string verb = r.Station == CraftStation.Alchemy ? "Brew" : r.Station == CraftStation.Enchant ? "Enchant" : "Craft";
+            var btn = Ui.Button(verb, () =>
             {
                 var res = Crafting.Craft(c, s, r);
                 GameApp.I.Toast(res.Message);
@@ -664,6 +665,28 @@ namespace Gaiden.App
                 page.Refresh();
             }, "btn--primary", w);
             Ui.SetEnabled(btn, !locked && Crafting.HasInputs(s, r) && s.Gold >= r.Gold);
+
+            if (r.PotencyResult != null)
+            {
+                var greater = c.Item(r.PotencyResult);
+                Ui.Text($"With a rarer reagent: {greater.Name}", "small gold", w).style.marginTop = 10;
+                var pneed = Ui.El("col", w);
+                foreach (var ic in r.PotencyInputs)
+                {
+                    var it = c.TryItem(ic.Item);
+                    int have = s.Count(ic.Item);
+                    Ui.Text($"{(have >= ic.Count ? "✔" : "✘")} {it?.Name ?? ic.Item} ×{ic.Count}   (have {have})", "small " + (have >= ic.Count ? "good" : "bad"), pneed);
+                }
+                var pbtn = Ui.Button($"{verb} {greater.Name}", () =>
+                {
+                    var res = Crafting.Craft(c, s, r, potency: true);
+                    GameApp.I.Toast(res.Message);
+                    GameApp.I.Audio.Sfx(res.Ok ? "ui.buy" : "ui.error");
+                    if (res.Ok) GameApp.I.Persist();
+                    page.Refresh();
+                }, null, w);
+                Ui.SetEnabled(pbtn, !locked && Crafting.HasPotencyInputs(s, r) && s.Gold >= r.Gold);
+            }
         }
 
         private void SalvageList(VisualElement list, VisualElement detail)

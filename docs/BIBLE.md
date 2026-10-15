@@ -119,8 +119,8 @@ GridGame Gaiden is **NOT**:
 | `classes.json` | 172 `ClassDef`s — stats, growth, milestones, tags, resistances, learnable abilities, default loadout, drop table, move range, XP reward, boss phases, charge ability/shape, trap, snake segments, footprint, lore/card text, portrait crop |
 | `abilities.json` | 25 `AbilityDef`s — cost letters, cast time, cooldown, shape/radius/mode/filter, motion, damage type/base, heal, buff + chance, cleanse, steal, hasten, teleport, scan, VFX/SFX keys |
 | `buffs.json` | 10 `BuffDef`s — kind, unit (Turns/Ticks), duration, DOT, immobile, halts timeline, breaks on damage/move, incoming-damage / timeline-speed / accuracy multipliers, blocks spells, expire chain, letter, color |
-| `items.json` | 225 `ItemDef`s (155 equipment, 54 materials, 16 consumables; corrected 2026-10-15, GG-T43 — the count had drifted stale) — type, rarity, slot, cost, stack, durability, healing/damage, stats, battle-start orbs, on-use ability, orb grants, cures, revive, escape, camp-only, bonus-vs-tag, resistances, vendor flag |
-| `recipes.json` | 116 `RecipeDef`s — station (Forge / Alchemy / Enchant), inputs, gold, optional base item, result |
+| `items.json` | 231 `ItemDef`s (155 equipment, 55 materials, 18 consumables, 3 recipe scrolls; GG-T45 added `mat_pure_slime_gel` + Greater Healing Potion/Antidote) — type, rarity, slot, cost, stack, durability, healing/damage, stats, battle-start orbs, on-use ability, orb grants, cures, revive, escape, camp-only, bonus-vs-tag, resistances, vendor flag |
+| `recipes.json` | 142 `RecipeDef`s — station (Forge / Alchemy / Enchant), inputs, gold, optional base item, result; some Alchemy recipes also carry a potency variant ([§24.6.4](#2464-reagent-potency-gg-t45-owner-direction)) |
 | `droptables.json` | 37 `DropTableDef`s — optional coin range, weighted item entries (chance, min, max); one per enemy family, each carrying that family's own signature material (added 2026-10-15, GG-T43) |
 | `stages.json` | 19 `StageDef`s — 15 campaign + 4 test (`IsTest`), theme, waves of `SpawnDef` (class, level, optional fixed tile) |
 | `campaign.json` | 5 main themes × 3 stages + 5 postgame themes × 2 bonus stages (added 2026-10-13, GG-T7/T10; each bonus stage carries a `StageDef.LevelOverride` instead of relying on flattened-index `RecommendedLevel`), in play order, with each theme's story-crawl text |
@@ -700,10 +700,10 @@ On a fresh save (2 slots) the starting trio's potion sits in locked slot 3 until
 
 | Knob | Effect | Items |
 |---|---|---|
-| `BaseHealing` | single-ally heal (PickActor, AllyOnly) | Healing Potion 50, Hi-Potion 150, X-Potion 500 |
+| `BaseHealing` | single-ally heal (PickActor, AllyOnly) | Healing Potion 50, Greater Healing Potion 90, Hi-Potion 150, X-Potion 500 |
 | `BaseDamage` (+`DamageType`, `BonusVsTag` ×`BonusMultiplier`) | single-enemy hit | Holy Water 40 Holy (×2 vs Undead), Flame Oil 45 Fire (×1.5 vs Beast) |
 | `GrantsOrbs` | orbs (Auto) | Mana Potion 2, Ether 3, Hi-Ether 6 |
-| `CuresBuff` / `CuresAll` | remove one debuff id / all debuffs from an ally | Antidote (poisoned), Eye Drops (blinded), Remedy (all) |
+| `CuresBuff` / `CuresAll` | remove one debuff id / all debuffs from an ally | Antidote (poisoned), Greater Antidote (all), Eye Drops (blinded), Remedy (all) |
 | `Revives` | first fallen hero returns on the free tile nearest the user with `BaseHealing` HP; refused if nobody has fallen | Phoenix Down (50) |
 | `Escape` | battle ends as **Escaped** ([§22.2](#222-failure-path-detail)) | Smoke Bomb |
 | `OutOfBattleOnly` | no battle effect; Camp only | Tent |
@@ -1796,6 +1796,10 @@ The Blacksmith/Alchemist recipe lists (`HubScreens.RecipeList`) show discovered 
 #### 24.6.3 Masterwork variants (GG-T46)
 
 Every Forge craft and Upgrade (never Alchemy/Enchant) rolls a chance (`Crafting.MasterworkChance`) at a **Masterwork** result on a Weapon- or Armor-slot item: base 5%, +0.2% per point of the active party's combined Luck (`Formulas.StatsAtLevel` summed over `SaveData.Party`, levels included), +5% per Blacksmith station level above Apprentice ([§24.6.1](#2461-tier-ladder-gg-t35-amended-2026-10-15)), capped at 35%. A hit rolls a random **+10–20% stats** multiplier (`WornGear.Mastery`/`HeroSave.WeaponMastery`/`ArmorMastery`) and a fixed **+25% max durability** (`BattleConfig.MasterworkDurabilityMultiplier`), shown with a ★ in front of the item's name everywhere it's listed (bag, Equip, Status, Repair) and in the craft toast. The roll travels with the specific piece like per-instance durability ([§24.5](#245-weapon-durability)): unequipping remembers it, equipping restores it, and it's gone for good if the piece shatters/breaks or is swapped out for an ability-bar backup (backups always enter at factory spec). *(Tests: `Masterwork_chance_grows_with_party_luck_and_blacksmith_level_and_caps`, `Forge_craft_can_roll_a_masterwork_variant_with_boosted_stats_and_durability`, `Unequipping_a_masterwork_weapon_remembers_its_roll_and_requipping_restores_it`, `Enchant_crafts_never_roll_masterwork_even_though_they_also_touch_weapons`.)*
+
+#### 24.6.4 Reagent potency (GG-T45, owner direction)
+
+A handful of Alchemy recipes carry a `RecipeDef.PotencyInputs`/`PotencyResult`/`PotencyResultCount` on top of their normal `Inputs`/`Result`: brewing with a rarer reagent swapped in for the recipe's key material — e.g. a **Pure Slime Gel** (Rare, a low-chance bonus drop from the slime family's own table, [§24.7](#247-drops)) instead of a plain Slime Gel — yields a stronger version of the same potion instead of the base one, for the same gold cost. `Crafting.HasPotencyInputs`/`Crafting.Craft(c, s, r, potency: true)` check and consume the potency set instead of the normal one; `AlchemistScreen`'s Brew detail shows the greater result and its own reagent checklist and Brew button beneath the normal one whenever a recipe has one. Today: **Greater Healing Potion** (90 HP vs. 50) off `recipe_potion_healing`, and **Greater Antidote** (cures everything, not just poison) off `recipe_antidote` — both gated on the same Pure Slime Gel, so a lucky rare drop has a use beyond unlocking new recipes. Adding another potion's potency variant is a content-only change (no code): give its recipe `PotencyInputs`/`PotencyResult`. *(Test: `Brewing_with_the_potency_reagent_yields_the_greater_result_instead`.)*
 
 ### 24.7 Drops
 

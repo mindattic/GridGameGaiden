@@ -188,6 +188,30 @@ namespace Gaiden.Tests
             }
         }
 
+        public static IEnumerable<object[]> PotencyRecipes() =>
+            Real.Recipes.Values.Where(r => r.PotencyResult != null).Select(r => new object[] { r.Id });
+
+        [Theory]
+        [MemberData(nameof(PotencyRecipes))]
+        public void Brewing_with_the_potency_reagent_yields_the_greater_result_instead(string recipeId)
+        {
+            var c = Real;
+            var r = c.Recipes[recipeId];
+            var s = new SaveData { Gold = r.Gold, StationXp = { ["blacksmith"] = 9999, ["alchemist"] = 9999 } };
+            foreach (var ic in r.PotencyInputs) s.AddItem(ic.Item, ic.Count);
+            Assert.False(Crafting.HasInputs(s, r), $"{recipeId}: potency reagents shouldn't also satisfy the base recipe");
+            Assert.True(Crafting.HasPotencyInputs(s, r));
+            var res = Crafting.Craft(c, s, r, potency: true);
+            Assert.True(res.Ok, $"{recipeId}: {res.Message}");
+            Assert.Equal(r.PotencyResultCount, s.Count(r.PotencyResult));
+            Assert.Equal(0, s.Count(r.Result));
+            foreach (var ic in r.PotencyInputs) Assert.Equal(0, s.Count(ic.Item));
+            var greater = c.Item(r.PotencyResult);
+            var basic = c.Item(r.Result);
+            Assert.True(greater.BaseHealing >= basic.BaseHealing && (greater.BaseHealing > basic.BaseHealing || greater.CuresAll && !basic.CuresAll),
+                $"{recipeId}: {greater.Id} should be a strict upgrade over {basic.Id}");
+        }
+
         [Fact]
         public void Every_class_can_be_instantiated_and_has_art_reference()
         {

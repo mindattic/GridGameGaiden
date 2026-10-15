@@ -951,6 +951,10 @@
       "delapouite/health-potion",
       "crimson"
     ],
+    "greater_healing_potion": [
+      "delapouite/health-potion",
+      "heal"
+    ],
     "hi_potion": [
       "delapouite/health-potion",
       "pink"
@@ -978,6 +982,10 @@
     "antidote": [
       "sbed/vial",
       "poison"
+    ],
+    "greater_antidote": [
+      "sbed/vial",
+      "teal"
     ],
     "eye_drops": [
       "lorc/droplets",
@@ -1042,6 +1050,10 @@
     "mat_slime_gel": [
       "delapouite/slime",
       "poison"
+    ],
+    "mat_pure_slime_gel": [
+      "delapouite/slime",
+      "jade"
     ],
     "mat_wolf_pelt": [
       "delapouite/animal-hide",

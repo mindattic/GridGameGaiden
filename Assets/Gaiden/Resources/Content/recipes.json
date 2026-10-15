@@ -111,7 +111,19 @@
     "Gold": 10,
     "BaseItem": null,
     "Result": "healing_potion_basic",
-    "ResultCount": 2
+    "ResultCount": 2,
+    "PotencyInputs": [
+      {
+        "Item": "mat_pure_slime_gel",
+        "Count": 1
+      },
+      {
+        "Item": "mat_slime_gel",
+        "Count": 1
+      }
+    ],
+    "PotencyResult": "greater_healing_potion",
+    "PotencyResultCount": 1
   },
   {
     "Id": "recipe_potion_mana",
@@ -336,7 +348,19 @@
     "Gold": 15,
     "BaseItem": null,
     "Result": "antidote",
-    "ResultCount": 3
+    "ResultCount": 3,
+    "PotencyInputs": [
+      {
+        "Item": "mat_pure_slime_gel",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 1
+      }
+    ],
+    "PotencyResult": "greater_antidote",
+    "PotencyResultCount": 1
   },
   {
     "Id": "recipe_eye_drops",

@@ -334,6 +334,12 @@ namespace Gaiden.Core.Content
         /// <summary>Tier ladder rung (§24.6.1): 1 Apprentice (from the start), 2 Journeyman, 3 Master —
         /// gated by the crafting station's level (GG-T35). Missing from content = 1.</summary>
         public int Tier = 1;
+        /// <summary>Reagent quality (GG-T45): brewing with these inputs instead of <see cref="Inputs"/> — swapping
+        /// in a higher-rarity reagent for the recipe's key material — yields <see cref="PotencyResult"/> instead
+        /// of <see cref="Result"/>. Same recipe, better inputs, better output. Null/empty = no potency variant.</summary>
+        public List<ItemCount> PotencyInputs = new List<ItemCount>();
+        public string PotencyResult;
+        public int PotencyResultCount = 1;
     }
 
     public sealed class DropEntry
