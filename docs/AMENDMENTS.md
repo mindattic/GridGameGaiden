@@ -344,3 +344,15 @@ updated: 2026-10-09
   armor, corpses) and reviewed. Fix: the first-link pincer sweep now uses the standard cut-in band (slim, tilted,
   feathered, white core) along each portrait's lane, so every cut-in shares one look. UI gate 70/70 (the long-press
   check now recognises the "Charges …s on the timeline" wording).
+
+## 2026-10-15 — Merchant Bargain shelf (owner direction, US-246, GG-T38)
+
+- "a rotating 'Used / Bargain' shelf selling weapons and armor at 35–60% price but with only 10–40% of max
+  durability left, clearly labelled with a durability bar before purchase — cheap power now, real risk of
+  shattering mid-combat later, a deliberate early-game gamble." A third `ShopScreen` tab (`Meta.Bargains`, §25.1)
+  rolls `ShelfSize` = 4 eligible weapons/armor deterministically from `SaveData.BargainRotation`; the shelf is
+  stable until the rotation advances (once per finished battle, win or lose) and replays identically from the
+  same save. Buying files the rolled durability into the existing per-instance `SaveData.Worn` tracking (§24.5,
+  US-246 — already in place from the 2026-10-10 batch), so the piece equips worn rather than factory-fresh.
+- Not yet built (tracked under GG-T54): teaching `MetaBot`/`CampRoutine` to shop the shelf and avoid gear close to
+  shattering.

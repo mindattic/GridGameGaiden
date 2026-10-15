@@ -409,7 +409,8 @@ namespace Gaiden.App
 
     public sealed class ShopScreen : HubPage
     {
-        private bool selling;
+        private int tab;
+        private string bargainSelected;
         private readonly Dictionary<string, int> buyCart = new Dictionary<string, int>();
         private readonly Dictionary<string, int> sellCart = new Dictionary<string, int>();
         public override string Id => "shop";
@@ -417,7 +418,9 @@ namespace Gaiden.App
 
         protected override void BuildBody(VisualElement body)
         {
-            Ui.Tabs(new[] { "Buy", "Sell" }, selling ? 1 : 0, i => { selling = i == 1; Refresh(); }, body);
+            Ui.Tabs(new[] { "Buy", "Sell", "Bargain" }, tab, i => { tab = i; bargainSelected = null; Refresh(); }, body);
+            if (tab == 2) { BuildBargain(body); return; }
+            bool selling = tab == 1;
             var w = Ui.Window(null, body);
             w.style.flexGrow = 1; w.style.marginTop = 0;
             var list = Ui.List(w).contentContainer;
@@ -462,6 +465,46 @@ namespace Gaiden.App
             q = Mathf.Clamp(q + d, 0, max);
             if (q == 0) cart.Remove(id); else cart[id] = q;
             Refresh();
+        }
+
+        // ── "Used / Bargain" shelf: rotating worn weapons/armor at a discount (US-246) ──
+
+        private void BuildBargain(VisualElement body)
+        {
+            var w = Ui.Window(null, body);
+            w.style.flexGrow = 1; w.style.marginTop = 0;
+            var list = Ui.List(w).contentContainer;
+            var detail = Ui.Window(null, body);
+            detail.style.minHeight = 260;
+            var offers = Bargains.Shelf(C, S);
+            if (offers.Count == 0) Ui.Text("The shelf is bare. Check back after your next battle.", "small dim", list).style.whiteSpace = WhiteSpace.Normal;
+            foreach (var o in offers)
+            {
+                var offer = o;
+                var row = ItemUi.Row(offer.Item, $"{offer.Price} G", () => { bargainSelected = offer.Item.Id; Refresh(); }, list);
+                if (bargainSelected == offer.Item.Id) Ui.Select(row);
+            }
+            var sel = offers.FirstOrDefault(o => o.Item.Id == bargainSelected);
+            if (sel != null) ShowBargain(detail, sel);
+            else Ui.Text("Pick a piece to see how worn it is.", "small dim", detail);
+        }
+
+        private void ShowBargain(VisualElement w, BargainOffer offer)
+        {
+            ItemUi.Detail(w, offer.Item);
+            var row = Ui.El("row", w); row.style.marginTop = 12;
+            Ui.Text($"Durability {offer.Durability}/{offer.Item.Durability}", "small dim grow", row);
+            Ui.Gauge((float)offer.Durability / offer.Item.Durability, w, 320).style.marginBottom = 10;
+            var warn = Ui.Text("Used gear: cheap now, but it can shatter mid-battle before you get a chance to repair it.", "small warn", w);
+            warn.style.whiteSpace = WhiteSpace.Normal;
+            bool owned = S.Count(offer.Item.Id) >= offer.Item.MaxStack;
+            var btn = Ui.Button(owned ? "Already owned" : $"Buy for {Ui.Gold(offer.Price)}", () =>
+            {
+                bargainSelected = null;
+                Done(Bargains.Buy(C, S, offer.Item.Id));
+            }, "btn--primary", w);
+            btn.style.marginTop = 10;
+            Ui.SetEnabled(btn, !owned && S.Gold >= offer.Price);
         }
     }
 

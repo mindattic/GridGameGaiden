@@ -47,6 +47,9 @@ namespace Gaiden.Meta
         public HashSet<string> LostGuests = new HashSet<string>();
         /// <summary>Spare equipment that has been used: item id → its worn copies (per-instance durability, US-246).</summary>
         public Dictionary<string, List<WornGear>> Worn = new Dictionary<string, List<WornGear>>();
+        /// <summary>Advances once per finished battle; seeds the Merchant's "Used / Bargain" shelf so it
+        /// turns over on every return to camp but replays identically from the same save (GG-T38).</summary>
+        public int BargainRotation;
         public bool TutorialDone;
         /// <summary>New Game+ cycle (0 = first run). Unlocked by clearing the last campaign stage (US-332).</summary>
         public int NewGamePlus;
