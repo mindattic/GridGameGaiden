@@ -106,7 +106,16 @@ namespace Gaiden.Core.Content
             }
             foreach (var a in db.Abilities.Values) { NeedBuff(a.ApplyBuff, $"ability {a.Id}"); NeedBuff(a.RemovesBuff, $"ability {a.Id} removes"); }
             foreach (var b in db.Buffs.Values) NeedBuff(b.OnExpireApply, $"buff {b.Id}");
-            foreach (var i in db.Items.Values) { NeedAbility(i.OnUseAbility, $"item {i.Id}"); NeedBuff(i.CuresBuff, $"item {i.Id} cures"); }
+            foreach (var i in db.Items.Values)
+            {
+                NeedAbility(i.OnUseAbility, $"item {i.Id}");
+                NeedBuff(i.CuresBuff, $"item {i.Id} cures");
+                if (i.Type == ItemType.RecipeScroll)
+                {
+                    if (i.TeachesRecipe == null) p.Add($"item {i.Id}: RecipeScroll needs TeachesRecipe");
+                    else if (!db.Recipes.ContainsKey(i.TeachesRecipe)) p.Add($"item {i.Id}: unknown recipe '{i.TeachesRecipe}'");
+                }
+            }
             foreach (var r in db.Recipes.Values)
             {
                 NeedItem(r.Result, $"recipe {r.Id}");

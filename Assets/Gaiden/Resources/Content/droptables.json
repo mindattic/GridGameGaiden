@@ -58,6 +58,12 @@
         "Chance": 0.05,
         "Min": 1,
         "Max": 1
+      },
+      {
+        "Item": "scroll_recipe_holy_enchant",
+        "Chance": 0.04,
+        "Min": 1,
+        "Max": 1
       }
     ]
   },
@@ -101,6 +107,12 @@
         "Chance": 0.25,
         "Min": 1,
         "Max": 2
+      },
+      {
+        "Item": "scroll_recipe_sword_tempering",
+        "Chance": 0.06,
+        "Min": 1,
+        "Max": 1
       }
     ]
   },
@@ -266,6 +278,12 @@
       {
         "Item": "mat_enchanted_feather",
         "Chance": 0.08,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "scroll_recipe_holy_water",
+        "Chance": 0.06,
         "Min": 1,
         "Max": 1
       }

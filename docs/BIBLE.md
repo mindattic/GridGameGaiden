@@ -1784,6 +1784,14 @@ Each crafting station has its own level — **Apprentice → Journeyman → Mast
 
 Content assignment: Forge's 11 base (no-`BaseItem`) recipes are all Apprentice; its 39 Upgrade recipes split Journeyman (the first upgrade off a base item) / Master (the deeper `+1 → +2` chains); Alchemy's 14 brews split Apprentice/Journeyman/Master by gold cost; all 78 Enchant recipes are Master (Alchemist-side, alongside Brew). The original "Iron Sword → Steel Sword → Mythril Blade → +1" ladder sketch predates this data shape; upgrades exist as data and UI, ⬜ named passives not yet built. *(Tests: `A_station_starts_at_apprentice_and_levels_up_from_real_crafting_actions`, `Repair_and_salvage_grant_blacksmith_xp_but_never_alchemist`.)*
 
+#### 24.6.2 Recipe discovery (GG-T36, amended 2026-10-15)
+
+Recipes start hidden; `RecipeDiscovery.IsDiscovered` reveals one once its station's level reaches its `Tier` (§24.6.1 — `Crafting.IsUnlocked` already derives that from `SaveData.StationXp`, so a tier-reached recipe is discovered by definition with no separate level-up event) or earlier, via `SaveData.DiscoveredRecipes`:
+- **Read a recipe scroll** — a new `ItemType.RecipeScroll` item (`ItemDef.TeachesRecipe`) dropped like any other loot; the Items screen's detail pane offers "Learn recipe" (`RecipeDiscovery.Learn`), which consumes the scroll and discovers its recipe outright even if the station isn't high enough level to craft it yet (it then shows 🔒-locked, same as any other discovered-but-locked recipe).
+- **First-ever pickup of the recipe's rarest input** — `RecipeDiscovery.RarestInput` picks the input with the highest `ItemRarity` among a recipe's `Inputs` (ties: higher `BaseCost`, then id); `BattleFactory.Commit`'s loot grant calls `RecipeDiscovery.OnItemAcquired` the moment an item's owned count goes from 0 to positive, discovering every still-hidden recipe whose rarest input is that item.
+
+The Blacksmith/Alchemist recipe lists (`HubScreens.RecipeList`) show discovered recipes as before, plus a `???` row for an undiscovered recipe missing exactly one input (`RecipeDiscovery.OneAwayMissing`) naming that missing material — everything else undiscovered is hidden outright. Selecting a `???` row shows the input checklist (materials aren't secret) but not the recipe's name, result or price. Discovery only gates visibility: `Crafting.Craft`'s gold/inputs/tier checks are unchanged. Three scrolls ship in content as rare drops (`scroll_recipe_sword_tempering` off `goblinthug00`, `scroll_recipe_holy_water` off `ghost`, `scroll_recipe_holy_enchant` off `demonlord`). *(Tests: `Tests/Core.Tests/RecipeDiscoveryTests.cs`.)*
+
 ### 24.7 Drops
 
 Per enemy `DropTable` ([§13.3](#133-death-and-loot)); 37 tables in content, one per enemy family. The Adventure list hints each stage's drops.
@@ -1828,11 +1836,11 @@ ENEMIES ─▶ drop tables ─▶ Inventory ─┬▶ Blacksmith (forge / upgrad
 
 ### 25.2 Blacksmith
 
-`BlacksmithScreen`: **Forge**, **Upgrade**, **Salvage**, **Repair** tabs ([§24.5](#245-weapon-durability), [§24.6](#246-crafting-recipes)). The header shows the Blacksmith's station level and XP to its next tier ([§24.6.1](#2461-tier-ladder-gg-t35-amended-2026-10-15)); a tier-locked recipe shows a 🔒 and the level required instead of its price. The recipe detail shows ✔/✘ per input with owned counts. Repair lists every roster hero's durable weapon/armor ("Paladin — Iron Sword 3/9", cost or "OK"), warning when uneconomical. **Amended 2026-10-15 (GG-T42):** when a repair is flagged uneconomical, an indented "Salvage instead" row appears directly beneath it showing the scrap yield for that piece's current durability, so the repair cost and the salvage yield sit side by side — confirming scraps the piece (`Crafting.SalvageEquipped`) instead of repairing it.
+`BlacksmithScreen`: **Forge**, **Upgrade**, **Salvage**, **Repair** tabs ([§24.5](#245-weapon-durability), [§24.6](#246-crafting-recipes)). The header shows the Blacksmith's station level and XP to its next tier ([§24.6.1](#2461-tier-ladder-gg-t35-amended-2026-10-15)); a tier-locked recipe shows a 🔒 and the level required instead of its price; an undiscovered recipe ([§24.6.2](#2462-recipe-discovery-gg-t36-amended-2026-10-15)) one input short shows as `???` instead, everything else undiscovered stays hidden. The recipe detail shows ✔/✘ per input with owned counts. Repair lists every roster hero's durable weapon/armor ("Paladin — Iron Sword 3/9", cost or "OK"), warning when uneconomical. **Amended 2026-10-15 (GG-T42):** when a repair is flagged uneconomical, an indented "Salvage instead" row appears directly beneath it showing the scrap yield for that piece's current durability, so the repair cost and the salvage yield sit side by side — confirming scraps the piece (`Crafting.SalvageEquipped`) instead of repairing it.
 
 ### 25.3 Alchemist
 
-`AlchemistScreen`: **Brew** (Alchemy recipes), **Enchant** (Enchant recipes), **Heal** (same service as the Inn). The header shows the Alchemist's station level and XP to its next tier ([§24.6.1](#2461-tier-ladder-gg-t35-amended-2026-10-15)); a tier-locked recipe shows a 🔒 and the level required instead of its price.
+`AlchemistScreen`: **Brew** (Alchemy recipes), **Enchant** (Enchant recipes), **Heal** (same service as the Inn). The header shows the Alchemist's station level and XP to its next tier ([§24.6.1](#2461-tier-ladder-gg-t35-amended-2026-10-15)); a tier-locked recipe shows a 🔒 and the level required instead of its price; an undiscovered recipe shows as `???` or stays hidden, same convention as the Blacksmith ([§24.6.2](#2462-recipe-discovery-gg-t36-amended-2026-10-15)).
 
 ### 25.3.1 Inn
 

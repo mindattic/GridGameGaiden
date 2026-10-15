@@ -356,3 +356,18 @@ updated: 2026-10-09
   US-246 — already in place from the 2026-10-10 batch), so the piece equips worn rather than factory-fresh.
 - Not yet built (tracked under GG-T54): teaching `MetaBot`/`CampRoutine` to shop the shelf and avoid gear close to
   shattering.
+
+## 2026-10-15 — Recipe discovery (GG-T36)
+
+- "recipes start hidden and are learned from blueprint/recipe-scroll drops, from first pickup of a recipe's
+  rarest input, or from station level-ups; the Forge/Brew lists show discovered recipes plus '???' silhouettes
+  for ones you're one input away from. Gives drops a reason to matter beyond raw mats." `RecipeDiscovery`
+  (§24.6.2) treats a recipe as discovered the moment its station reaches its tier (§24.6.1) — no separate
+  level-up event needed, since `Crafting.IsUnlocked` already derives that from `SaveData.StationXp` — or
+  earlier via `SaveData.DiscoveredRecipes`, filled by reading a new `ItemType.RecipeScroll` item (`Items`
+  screen "Learn recipe") or the first-ever pickup of the recipe's single rarest-rarity input
+  (`BattleFactory.Commit`'s loot grant). Discovery only gates visibility in the Blacksmith/Alchemist recipe
+  lists — `Crafting.Craft`'s own gold/inputs/tier checks are unchanged, since a tier-reached recipe is
+  discovered by definition and a scroll-taught recipe ahead of its tier already fails the existing tier gate.
+  Three scrolls ship in content (`scroll_recipe_sword_tempering`, `scroll_recipe_holy_water`,
+  `scroll_recipe_holy_enchant`) as rare drops off `goblinthug00`/`ghost`/`demonlord`.

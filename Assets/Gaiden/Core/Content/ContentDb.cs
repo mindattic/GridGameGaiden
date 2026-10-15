@@ -27,11 +27,13 @@ namespace Gaiden.Core.Content
         public BuffDef Buff(string id) => Get(Buffs, id, "buff");
         public ItemDef Item(string id) => Get(Items, id, "item");
         public StageDef Stage(string id) => Get(Stages, id, "stage");
+        public RecipeDef Recipe(string id) => Get(Recipes, id, "recipe");
 
         public AbilityDef TryAbility(string id) => id != null && Abilities.TryGetValue(id, out var a) ? a : null;
         public ItemDef TryItem(string id) => id != null && Items.TryGetValue(id, out var a) ? a : null;
         public BuffDef TryBuff(string id) => id != null && Buffs.TryGetValue(id, out var a) ? a : null;
         public ClassDef TryClass(string id) => id != null && Classes.TryGetValue(id, out var a) ? a : null;
+        public RecipeDef TryRecipe(string id) => id != null && Recipes.TryGetValue(id, out var a) ? a : null;
 
         private static T Get<T>(Dictionary<string, T> map, string id, string kind)
         {

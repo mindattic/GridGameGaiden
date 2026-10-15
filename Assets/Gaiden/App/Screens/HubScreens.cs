@@ -18,6 +18,7 @@ namespace Gaiden.App
                 case ItemType.Equipment: return i.Slot == EquipmentSlot.Weapon ? "Weapon" : i.Slot == EquipmentSlot.Armor ? "Armor" : "Relic";
                 case ItemType.Consumable: return "Item";
                 case ItemType.CraftingMaterial: return "Material";
+                case ItemType.RecipeScroll: return "Recipe Scroll";
                 default: return "Key Item";
             }
         }
@@ -29,6 +30,7 @@ namespace Gaiden.App
                 case ItemType.Equipment: return i.Slot == EquipmentSlot.Weapon ? "†" : i.Slot == EquipmentSlot.Armor ? "◆" : "✧";
                 case ItemType.Consumable: return "✚";
                 case ItemType.CraftingMaterial: return "◈";
+                case ItemType.RecipeScroll: return "❖";
                 default: return "✦";
             }
         }
@@ -115,6 +117,13 @@ namespace Gaiden.App
         private void ShowDetail(VisualElement detail, ItemDef it)
         {
             ItemUi.Detail(detail, it);
+            if (it != null && it.Type == ItemType.RecipeScroll)
+            {
+                var learnRow = Ui.El("row", detail);
+                learnRow.style.marginTop = 10;
+                Ui.Button("Learn recipe", () => { selected = it; Done(RecipeDiscovery.Learn(C, S, it.Id)); }, "btn--small btn--primary", learnRow);
+                return;
+            }
             if (!Camp.UsableAtCamp(it)) return;
             var row = Ui.El("row", detail);
             row.style.marginTop = 10;
@@ -536,16 +545,30 @@ namespace Gaiden.App
         {
             var recipes = Crafting.Recipes(c, station).Where(r => (r.BaseItem != null) == upgrades).ToList();
             if (station == CraftStation.Enchant) recipes = Crafting.Recipes(c, station).ToList();
-            if (recipes.Count == 0) Ui.Text("No recipes.", "small dim", list);
+            // Recipe discovery (§24.6.2, GG-T36): undiscovered recipes are hidden, except a "???" tease
+            // for ones the player is exactly one input away from.
+            var visible = recipes.Where(r => RecipeDiscovery.IsDiscovered(s, r) || RecipeDiscovery.OneAwayMissing(s, r) != null).ToList();
+            if (visible.Count == 0) Ui.Text("No recipes.", "small dim", list);
             RecipeDef sel = selected;
-            foreach (var r in recipes)
+            foreach (var r in visible)
             {
                 var rec = r;
-                var result = c.Item(r.Result);
-                bool locked = !Crafting.IsUnlocked(s, r);
-                bool can = !locked && Crafting.HasInputs(s, r) && s.Gold >= r.Gold;
-                var row = ItemUi.Row(result, locked ? $"🔒 {StationProgress.TierName(r.Tier)}" : $"{r.Gold} G", () => ShowRecipe(detail, c, s, rec, page), list, true);
-                if (!can) row.style.opacity = 0.55f;
+                VisualElement row;
+                if (RecipeDiscovery.IsDiscovered(s, r))
+                {
+                    var result = c.Item(r.Result);
+                    bool locked = !Crafting.IsUnlocked(s, r);
+                    bool can = !locked && Crafting.HasInputs(s, r) && s.Gold >= r.Gold;
+                    row = ItemUi.Row(result, locked ? $"🔒 {StationProgress.TierName(r.Tier)}" : $"{r.Gold} G", () => ShowRecipe(detail, c, s, rec, page), list, true);
+                    if (!can) row.style.opacity = 0.55f;
+                }
+                else
+                {
+                    var missing = RecipeDiscovery.OneAwayMissing(s, r);
+                    var missingItem = c.TryItem(missing.Item);
+                    row = Ui.MenuRow("???", $"Missing {missingItem?.Name ?? missing.Item}", () => ShowRecipe(detail, c, s, rec, page), list);
+                    row.style.opacity = 0.75f;
+                }
                 if (sel == r) Ui.Select(row);
             }
             if (sel != null) ShowRecipe(detail, c, s, sel, page);
@@ -555,6 +578,26 @@ namespace Gaiden.App
         internal static void ShowRecipe(VisualElement w, ContentDb c, SaveData s, RecipeDef r, HubPage page)
         {
             w.Clear();
+            if (!RecipeDiscovery.IsDiscovered(s, r))
+            {
+                Ui.Text("??? — Undiscovered Recipe", "h2 grow dim", w);
+                var tease = Ui.Text("You sense you're close. Find the missing material to learn how this is made.", "small dim", w);
+                tease.style.whiteSpace = WhiteSpace.Normal;
+                var undiscoveredNeed = Ui.El("col", w); undiscoveredNeed.style.marginTop = 12;
+                if (r.BaseItem != null)
+                {
+                    var b = c.TryItem(r.BaseItem);
+                    int have = s.Count(r.BaseItem);
+                    Ui.Text($"{(have >= 1 ? "✔" : "✘")} {b?.Name ?? r.BaseItem} ×1   (have {have})", "small " + (have >= 1 ? "good" : "bad"), undiscoveredNeed);
+                }
+                foreach (var ic in r.Inputs)
+                {
+                    var it = c.TryItem(ic.Item);
+                    int have = s.Count(ic.Item);
+                    Ui.Text($"{(have >= ic.Count ? "✔" : "✘")} {it?.Name ?? ic.Item} ×{ic.Count}   (have {have})", "small " + (have >= ic.Count ? "good" : "bad"), undiscoveredNeed);
+                }
+                return;
+            }
             var result = c.Item(r.Result);
             ItemUi.Detail(w, result);
             bool locked = !Crafting.IsUnlocked(s, r);

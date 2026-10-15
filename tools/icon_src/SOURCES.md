@@ -73,6 +73,7 @@ Authors: carl-olsen, darkzaitzev, delapouite, faithtoken, lorc, sbed, skoll, zer
 - lorc/round-bottom-flask
 - lorc/rune-stone
 - lorc/screaming
+- lorc/scroll-unfurled
 - lorc/shield-reflect
 - lorc/shouting
 - lorc/silence

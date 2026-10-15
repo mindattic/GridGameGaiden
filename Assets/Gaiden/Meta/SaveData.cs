@@ -47,6 +47,10 @@ namespace Gaiden.Meta
         public Dictionary<string, int> StationXp = new Dictionary<string, int>();
         /// <summary>Guest allies who died in the battle they were met in — gone for good (§25.11).</summary>
         public HashSet<string> LostGuests = new HashSet<string>();
+        /// <summary>Recipe ids discovered early, before the crafting station reached their tier — by reading a
+        /// recipe scroll or first-ever pickup of the recipe's rarest input (§24.6.2, GG-T36). A recipe whose
+        /// tier the station has already reached is always discovered regardless of this set.</summary>
+        public HashSet<string> DiscoveredRecipes = new HashSet<string>();
         /// <summary>Spare equipment that has been used: item id → its worn copies (per-instance durability, US-246).</summary>
         public Dictionary<string, List<WornGear>> Worn = new Dictionary<string, List<WornGear>>();
         /// <summary>Advances once per finished battle; seeds the Merchant's "Used / Bargain" shelf so it
@@ -176,6 +180,7 @@ namespace Gaiden.Meta
             s.Worn ??= new Dictionary<string, List<WornGear>>();
             s.Settings ??= new SettingsSave();
             s.StationXp ??= new Dictionary<string, int>();
+            s.DiscoveredRecipes ??= new HashSet<string>();
             foreach (var h in s.Roster)
             {
                 while (h.Bar.Count < 5) h.Bar.Add(null);

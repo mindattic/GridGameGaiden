@@ -1226,6 +1226,18 @@
     "mat_vampire_fang": [
       "delapouite/vampire-dracula",
       "crimson"
+    ],
+    "scroll_recipe_sword_tempering": [
+      "lorc/scroll-unfurled",
+      "iron"
+    ],
+    "scroll_recipe_holy_water": [
+      "lorc/scroll-unfurled",
+      "water"
+    ],
+    "scroll_recipe_holy_enchant": [
+      "lorc/scroll-unfurled",
+      "holy"
     ]
   },
   "ui": {

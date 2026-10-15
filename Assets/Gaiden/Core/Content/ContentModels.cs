@@ -41,7 +41,7 @@ namespace Gaiden.Core.Content
 
     public enum DurationUnit { Turns, Ticks }
 
-    public enum ItemType { Equipment, Consumable, CraftingMaterial, QuestItem }
+    public enum ItemType { Equipment, Consumable, CraftingMaterial, QuestItem, RecipeScroll }
 
     public enum ItemRarity { Junk, Common, Uncommon, Rare, Epic, Legendary }
 
@@ -308,6 +308,8 @@ namespace Gaiden.Core.Content
         public int RegenPerTurn;
         /// <summary>Relic passive: start every battle with Protection.</summary>
         public bool StartsProtected;
+        /// <summary>RecipeScroll only (§24.6.2, GG-T36): the recipe this item teaches when read at the Items screen.</summary>
+        public string TeachesRecipe;
 
         public int EffectiveSellValue => SellValue >= 0 ? SellValue : System.Math.Max(1, BaseCost / 2);
         public bool IsRelic => Slot == EquipmentSlot.Relic1 || Slot == EquipmentSlot.Relic2 || Slot == EquipmentSlot.Relic3;
