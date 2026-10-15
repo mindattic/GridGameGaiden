@@ -1,161 +1,5 @@
 [
   {
-    "Id": "slime00",
-    "CoinsMin": 0,
-    "CoinsMax": 0,
-    "Entries": [
-      {
-        "Item": "mat_tattered_cloth",
-        "Chance": 0.4,
-        "Min": 1,
-        "Max": 2
-      },
-      {
-        "Item": "mat_slime_gel",
-        "Chance": 0.6,
-        "Min": 1,
-        "Max": 3
-      },
-      {
-        "Item": "mat_arcane_dust",
-        "Chance": 0.1,
-        "Min": 1,
-        "Max": 1
-      }
-    ]
-  },
-  {
-    "Id": "slime01",
-    "CoinsMin": 0,
-    "CoinsMax": 0,
-    "Entries": [
-      {
-        "Item": "mat_tattered_cloth",
-        "Chance": 0.35,
-        "Min": 1,
-        "Max": 2
-      },
-      {
-        "Item": "mat_slime_gel",
-        "Chance": 0.65,
-        "Min": 1,
-        "Max": 4
-      },
-      {
-        "Item": "mat_arcane_dust",
-        "Chance": 0.15,
-        "Min": 1,
-        "Max": 1
-      }
-    ]
-  },
-  {
-    "Id": "wolf00",
-    "CoinsMin": 0,
-    "CoinsMax": 0,
-    "Entries": [
-      {
-        "Item": "mat_cracked_fang",
-        "Chance": 0.45,
-        "Min": 1,
-        "Max": 2
-      },
-      {
-        "Item": "mat_wolf_pelt",
-        "Chance": 0.5,
-        "Min": 1,
-        "Max": 2
-      },
-      {
-        "Item": "mat_leather",
-        "Chance": 0.3,
-        "Min": 1,
-        "Max": 1
-      }
-    ]
-  },
-  {
-    "Id": "wolf01",
-    "CoinsMin": 0,
-    "CoinsMax": 0,
-    "Entries": [
-      {
-        "Item": "mat_cracked_fang",
-        "Chance": 0.4,
-        "Min": 1,
-        "Max": 2
-      },
-      {
-        "Item": "mat_wolf_pelt",
-        "Chance": 0.55,
-        "Min": 1,
-        "Max": 3
-      },
-      {
-        "Item": "mat_leather",
-        "Chance": 0.35,
-        "Min": 1,
-        "Max": 2
-      }
-    ]
-  },
-  {
-    "Id": "undead00",
-    "CoinsMin": 0,
-    "CoinsMax": 0,
-    "Entries": [
-      {
-        "Item": "mat_tattered_cloth",
-        "Chance": 0.4,
-        "Min": 1,
-        "Max": 2
-      },
-      {
-        "Item": "mat_undead_bone",
-        "Chance": 0.45,
-        "Min": 1,
-        "Max": 2
-      },
-      {
-        "Item": "mat_cloth",
-        "Chance": 0.2,
-        "Min": 1,
-        "Max": 1
-      }
-    ]
-  },
-  {
-    "Id": "undead01",
-    "CoinsMin": 0,
-    "CoinsMax": 0,
-    "Entries": [
-      {
-        "Item": "mat_tattered_cloth",
-        "Chance": 0.45,
-        "Min": 1,
-        "Max": 2
-      },
-      {
-        "Item": "mat_undead_bone",
-        "Chance": 0.5,
-        "Min": 1,
-        "Max": 3
-      },
-      {
-        "Item": "mat_cloth",
-        "Chance": 0.25,
-        "Min": 1,
-        "Max": 2
-      },
-      {
-        "Item": "mat_arcane_dust",
-        "Chance": 0.1,
-        "Min": 1,
-        "Max": 1
-      }
-    ]
-  },
-  {
     "Id": "mountaintroll",
     "CoinsMin": 0,
     "CoinsMax": 0,
@@ -218,35 +62,16 @@
     ]
   },
   {
-    "Id": "frog00",
-    "CoinsMin": 0,
-    "CoinsMax": 0,
-    "Entries": [
-      {
-        "Item": "mat_slime_gel",
-        "Chance": 0.4,
-        "Min": 1,
-        "Max": 2
-      },
-      {
-        "Item": "mat_leather",
-        "Chance": 0.2,
-        "Min": 1,
-        "Max": 1
-      },
-      {
-        "Item": "mat_cracked_fang",
-        "Chance": 0.2,
-        "Min": 1,
-        "Max": 1
-      }
-    ]
-  },
-  {
     "Id": "goblinthug00",
     "CoinsMin": 0,
     "CoinsMax": 0,
     "Entries": [
+      {
+        "Item": "mat_goblin_scrap_iron",
+        "Chance": 0.55,
+        "Min": 1,
+        "Max": 2
+      },
       {
         "Item": "mat_broken_blade",
         "Chance": 0.5,
@@ -280,10 +105,16 @@
     ]
   },
   {
-    "Id": "treegolem00",
+    "Id": "treegolem",
     "CoinsMin": 0,
     "CoinsMax": 0,
     "Entries": [
+      {
+        "Item": "mat_heartwood",
+        "Chance": 0.5,
+        "Min": 1,
+        "Max": 2
+      },
       {
         "Item": "mat_wood_plank",
         "Chance": 0.55,
@@ -305,10 +136,16 @@
     ]
   },
   {
-    "Id": "cyclops00",
+    "Id": "cyclops",
     "CoinsMin": 0,
     "CoinsMax": 0,
     "Entries": [
+      {
+        "Item": "mat_cyclops_eye",
+        "Chance": 0.35,
+        "Min": 1,
+        "Max": 1
+      },
       {
         "Item": "mat_broken_blade",
         "Chance": 0.6,
@@ -346,6 +183,12 @@
     "CoinsMin": 0,
     "CoinsMax": 0,
     "Entries": [
+      {
+        "Item": "mat_scorpion_stinger",
+        "Chance": 0.55,
+        "Min": 1,
+        "Max": 2
+      },
       {
         "Item": "mat_cracked_fang",
         "Chance": 0.5,
@@ -456,6 +299,688 @@
         "Chance": 0.4,
         "Min": 1,
         "Max": 2
+      }
+    ]
+  },
+  {
+    "Id": "slime",
+    "CoinsMin": 0,
+    "CoinsMax": 0,
+    "Entries": [
+      {
+        "Item": "mat_tattered_cloth",
+        "Chance": 0.38,
+        "Min": 1,
+        "Max": 2
+      },
+      {
+        "Item": "mat_slime_gel",
+        "Chance": 0.6,
+        "Min": 1,
+        "Max": 3
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Chance": 0.12,
+        "Min": 1,
+        "Max": 1
+      }
+    ]
+  },
+  {
+    "Id": "wolf",
+    "CoinsMin": 0,
+    "CoinsMax": 0,
+    "Entries": [
+      {
+        "Item": "mat_cracked_fang",
+        "Chance": 0.42,
+        "Min": 1,
+        "Max": 2
+      },
+      {
+        "Item": "mat_wolf_pelt",
+        "Chance": 0.52,
+        "Min": 1,
+        "Max": 3
+      },
+      {
+        "Item": "mat_leather",
+        "Chance": 0.32,
+        "Min": 1,
+        "Max": 2
+      }
+    ]
+  },
+  {
+    "Id": "undead",
+    "CoinsMin": 0,
+    "CoinsMax": 0,
+    "Entries": [
+      {
+        "Item": "mat_tattered_cloth",
+        "Chance": 0.42,
+        "Min": 1,
+        "Max": 2
+      },
+      {
+        "Item": "mat_undead_bone",
+        "Chance": 0.48,
+        "Min": 1,
+        "Max": 3
+      },
+      {
+        "Item": "mat_cloth",
+        "Chance": 0.22,
+        "Min": 1,
+        "Max": 2
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Chance": 0.1,
+        "Min": 1,
+        "Max": 1
+      }
+    ]
+  },
+  {
+    "Id": "frog",
+    "CoinsMin": 0,
+    "CoinsMax": 0,
+    "Entries": [
+      {
+        "Item": "mat_frog_gland",
+        "Chance": 0.5,
+        "Min": 1,
+        "Max": 2
+      },
+      {
+        "Item": "mat_leather",
+        "Chance": 0.2,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "mat_cracked_fang",
+        "Chance": 0.2,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "mat_tattered_cloth",
+        "Chance": 0.15,
+        "Min": 1,
+        "Max": 1
+      }
+    ]
+  },
+  {
+    "Id": "ganger",
+    "CoinsMin": 0,
+    "CoinsMax": 0,
+    "Entries": [
+      {
+        "Item": "mat_bandit_trophy",
+        "Chance": 0.5,
+        "Min": 1,
+        "Max": 2
+      },
+      {
+        "Item": "mat_broken_blade",
+        "Chance": 0.35,
+        "Min": 1,
+        "Max": 2
+      },
+      {
+        "Item": "mat_tattered_cloth",
+        "Chance": 0.3,
+        "Min": 1,
+        "Max": 1
+      }
+    ]
+  },
+  {
+    "Id": "soldier",
+    "CoinsMin": 0,
+    "CoinsMax": 0,
+    "Entries": [
+      {
+        "Item": "mat_military_insignia",
+        "Chance": 0.45,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "mat_iron_ore",
+        "Chance": 0.3,
+        "Min": 1,
+        "Max": 2
+      },
+      {
+        "Item": "mat_cloth",
+        "Chance": 0.25,
+        "Min": 1,
+        "Max": 1
+      }
+    ]
+  },
+  {
+    "Id": "steppinrazor",
+    "CoinsMin": 0,
+    "CoinsMax": 0,
+    "Entries": [
+      {
+        "Item": "mat_razor_wire",
+        "Chance": 0.5,
+        "Min": 1,
+        "Max": 2
+      },
+      {
+        "Item": "mat_broken_blade",
+        "Chance": 0.3,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "mat_leather",
+        "Chance": 0.2,
+        "Min": 1,
+        "Max": 1
+      }
+    ]
+  },
+  {
+    "Id": "bat",
+    "CoinsMin": 0,
+    "CoinsMax": 0,
+    "Entries": [
+      {
+        "Item": "mat_bat_wing",
+        "Chance": 0.55,
+        "Min": 1,
+        "Max": 2
+      },
+      {
+        "Item": "mat_cracked_fang",
+        "Chance": 0.3,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Chance": 0.1,
+        "Min": 1,
+        "Max": 1
+      }
+    ]
+  },
+  {
+    "Id": "desertflyer",
+    "CoinsMin": 0,
+    "CoinsMax": 0,
+    "Entries": [
+      {
+        "Item": "mat_vulture_feather",
+        "Chance": 0.5,
+        "Min": 1,
+        "Max": 2
+      },
+      {
+        "Item": "mat_leather",
+        "Chance": 0.25,
+        "Min": 1,
+        "Max": 1
+      }
+    ]
+  },
+  {
+    "Id": "sandmaw",
+    "CoinsMin": 0,
+    "CoinsMax": 0,
+    "Entries": [
+      {
+        "Item": "mat_sand_chitin",
+        "Chance": 0.5,
+        "Min": 1,
+        "Max": 2
+      },
+      {
+        "Item": "mat_iron_ore",
+        "Chance": 0.2,
+        "Min": 1,
+        "Max": 1
+      }
+    ]
+  },
+  {
+    "Id": "purpleprototype",
+    "CoinsMin": 0,
+    "CoinsMax": 0,
+    "Entries": [
+      {
+        "Item": "mat_scrap_circuit",
+        "Chance": 0.5,
+        "Min": 1,
+        "Max": 2
+      },
+      {
+        "Item": "mat_iron_ore",
+        "Chance": 0.3,
+        "Min": 1,
+        "Max": 2
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Chance": 0.15,
+        "Min": 1,
+        "Max": 1
+      }
+    ]
+  },
+  {
+    "Id": "techgremlin",
+    "CoinsMin": 0,
+    "CoinsMax": 0,
+    "Entries": [
+      {
+        "Item": "mat_gremlin_cog",
+        "Chance": 0.5,
+        "Min": 1,
+        "Max": 2
+      },
+      {
+        "Item": "mat_iron_ore",
+        "Chance": 0.3,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Chance": 0.15,
+        "Min": 1,
+        "Max": 1
+      }
+    ]
+  },
+  {
+    "Id": "mechaarmor",
+    "CoinsMin": 0,
+    "CoinsMax": 0,
+    "Entries": [
+      {
+        "Item": "mat_mecha_plating",
+        "Chance": 0.55,
+        "Min": 1,
+        "Max": 2
+      },
+      {
+        "Item": "mat_iron_ore",
+        "Chance": 0.35,
+        "Min": 1,
+        "Max": 2
+      }
+    ]
+  },
+  {
+    "Id": "lurker",
+    "CoinsMin": 0,
+    "CoinsMax": 0,
+    "Entries": [
+      {
+        "Item": "mat_swamp_ichor",
+        "Chance": 0.5,
+        "Min": 1,
+        "Max": 2
+      },
+      {
+        "Item": "mat_cloth",
+        "Chance": 0.2,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Chance": 0.1,
+        "Min": 1,
+        "Max": 1
+      }
+    ]
+  },
+  {
+    "Id": "marshshambler",
+    "CoinsMin": 0,
+    "CoinsMax": 0,
+    "Entries": [
+      {
+        "Item": "mat_marsh_moss",
+        "Chance": 0.55,
+        "Min": 2,
+        "Max": 3
+      },
+      {
+        "Item": "mat_wood_plank",
+        "Chance": 0.3,
+        "Min": 1,
+        "Max": 2
+      },
+      {
+        "Item": "mat_leather",
+        "Chance": 0.15,
+        "Min": 1,
+        "Max": 1
+      }
+    ]
+  },
+  {
+    "Id": "hag",
+    "CoinsMin": 0,
+    "CoinsMax": 0,
+    "Entries": [
+      {
+        "Item": "mat_hag_claw",
+        "Chance": 0.5,
+        "Min": 1,
+        "Max": 2
+      },
+      {
+        "Item": "mat_cloth",
+        "Chance": 0.3,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Chance": 0.15,
+        "Min": 1,
+        "Max": 1
+      }
+    ]
+  },
+  {
+    "Id": "swampmistress",
+    "CoinsMin": 0,
+    "CoinsMax": 0,
+    "Entries": [
+      {
+        "Item": "mat_mistress_veil",
+        "Chance": 0.55,
+        "Min": 1,
+        "Max": 2
+      },
+      {
+        "Item": "mat_enchanted_feather",
+        "Chance": 0.2,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Chance": 0.2,
+        "Min": 1,
+        "Max": 1
+      }
+    ]
+  },
+  {
+    "Id": "skelepede",
+    "CoinsMin": 0,
+    "CoinsMax": 0,
+    "Entries": [
+      {
+        "Item": "mat_bone_dust",
+        "Chance": 0.55,
+        "Min": 1,
+        "Max": 3
+      },
+      {
+        "Item": "mat_cracked_fang",
+        "Chance": 0.25,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Chance": 0.15,
+        "Min": 1,
+        "Max": 1
+      }
+    ]
+  },
+  {
+    "Id": "ceramicknight",
+    "CoinsMin": 0,
+    "CoinsMax": 0,
+    "Entries": [
+      {
+        "Item": "mat_ceramic_shard",
+        "Chance": 0.55,
+        "Min": 1,
+        "Max": 2
+      },
+      {
+        "Item": "mat_iron_ore",
+        "Chance": 0.3,
+        "Min": 1,
+        "Max": 2
+      },
+      {
+        "Item": "mat_cloth",
+        "Chance": 0.15,
+        "Min": 1,
+        "Max": 1
+      }
+    ]
+  },
+  {
+    "Id": "icemauler",
+    "CoinsMin": 0,
+    "CoinsMax": 0,
+    "Entries": [
+      {
+        "Item": "mat_frost_core",
+        "Chance": 0.5,
+        "Min": 1,
+        "Max": 2
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Chance": 0.2,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "mat_essence_frost",
+        "Chance": 0.08,
+        "Min": 1,
+        "Max": 1
+      }
+    ]
+  },
+  {
+    "Id": "oni",
+    "CoinsMin": 0,
+    "CoinsMax": 0,
+    "Entries": [
+      {
+        "Item": "mat_oni_horn",
+        "Chance": 0.5,
+        "Min": 1,
+        "Max": 2
+      },
+      {
+        "Item": "mat_iron_ore",
+        "Chance": 0.25,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "mat_cloth",
+        "Chance": 0.15,
+        "Min": 1,
+        "Max": 1
+      }
+    ]
+  },
+  {
+    "Id": "yeti",
+    "CoinsMin": 0,
+    "CoinsMax": 0,
+    "Entries": [
+      {
+        "Item": "mat_yeti_fur",
+        "Chance": 0.55,
+        "Min": 1,
+        "Max": 2
+      },
+      {
+        "Item": "mat_leather",
+        "Chance": 0.3,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "mat_essence_frost",
+        "Chance": 0.08,
+        "Min": 1,
+        "Max": 1
+      }
+    ]
+  },
+  {
+    "Id": "templar",
+    "CoinsMin": 0,
+    "CoinsMax": 0,
+    "Entries": [
+      {
+        "Item": "mat_templar_seal",
+        "Chance": 0.5,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "mat_iron_ore",
+        "Chance": 0.3,
+        "Min": 1,
+        "Max": 2
+      },
+      {
+        "Item": "mat_cloth",
+        "Chance": 0.2,
+        "Min": 1,
+        "Max": 1
+      }
+    ]
+  },
+  {
+    "Id": "cyberzombie",
+    "CoinsMin": 0,
+    "CoinsMax": 0,
+    "Entries": [
+      {
+        "Item": "mat_cyber_core",
+        "Chance": 0.5,
+        "Min": 1,
+        "Max": 2
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Chance": 0.25,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "mat_iron_ore",
+        "Chance": 0.2,
+        "Min": 1,
+        "Max": 1
+      }
+    ]
+  },
+  {
+    "Id": "mannequin",
+    "CoinsMin": 0,
+    "CoinsMax": 0,
+    "Entries": [
+      {
+        "Item": "mat_mannequin_joint",
+        "Chance": 0.5,
+        "Min": 1,
+        "Max": 2
+      },
+      {
+        "Item": "mat_cloth",
+        "Chance": 0.3,
+        "Min": 1,
+        "Max": 1
+      }
+    ]
+  },
+  {
+    "Id": "phantom",
+    "CoinsMin": 0,
+    "CoinsMax": 0,
+    "Entries": [
+      {
+        "Item": "mat_phantom_wisp",
+        "Chance": 0.5,
+        "Min": 1,
+        "Max": 2
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Chance": 0.25,
+        "Min": 1,
+        "Max": 1
+      }
+    ]
+  },
+  {
+    "Id": "reaper",
+    "CoinsMin": 0,
+    "CoinsMax": 0,
+    "Entries": [
+      {
+        "Item": "mat_reaper_shroud",
+        "Chance": 0.5,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "mat_tattered_cloth",
+        "Chance": 0.3,
+        "Min": 1,
+        "Max": 2
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Chance": 0.15,
+        "Min": 1,
+        "Max": 1
+      }
+    ]
+  },
+  {
+    "Id": "vampire",
+    "CoinsMin": 0,
+    "CoinsMax": 0,
+    "Entries": [
+      {
+        "Item": "mat_vampire_fang",
+        "Chance": 0.6,
+        "Min": 1,
+        "Max": 2
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Chance": 0.3,
+        "Min": 1,
+        "Max": 2
+      },
+      {
+        "Item": "mat_dragon_scale",
+        "Chance": 0.03,
+        "Min": 1,
+        "Max": 1
       }
     ]
   }

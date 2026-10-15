@@ -1110,6 +1110,122 @@
     "mat_essence_holy": [
       "delapouite/sparkles",
       "holy"
+    ],
+    "mat_frog_gland": [
+      "lorc/drop",
+      "green"
+    ],
+    "mat_goblin_scrap_iron": [
+      "faithtoken/ore",
+      "iron"
+    ],
+    "mat_bandit_trophy": [
+      "lorc/crossed-swords",
+      "gray"
+    ],
+    "mat_military_insignia": [
+      "lorc/winged-emblem",
+      "steel"
+    ],
+    "mat_razor_wire": [
+      "lorc/sword-wound",
+      "steel"
+    ],
+    "mat_bat_wing": [
+      "lorc/feather",
+      "gray"
+    ],
+    "mat_vulture_feather": [
+      "lorc/feather",
+      "bronze"
+    ],
+    "mat_scorpion_stinger": [
+      "lorc/spear-hook",
+      "poison"
+    ],
+    "mat_sand_chitin": [
+      "lorc/checked-shield",
+      "bronze"
+    ],
+    "mat_scrap_circuit": [
+      "lorc/rune-stone",
+      "spark"
+    ],
+    "mat_gremlin_cog": [
+      "lorc/sun",
+      "bronze"
+    ],
+    "mat_mecha_plating": [
+      "lorc/breastplate",
+      "steel"
+    ],
+    "mat_swamp_ichor": [
+      "sbed/vial",
+      "poison"
+    ],
+    "mat_marsh_moss": [
+      "delapouite/slime",
+      "green"
+    ],
+    "mat_heartwood": [
+      "lorc/rune-stone",
+      "wood"
+    ],
+    "mat_hag_claw": [
+      "skoll/fangs",
+      "shadow"
+    ],
+    "mat_mistress_veil": [
+      "delapouite/rolled-cloth",
+      "shadow"
+    ],
+    "mat_bone_dust": [
+      "lorc/crossed-bones",
+      "bone"
+    ],
+    "mat_ceramic_shard": [
+      "lorc/crystal-growth",
+      "earth"
+    ],
+    "mat_cyclops_eye": [
+      "lorc/gem-pendant",
+      "earth"
+    ],
+    "mat_frost_core": [
+      "lorc/frozen-orb",
+      "ice"
+    ],
+    "mat_oni_horn": [
+      "lorc/crystal-growth",
+      "crimson"
+    ],
+    "mat_yeti_fur": [
+      "delapouite/animal-hide",
+      "silver"
+    ],
+    "mat_templar_seal": [
+      "lorc/checked-shield",
+      "gold"
+    ],
+    "mat_cyber_core": [
+      "lorc/thunderball",
+      "spark"
+    ],
+    "mat_mannequin_joint": [
+      "lorc/fist",
+      "gray"
+    ],
+    "mat_phantom_wisp": [
+      "lorc/ghost",
+      "shadow"
+    ],
+    "mat_reaper_shroud": [
+      "lorc/robe",
+      "shadow"
+    ],
+    "mat_vampire_fang": [
+      "delapouite/vampire-dracula",
+      "crimson"
     ]
   },
   "ui": {

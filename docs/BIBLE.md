@@ -90,7 +90,7 @@ GridGame Gaiden is **NOT**:
 - **ClassDef** — one entry of `classes.json` (172: 62 hero classes, 110 enemy classes). ([§23](#23-character-classes))
 - **AbilityDef** — `abilities.json` (25: 15 spells, 6 skills, 4 enemy charges). ([§7](#7-the-spell-catalog))
 - **BuffDef / BuffInstance** — `buffs.json` (10). ([§8](#8-buffs-and-debuffs))
-- **ItemDef** — `items.json` (167: 129 equipment, 23 materials, 15 consumables). ([§24](#24-equipment-items-materials-currency))
+- **ItemDef** — `items.json` (225: 155 equipment, 54 materials, 16 consumables). ([§24](#24-equipment-items-materials-currency))
 - **ManaBank** — `Core/Battle/ManaBank.cs`: a capped count of 12 generic orbs. ([§3.1](#31-mana-the-orb-economy))
 - **TimelineEntry** — `Core/Battle/Timeline.cs`: a Turn icon (enemy, integer IP 0..1000) or a Cast icon (remaining ticks). ([§2](#2-the-timeline))
 - **BattleState** — `Core/Battle/BattleState.cs`: units, timeline, traps, bank, wave, phase, clock, seeded `Rng`, accumulated `BattleResults`. Cloneable (previews, bot look-ahead).
@@ -119,9 +119,9 @@ GridGame Gaiden is **NOT**:
 | `classes.json` | 172 `ClassDef`s — stats, growth, milestones, tags, resistances, learnable abilities, default loadout, drop table, move range, XP reward, boss phases, charge ability/shape, trap, snake segments, footprint, lore/card text, portrait crop |
 | `abilities.json` | 25 `AbilityDef`s — cost letters, cast time, cooldown, shape/radius/mode/filter, motion, damage type/base, heal, buff + chance, cleanse, steal, hasten, teleport, scan, VFX/SFX keys |
 | `buffs.json` | 10 `BuffDef`s — kind, unit (Turns/Ticks), duration, DOT, immobile, halts timeline, breaks on damage/move, incoming-damage / timeline-speed / accuracy multipliers, blocks spells, expire chain, letter, color |
-| `items.json` | 167 `ItemDef`s — type, rarity, slot, cost, stack, durability, healing/damage, stats, battle-start orbs, on-use ability, orb grants, cures, revive, escape, camp-only, bonus-vs-tag, resistances, vendor flag |
+| `items.json` | 225 `ItemDef`s (155 equipment, 54 materials, 16 consumables; corrected 2026-10-15, GG-T43 — the count had drifted stale) — type, rarity, slot, cost, stack, durability, healing/damage, stats, battle-start orbs, on-use ability, orb grants, cures, revive, escape, camp-only, bonus-vs-tag, resistances, vendor flag |
 | `recipes.json` | 116 `RecipeDef`s — station (Forge / Alchemy / Enchant), inputs, gold, optional base item, result |
-| `droptables.json` | 16 `DropTableDef`s — optional coin range, weighted item entries (chance, min, max) |
+| `droptables.json` | 37 `DropTableDef`s — optional coin range, weighted item entries (chance, min, max); one per enemy family, each carrying that family's own signature material (added 2026-10-15, GG-T43) |
 | `stages.json` | 19 `StageDef`s — 15 campaign + 4 test (`IsTest`), theme, waves of `SpawnDef` (class, level, optional fixed tile) |
 | `campaign.json` | 5 main themes × 3 stages + 5 postgame themes × 2 bonus stages (added 2026-10-13, GG-T7/T10; each bonus stage carries a `StageDef.LevelOverride` instead of relying on flattened-index `RecommendedLevel`), in play order, with each theme's story-crawl text |
 | `traps.json` | 1 `TrapDef` (`venom_snare`: 6 dmg + Poisoned, lay chance 0.45) |
@@ -1786,7 +1786,9 @@ Content assignment: Forge's 11 base (no-`BaseItem`) recipes are all Apprentice; 
 
 ### 24.7 Drops
 
-Per enemy `DropTable` ([§13.3](#133-death-and-loot)); 16 tables in content. The Adventure list hints each stage's drops.
+Per enemy `DropTable` ([§13.3](#133-death-and-loot)); 37 tables in content, one per enemy family. The Adventure list hints each stage's drops.
+
+**Amended 2026-10-15 (GG-T43, owner direction):** every enemy family carries its own signature crafting/alchemy material (frogs → Frog Gland, goblins → Goblin Scrap Iron, slimes → Slime Gel, undead → Undead Bone, cyclopes → Cyclops Eye, vampire → Vampire Fang, etc.), matching the house convention that a wave clusters one family ([§22.7](#227-the-first-battle)) — so a player can pick a stage and farm it for a specific ingredient. Remains (gravestones, bone piles) and eggs still drop nothing ([§14.5](#145-remains--gravestones-and-bone-piles-added-2026-10-10-owner-direction), [§14.8](#148-reinforcements-and-eggs-added-2026-10-12-owner-direction)). The Bestiary lists a family's drops as soon as it's **Seen** ([§25.11](#2511-bestiary)). *(Test: `Every_enemy_family_has_a_drop_table_with_a_signature_material`.)*
 
 #### 24.7.1 Material economy
 
@@ -1879,7 +1881,7 @@ Every Camp screen follows the same skeleton — header (‹ back, title, gold), 
 
 ### 25.11 Bestiary
 
-`BestiaryScreen`: a grid of every enemy class's thumb (darkened silhouette until Seen), "Seen n/110"; the detail shows name, Defeated count, lore, and base stats only once Scanned.
+`BestiaryScreen`: a grid of every enemy class's thumb (darkened silhouette until Seen), "Seen n/110"; the detail shows name, Defeated count, lore and its family's drops (rarity-colored item names, highest chance first) once **Seen**, then base stats only once Scanned (added 2026-10-15, GG-T43).
 
 ---
 

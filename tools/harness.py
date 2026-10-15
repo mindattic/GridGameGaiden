@@ -312,6 +312,39 @@ def durability(run="durability"):
     }, indent=1))
 
 
+def bestiary_drops(run="bestiary"):
+    """Plays Green Valley I at high speed (its wave 3 is an all-frog family per the house wave
+    convention), then opens the Bestiary and taps the now-Seen Frog entry to screenshot its Drops
+    line (GG-T43: every enemy family's signature material, listed once Seen — not just Scanned)."""
+    launch(run)
+    call("newgame", slot=0)
+    time.sleep(1)
+    call("speed", x=8)
+    call("battle", stage="greenvalley-01")
+    for _ in range(20):
+        if call("state")["screen"] == "battle":
+            break
+        time.sleep(0.2)
+    call("autoplay", on=1)
+    t0 = time.time()
+    while time.time() - t0 < 300:
+        time.sleep(1.0)
+        if call("state")["screen"] != "battle":
+            break
+    else:
+        raise RuntimeError("battle did not finish within 300s even at speed x8")
+    time.sleep(1.2)
+    call("goto", screen="bestiary")
+    time.sleep(0.9)
+    # frog00 is always among the first two rows of the (alphabetically-sorted) grid and greenvalley-01's
+    # wave 3 always fights it, so its thumb is both Seen and on-screen without needing to scroll.
+    r = call("click", name="beast-frog00")
+    time.sleep(0.6)
+    files = [shot("bestiary-frog-drops")]
+    print(json.dumps({"click": r, "layout": call("layout").get("problems")}, indent=1))
+    print("\n".join(files))
+
+
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "smoke"
     if cmd == "smoke":
@@ -324,6 +357,8 @@ if __name__ == "__main__":
         battle_clips(count=int(sys.argv[2]) if len(sys.argv) > 2 else 10)
     elif cmd == "durability":
         durability()
+    elif cmd == "bestiary":
+        bestiary_drops(sys.argv[2] if len(sys.argv) > 2 else "bestiary")
     elif cmd == "shot":
         print(shot(sys.argv[2]))
     elif cmd == "call":

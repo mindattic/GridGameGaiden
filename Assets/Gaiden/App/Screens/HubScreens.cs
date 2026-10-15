@@ -817,6 +817,7 @@ namespace Gaiden.App
                 var def = e;
                 S.Bestiary.TryGetValue(e.Id, out var entry);
                 var t = Ui.Thumb(e.Id, grid, 160);
+                t.name = "beast-" + e.Id;
                 t.style.marginRight = 8; t.style.marginBottom = 8;
                 if (entry == null || !entry.Seen) { t.style.unityBackgroundImageTintColor = new Color(0, 0, 0, 0.92f); }
                 t.AddToClassList("card-tap");
@@ -835,6 +836,19 @@ namespace Gaiden.App
             Ui.Text($"Defeated {e.Defeated}", "small gold", top);
             var lore = Ui.Text(Ui.Keywords(d.Lore ?? d.Description ?? ""), "small dim", w);
             lore.style.whiteSpace = WhiteSpace.Normal;
+            if (d.DropTable != null && C.DropTables.TryGetValue(d.DropTable, out var drops) && drops.Entries.Count > 0)
+            {
+                Ui.Text("Drops", "small dim", w).style.marginTop = 6;
+                var row = Ui.El("row", w);
+                row.style.flexWrap = Wrap.Wrap;
+                foreach (var de in drops.Entries.OrderByDescending(x => x.Chance))
+                {
+                    var it = C.TryItem(de.Item);
+                    if (it == null) continue;
+                    var tag = Ui.Text(it.Name, "small " + Ui.RarityClass(it.Rarity), row);
+                    tag.style.marginRight = 10;
+                }
+            }
             if (e.Scanned)
             {
                 Ui.Text(Ui.StatLine(d.BaseStats), "small", w);
