@@ -56,6 +56,7 @@ namespace Gaiden.App
             if (i.CuresAll) parts.Add("Cures all ailments");
             else if (i.CuresBuff != null) parts.Add($"Cures {i.CuresBuff}");
             foreach (var kv in i.Resistances) parts.Add($"{kv.Key} ×{kv.Value:0.##}");
+            if (!string.IsNullOrEmpty(i.PassiveName)) parts.Add($"{i.PassiveName}: {i.PassiveDescription}");
             return string.Join("   ", parts);
         }
 
@@ -277,12 +278,25 @@ namespace Gaiden.App
             }
 
             var cmp = Ui.Window(null, body);
-            var (now, then) = Equipment.Compare(C, h, slot, previewId ?? Equipment.Equipped(h, slot));
+            var curId = Equipment.Equipped(h, slot);
+            var thenId = previewId ?? curId;
+            var (now, then) = Equipment.Compare(C, h, slot, thenId);
             var grid = Ui.El("row", cmp);
             grid.style.flexWrap = Wrap.Wrap;
             void Cell(string n, float a, float b) { var c = Ui.El("row", grid); c.style.width = Length.Percent(25); Ui.Text(n, "small dim", c).style.width = 90; Ui.Text(Ui.Delta(a, b), "small", c); }
             Cell("STR", now.Strength, then.Strength); Cell("VIT", now.Vitality, then.Vitality); Cell("AGI", now.Agility, then.Agility); Cell("SPD", now.Speed, then.Speed);
             Cell("INT", now.Intelligence, then.Intelligence); Cell("WIS", now.Wisdom, then.Wisdom); Cell("LCK", now.Luck, then.Luck);
+            var curItem = C.TryItem(curId);
+            var thenItem = C.TryItem(thenId);
+            if (!string.IsNullOrEmpty(curItem?.PassiveName) || (!string.IsNullOrEmpty(thenItem?.PassiveName) && thenId != curId))
+            {
+                var prow = Ui.El("col", cmp);
+                prow.style.marginTop = 8;
+                if (!string.IsNullOrEmpty(curItem?.PassiveName))
+                    Ui.Text($"Now: {curItem.PassiveName} — {curItem.PassiveDescription}", "small dim", prow).style.whiteSpace = WhiteSpace.Normal;
+                if (!string.IsNullOrEmpty(thenItem?.PassiveName) && thenId != curId)
+                    Ui.Text($"Then: {thenItem.PassiveName} — {thenItem.PassiveDescription}", "small gold", prow).style.whiteSpace = WhiteSpace.Normal;
+            }
 
             var w = Ui.Window($"{SlotName(slot)} — your bag", body);
             w.style.flexGrow = 1;

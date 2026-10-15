@@ -3352,7 +3352,10 @@
     "OnUseAbility": null,
     "Resistances": {},
     "SoldByVendor": false,
-    "Icon": null
+    "Icon": null,
+    "PassiveName": "Scrapper's Edge",
+    "PassiveDescription": "Heals the wielder 3% of damage dealt.",
+    "LifestealFraction": 0.03
   },
   {
     "Id": "eq_sword_iron_plus1",
@@ -3442,7 +3445,10 @@
     "OnUseAbility": null,
     "Resistances": {},
     "SoldByVendor": false,
-    "Icon": null
+    "Icon": null,
+    "PassiveName": "Ironwall",
+    "PassiveDescription": "Adjacent ally heroes take 8% less damage.",
+    "AdjacentAllyDamageReduction": 0.08
   },
   {
     "Id": "eq_sword_steel_plus1",
@@ -3532,7 +3538,10 @@
     "OnUseAbility": null,
     "Resistances": {},
     "SoldByVendor": false,
-    "Icon": null
+    "Icon": null,
+    "PassiveName": "Steel Bulwark",
+    "PassiveDescription": "Adjacent ally heroes take 10% less damage.",
+    "AdjacentAllyDamageReduction": 0.1
   },
   {
     "Id": "eq_staff_mystic_plus1",
@@ -3622,7 +3631,10 @@
     "OnUseAbility": null,
     "Resistances": {},
     "SoldByVendor": false,
-    "Icon": null
+    "Icon": null,
+    "PassiveName": "Soul Siphon",
+    "PassiveDescription": "Heals the wielder 5% of damage dealt.",
+    "LifestealFraction": 0.05
   },
   {
     "Id": "eq_bow_hunter_plus1",
@@ -3712,7 +3724,10 @@
     "OnUseAbility": null,
     "Resistances": {},
     "SoldByVendor": false,
-    "Icon": null
+    "Icon": null,
+    "PassiveName": "Bloodhunt",
+    "PassiveDescription": "Heals the wielder 4% of damage dealt.",
+    "LifestealFraction": 0.04
   },
   {
     "Id": "eq_hammer_war_plus1",
@@ -3802,7 +3817,10 @@
     "OnUseAbility": null,
     "Resistances": {},
     "SoldByVendor": false,
-    "Icon": null
+    "Icon": null,
+    "PassiveName": "Guardian's Bulwark",
+    "PassiveDescription": "Adjacent ally heroes take 12% less damage.",
+    "AdjacentAllyDamageReduction": 0.12
   },
   {
     "Id": "eq_dagger_bronze_plus1",
@@ -3892,7 +3910,10 @@
     "OnUseAbility": null,
     "Resistances": {},
     "SoldByVendor": false,
-    "Icon": null
+    "Icon": null,
+    "PassiveName": "Vampiric Edge",
+    "PassiveDescription": "Heals the wielder 5% of damage dealt.",
+    "LifestealFraction": 0.05
   },
   {
     "Id": "eq_sword_flame_plus1",
@@ -3982,7 +4003,11 @@
     "OnUseAbility": null,
     "Resistances": {},
     "SoldByVendor": false,
-    "Icon": null
+    "Icon": null,
+    "PassiveName": "Flamebrand",
+    "PassiveDescription": "Pincer strikes have a 20% chance to Burn the target.",
+    "PincerApplyBuff": "burning",
+    "PincerApplyBuffChance": 0.2
   },
   {
     "Id": "eq_wand_crystal_plus1",
@@ -4072,7 +4097,11 @@
     "OnUseAbility": null,
     "Resistances": {},
     "SoldByVendor": false,
-    "Icon": null
+    "Icon": null,
+    "PassiveName": "Silencing Shard",
+    "PassiveDescription": "Pincer strikes have a 20% chance to Silence the target.",
+    "PincerApplyBuff": "silenced",
+    "PincerApplyBuffChance": 0.2
   },
   {
     "Id": "eq_spear_serpent_plus1",
@@ -4162,7 +4191,11 @@
     "OnUseAbility": null,
     "Resistances": {},
     "SoldByVendor": false,
-    "Icon": null
+    "Icon": null,
+    "PassiveName": "Serpent's Kiss",
+    "PassiveDescription": "Pincer strikes have a 25% chance to Poison the target.",
+    "PincerApplyBuff": "poisoned",
+    "PincerApplyBuffChance": 0.25
   },
   {
     "Id": "eq_axe_rune_plus1",
@@ -4252,7 +4285,11 @@
     "OnUseAbility": null,
     "Resistances": {},
     "SoldByVendor": false,
-    "Icon": null
+    "Icon": null,
+    "PassiveName": "Rune Frost",
+    "PassiveDescription": "Pincer strikes have a 15% chance to Freeze the target.",
+    "PincerApplyBuff": "frozen",
+    "PincerApplyBuffChance": 0.15
   },
   {
     "Id": "eq_sword_shadow_plus1",
@@ -4342,7 +4379,11 @@
     "OnUseAbility": null,
     "Resistances": {},
     "SoldByVendor": false,
-    "Icon": null
+    "Icon": null,
+    "PassiveName": "Duskfang",
+    "PassiveDescription": "Pincer strikes have a 20% chance to Blind the target.",
+    "PincerApplyBuff": "blinded",
+    "PincerApplyBuffChance": 0.2
   },
   {
     "Id": "eq_mace_starfall_plus1",
@@ -4432,7 +4473,10 @@
     "OnUseAbility": null,
     "Resistances": {},
     "SoldByVendor": false,
-    "Icon": null
+    "Icon": null,
+    "PassiveName": "Celestial Aegis",
+    "PassiveDescription": "Adjacent ally heroes take 10% less damage.",
+    "AdjacentAllyDamageReduction": 0.1
   },
   {
     "Id": "eq_sword_rusty_ench_flame",

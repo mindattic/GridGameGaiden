@@ -342,6 +342,66 @@ namespace Gaiden.Tests
             Assert.True(knight.Bar[0].IsEmpty);
         }
 
+        [Fact] // GG-T47
+        public void Flamebrand_applies_burning_on_a_landed_pincer_strike()
+        {
+            // bible §1.4 geometry reused: C(2,3) g(3,3) g(4,3) K(5,3); K drags west → C+K pincer g(3,3).
+            var db = Mini();
+            db.Classes["goblin"].BaseStats.Vitality = 200; // survive the pincer so the post-strike buff check still sees it alive
+            db.Items["flame_sword"] = new ItemDef { Id = "flame_sword", Name = "Flame Sword", Type = ItemType.Equipment, Slot = EquipmentSlot.Weapon, Durability = 0, Stats = new Stats { Strength = 20 }, PincerApplyBuff = "burning", PincerApplyBuffChance = 1f };
+            var setup = new BattleSetup { Stage = Stage(("goblin", 3, 3), ("goblin", 4, 3)), Seed = 1, UnlockedSlots = 2 };
+            setup.Party.Add(new HeroSpec { ClassId = "cleric", Start = new Coord(2, 3) });
+            setup.Party.Add(new HeroSpec { ClassId = "knight", Start = new Coord(5, 3), WeaponId = "flame_sword" });
+            var s = BattleEngine.Create(db, setup, new());
+            var knight = Hero(s, "knight");
+            var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = knight.Id, Path = P((4, 3)) });
+            Assert.Contains(ev, e => e is PincerFormedEvent);
+            var burned = s.Units.Single(u => u.Def.Id == "goblin" && u.Pos == new Coord(3, 3));
+            Assert.True(burned.HasBuff("burning"));
+        }
+
+        [Fact] // GG-T47
+        public void Vampiric_edge_heals_the_wielder_a_fraction_of_damage_dealt()
+        {
+            var db = Mini();
+            db.Items["vamp_dagger"] = new ItemDef { Id = "vamp_dagger", Name = "Vamp Dagger", Type = ItemType.Equipment, Slot = EquipmentSlot.Weapon, Durability = 0, Stats = new Stats { Strength = 20 }, LifestealFraction = 0.5f };
+            var setup = new BattleSetup { Stage = Stage(("goblin", 3, 3), ("goblin", 4, 3)), Seed = 1, UnlockedSlots = 2 };
+            setup.Party.Add(new HeroSpec { ClassId = "cleric", Start = new Coord(2, 3) });
+            setup.Party.Add(new HeroSpec { ClassId = "knight", Start = new Coord(5, 3), WeaponId = "vamp_dagger", Hp = 1 });
+            var s = BattleEngine.Create(db, setup, new());
+            var knight = Hero(s, "knight");
+            var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = knight.Id, Path = P((4, 3)) });
+            Assert.Contains(ev, e => e is HealedEvent h && h.TargetId == knight.Id);
+            Assert.True(knight.Hp > 1);
+        }
+
+        [Fact] // GG-T47
+        public void Guardian_passive_reduces_damage_to_an_adjacent_ally()
+        {
+            var db = Mini();
+            db.Items["guard_hammer"] = new ItemDef { Id = "guard_hammer", Name = "Guard Hammer", Type = ItemType.Equipment, Slot = EquipmentSlot.Weapon, Durability = 0, AdjacentAllyDamageReduction = 0.5f };
+            db.Classes["wolf"].MoveRange = 0;
+            db.Classes["wolf"].BaseStats.Luck = 0;
+            db.Classes["wolf"].BaseStats.Strength = 60;
+
+            int DamageTaken(bool guarded)
+            {
+                var setup = new BattleSetup { Stage = Stage(("wolf", 2, 2)), Seed = 3, UnlockedSlots = 2 };
+                setup.Party.Add(new HeroSpec { ClassId = "knight", Start = new Coord(2, 3) });
+                setup.Party.Add(new HeroSpec { ClassId = "cleric", Start = new Coord(2, 4), WeaponId = guarded ? "guard_hammer" : null });
+                var s = BattleEngine.Create(db, setup, new());
+                var knight = Hero(s, "knight");
+                var wolf = s.Units.Single(u => u.Def.Id == "wolf");
+                s.TurnEntryOf(wolf.Id).Ip = 999;
+                var ev = BattleEngine.Apply(s, new ShieldCommand());
+                return ev.OfType<DamagedEvent>().Where(d => d.TargetId == knight.Id).Sum(d => d.Amount);
+            }
+
+            int unguarded = DamageTaken(false);
+            int guarded = DamageTaken(true);
+            Assert.True(unguarded > 0);
+            Assert.True(guarded < unguarded);
+        }
 
         [Fact]
         public void Double_attack_passive_strikes_twice_and_counter_strikes_back()

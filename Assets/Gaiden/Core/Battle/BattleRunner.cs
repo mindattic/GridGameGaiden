@@ -240,6 +240,20 @@ namespace Gaiden.Core.Battle
 
         private bool IsArmored(Unit u) => BattleEngine.IsArmored(S, u);
 
+        /// <summary>Named weapon passive (§24.6.1, GG-T47): the strongest adjacent ally hero's Guardian-type weapon
+        /// reduces incoming damage to this hero (non-stacking — the best adjacent guardian wins).</summary>
+        private float BestAdjacentGuardianReduction(Unit target)
+        {
+            float best = 0f;
+            foreach (var h in S.Living(Team.Hero))
+            {
+                if (h == target || h.WeaponId == null || !h.IsAdjacentTo(target)) continue;
+                var weapon = C.TryItem(h.WeaponId);
+                if (weapon != null && weapon.AdjacentAllyDamageReduction > best) best = weapon.AdjacentAllyDamageReduction;
+            }
+            return best;
+        }
+
         /// <summary>
         /// Applies damage, handles Sleep-break, threat, pushback (hero→enemy in Zone), cast stagger and death.
         /// <paramref name="source"/> null = environmental (DOT, trap): no pushback, no stagger.
@@ -250,6 +264,11 @@ namespace Gaiden.Core.Battle
             if (hit != HitKind.Miss && amount > 0 && IsArmored(target)) { amount = 0; note = "Armored!"; }
             // Tough hide kit (§14.4): physical blows land at 70%.
             if (hit != HitKind.Miss && amount > 0 && type == DamageType.Physical && !target.IsHero && HasPassive(target, "tough_hide")) amount = Math.Max(1, amount * 7 / 10);
+            if (hit != HitKind.Miss && amount > 0 && target.IsHero && source != null)
+            {
+                float reduction = BestAdjacentGuardianReduction(target);
+                if (reduction > 0f) amount = Math.Max(1, (int)Math.Round(amount * (1f - reduction)));
+            }
             if (hit != HitKind.Miss && amount > 0)
                 RemoveBuffsWhere(target, b => b.Def.BreaksOnDamage, "woke");
             target.Hp = Math.Max(0, target.Hp - amount);

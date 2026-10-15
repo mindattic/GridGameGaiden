@@ -310,6 +310,21 @@ namespace Gaiden.Core.Content
         public bool StartsProtected;
         /// <summary>RecipeScroll only (§24.6.2, GG-T36): the recipe this item teaches when read at the Items screen.</summary>
         public string TeachesRecipe;
+        /// <summary>Named upgrade passive (§24.6.1, GG-T47): flavor name of a weapon's fully-upgraded (Master-tier,
+        /// "+3") named passive, shown on the Equip compare panel. Null = no named passive (every step below the top).</summary>
+        public string PassiveName;
+        /// <summary>PassiveName's effect text for the compare panel, e.g. "Pincer strikes have a 20% chance to Burn."</summary>
+        public string PassiveDescription;
+        /// <summary>PassiveName mechanic: a landed pincer strike (not a supporter or counter hit) by this weapon's
+        /// wielder has this chance to apply this buff to the target (e.g. Flamebrand's Burn).</summary>
+        public string PincerApplyBuff;
+        public float PincerApplyBuffChance;
+        /// <summary>PassiveName mechanic: heals the wielder this fraction of any damage a hero lands with this weapon
+        /// (e.g. Vampiric Edge).</summary>
+        public float LifestealFraction;
+        /// <summary>PassiveName mechanic: while this weapon's wielder stands adjacent to an ally hero, that ally takes
+        /// this much less damage (the strongest adjacent guardian wins — doesn't stack).</summary>
+        public float AdjacentAllyDamageReduction;
 
         public int EffectiveSellValue => SellValue >= 0 ? SellValue : System.Math.Max(1, BaseCost / 2);
         public bool IsRelic => Slot == EquipmentSlot.Relic1 || Slot == EquipmentSlot.Relic2 || Slot == EquipmentSlot.Relic3;

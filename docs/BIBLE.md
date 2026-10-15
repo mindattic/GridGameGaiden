@@ -1737,7 +1737,7 @@ One thing it does best plus a secondary cope; lopsided stats; colors shape the b
 | Epic | 15× | +8–15 | bosses, enchant |
 | Legendary | 40× | +12–25 | end-game |
 
-⬜ Not yet built: named passives on Epic+ pieces.
+Relic/Epic+ named passives (`PincerDamageBonus`, `RegenPerTurn`, `StartsProtected`) and weapon-upgrade-line named passives ([§24.6.1](#2461-tier-ladder-gg-t35-amended-2026-10-15), GG-T47) are both built.
 
 ### 24.2 Equipment slots
 
@@ -1785,7 +1785,14 @@ BonusVsTag, BonusMultiplier, Resistances{type→mult}, SoldByVendor, Icon
 
 Each crafting station has its own level — **Apprentice → Journeyman → Master** — raised by XP from every craft, brew, repair and salvage done there (`StationProgress`, `SaveData.StationXp`; 150/450 total XP for Journeyman/Master). `RecipeDef.Tier` (1–3, default 1 when absent from content) gates `Crafting.Craft` to the station's current level, failing with "Requires Journeyman"/"Requires Master" below it; Repair and Salvage aren't recipes and are always available, but still feed the Blacksmith's XP. Deliberately independent of §25.12 caravan upgrades (gold-bought stat bonuses, never recipe gates) so the two never double-gate the same thing — tested by `Caravan_upgrades_and_station_tiers_never_double_gate_each_other`.
 
-Content assignment: Forge's 11 base (no-`BaseItem`) recipes are all Apprentice; its 39 Upgrade recipes split Journeyman (the first upgrade off a base item) / Master (the deeper `+1 → +2` chains); Alchemy's 14 brews split Apprentice/Journeyman/Master by gold cost; all 78 Enchant recipes are Master (Alchemist-side, alongside Brew). The original "Iron Sword → Steel Sword → Mythril Blade → +1" ladder sketch predates this data shape; upgrades exist as data and UI, ⬜ named passives not yet built. *(Tests: `A_station_starts_at_apprentice_and_levels_up_from_real_crafting_actions`, `Repair_and_salvage_grant_blacksmith_xp_but_never_alchemist`.)*
+Content assignment: Forge's 11 base (no-`BaseItem`) recipes are all Apprentice; its 39 Upgrade recipes split Journeyman (the first upgrade off a base item) / Master (the deeper `+1 → +2` chains); Alchemy's 14 brews split Apprentice/Journeyman/Master by gold cost; all 78 Enchant recipes are Master (Alchemist-side, alongside Brew). The original "Iron Sword → Steel Sword → Mythril Blade → +1" ladder sketch predates this data shape; upgrades exist as data and UI. *(Tests: `A_station_starts_at_apprentice_and_levels_up_from_real_crafting_actions`, `Repair_and_salvage_grant_blacksmith_xp_but_never_alchemist`.)*
+
+**Named upgrade passives (added 2026-10-15, GG-T47):** each of the 13 weapon upgrade lines' top step (its `+3`, the deepest Master-tier rung) carries a named passive — `ItemDef.PassiveName`/`PassiveDescription` (shown on the Equip compare panel and in `ItemUi.StatsText`) plus one of three data-driven mechanics, all keyed off the wielder's equipped `WeaponId` at combat time (no new Unit fields):
+- `PincerApplyBuff`/`PincerApplyBuffChance`: a landed **pincer** strike (not a supporter or counter hit) has this chance to apply the named buff to the target — Flame Tongue's **Flamebrand** (20% Burn), Serpent Spear's **Serpent's Kiss** (25% Poison), Rune Axe's **Rune Frost** (15% Freeze), Shadow Blade's **Duskfang** (20% Blind), Crystal Wand's **Silencing Shard** (20% Silence).
+- `LifestealFraction`: heals the wielder this fraction of any damage they land, pincer or not — Bronze Dagger's **Vampiric Edge** (5%), Rusty Sword's **Scrapper's Edge** (3%), Mystic Staff's **Soul Siphon** (5%), Hunter's Bow's **Bloodhunt** (4%).
+- `AdjacentAllyDamageReduction`: while this hero stands adjacent to an ally hero, that ally takes this much less damage from any landed hit (the strongest adjacent guardian wins — doesn't stack) — War Hammer's **Guardian's Bulwark** (12%), Starfall Mace's **Celestial Aegis** (10%), Steel Sword's **Steel Bulwark** (10%), Iron Sword's **Ironwall** (8%).
+
+*(Tests: `Flamebrand_applies_burning_on_a_landed_pincer_strike`, `Vampiric_edge_heals_the_wielder_a_fraction_of_damage_dealt`, `Guardian_passive_reduces_damage_to_an_adjacent_ally`, `Every_weapon_upgrade_lines_top_step_has_a_named_passive`.)*
 
 #### 24.6.2 Recipe discovery (GG-T36, amended 2026-10-15)
 

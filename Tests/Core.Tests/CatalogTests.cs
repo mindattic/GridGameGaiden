@@ -212,6 +212,24 @@ namespace Gaiden.Tests
                 $"{recipeId}: {greater.Id} should be a strict upgrade over {basic.Id}");
         }
 
+        [Fact] // GG-T47
+        public void Every_weapon_upgrade_lines_top_step_has_a_named_passive()
+        {
+            var c = Real;
+            var baseItems = c.Recipes.Values.Where(r => r.Station == CraftStation.Forge && r.BaseItem != null).Select(r => r.BaseItem).ToHashSet();
+            var tops = c.Recipes.Values.Where(r => r.Station == CraftStation.Forge && r.BaseItem != null && !baseItems.Contains(r.Result))
+                .Select(r => r.Result).Distinct().ToList();
+            Assert.Equal(13, tops.Count);
+            foreach (var id in tops)
+            {
+                var item = c.Items[id];
+                Assert.False(string.IsNullOrEmpty(item.PassiveName), $"{id} has no named passive");
+                Assert.False(string.IsNullOrEmpty(item.PassiveDescription), $"{id} has no passive description");
+                Assert.True(item.PincerApplyBuff != null || item.LifestealFraction > 0f || item.AdjacentAllyDamageReduction > 0f,
+                    $"{id}'s passive ({item.PassiveName}) has no mechanic wired");
+            }
+        }
+
         [Fact]
         public void Every_class_can_be_instantiated_and_has_art_reference()
         {

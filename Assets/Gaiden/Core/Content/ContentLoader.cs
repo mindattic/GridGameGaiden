@@ -110,6 +110,7 @@ namespace Gaiden.Core.Content
             {
                 NeedAbility(i.OnUseAbility, $"item {i.Id}");
                 NeedBuff(i.CuresBuff, $"item {i.Id} cures");
+                NeedBuff(i.PincerApplyBuff, $"item {i.Id} pincer buff");
                 if (i.Type == ItemType.RecipeScroll)
                 {
                     if (i.TeachesRecipe == null) p.Add($"item {i.Id}: RecipeScroll needs TeachesRecipe");

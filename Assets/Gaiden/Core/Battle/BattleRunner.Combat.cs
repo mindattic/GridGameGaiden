@@ -211,6 +211,7 @@ namespace Gaiden.Core.Battle
                     if (!target.Alive || !attacker.Alive) continue;
                     Strike(attacker, target, mult, false);
                     if (twice && target.Alive && attacker.Alive) Strike(attacker, target, mult * 0.5f, false);
+                    if (target.Alive) TryWeaponPincerBuff(attacker, target);
                 }
                 if (attacker.IsHero && attacker.WeaponId != null && attacker.WeaponDurability > 0) WearWeapon(attacker);
             }
@@ -243,6 +244,27 @@ namespace Gaiden.Core.Battle
             return a != null && a.Kind == AbilityKind.Passive;
         }
 
+        /// <summary>Named weapon passive (§24.6.1, GG-T47): a landed pincer strike (not a supporter or counter hit)
+        /// may apply the wielder's weapon's signature buff to the target, e.g. Flamebrand's Burn.</summary>
+        private void TryWeaponPincerBuff(Unit attacker, Unit target)
+        {
+            if (!attacker.IsHero || attacker.WeaponId == null) return;
+            var weapon = C.TryItem(attacker.WeaponId);
+            if (weapon?.PincerApplyBuff == null || !S.Rng.Chance(weapon.PincerApplyBuffChance)) return;
+            var buff = C.TryBuff(weapon.PincerApplyBuff);
+            if (buff != null) ApplyBuff(target, buff, buff.Duration);
+        }
+
+        /// <summary>Named weapon passive (§24.6.1, GG-T47): heals the wielder a fraction of any damage a hero lands
+        /// with it, e.g. Vampiric Edge.</summary>
+        private void TryWeaponLifesteal(Unit attacker, int dealt)
+        {
+            if (dealt <= 0 || !attacker.IsHero || attacker.WeaponId == null) return;
+            var weapon = C.TryItem(attacker.WeaponId);
+            if (weapon == null || weapon.LifestealFraction <= 0f) return;
+            Heal(attacker, Math.Max(1, (int)Math.Round(dealt * weapon.LifestealFraction)), attacker);
+        }
+
         private bool countering;
 
         /// <summary>Counter Attack passive: a surviving, adjacent defender strikes back at half strength (no chains).</summary>
@@ -264,7 +286,13 @@ namespace Gaiden.Core.Battle
             int before = target.Hp;
             Damage(target, roll.Damage, attacker, roll.Hit, DamageType.Physical);
             if (roll.Hit == HitKind.Critical && attacker.IsHero) AddCharge(BattleConfig.CritCharge, attacker.Id, "critical");
-            if (roll.Hit != HitKind.Miss) { AfterLandedHit(attacker, target, before - target.Hp); MaybeCounter(target, attacker); }
+            if (roll.Hit != HitKind.Miss)
+            {
+                int dealt = before - target.Hp;
+                AfterLandedHit(attacker, target, dealt);
+                TryWeaponLifesteal(attacker, dealt);
+                MaybeCounter(target, attacker);
+            }
         }
 
         // ── Armor plates (§13.5) ──
