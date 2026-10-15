@@ -1760,7 +1760,7 @@ BonusVsTag, BonusMultiplier, Resistances{type→mult}, SoldByVendor, Icon
 - When a pincer starts with the weapon at 1, that attacker's strikes in that pincer deal **×1.5**; then it wears to 0 and **shatters**: the wielder takes `round(15% MaxHP)` (min 1, "Shatter!", environmental), the weapon's stats leave `GearStats`, and the weapon is removed from the save at commit.
 - **Repair** (`Meta.Repair`): restores to `EffectiveMax = max(1, Durability − repairs)`, then `repairs++` (so each repair lowers the next ceiling by 1); cost `ceil(missing × BaseCost / Durability × 0.30 × 1.6^repairs)`, min 1; flagged uneconomical when cost ≥ BaseCost. *(Tests: `Weapon_wears_per_pincer_and_shatters_at_zero`, `Full_loop_battle_commit_then_every_vendor`.)*
 - **Amended 2026-10-09:** durability **resets on unequip** — re-equipping starts at factory durability with 0 repairs (per-instance durability is a known simplification).
-- ⬜ Not yet built: armor wear in battle (armor durability exists and can be repaired, but never drops).
+- A hero's equipped armor loses **1 durability per landing hit taken** (not DOT/environmental); at 0 it breaks mid-fight: its stats and resistances leave `GearStats` immediately with an "Armor broken!" feed line and crack VFX, and it's removed at commit like a shattered weapon. *(Test: `Armor_wears_per_enemy_hit_and_breaks_at_zero`.)*
 - ⬜ Not yet built: ability-bar weapon swap (old backlog).
 
 ### 24.6 Crafting recipes

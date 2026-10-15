@@ -147,7 +147,7 @@ namespace Gaiden.App
                 case TrapTriggeredEvent tt: board.SyncTraps(State); App.Audio.Sfx("trap"); return FloatText(tt.UnitId, "Trap!", new Color(0.8f, 0.4f, 1f), 0.25f);
                 case WeaponWornEvent _: return null;
                 case WeaponShatteredEvent ws: App.Audio.Sfx("shatter"); return FloatText(ws.UnitId, "SHATTER!", new Color(1f, 0.7f, 0.3f), 0.5f, 80);
-                case ArmorBrokenEvent ab: App.Audio.Sfx("shatter", 0.7f); return FloatText(ab.UnitId, "Armor broke!", new Color(1f, 0.6f, 0.4f), 0.4f, 64);
+                case ArmorBrokenEvent ab: App.Audio.Sfx("shatter", 0.7f); return FloatText(ab.UnitId, "Armor broken!", new Color(1f, 0.6f, 0.4f), 0.4f, 64);
                 case WeaponSwappedEvent sw: App.Audio.Sfx("dash"); SyncBar(); return FloatText(sw.UnitId, "⭾ " + (App.Content.TryItem(sw.ToWeapon)?.Name ?? "Swap"), new Color(0.85f, 0.9f, 1f), 0.3f, 54);
                 case BossPhaseEvent bp: return BossAnim(bp);
                 case WaveStartedEvent wv: TutorialWaveStarted(); return WaveAnim(wv);

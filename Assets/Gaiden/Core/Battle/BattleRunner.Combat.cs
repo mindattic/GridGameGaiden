@@ -387,7 +387,7 @@ namespace Gaiden.Core.Battle
                     if (hero.GearResist.TryGetValue(kv.Key, out var cur) && kv.Value != 0f) hero.GearResist[kv.Key] = cur / kv.Value;
             }
             Emit(new ArmorBrokenEvent { UnitId = hero.Id, ArmorId = hero.ArmorId });
-            Announce("Armor broke!", hero.Id);
+            Announce("Armor broken!", hero.Id);
             hero.ArmorId = null;
         }
 
