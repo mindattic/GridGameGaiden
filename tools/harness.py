@@ -4,6 +4,7 @@ Self-play harness: launches the development player with the automation endpoint 
     python tools/harness.py smoke            # title → new game → hub → battle (autoplay) → results
     python tools/harness.py sweep            # screenshot + layout-audit every menu screen
     python tools/harness.py clips N          # generate N random-stage/random-wave battle clips
+    python tools/harness.py durability       # GG-T39: last-strike weapon badge + drag-preview shatter warning
     python tools/harness.py shot NAME        # screenshot the running player
     python tools/harness.py call PATH [k=v]  # raw endpoint call, e.g. call state
 
@@ -261,6 +262,56 @@ def battle_clips(run="clips", count=10, speed=3, timeout=240, capture=True):
     return clips
 
 
+def durability(run="durability"):
+    """GG-T39: forces the bot's suggested hero to its weapon's last-strike durability (1) mid-battle,
+    then verifies the battle card shows the cracked-weapon badge and the next drag preview (the same
+    pincer-forming move the bot already found) warns the pincer will shatter it. Skips UI navigation
+    (newgame/battle endpoints go straight to a real campaign-stage battle) so it isn't blocked by
+    unrelated screens. Screenshots land in artifacts/<run>/."""
+    launch(run, fresh=True)
+    call("newgame", slot=0, gold=500)
+    call("devequipall")  # a fresh roster starts bare-handed; equip Iron Swords so there's a weapon to wear down
+    info = call("battle")
+    for _ in range(20):
+        if call("state")["screen"] == "battle":
+            break
+        time.sleep(0.2)
+    shot("01-battle")
+    # The first-battle tutorial periodically overwrites the banner with its own "Hint: ..." text while
+    # idle, racing the pincer/shatter banner this check reads — skip it the same way uicheck.py does.
+    call("click", name="tutorial-skip"); time.sleep(0.4)
+    # A fresh battle's opening move rarely pincers (enemies haven't closed in yet) — play the bot's
+    # own suggested moves until one does, same as a player just advancing the fight.
+    sug = call("suggest")
+    tries = 0
+    while isinstance(sug, dict) and sug.get("path") and sug.get("pincers", 0) == 0 and tries < 15 and call("state")["screen"] == "battle":
+        pts = ";".join(f"{x},{y}" for x, y in ([tile(*sug["from"])] + [tile(x, y) for x, y in sug["path"]]))
+        call("drag", path=pts, step=0.1)
+        time.sleep(0.6)
+        sug = call("suggest")
+        tries += 1
+    if not (isinstance(sug, dict) and sug.get("path") and sug.get("pincers", 0) > 0):
+        print(json.dumps({"stage": info, "error": "bot found no pincer move to test", "tries": tries, "suggest": sug}, indent=1))
+        return
+    hero_id = sug["hero"]
+    forced = call("devweapon", unit=hero_id, durability=1)
+    crack = call("element", name=f"weapon-crack-{hero_id}")
+    pts = ";".join(f"{x},{y}" for x, y in ([tile(*sug["from"])] + [tile(x, y) for x, y in sug["path"]]))
+    call("drag", path=pts, step=0.1, hold=1)
+    time.sleep(0.3)
+    banner = call("banner")["text"] or ""
+    shot("02-drag-shatter-warning")
+    call("release"); time.sleep(0.5)
+    shot("03-after-drop")
+    logs = call("logs")
+    print(json.dumps({
+        "stage": info, "forced_durability_1": forced,
+        "crack_badge_visible": crack.get("visible"), "crack_badge": crack,
+        "banner": banner, "banner_warns_shatter": "shatter" in banner.lower(),
+        "errors": [l[:300] for l in logs if l.startswith(("Error", "Exception"))],
+    }, indent=1))
+
+
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "smoke"
     if cmd == "smoke":
@@ -271,6 +322,8 @@ if __name__ == "__main__":
         sweep(sys.argv[2] if len(sys.argv) > 2 else "sweep")
     elif cmd == "clips":
         battle_clips(count=int(sys.argv[2]) if len(sys.argv) > 2 else 10)
+    elif cmd == "durability":
+        durability()
     elif cmd == "shot":
         print(shot(sys.argv[2]))
     elif cmd == "call":

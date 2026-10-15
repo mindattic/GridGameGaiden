@@ -213,6 +213,21 @@ namespace Gaiden.App.Automation
                     app.Router.ResetTo(new HubScreen());
                     return new { ok = true };
                 }
+                case "devequipall":
+                {
+                    // Test-only (GG-T39): a fresh save starts every hero bare-handed (weapons are bought
+                    // at the Blacksmith), so harness checks of weapon-durability UI need something equipped
+                    // first. Mirrors Meta.Equipment.Equip (grants + equips) across the whole roster.
+                    if (app.Save == null) return new { error = "no save" };
+                    var itemId = q["item"] ?? "eq_sword_iron";
+                    int equipped = 0;
+                    foreach (var h in app.Save.Roster)
+                    {
+                        app.Save.AddItem(itemId, 1);
+                        if (Equipment.Equip(app.Content, app.Save, h, EquipmentSlot.Weapon, itemId).Ok) equipped++;
+                    }
+                    return new { ok = equipped > 0, equipped };
+                }
                 case "goto":
                     if (!StartScreens.TryGet(q["screen"], out var screen)) return new { error = "unknown screen" };
                     app.Router.Push(screen);
@@ -377,6 +392,9 @@ namespace Gaiden.App.Automation
                     return new { error = "not in battle" };
                 case "devhp":
                     if (app.Router.Current is BattleScreen dh) return new { ok = dh.DevHp((int)F(q["unit"]), (int)F(q["hp"], 1)) };
+                    return new { error = "not in battle" };
+                case "devweapon":
+                    if (app.Router.Current is BattleScreen dw) return new { ok = dw.DevWeaponDurability((int)F(q["unit"]), (int)F(q["durability"], 1)) };
                     return new { error = "not in battle" };
                 case "setbar":
                     if (app.Router.Current is BattleScreen setb) return new { ok = setb.DevSetBar((int)F(q["unit"]), (int)F(q["slot"]), q["entry"]) };
@@ -579,6 +597,7 @@ namespace Gaiden.App.Automation
                     units = s.Units.Where(u => u.Alive).Select(u => new
                     {
                         u.Id, cls = u.Def.Id, team = u.Team.ToString(), x = u.Pos.X, y = u.Pos.Y, u.W, u.H, u.Hp, u.MaxHp, u.Level,
+                        weapon = u.WeaponId, weaponDurability = u.WeaponDurability, armor = u.ArmorId, armorDurability = u.ArmorDurability,
                         buffs = u.Buffs.Select(x => x.Def.Id + ":" + x.Remaining).ToList(),
                         acts_in = u.IsHero ? -1 : BattleEngine.ActionsUntilTurn(s, u.Id),
                         bar = u.IsHero ? Enumerable.Range(0, u.Bar.Count).Select(i => (u.Bar[i].AbilityId ?? u.Bar[i].ItemId ?? "-") + "=" + BattleEngine.GetSlotStatus(s, u.Id, i)).ToList() : null,

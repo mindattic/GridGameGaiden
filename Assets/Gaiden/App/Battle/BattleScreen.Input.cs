@@ -250,8 +250,19 @@ namespace Gaiden.App
                 foreach (var s in p.SupportersA) if (board.Units.TryGetValue(s.Id, out var sv)) sv.SetGlow(new Color(0.4f, 0.8f, 1f), 0.7f);
                 foreach (var s in p.SupportersB) if (board.Units.TryGetValue(s.Id, out var sv)) sv.SetGlow(new Color(0.4f, 0.8f, 1f), 0.7f);
             }
-            if (pv.Pincers.Count > 0) ShowBanner(pv.Pincers.Count > 1 ? $"PINCER ×{pv.Pincers.Count}!" : "PINCER!");
-            else ShowBanner("");
+            if (pv.Pincers.Count == 0) { ShowBanner(""); return; }
+            string banner = pv.Pincers.Count > 1 ? $"PINCER ×{pv.Pincers.Count}!" : "PINCER!";
+            // GG-T39: the attacker (either endpoint, never a supporter) whose weapon is on its last point
+            // would wear it to 0 and shatter in this very drop (§24.5) — call that out before it's a surprise.
+            Unit shatterer = null;
+            foreach (var p in pv.Pincers)
+            {
+                if (p.A.IsHero && p.A.WeaponId != null && p.A.WeaponDurability == 1) { shatterer = p.A; break; }
+                if (p.B.IsHero && p.B.WeaponId != null && p.B.WeaponDurability == 1) { shatterer = p.B; break; }
+            }
+            if (shatterer != null)
+                banner += $"  This pincer will shatter your {App.Content.TryItem(shatterer.WeaponId)?.Name ?? "weapon"}!";
+            ShowBanner(banner);
         }
 
         private void CommitDrag(BattleCommand perfectCmd = null)

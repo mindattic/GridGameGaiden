@@ -4,7 +4,7 @@ project: GridGameGaiden
 code: GG
 layer: bible
 status: living
-updated: 2026-10-09
+updated: 2026-10-15
 ---
 
 # GridGame Gaiden — Project Bible
@@ -1763,6 +1763,7 @@ BonusVsTag, BonusMultiplier, Resistances{type→mult}, SoldByVendor, Icon
 - **Armor wears in battle** (closed 2026-10-10): a hero's equipped armor loses **1 durability per landing hit taken** (not DOT/environmental); at 0 it breaks mid-fight — stats and resistances leave `GearStats` immediately with an "Armor broken!" feed line and crack VFX, removed at commit like a shattered weapon (no shatter damage — that stays weapon-only). Repair works as for weapons. *(Test: `Armor_wears_per_enemy_hit_and_breaks_at_zero`.)*
 - **Ability-bar weapon swap** (closed 2026-10-10): a bar slot can hold `weapon:<id>` from the bag; using it swaps weapons (costs a turn, no mana; the incoming weapon enters at factory durability); the save follows the swap.
 - **Shatter auto-equip** (GG-T40): if a hero's weapon shatters and a backup is slotted on their bar, it equips for free the moment that hero is next given a command — no turn cost, no player input. *(Test: `Shattered_weapon_auto_equips_the_bar_backup_on_the_hero_s_next_action`.)*
+- **Telegraph (added 2026-10-15, GG-T39):** each hero's battle card shows a thin weapon/armor wear bar (`BoardView.UnitView.SetGear`); at ≤10% remaining it pulses amber, and at the weapon's last-strike durability of 1 it glows red with a cracked-weapon badge instead. The drag preview calls out an imminent shatter ("This pincer will shatter your Iron Sword!") before the drop commits, for any attacker the previewed pincer would wear to 0 — not just the dragged hero. *(Harness: `python tools/harness.py durability`.)*
 
 ### 24.6 Crafting recipes
 

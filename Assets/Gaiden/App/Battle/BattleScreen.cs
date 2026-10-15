@@ -309,6 +309,17 @@ namespace Gaiden.App
                 v.SetHp(u.Hp, u.MaxHp);
                 v.SetBuffs(u, Colorblind, State.TurnEntryOf(u.Id)?.StunTicks > 0);
                 v.SetPlate(u.Facing, u.PlateHp, u.PlateMax);
+                if (u.IsHero)
+                {
+                    var weaponDef = u.WeaponId != null ? App.Content.TryItem(u.WeaponId) : null;
+                    var armorDef = u.ArmorId != null ? App.Content.TryItem(u.ArmorId) : null;
+                    bool hasWeapon = weaponDef != null && weaponDef.Durability > 0;
+                    bool hasArmor = armorDef != null && armorDef.Durability > 0;
+                    float wFrac = hasWeapon ? u.WeaponDurability / (float)weaponDef.Durability : 1f;
+                    float aFrac = hasArmor ? u.ArmorDurability / (float)armorDef.Durability : 1f;
+                    v.SetGear(hasWeapon, wFrac, hasWeapon && u.WeaponDurability == 1, hasArmor, aFrac, !ReduceMotion);
+                }
+                else v.SetGear(false, 0f, false, false, 0f, !ReduceMotion);
                 bool sel = u.Id == SelectedHeroId;
                 var aura = AuraFor(u);
                 if (sel) v.SetGlow(new Color(1f, 0.9f, 0.5f), 0.65f);
@@ -816,6 +827,16 @@ namespace Gaiden.App
             var u = State.UnitById(unitId);
             if (u == null || !u.Alive) return false;
             u.Hp = Mathf.Clamp(hp, 1, u.MaxHp);
+            SyncAll();
+            return true;
+        }
+
+        /// <summary>Dev/automation helper: force a hero's weapon to a given durability (art/harness review — GG-T39).</summary>
+        public bool DevWeaponDurability(int unitId, int durability)
+        {
+            var u = State.UnitById(unitId);
+            if (u == null || !u.Alive || u.WeaponId == null) return false;
+            u.WeaponDurability = Mathf.Max(0, durability);
             SyncAll();
             return true;
         }

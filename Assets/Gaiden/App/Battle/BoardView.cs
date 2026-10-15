@@ -26,6 +26,15 @@ namespace Gaiden.App
         private readonly VisualElement castBarFill;
         /// <summary>The armor plate (§13.5): a riveted steel bar on the edge the unit faces.</summary>
         public readonly VisualElement Plate;
+        /// <summary>Hero gear durability telegraph (GG-T39): thin weapon/armor wear bars, and the
+        /// cracked-weapon badge that appears once the weapon is on its last (×1.5, then shatter) point.</summary>
+        public readonly VisualElement Gear;
+        private readonly VisualElement weaponBarEl;
+        private readonly VisualElement armorBarEl;
+        public readonly VisualElement WeaponFill;
+        public readonly VisualElement ArmorFill;
+        public readonly VisualElement WeaponCrack;
+        private bool weaponPulseAmber, armorPulseAmber, weaponGlow;
         private readonly float tileSize;
         public Coord Tile;
         public int W = 1, H = 1;
@@ -157,6 +166,65 @@ namespace Gaiden.App
             CastBar.Add(castBarFill);
             Root.Add(CastBar);
 
+            // Hero gear durability (GG-T39, §24.5): a thin weapon/armor wear strip above the cast bar,
+            // plus a badge that only shows once the weapon is on its last point.
+            Gear = new VisualElement { name = "gear-" + u.Id, pickingMode = PickingMode.Ignore };
+            Gear.style.position = Position.Absolute;
+            Gear.style.left = 18; Gear.style.right = 18; Gear.style.bottom = 50; Gear.style.height = 8;
+            Gear.style.flexDirection = FlexDirection.Row;
+            Gear.style.display = DisplayStyle.None;
+            weaponBarEl = new VisualElement { name = "weapon-bar-" + u.Id };
+            weaponBarEl.AddToClassList("gauge");
+            weaponBarEl.style.height = 8; weaponBarEl.style.flexGrow = 1; weaponBarEl.style.marginRight = 4;
+            WeaponFill = new VisualElement { name = "weapon-fill-" + u.Id };
+            WeaponFill.AddToClassList("gauge-fill");
+            weaponBarEl.Add(WeaponFill);
+            Gear.Add(weaponBarEl);
+            armorBarEl = new VisualElement { name = "armor-bar-" + u.Id };
+            armorBarEl.AddToClassList("gauge");
+            armorBarEl.style.height = 8; armorBarEl.style.flexGrow = 1;
+            ArmorFill = new VisualElement { name = "armor-fill-" + u.Id };
+            ArmorFill.AddToClassList("gauge-fill");
+            armorBarEl.Add(ArmorFill);
+            Gear.Add(armorBarEl);
+            Root.Add(Gear);
+
+            // A cracked badge, not a glyph (GG-LAW-11): a red roundel with two crossed white shards.
+            WeaponCrack = new VisualElement { name = "weapon-crack-" + u.Id, pickingMode = PickingMode.Ignore };
+            WeaponCrack.style.position = Position.Absolute;
+            WeaponCrack.style.left = 14; WeaponCrack.style.bottom = 60;
+            WeaponCrack.style.width = WeaponCrack.style.height = 24;
+            WeaponCrack.style.borderTopLeftRadius = WeaponCrack.style.borderTopRightRadius = WeaponCrack.style.borderBottomLeftRadius = WeaponCrack.style.borderBottomRightRadius = 12;
+            WeaponCrack.style.backgroundColor = new Color(0.5f, 0.06f, 0.05f, 0.92f);
+            WeaponCrack.style.borderTopWidth = WeaponCrack.style.borderBottomWidth = WeaponCrack.style.borderLeftWidth = WeaponCrack.style.borderRightWidth = 2;
+            WeaponCrack.style.borderTopColor = WeaponCrack.style.borderBottomColor = WeaponCrack.style.borderLeftColor = WeaponCrack.style.borderRightColor = new Color(1f, 0.35f, 0.3f);
+            WeaponCrack.style.display = DisplayStyle.None;
+            var shardA = new VisualElement { pickingMode = PickingMode.Ignore };
+            shardA.style.position = Position.Absolute;
+            shardA.style.left = 10; shardA.style.top = 2; shardA.style.width = 3; shardA.style.height = 13;
+            shardA.style.backgroundColor = Color.white;
+            shardA.style.rotate = new Rotate(22f);
+            WeaponCrack.Add(shardA);
+            var shardB = new VisualElement { pickingMode = PickingMode.Ignore };
+            shardB.style.position = Position.Absolute;
+            shardB.style.left = 10; shardB.style.top = 9; shardB.style.width = 3; shardB.style.height = 13;
+            shardB.style.backgroundColor = Color.white;
+            shardB.style.rotate = new Rotate(-26f);
+            WeaponCrack.Add(shardB);
+            Root.Add(WeaponCrack);
+
+            // One scheduled beat drives both the amber pulse and the red glow; cheap no-op when neither is active.
+            Root.schedule.Execute(() =>
+            {
+                if (weaponPulseAmber || armorPulseAmber)
+                {
+                    float k = 0.55f + 0.45f * Mathf.Abs(Mathf.Sin(Time.unscaledTime * 4f));
+                    if (weaponPulseAmber) weaponBarEl.style.opacity = k;
+                    if (armorPulseAmber) armorBarEl.style.opacity = k;
+                }
+                if (weaponGlow) WeaponCrack.style.opacity = 0.55f + 0.45f * Mathf.Abs(Mathf.Sin(Time.unscaledTime * 3f));
+            }).Every(33);
+
             if (u.IsSnakeSegment)
             {
                 Frame.style.borderTopLeftRadius = Frame.style.borderTopRightRadius = Frame.style.borderBottomLeftRadius = Frame.style.borderBottomRightRadius = tile * 0.4f;
@@ -237,6 +305,40 @@ namespace Gaiden.App
             Plate.style.width = horizontal ? w - inset * 2 : thick;
             Plate.style.height = horizontal ? thick : h - inset * 2;
             Plate.style.opacity = 0.45f + 0.55f * Mathf.Clamp01(hp / (float)max);
+        }
+
+        /// <summary>
+        /// Hero gear durability telegraph (GG-T39): weapon/armor wear bars. Either fraction ≤10% pulses amber
+        /// (steady color when <paramref name="animate"/> is false, for Reduce Motion); a weapon at its last
+        /// point (the ×1.5 "last strike" durability of 1, §24.5) glows red with a cracked-weapon badge instead.
+        /// </summary>
+        public void SetGear(bool hasWeapon, float weaponFrac, bool weaponLastStrike, bool hasArmor, float armorFrac, bool animate)
+        {
+            Gear.style.display = (hasWeapon || hasArmor) ? DisplayStyle.Flex : DisplayStyle.None;
+
+            weaponBarEl.style.display = hasWeapon ? DisplayStyle.Flex : DisplayStyle.None;
+            if (hasWeapon)
+            {
+                // High-durability gear (150+) leaves a 1-point sliver under 1% wide — floor the rendered
+                // width so "nearly broken" still reads as a visible bar, never a blank one.
+                WeaponFill.style.width = Length.Percent(Mathf.Max(Mathf.Clamp01(weaponFrac), 0.08f) * 100f);
+                WeaponFill.EnableInClassList("gauge-fill--mid", !weaponLastStrike && weaponFrac <= 0.10f);
+                WeaponFill.EnableInClassList("gauge-fill--low", weaponLastStrike);
+            }
+            weaponPulseAmber = animate && hasWeapon && !weaponLastStrike && weaponFrac <= 0.10f;
+            if (!weaponPulseAmber) weaponBarEl.style.opacity = 1f;
+            weaponGlow = animate && weaponLastStrike;
+            WeaponCrack.style.display = weaponLastStrike ? DisplayStyle.Flex : DisplayStyle.None;
+            if (!weaponGlow) WeaponCrack.style.opacity = 1f;
+
+            armorBarEl.style.display = hasArmor ? DisplayStyle.Flex : DisplayStyle.None;
+            if (hasArmor)
+            {
+                ArmorFill.style.width = Length.Percent(Mathf.Max(Mathf.Clamp01(armorFrac), 0.08f) * 100f);
+                ArmorFill.EnableInClassList("gauge-fill--mid", armorFrac <= 0.10f);
+            }
+            armorPulseAmber = animate && hasArmor && armorFrac <= 0.10f;
+            if (!armorPulseAmber) armorBarEl.style.opacity = 1f;
         }
 
         /// <summary>Caster side: the charging bar, <paramref name="filled"/> = fraction of the cast already charged (null hides it).</summary>
