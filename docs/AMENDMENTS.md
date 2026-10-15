@@ -387,3 +387,31 @@ updated: 2026-10-09
   `Every_sold_healing_or_cure_potion_is_meaningfully_cheaper_brewed_than_bought`.)*
 - `CampRoutine`'s potion restock now brews the Healing Potion recipe before buying, falling back to the Merchant
   only once reagents run out (§25.3.3). *(Test: `CampRoutine_brews_potions_instead_of_buying_when_it_has_the_reagents`.)*
+
+## 2026-10-15 — Bot & balance support for builds (GG-T54)
+
+- "teach MetaBot/CampRoutine to … salvage worn-out gear and avoid bargain gear near shatter." `CampRoutine.Run`
+  now scraps every `Broken` fragment on sight and salvages (instead of repairing) any equipped weapon/armor whose
+  repair has crossed the existing "uneconomical" line (§24.5, cost ≥ `BaseCost`) — the same trade the Blacksmith's
+  "Salvage instead" row already offers a player (GG-T42), just taken automatically. The gear-upgrade pass also now
+  shops the Merchant's Bargain shelf (§25.1, GG-T38) for a slot upgrade once owned gear and Forge recipes come up
+  short, but skips any offer below `CampRoutine.MinSafeBargainDurabilityFraction` (25%) — a player can weigh the
+  shelf's 10-40%-durability shatter gamble, an automated buyer can't, so it only takes the safer half of the range.
+  *(Tests: `CampRoutine_salvages_broken_fragments_on_every_visit`, `CampRoutine_salvages_an_equipped_piece_instead_of_an_uneconomical_repair`,
+  `CampRoutine_never_buys_a_bargain_offer_too_close_to_shattering`, `CampRoutine_buys_a_safe_bargain_offer_for_an_empty_slot`.)*
+- "brew instead of buy when it has reagents" was already built for the one consumable the bot stocks (Healing
+  Potion, GG-T44) — left unchanged here since there's nothing else in `CampRoutine`'s restock loop to generalize it to.
+- **Not done — blocked on GG-T50:** "teach MetaBot/CampRoutine to spend skill points (home tree first, sensible
+  off-tree picks)." §25.6's GG-T49 amendment already says it plainly: "Until GG-T50 lands there is no tree to spend
+  points on yet." `HeroSave.SkillPoints` accrues but nothing in content or code consumes it — no `skilltrees.json`,
+  no `ClassDef` home tree, no spend API — so there is nothing yet for a bot to spend into. GG-T54's own dependency
+  list (GG-T38, GG-T44, GG-T49) doesn't include GG-T50, but the ticket text assumes the tree exists; it doesn't.
+  This piece is left for whoever picks up GG-T50 (and the bot-spend logic can follow as a small addition once it
+  lands) rather than building a parallel/placeholder tree here that would conflict with that ticket's content schema.
+- **Retuning:** reran `BalanceReport` (`Campaign_pacing_table`) after the above. `greedy+camp` still clears the
+  whole campaign (4/4 seeds) with a healthy difficulty gradient intact (postgame stages mostly 44-80% win rate, not
+  trivialized), and win rate/actions/HP-left improved modestly over plain `greedy` from the salvage/bargain gear
+  bump — no stalls, no trivialization. Since the only consumer of skill points, XP and reagent drops that actually
+  changed this round is the (unaffected) potion restock loop, XP rates, skill-point rates, reagent drop chances and
+  shop prices were left as-is; a real retune of skill-point income/spend belongs with GG-T50, once there's a sink
+  to tune it against.

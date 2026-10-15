@@ -6,25 +6,53 @@ using Gaiden.Core.Content;
 namespace Gaiden.Meta
 {
     /// <summary>
-    /// "What a sensible player does at camp": rest, repair, forge and equip better gear, learn a spell,
-    /// fill empty bar slots, keep potions stocked. Used by the balance simulation and the in-game
-    /// auto-manage helper; every step goes through the same services the screens call.
+    /// "What a sensible player does at camp": scrap worn-out gear, rest, repair, forge and equip better
+    /// gear (owned bag, then Forge, then the Merchant's Bargain shelf), learn a spell, fill empty bar
+    /// slots, keep potions stocked. Used by the balance simulation and the in-game auto-manage helper;
+    /// every step goes through the same services the screens call.
     /// </summary>
     public static class CampRoutine
     {
+        /// <summary>A Bargain offer below this fraction of max durability is skipped (GG-T54): the shelf's
+        /// §25.1 gamble (10-40% durability left, a real risk of shattering before it can be repaired) is a
+        /// deliberate player choice — an automated buyer can't judge that risk, so it only takes the safer
+        /// rolls of the range.</summary>
+        public const float MinSafeBargainDurabilityFraction = 0.25f;
+
         public static List<string> Run(ContentDb c, SaveData s)
         {
             var log = new List<string>();
             void Note(Result r) { if (r.Ok && r.Message != null) log.Add(r.Message); }
 
+            // Broken fragments (GG-T41) can't be equipped or repaired — only scrapped — so there's never a
+            // reason to let them sit in the bag; salvage every copy of every one.
+            foreach (var itemId in s.Broken.Keys.ToList())
+            {
+                Result r;
+                do { r = Crafting.SalvageBroken(c, s, itemId); Note(r); } while (r.Ok && s.BrokenCount(itemId) > 0);
+            }
+
+            // A repair that costs as much as the item is worth (GG-T42's "Salvage instead" offer) is a
+            // losing trade — scrap it for materials instead of pouring gold into a piece about to shatter anyway.
             foreach (var h in s.Roster)
             {
-                if (h.WeaponId != null) Note(Repair.RepairWeapon(c, s, h));
-                if (h.ArmorId != null) Note(Repair.RepairArmor(c, s, h));
+                if (h.WeaponId != null)
+                {
+                    var w = c.TryItem(h.WeaponId);
+                    if (w != null && Repair.IsUneconomical(w, h.WeaponDurability, h.WeaponRepairs, h.WeaponMastery)) Note(Crafting.SalvageEquipped(c, s, h, EquipmentSlot.Weapon));
+                    else Note(Repair.RepairWeapon(c, s, h));
+                }
+                if (h.ArmorId != null)
+                {
+                    var a = c.TryItem(h.ArmorId);
+                    if (a != null && Repair.IsUneconomical(a, h.ArmorDurability, h.ArmorRepairs, h.ArmorMastery)) Note(Crafting.SalvageEquipped(c, s, h, EquipmentSlot.Armor));
+                    else Note(Repair.RepairArmor(c, s, h));
+                }
             }
             if (Inn.Cost(c, s) > 0 && Inn.Cost(c, s) <= s.Gold) Note(Inn.Rest(c, s));
 
-            // Forge the best affordable upgrade for each party member's weapon and armor.
+            // The best affordable upgrade for each party member's weapon and armor: an owned bag copy
+            // first, then a Forge recipe, then the Merchant's Bargain shelf (skipping near-shatter rolls).
             foreach (var id in s.Party)
             {
                 var h = s.Hero(id);
@@ -39,6 +67,18 @@ namespace Gaiden.Meta
                             .OrderByDescending(r => MetaHeuristics.Score(c.Item(r.Result))).FirstOrDefault();
                         if (recipe != null && MetaHeuristics.Score(c.Item(recipe.Result)) > current) Note(Crafting.Craft(c, s, recipe));
                         owned = MetaHeuristics.BestFirst(Equipment.Candidates(c, s, slot)).FirstOrDefault();
+                    }
+                    if (owned == null || MetaHeuristics.Score(owned) <= current)
+                    {
+                        var bargain = Bargains.Shelf(c, s)
+                            .Where(o => Equipment.Fits(o.Item, slot) && o.Price <= s.Gold / 2 && o.Durability >= o.Item.Durability * MinSafeBargainDurabilityFraction)
+                            .OrderByDescending(o => MetaHeuristics.Score(o.Item)).FirstOrDefault();
+                        if (bargain != null && MetaHeuristics.Score(bargain.Item) > current)
+                        {
+                            var bought = Bargains.Buy(c, s, bargain.Item.Id);
+                            Note(bought);
+                            if (bought.Ok) owned = bargain.Item;
+                        }
                     }
                     if (owned != null && MetaHeuristics.Score(owned) > current) Note(Equipment.Equip(c, s, h, slot, owned.Id));
                 }

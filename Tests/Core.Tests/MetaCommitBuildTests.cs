@@ -362,5 +362,84 @@ namespace Gaiden.Tests
             Assert.True(s.Count("healing_potion_basic") >= 6);
             Assert.True(s.Count("mat_slime_gel") < 20, "reagents weren't spent — camp routine bought potions instead of brewing them");
         }
+
+        /// <summary>GG-T54: Broken fragments (GG-T41) can't be equipped or repaired, so a camp visit should
+        /// always scrap them for materials instead of letting them sit in the bag forever.</summary>
+        [Fact]
+        public void CampRoutine_salvages_broken_fragments_on_every_visit()
+        {
+            var c = Real; var s = Progression.NewGame(c, "CRBroken");
+            s.AddBroken("eq_sword_iron", 2);
+            CampRoutine.Run(c, s);
+            Assert.Equal(0, s.BrokenCount("eq_sword_iron"));
+            Assert.True(s.Count("mat_iron_ore") > 0 || s.Count("mat_wood_plank") > 0, "salvaging a Broken fragment should have yielded its materials");
+        }
+
+        /// <summary>GG-T54: once a repair costs as much as the piece is worth (GG-T42's "Salvage instead"
+        /// threshold), the camp routine should scrap it for materials rather than pour gold into a piece
+        /// that's about to shatter again anyway.</summary>
+        [Fact]
+        public void CampRoutine_salvages_an_equipped_piece_instead_of_an_uneconomical_repair()
+        {
+            var c = Real; var s = Progression.NewGame(c, "CRSalvageEquip");
+            var h = s.Hero(s.Party[0]);
+            h.WeaponId = "eq_sword_iron";
+            h.WeaponDurability = 0;
+            h.WeaponRepairs = 5; // repair cost grows 1.6x per prior repair — comfortably past the BaseCost ceiling here
+            s.Gold = 100000;
+            var log = CampRoutine.Run(c, s);
+            Assert.Contains(log, m => m.Contains("Salvaged") && m.Contains("Iron Sword"));
+            Assert.DoesNotContain(log, m => m.Contains("Repaired Iron Sword"));
+        }
+
+        /// <summary>GG-T54 (owner direction): the Bargain shelf's cheap gear is a deliberate player gamble
+        /// (10-40% durability left, real risk of shattering before it can be repaired) — an automated buyer
+        /// can't judge that risk, so it must never take an offer below the safety threshold.</summary>
+        [Fact]
+        public void CampRoutine_never_buys_a_bargain_offer_too_close_to_shattering()
+        {
+            var c = Real;
+            BargainOffer risky = null;
+            int riskyRotation = -1;
+            for (int rot = 0; rot < 500 && risky == null; rot++)
+            {
+                var probe = new SaveData { BargainRotation = rot };
+                var offer = Bargains.Shelf(c, probe).FirstOrDefault(o => o.Durability < o.Item.Durability * CampRoutine.MinSafeBargainDurabilityFraction);
+                if (offer != null) { risky = offer; riskyRotation = rot; }
+            }
+            Assert.True(risky != null, "expected at least one near-shatter offer within 500 rotations");
+
+            var s = Progression.NewGame(c, "CRBargainRisky");
+            s.BargainRotation = riskyRotation;
+            s.Gold = 100000;
+            foreach (var h in s.Roster) { h.WeaponId = null; h.ArmorId = null; }
+            CampRoutine.Run(c, s);
+            Assert.Equal(0, s.Count(risky.Item.Id));
+        }
+
+        /// <summary>GG-T54: a Bargain offer at or above the safety threshold is still a legitimate cheap
+        /// upgrade the camp routine should take for an empty slot.</summary>
+        [Fact]
+        public void CampRoutine_buys_a_safe_bargain_offer_for_an_empty_slot()
+        {
+            var c = Real;
+            BargainOffer safe = null;
+            int safeRotation = -1;
+            for (int rot = 0; rot < 500 && safe == null; rot++)
+            {
+                var probe = new SaveData { BargainRotation = rot };
+                var offer = Bargains.Shelf(c, probe).FirstOrDefault(o => o.Item.Slot == EquipmentSlot.Weapon && o.Durability >= o.Item.Durability * CampRoutine.MinSafeBargainDurabilityFraction);
+                if (offer != null) { safe = offer; safeRotation = rot; }
+            }
+            Assert.True(safe != null, "expected at least one safe weapon offer within 500 rotations");
+
+            var s = Progression.NewGame(c, "CRBargainSafe");
+            s.BargainRotation = safeRotation;
+            s.Gold = 100000;
+            foreach (var h in s.Roster) h.WeaponId = null;
+            CampRoutine.Run(c, s);
+            var hero = s.Hero(s.Party[0]);
+            Assert.NotNull(hero.WeaponId);
+        }
     }
 }
