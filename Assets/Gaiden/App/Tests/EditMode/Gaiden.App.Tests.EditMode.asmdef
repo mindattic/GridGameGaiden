@@ -1,0 +1,27 @@
+{
+    "name": "Gaiden.App.Tests.EditMode",
+    "rootNamespace": "Gaiden.App.Tests",
+    "references": [
+        "Gaiden.Core",
+        "Gaiden.Meta",
+        "Gaiden.App",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Newtonsoft.Json.dll",
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
