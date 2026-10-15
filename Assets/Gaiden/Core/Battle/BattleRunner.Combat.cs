@@ -389,6 +389,7 @@ namespace Gaiden.Core.Battle
             }
             Emit(new ArmorBrokenEvent { UnitId = hero.Id, ArmorId = hero.ArmorId });
             Announce("Armor broken!", hero.Id);
+            RecordBroken(S.Results.BrokenArmors, hero.Def.Id, hero.ArmorId);
             hero.ArmorId = null;
         }
 
@@ -405,9 +406,18 @@ namespace Gaiden.Core.Battle
             var weapon = C.TryItem(hero.WeaponId);
             Emit(new WeaponShatteredEvent { UnitId = hero.Id, WeaponId = hero.WeaponId, SelfDamage = self });
             if (weapon != null) hero.GearStats = hero.GearStats + weapon.Stats * -1f;
+            RecordBroken(S.Results.BrokenWeapons, hero.Def.Id, hero.WeaponId);
             hero.WeaponId = null;
             hero.WeaponPower = 0f;
             Damage(hero, self, null, HitKind.Normal, DamageType.Physical, "Shatter!");
+        }
+
+        /// <summary>Appends a shattered/broken item id to this hero's list, so <c>BattleFactory.Commit</c>
+        /// can turn it into a Broken fragment even if a bar backup is auto-equipped afterward (GG-T41).</summary>
+        private static void RecordBroken(Dictionary<string, List<string>> map, string heroId, string itemId)
+        {
+            if (!map.TryGetValue(heroId, out var list)) map[heroId] = list = new List<string>();
+            list.Add(itemId);
         }
 
         // ─────────────────────────────────────────────────────────────────────────────

@@ -66,8 +66,21 @@ namespace Gaiden.Core.Battle
         /// <summary>Hero class → weapon equipped at the end (after bar swaps), and what the bar slot then held.</summary>
         public Dictionary<string, string> FinalWeapon = new Dictionary<string, string>();
         public Dictionary<string, List<string>> FinalBar = new Dictionary<string, List<string>>();
+        /// <summary>Hero class → weapon item ids that shattered during this battle, kept even if a bar
+        /// backup was later auto-equipped — so Commit turns each into a Broken fragment instead of
+        /// discarding it or handing it back to the bag whole (GG-T41).</summary>
+        public Dictionary<string, List<string>> BrokenWeapons = new Dictionary<string, List<string>>();
+        /// <summary>Hero class → armor item ids that broke during this battle (GG-T41).</summary>
+        public Dictionary<string, List<string>> BrokenArmors = new Dictionary<string, List<string>>();
         public int ActionsTaken;
         public int TicksElapsed;
+
+        private static Dictionary<string, List<string>> CloneListMap(Dictionary<string, List<string>> map)
+        {
+            var copy = new Dictionary<string, List<string>>();
+            foreach (var kv in map) copy[kv.Key] = new List<string>(kv.Value);
+            return copy;
+        }
 
         public BattleResults Clone()
         {
@@ -83,6 +96,8 @@ namespace Gaiden.Core.Battle
                 ArmorDurability = new Dictionary<string, int>(ArmorDurability),
                 FinalWeapon = new Dictionary<string, string>(FinalWeapon),
                 FinalBar = new Dictionary<string, List<string>>(FinalBar),
+                BrokenWeapons = CloneListMap(BrokenWeapons),
+                BrokenArmors = CloneListMap(BrokenArmors),
             };
         }
     }

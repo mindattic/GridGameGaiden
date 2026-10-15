@@ -299,6 +299,22 @@ namespace Gaiden.Tests
             Assert.Null(Hero(s, "knight").WeaponId);
         }
 
+        [Fact] // GG-T41
+        public void A_shattered_weapon_is_recorded_in_results_so_commit_can_turn_it_into_a_broken_fragment()
+        {
+            var db = Mini();
+            var stage = Stage(("tank", 2, 3));
+            var setup = new BattleSetup { Stage = stage, Seed = 3, UnlockedSlots = 2 };
+            setup.Party.Add(new HeroSpec { ClassId = "knight", Start = new Coord(1, 3), WeaponId = "sword", WeaponDurability = 2 });
+            setup.Party.Add(new HeroSpec { ClassId = "cleric", Start = new Coord(3, 4) });
+            var s = BattleEngine.Create(db, setup, new());
+            var cleric = Hero(s, "cleric");
+            for (int i = 0; i < 4; i++)
+                BattleEngine.Apply(s, new MoveCommand { HeroId = cleric.Id, Path = cleric.Pos.Y == 4 ? P((3, 3)) : P((3, 4)) });
+            Assert.True(s.Results.BrokenWeapons.TryGetValue("knight", out var broken));
+            Assert.Contains("sword", broken);
+        }
+
         [Fact] // GG-T40
         public void Shattered_weapon_auto_equips_the_bar_backup_on_the_hero_s_next_action()
         {

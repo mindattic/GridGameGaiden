@@ -343,10 +343,12 @@ namespace Gaiden.Meta
                     if (after > before) rep.LevelUps.Add((h.ClassId, before, after));
                     // Wounds carry; a hero who fell revives at 1 HP; a level-up refreshes to full.
                     h.Hp = after > before ? 0 : (u.Alive ? (u.Hp >= u.MaxHp ? 0 : u.Hp) : 1);
+                    r.BrokenWeapons.TryGetValue(u.Def.Id, out var shatteredWeapons);
                     if (r.FinalWeapon.TryGetValue(u.Def.Id, out var finalWeapon) && finalWeapon != h.WeaponId && finalWeapon != null)
                     {
-                        // A bar swap: the old weapon goes back to the bag, the new one leaves it.
-                        if (h.WeaponId != null) s.AddItem(h.WeaponId, 1);
+                        // A bar swap: the old weapon goes back to the bag, the new one leaves it — unless the
+                        // old one shattered first, in which case it already became a Broken fragment below (GG-T41).
+                        if (h.WeaponId != null && (shatteredWeapons == null || !shatteredWeapons.Contains(h.WeaponId))) s.AddItem(h.WeaponId, 1);
                         s.AddItem(finalWeapon, -1);
                         h.WeaponId = finalWeapon;
                         h.WeaponRepairs = 0;
@@ -365,6 +367,10 @@ namespace Gaiden.Meta
                         else if (adur >= 0 && h.ArmorId != null) h.ArmorDurability = adur;
                     }
                 }
+                // Shattered weapons and broken armor become salvage-only Broken fragments instead of
+                // vanishing outright (GG-T41) — can't be equipped or repaired, only scrapped for materials.
+                foreach (var list in r.BrokenWeapons.Values) foreach (var id in list) s.AddBroken(id, 1);
+                foreach (var list in r.BrokenArmors.Values) foreach (var id in list) s.AddBroken(id, 1);
 
                 int index = c.CampaignStages().FindIndex(x => x.Id == battle.Stage.Id);
                 rep.FirstClear = s.ClearedStages.Add(battle.Stage.Id);
@@ -829,6 +835,28 @@ namespace Gaiden.Meta
             foreach (var ic in yield) s.AddItem(ic.Item, ic.Count);
             StationProgress.Gain(s, StationKind.Blacksmith, SalvageXp);
             return Result.Success($"Salvaged {item.Name}");
+        }
+
+        /// <summary>Preview of what salvaging one Broken fragment of <paramref name="itemId"/> would yield
+        /// (durability 0 — the floor: 1 of the cheapest input) (GG-T41).</summary>
+        public static List<ItemCount> SalvageBrokenPreview(ContentDb c, string itemId)
+        {
+            var item = c.TryItem(itemId);
+            return item == null ? new List<ItemCount>() : SalvageYield(c, item, 0);
+        }
+
+        /// <summary>Scraps one Broken fragment of <paramref name="itemId"/> for materials — Broken pieces
+        /// can't be equipped or repaired, so salvage is their only use (GG-T41).</summary>
+        public static Result SalvageBroken(ContentDb c, SaveData s, string itemId)
+        {
+            var item = c.TryItem(itemId);
+            if (item == null || s.BrokenCount(itemId) < 1) return Result.Fail("Nothing to salvage");
+            var yield = SalvageYield(c, item, 0);
+            if (yield.Count == 0) return Result.Fail("Can't be salvaged");
+            s.AddBroken(itemId, -1);
+            foreach (var ic in yield) s.AddItem(ic.Item, ic.Count);
+            StationProgress.Gain(s, StationKind.Blacksmith, SalvageXp);
+            return Result.Success($"Salvaged Broken {item.Name}");
         }
     }
 

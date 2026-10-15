@@ -88,6 +88,7 @@ namespace Gaiden.App
     {
         private int tab;
         private ItemDef selected;
+        private bool selectedBroken;
         public override string Id => "items";
         protected override string Title => "Items";
         private static readonly string[] Tabs = { "All", "Items", "Gear", "Materials" };
@@ -101,22 +102,49 @@ namespace Gaiden.App
             var items = S.Inventory.Where(kv => kv.Value > 0).Select(kv => (item: C.TryItem(kv.Key), n: kv.Value)).Where(x => x.item != null)
                 .Where(x => tab == 0 || (tab == 1 && x.item.Type == ItemType.Consumable) || (tab == 2 && x.item.Type == ItemType.Equipment) || (tab == 3 && x.item.Type == ItemType.CraftingMaterial))
                 .OrderBy(x => x.item.Type).ThenByDescending(x => x.item.Rarity).ThenBy(x => x.item.Name).ToList();
+            // Broken gear fragments (GG-T41): shown alongside gear, but can't be equipped or repaired — salvage only.
+            var broken = (tab == 0 || tab == 2)
+                ? S.Broken.Where(kv => kv.Value > 0).Select(kv => (item: C.TryItem(kv.Key), n: kv.Value)).Where(x => x.item != null)
+                    .OrderByDescending(x => x.item.Rarity).ThenBy(x => x.item.Name).ToList()
+                : new List<(ItemDef item, int n)>();
             var detail = Ui.Window(null, body);
             detail.style.minHeight = 300;
-            if (items.Count == 0) Ui.Text("Nothing here yet. Win battles to find loot.", "small dim", list.contentContainer);
+            if (items.Count == 0 && broken.Count == 0) Ui.Text("Nothing here yet. Win battles to find loot.", "small dim", list.contentContainer);
             foreach (var (item, n) in items)
             {
                 var it = item;
-                var row = ItemUi.Row(it, $"×{n}", () => { selected = it; ShowDetail(detail, it); }, list.contentContainer);
-                if (selected == it) Ui.Select(row);
+                var row = ItemUi.Row(it, $"×{n}", () => { selected = it; selectedBroken = false; ShowDetail(detail, it, false); }, list.contentContainer);
+                if (selected == it && !selectedBroken) Ui.Select(row);
             }
-            ShowDetail(detail, selected ?? items.Select(x => x.item).FirstOrDefault());
-            if (selected == null && list.contentContainer.childCount > 0 && items.Count > 0) Ui.Select(list.contentContainer[0]);
+            foreach (var (item, n) in broken)
+            {
+                var it = item;
+                var row = Ui.MenuRow($"Broken {it.Name}", $"×{n}", () => { selected = it; selectedBroken = true; ShowDetail(detail, it, true); }, list.contentContainer, Art.ItemIcon(it.Id));
+                row.Q<Label>("label").AddToClassList("dim");
+                if (selected == it && selectedBroken) Ui.Select(row);
+            }
+            var fallback = selected;
+            bool fallbackBroken = selectedBroken;
+            if (fallback == null)
+            {
+                fallback = items.Select(x => x.item).FirstOrDefault();
+                fallbackBroken = false;
+                if (fallback == null) { fallback = broken.Select(x => x.item).FirstOrDefault(); fallbackBroken = fallback != null; }
+            }
+            ShowDetail(detail, fallback, fallbackBroken);
+            if (selected == null && list.contentContainer.childCount > 0 && (items.Count > 0 || broken.Count > 0)) Ui.Select(list.contentContainer[0]);
         }
 
-        private void ShowDetail(VisualElement detail, ItemDef it)
+        private void ShowDetail(VisualElement detail, ItemDef it, bool broken)
         {
             ItemUi.Detail(detail, it);
+            if (broken)
+            {
+                var note = Ui.Text("Broken. Can't be equipped or repaired — salvage it at the Blacksmith for materials.", "small bad", detail);
+                note.style.whiteSpace = WhiteSpace.Normal;
+                note.style.marginTop = 10;
+                return;
+            }
             if (it != null && it.Type == ItemType.RecipeScroll)
             {
                 var learnRow = Ui.El("row", detail);
@@ -634,14 +662,24 @@ namespace Gaiden.App
         private void SalvageList(VisualElement list, VisualElement detail)
         {
             var gear = S.Inventory.Where(kv => kv.Value > 0).Select(kv => C.TryItem(kv.Key)).Where(i => i != null && i.Type == ItemType.Equipment).ToList();
-            if (gear.Count == 0) Ui.Text("No spare gear in your bag.", "small dim", list);
-            Ui.Text("Break spare gear into materials — worn gear yields less; the worst copy goes first.", "small dim", detail).style.whiteSpace = WhiteSpace.Normal;
+            var broken = S.Broken.Where(kv => kv.Value > 0).Select(kv => C.TryItem(kv.Key)).Where(i => i != null).ToList();
+            if (gear.Count == 0 && broken.Count == 0) Ui.Text("No spare gear in your bag.", "small dim", list);
+            Ui.Text("Break spare gear into materials — worn gear yields less; the worst copy goes first. Broken gear can only be salvaged (GG-T41).", "small dim", detail).style.whiteSpace = WhiteSpace.Normal;
             foreach (var it in gear)
             {
                 var item = it;
                 var yield = Crafting.SalvagePreview(C, S, item.Id);
                 string y = yield.Count == 0 ? "—" : string.Join(", ", yield.Select(ic => $"{C.TryItem(ic.Item)?.Name}×{ic.Count}"));
                 ItemUi.Row(item, $"×{S.Count(item.Id)}", () => Confirm.Show($"Salvage {item.Name} into {y}?", "Salvage", () => Done(Crafting.Salvage(C, S, item.Id))), list, yield.Count > 0);
+            }
+            foreach (var it in broken)
+            {
+                var item = it;
+                var yield = Crafting.SalvageBrokenPreview(C, item.Id);
+                string y = yield.Count == 0 ? "—" : string.Join(", ", yield.Select(ic => $"{C.TryItem(ic.Item)?.Name}×{ic.Count}"));
+                var row = Ui.MenuRow($"Broken {item.Name}", $"×{S.BrokenCount(item.Id)}",
+                    () => Confirm.Show($"Salvage Broken {item.Name} into {y}?", "Salvage", () => Done(Crafting.SalvageBroken(C, S, item.Id))), list, Art.ItemIcon(item.Id), yield.Count > 0);
+                row.Q<Label>("label").AddToClassList("dim");
             }
         }
 

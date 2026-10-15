@@ -53,6 +53,9 @@ namespace Gaiden.Meta
         public HashSet<string> DiscoveredRecipes = new HashSet<string>();
         /// <summary>Spare equipment that has been used: item id → its worn copies (per-instance durability, US-246).</summary>
         public Dictionary<string, List<WornGear>> Worn = new Dictionary<string, List<WornGear>>();
+        /// <summary>Shattered/broken gear kept as salvage fodder instead of lost outright: item id → count of
+        /// Broken copies. Broken pieces can't be equipped or repaired — only scrapped at the Blacksmith (GG-T41).</summary>
+        public Dictionary<string, int> Broken = new Dictionary<string, int>();
         /// <summary>Advances once per finished battle; seeds the Merchant's "Used / Bargain" shelf so it
         /// turns over on every return to camp but replays identically from the same save (GG-T38).</summary>
         public int BargainRotation;
@@ -82,6 +85,15 @@ namespace Gaiden.Meta
                 while (worn.Count > Count(itemId)) worn.RemoveAt(worn.Count - 1);
                 if (worn.Count == 0) Worn.Remove(itemId);
             }
+        }
+
+        public int BrokenCount(string itemId) => itemId != null && Broken.TryGetValue(itemId, out var n) ? n : 0;
+
+        public void AddBroken(string itemId, int n)
+        {
+            if (itemId == null || n == 0) return;
+            int v = BrokenCount(itemId) + n;
+            if (v <= 0) Broken.Remove(itemId); else Broken[itemId] = v;
         }
     }
 
@@ -178,6 +190,7 @@ namespace Gaiden.Meta
             // v1 is the first shape; future steps go here: if (s.Version == 1) { ...; s.Version = 2; }
             s.Bounty ??= new BountySave();
             s.Worn ??= new Dictionary<string, List<WornGear>>();
+            s.Broken ??= new Dictionary<string, int>();
             s.Settings ??= new SettingsSave();
             s.StationXp ??= new Dictionary<string, int>();
             s.DiscoveredRecipes ??= new HashSet<string>();

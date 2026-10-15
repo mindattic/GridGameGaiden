@@ -91,6 +91,93 @@ namespace Gaiden.Tests
             Assert.Equal(0, hero.ArmorRepairs);
         }
 
+        [Fact] // GG-T41
+        public void A_shattered_weapon_becomes_a_broken_fragment_instead_of_vanishing()
+        {
+            var c = Real; var s = Progression.NewGame(c, "BW");
+            var hero = s.Hero(s.Party[0]);
+            var weapon = c.Items.Values.First(i => i.Slot == EquipmentSlot.Weapon && i.Durability > 0);
+            hero.WeaponId = weapon.Id;
+            hero.WeaponDurability = weapon.Durability;
+
+            var st = DirectWin(c, s, c.CampaignStages()[0].Id);
+            var unit = st.Units.First(u => u.IsHero && u.Def.Id == hero.ClassId);
+            unit.WeaponId = null; // shattered mid-battle
+            st.Results.WeaponDurability[hero.ClassId] = -1;
+            st.Results.BrokenWeapons[hero.ClassId] = new List<string> { weapon.Id };
+            BattleFactory.Commit(c, s, st);
+
+            Assert.Null(hero.WeaponId);
+            Assert.Equal(0, s.Count(weapon.Id)); // not a whole item back in the bag
+            Assert.Equal(1, s.BrokenCount(weapon.Id));
+        }
+
+        [Fact] // GG-T41
+        public void A_shattered_armor_becomes_a_broken_fragment_instead_of_vanishing()
+        {
+            var c = Real; var s = Progression.NewGame(c, "BA");
+            var hero = s.Hero(s.Party[0]);
+            var armor = c.Items.Values.First(i => i.Slot == EquipmentSlot.Armor && i.Durability > 0);
+            hero.ArmorId = armor.Id;
+            hero.ArmorDurability = armor.Durability;
+
+            var st = DirectWin(c, s, c.CampaignStages()[0].Id);
+            var unit = st.Units.First(u => u.IsHero && u.Def.Id == hero.ClassId);
+            unit.ArmorId = null; // broke mid-battle
+            st.Results.ArmorDurability[hero.ClassId] = -1;
+            st.Results.BrokenArmors[hero.ClassId] = new List<string> { armor.Id };
+            BattleFactory.Commit(c, s, st);
+
+            Assert.Null(hero.ArmorId);
+            Assert.Equal(0, s.Count(armor.Id));
+            Assert.Equal(1, s.BrokenCount(armor.Id));
+        }
+
+        [Fact] // GG-T41
+        public void A_weapon_that_shattered_and_had_a_bar_backup_auto_equipped_does_not_also_return_whole_to_the_bag()
+        {
+            var c = Real; var s = Progression.NewGame(c, "SW");
+            var hero = s.Hero(s.Party[0]);
+            var weapons = c.Items.Values.Where(i => i.Slot == EquipmentSlot.Weapon && i.Type == ItemType.Equipment && i.Durability > 0).Take(2).ToList();
+            var oldWeapon = weapons[0];
+            var backup = weapons[1];
+            hero.WeaponId = oldWeapon.Id;
+            hero.WeaponDurability = oldWeapon.Durability;
+            s.AddItem(backup.Id, 1);
+
+            var st = DirectWin(c, s, c.CampaignStages()[0].Id);
+            // oldWeapon shattered mid-battle and the bar backup auto-equipped in its place.
+            st.Results.BrokenWeapons[hero.ClassId] = new List<string> { oldWeapon.Id };
+            st.Results.FinalWeapon[hero.ClassId] = backup.Id;
+            st.Results.WeaponDurability[hero.ClassId] = backup.Durability;
+            BattleFactory.Commit(c, s, st);
+
+            Assert.Equal(backup.Id, hero.WeaponId);
+            Assert.Equal(0, s.Count(oldWeapon.Id)); // the shattered one never returns to the bag whole
+            Assert.Equal(1, s.BrokenCount(oldWeapon.Id));
+            Assert.Equal(0, s.Count(backup.Id)); // the backup left the bag onto the hero
+        }
+
+        [Fact] // GG-T41
+        public void Broken_fragments_cannot_be_equipped_and_salvaging_one_grants_materials_and_blacksmith_xp()
+        {
+            var c = Real; var s = Progression.NewGame(c, "SB2");
+            var weapon = c.Items.Values.First(i => i.Slot == EquipmentSlot.Weapon && i.Durability > 0);
+            s.AddBroken(weapon.Id, 1);
+
+            // A Broken fragment never shows up as an equip candidate — it was never added to Inventory.
+            var hero = s.Hero(s.Party[0]);
+            Assert.Equal(0, s.Count(weapon.Id));
+            Assert.DoesNotContain(weapon, Equipment.Candidates(c, s, EquipmentSlot.Weapon));
+
+            var res = Crafting.SalvageBroken(c, s, weapon.Id);
+            Assert.True(res.Ok, res.Message);
+            Assert.Equal(0, s.BrokenCount(weapon.Id));
+            Assert.Equal(Crafting.SalvageXp, StationProgress.Xp(s, StationKind.Blacksmith));
+
+            Assert.False(Crafting.SalvageBroken(c, s, weapon.Id).Ok); // nothing left to salvage
+        }
+
         // ── Commit: XP, HP, progression ──
 
         [Fact]
