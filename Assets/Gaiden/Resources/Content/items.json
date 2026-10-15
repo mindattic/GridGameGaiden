@@ -147,7 +147,7 @@
     "BattleStartManaOrbs": 0,
     "OnUseAbility": null,
     "Resistances": {},
-    "SoldByVendor": false,
+    "SoldByVendor": true,
     "Icon": null
   },
   {
@@ -158,7 +158,7 @@
     "Rarity": "Rare",
     "Slot": "None",
     "WeaponType": null,
-    "BaseCost": 250,
+    "BaseCost": 500,
     "SellValue": -1,
     "MaxStack": 5,
     "Durability": 0,
@@ -177,7 +177,7 @@
     "BattleStartManaOrbs": 0,
     "OnUseAbility": null,
     "Resistances": {},
-    "SoldByVendor": false,
+    "SoldByVendor": true,
     "Icon": null
   },
   {
@@ -250,7 +250,7 @@
     "Rarity": "Rare",
     "Slot": "None",
     "WeaponType": null,
-    "BaseCost": 300,
+    "BaseCost": 450,
     "SellValue": -1,
     "MaxStack": 5,
     "Durability": 0,
@@ -269,7 +269,7 @@
     "BattleStartManaOrbs": 0,
     "OnUseAbility": null,
     "Resistances": {},
-    "SoldByVendor": false,
+    "SoldByVendor": true,
     "Icon": null,
     "Revives": true
   },
@@ -300,7 +300,7 @@
     "BattleStartManaOrbs": 0,
     "OnUseAbility": null,
     "Resistances": {},
-    "SoldByVendor": false,
+    "SoldByVendor": true,
     "Icon": null,
     "CuresBuff": "poisoned"
   },
@@ -331,7 +331,7 @@
     "BattleStartManaOrbs": 0,
     "OnUseAbility": null,
     "Resistances": {},
-    "SoldByVendor": false,
+    "SoldByVendor": true,
     "Icon": null,
     "CuresBuff": "blinded"
   },
@@ -343,7 +343,7 @@
     "Rarity": "Uncommon",
     "Slot": "None",
     "WeaponType": null,
-    "BaseCost": 150,
+    "BaseCost": 250,
     "SellValue": -1,
     "MaxStack": 5,
     "Durability": 0,
@@ -362,7 +362,7 @@
     "BattleStartManaOrbs": 0,
     "OnUseAbility": null,
     "Resistances": {},
-    "SoldByVendor": false,
+    "SoldByVendor": true,
     "Icon": null,
     "CuresAll": true
   },
@@ -405,7 +405,7 @@
     "Rarity": "Uncommon",
     "Slot": "None",
     "WeaponType": null,
-    "BaseCost": 200,
+    "BaseCost": 300,
     "SellValue": -1,
     "MaxStack": 3,
     "Durability": 0,
@@ -424,7 +424,7 @@
     "BattleStartManaOrbs": 0,
     "OnUseAbility": null,
     "Resistances": {},
-    "SoldByVendor": false,
+    "SoldByVendor": true,
     "Icon": null,
     "OutOfBattleOnly": true
   },

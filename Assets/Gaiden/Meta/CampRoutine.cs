@@ -60,10 +60,18 @@ namespace Gaiden.Meta
                 }
             }
 
-            // Keep a potion stock.
+            // Keep a potion stock — brewing it (reagents from field drops) undercuts the shop price
+            // (GG-T44), so brew first and only fall back to buying once the reagents run dry.
             var potion = c.TryItem("healing_potion_basic");
-            if (potion != null && s.Count(potion.Id) < 6 && s.Gold >= potion.BaseCost * 3)
-                Note(Shop.Buy(c, s, new Dictionary<string, int> { [potion.Id] = System.Math.Min(3, Shop.MaxBuy(s, potion)) }));
+            var brew = c.Recipes.Values.FirstOrDefault(r => r.Station == CraftStation.Alchemy && r.Result == "healing_potion_basic");
+            while (potion != null && s.Count(potion.Id) < 6)
+            {
+                if (brew != null && Crafting.IsUnlocked(s, brew) && Crafting.HasInputs(s, brew) && s.Gold >= brew.Gold)
+                    Note(Crafting.Craft(c, s, brew));
+                else if (s.Gold >= potion.BaseCost * 3)
+                    Note(Shop.Buy(c, s, new Dictionary<string, int> { [potion.Id] = System.Math.Min(3, Shop.MaxBuy(s, potion)) }));
+                else break;
+            }
             return log;
         }
     }

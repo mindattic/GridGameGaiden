@@ -330,5 +330,19 @@ namespace Gaiden.Tests
                 s.Gold += 37; // trickle gold in between runs to reach different affordability thresholds
             }
         }
+
+        /// <summary>GG-T44: with reagents in the bag, restocking potions should brew them (cheap, from
+        /// drops) instead of buying from the Merchant at full shop price.</summary>
+        [Fact]
+        public void CampRoutine_brews_potions_instead_of_buying_when_it_has_the_reagents()
+        {
+            var c = Real; var s = Progression.NewGame(c, "CRBrew");
+            s.Inventory.Remove("healing_potion_basic");
+            s.Gold = 5000;
+            s.AddItem("mat_slime_gel", 20); // enough reagents to brew every potion needed, never enough to need to buy
+            CampRoutine.Run(c, s);
+            Assert.True(s.Count("healing_potion_basic") >= 6);
+            Assert.True(s.Count("mat_slime_gel") < 20, "reagents weren't spent — camp routine bought potions instead of brewing them");
+        }
     }
 }

@@ -371,3 +371,19 @@ updated: 2026-10-09
   discovered by definition and a scroll-taught recipe ahead of its tier already fails the existing tier gate.
   Three scrolls ship in content (`scroll_recipe_sword_tempering`, `scroll_recipe_holy_water`,
   `scroll_recipe_holy_enchant`) as rare drops off `goblinthug00`/`ghost`/`demonlord`.
+
+## 2026-10-15 — Brew instead of buy (GG-T44)
+
+- "every healing/cure consumable the Merchant/Alchemist sells gets an Alchemy recipe made purely from field drops,
+  and the brewed version is meaningfully cheaper than buying." Every Alchemy brew already existed for these items
+  (§24.6) — the gap was that only Healing Potion was `SoldByVendor`. Hi-Potion, X-Potion, Phoenix Down, Antidote,
+  Eye Drops, Remedy and Tent are now sold too (§25.1), so there's an actual convenient-vs-efficient choice instead
+  of brew-or-nothing.
+- "raise shop potion prices … so gathering and mixing your own is the efficient path while buying stays the
+  convenient one." Shop prices for X-Potion (250→500), Phoenix Down (300→450), Remedy (150→250) and Tent (200→300)
+  rose so every one of the eight brews before per-unit gold cost sits at 2.5–5× cheaper than its shop price;
+  Hi-Potion/Antidote/Eye Drops/Healing Potion already cleared that bar unchanged. Recipe gold costs, tiers and
+  reagents (§24.6.1) were left untouched. *(Test:
+  `Every_sold_healing_or_cure_potion_is_meaningfully_cheaper_brewed_than_bought`.)*
+- `CampRoutine`'s potion restock now brews the Healing Potion recipe before buying, falling back to the Merchant
+  only once reagents run out (§25.3.3). *(Test: `CampRoutine_brews_potions_instead_of_buying_when_it_has_the_reagents`.)*

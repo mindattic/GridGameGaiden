@@ -167,6 +167,27 @@ namespace Gaiden.Tests
             }
         }
 
+        /// <summary>GG-T44: every healing/cure consumable the Merchant sells must also be brewable at
+        /// the Alchemist, and brewing it (gold only — its reagents come from field drops) must cost
+        /// meaningfully less per unit than just buying it, so gathering-and-mixing stays the efficient
+        /// path while the shop stays the convenient one.</summary>
+        [Fact]
+        public void Every_sold_healing_or_cure_potion_is_meaningfully_cheaper_brewed_than_bought()
+        {
+            var c = Real;
+            bool IsHealingOrCure(ItemDef i) => i.Type == ItemType.Consumable && (i.BaseHealing > 0 || i.CuresBuff != null || i.CuresAll || i.Revives);
+            var potions = c.Items.Values.Where(i => i.SoldByVendor && IsHealingOrCure(i)).ToList();
+            Assert.NotEmpty(potions);
+            foreach (var potion in potions)
+            {
+                var recipe = c.Recipes.Values.FirstOrDefault(r => r.Station == CraftStation.Alchemy && r.Result == potion.Id);
+                Assert.True(recipe != null, $"{potion.Id}: sold by the Merchant but has no Alchemy recipe");
+                float brewCostPerUnit = (float)recipe.Gold / recipe.ResultCount;
+                Assert.True(brewCostPerUnit < potion.BaseCost * 0.6f,
+                    $"{potion.Id}: brewing ({brewCostPerUnit}g/unit) isn't meaningfully cheaper than buying ({potion.BaseCost}g)");
+            }
+        }
+
         [Fact]
         public void Every_class_can_be_instantiated_and_has_art_reference()
         {
