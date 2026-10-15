@@ -540,6 +540,60 @@ namespace Gaiden.Tests
             foreach (var ic in recipe.Inputs) Assert.Equal(Math.Max(1, ic.Count / 2), save.Count(ic.Item));
         }
 
+        [Fact] // GG-T42
+        public void Every_equipment_item_has_a_salvage_yield_via_recipe_or_fallback_table()
+        {
+            var c = Real;
+            foreach (var item in c.Items.Values.Where(i => i.Type == ItemType.Equipment))
+            {
+                var yield = Crafting.SalvageYield(c, item, item.Durability > 0 ? item.Durability : 0);
+                Assert.True(yield.Count > 0, $"{item.Id} ({item.Slot}/{item.Rarity}) has no salvage yield");
+            }
+        }
+
+        [Fact] // GG-T42
+        public void Salvage_of_equipment_without_a_recipe_uses_the_type_and_rarity_fallback_table()
+        {
+            var c = Real;
+            var item = c.Item("eq_sword_rusty");
+            Assert.Null(Crafting.Recipes(c, CraftStation.Forge).FirstOrDefault(r => r.Result == item.Id && r.BaseItem == null));
+            var save = new SaveData();
+            save.AddItem(item.Id, 1);
+            Assert.True(Crafting.Salvage(c, save, item.Id).Ok);
+            Assert.Equal(2, save.Count("mat_iron_ore"));
+            Assert.Equal(1, save.Count("mat_wood_plank"));
+        }
+
+        [Fact] // GG-T42
+        public void Salvage_yield_scales_down_with_remaining_durability_but_keeps_at_least_one_of_the_cheapest_input()
+        {
+            var c = Real;
+            var item = c.Item("eq_sword_rusty");
+            var full = Crafting.SalvageYield(c, item, item.Durability);
+            Assert.Equal(2, full.First(i => i.Item == "mat_iron_ore").Count);
+            var nearDead = Crafting.SalvageYield(c, item, 1);
+            Assert.Equal(1, nearDead.Sum(i => i.Count));
+            Assert.Equal("mat_wood_plank", Assert.Single(nearDead).Item);
+        }
+
+        [Fact] // GG-T42
+        public void SalvageEquipped_clears_the_heros_slot_and_grants_durability_scaled_materials_instead_of_returning_it()
+        {
+            var c = Real;
+            var s = Progression.NewGame(c, "T");
+            var hero = s.Hero(s.Party[0]);
+            var item = c.Item("eq_sword_rusty");
+            s.AddItem(item.Id, 1);
+            Assert.True(Equipment.Equip(c, s, hero, EquipmentSlot.Weapon, item.Id).Ok);
+            hero.WeaponDurability = 1;
+            var result = Crafting.SalvageEquipped(c, s, hero, EquipmentSlot.Weapon);
+            Assert.True(result.Ok, result.Message);
+            Assert.Null(hero.WeaponId);
+            Assert.Equal(0, hero.WeaponDurability);
+            Assert.Equal(1, s.Count("mat_wood_plank"));
+            Assert.Equal(0, s.Count(item.Id));
+        }
+
         [Fact] // US-230 / US-246
         public void Unequipped_gear_remembers_its_wear_and_fresh_copies_are_used_first()
         {

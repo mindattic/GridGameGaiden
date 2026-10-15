@@ -592,11 +592,11 @@ namespace Gaiden.App
         {
             var gear = S.Inventory.Where(kv => kv.Value > 0).Select(kv => C.TryItem(kv.Key)).Where(i => i != null && i.Type == ItemType.Equipment).ToList();
             if (gear.Count == 0) Ui.Text("No spare gear in your bag.", "small dim", list);
-            Ui.Text("Break spare gear into half its materials.", "small dim", detail);
+            Ui.Text("Break spare gear into materials — worn gear yields less; the worst copy goes first.", "small dim", detail).style.whiteSpace = WhiteSpace.Normal;
             foreach (var it in gear)
             {
                 var item = it;
-                var yield = Crafting.SalvageYield(C, it);
+                var yield = Crafting.SalvagePreview(C, S, item.Id);
                 string y = yield.Count == 0 ? "—" : string.Join(", ", yield.Select(ic => $"{C.TryItem(ic.Item)?.Name}×{ic.Count}"));
                 ItemUi.Row(item, $"×{S.Count(item.Id)}", () => Confirm.Show($"Salvage {item.Name} into {y}?", "Salvage", () => Done(Crafting.Salvage(C, S, item.Id))), list, yield.Count > 0);
             }
@@ -604,7 +604,7 @@ namespace Gaiden.App
 
         private void RepairList(VisualElement list, VisualElement detail)
         {
-            Ui.Text("Each repair lowers the piece's max durability by 1, and costs more every time.", "small dim", detail).style.whiteSpace = WhiteSpace.Normal;
+            Ui.Text("Each repair lowers the piece's max durability by 1, and costs more every time. An uneconomical repair offers salvage instead.", "small dim", detail).style.whiteSpace = WhiteSpace.Normal;
             bool any = false;
             foreach (var h in S.Roster)
             {
@@ -614,20 +614,38 @@ namespace Gaiden.App
                 {
                     any = true;
                     int cost = Repair.Cost(C, S, w, h.WeaponDurability, h.WeaponRepairs);
+                    bool bad = cost > 0 && Repair.IsUneconomical(w, h.WeaponDurability, h.WeaponRepairs);
                     var row = Ui.MenuRow($"{C.Class(h.ClassId).Name} — {w.Name}  {h.WeaponDurability}/{Repair.EffectiveMax(w, h.WeaponRepairs)}", cost > 0 ? Ui.Gold(cost) : "OK",
                         () => Done(Repair.RepairWeapon(C, S, hero)), list, null, cost > 0);
-                    if (cost > 0 && Repair.IsUneconomical(w, h.WeaponDurability, h.WeaponRepairs)) row.Q<Label>("value").AddToClassList("warn");
+                    if (bad) row.Q<Label>("value").AddToClassList("warn");
+                    if (bad) SalvageInsteadRow(list, hero, EquipmentSlot.Weapon, w, h.WeaponDurability, cost);
                 }
                 var a = C.TryItem(h.ArmorId);
                 if (a != null && a.Durability > 0)
                 {
                     any = true;
                     int cost = Repair.Cost(C, S, a, h.ArmorDurability, h.ArmorRepairs);
-                    Ui.MenuRow($"{C.Class(h.ClassId).Name} — {a.Name}  {h.ArmorDurability}/{Repair.EffectiveMax(a, h.ArmorRepairs)}", cost > 0 ? Ui.Gold(cost) : "OK",
+                    bool bad = cost > 0 && Repair.IsUneconomical(a, h.ArmorDurability, h.ArmorRepairs);
+                    var row = Ui.MenuRow($"{C.Class(h.ClassId).Name} — {a.Name}  {h.ArmorDurability}/{Repair.EffectiveMax(a, h.ArmorRepairs)}", cost > 0 ? Ui.Gold(cost) : "OK",
                         () => Done(Repair.RepairArmor(C, S, hero)), list, null, cost > 0);
+                    if (bad) row.Q<Label>("value").AddToClassList("warn");
+                    if (bad) SalvageInsteadRow(list, hero, EquipmentSlot.Armor, a, h.ArmorDurability, cost);
                 }
             }
             if (!any) Ui.Text("Nobody has gear that wears out. Equip forged weapons first.", "small dim", list).style.whiteSpace = WhiteSpace.Normal;
+        }
+
+        /// <summary>The "repair is a ripoff — salvage it instead" offer, shown right under an uneconomical
+        /// repair row so both outcomes (repair cost vs. salvage yield) sit side by side (GG-T42).</summary>
+        private void SalvageInsteadRow(VisualElement list, HeroSave hero, EquipmentSlot slot, ItemDef item, int durability, int repairCost)
+        {
+            var yield = Crafting.SalvageYield(C, item, durability);
+            string y = yield.Count == 0 ? "—" : string.Join(", ", yield.Select(ic => $"{C.TryItem(ic.Item)?.Name}×{ic.Count}"));
+            var row = Ui.MenuRow("   Salvage instead", y, () =>
+                Confirm.Show($"Repair costs {Ui.Gold(repairCost)}. Scrap the {item.Name} instead for {y}? This destroys it.", "Salvage",
+                    () => Done(Crafting.SalvageEquipped(C, S, hero, slot))), list);
+            row.Q<Label>("label").AddToClassList("small");
+            row.Q<Label>("value").AddToClassList("dim");
         }
     }
 

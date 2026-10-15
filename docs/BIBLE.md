@@ -1776,7 +1776,7 @@ BonusVsTag, BonusMultiplier, Resistances{type→mult}, SoldByVendor, Icon
 | Alchemy | 14 | Alchemist → Brew |
 | Enchant (base weapon + essence + 2 Arcane Dust + gold) | 52 | Alchemist → Enchant |
 
-*(Test: `Every_recipe_is_craftable_with_its_inputs`.)* **Salvage** (`Crafting.Salvage`): break one equipment piece into 50% of its base Forge recipe's inputs (floor, min 1); pieces without a base recipe can't be salvaged.
+*(Test: `Every_recipe_is_craftable_with_its_inputs`.)* **Salvage** (`Crafting.Salvage`): break one equipment piece into 50% of its base Forge recipe's inputs (floor, min 1). **Amended 2026-10-15 (GG-T42):** every equipment piece is now salvageable — pieces without a base recipe fall back to a flat materials-by-type-and-rarity table (`Crafting.FallbackSalvage`, keyed by Weapon/Armor/Relic × rarity). Yield also scales with the piece's remaining durability (`Crafting.SalvageYield(c, item, durability)`): a near-dead or Broken piece returns proportionally less (floor), but never less than 1 of the cheapest input. Bag salvage (`Crafting.Salvage`) always eats the worst (most-worn) tracked copy first; `Crafting.SalvageEquipped` lets a hero's currently-equipped weapon/armor be scrapped directly instead of unequipping it first. *(Tests: `Every_equipment_item_has_a_salvage_yield_via_recipe_or_fallback_table`, `Salvage_of_equipment_without_a_recipe_uses_the_type_and_rarity_fallback_table`, `Salvage_yield_scales_down_with_remaining_durability_but_keeps_at_least_one_of_the_cheapest_input`, `SalvageEquipped_clears_the_heros_slot_and_grants_durability_scaled_materials_instead_of_returning_it`.)*
 
 #### 24.6.1 Tier ladder (GG-T35, amended 2026-10-15)
 
@@ -1826,7 +1826,7 @@ ENEMIES ─▶ drop tables ─▶ Inventory ─┬▶ Blacksmith (forge / upgrad
 
 ### 25.2 Blacksmith
 
-`BlacksmithScreen`: **Forge**, **Upgrade**, **Salvage**, **Repair** tabs ([§24.5](#245-weapon-durability), [§24.6](#246-crafting-recipes)). The header shows the Blacksmith's station level and XP to its next tier ([§24.6.1](#2461-tier-ladder-gg-t35-amended-2026-10-15)); a tier-locked recipe shows a 🔒 and the level required instead of its price. The recipe detail shows ✔/✘ per input with owned counts. Repair lists every roster hero's durable weapon/armor ("Paladin — Iron Sword 3/9", cost or "OK"), warning when uneconomical.
+`BlacksmithScreen`: **Forge**, **Upgrade**, **Salvage**, **Repair** tabs ([§24.5](#245-weapon-durability), [§24.6](#246-crafting-recipes)). The header shows the Blacksmith's station level and XP to its next tier ([§24.6.1](#2461-tier-ladder-gg-t35-amended-2026-10-15)); a tier-locked recipe shows a 🔒 and the level required instead of its price. The recipe detail shows ✔/✘ per input with owned counts. Repair lists every roster hero's durable weapon/armor ("Paladin — Iron Sword 3/9", cost or "OK"), warning when uneconomical. **Amended 2026-10-15 (GG-T42):** when a repair is flagged uneconomical, an indented "Salvage instead" row appears directly beneath it showing the scrap yield for that piece's current durability, so the repair cost and the salvage yield sit side by side — confirming scraps the piece (`Crafting.SalvageEquipped`) instead of repairing it.
 
 ### 25.3 Alchemist
 

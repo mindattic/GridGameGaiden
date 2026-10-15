@@ -709,23 +709,117 @@ namespace Gaiden.Meta
             return Result.Success($"Made {result.Name}");
         }
 
-        /// <summary>Salvage: break equipment into 50% of its forge recipe's inputs (floor, min 1).</summary>
-        public static List<ItemCount> SalvageYield(ContentDb c, ItemDef item)
+        /// <summary>Pieces without a base Forge recipe (upgrades, enchants, relics) fall back to a flat
+        /// materials-by-type-and-rarity table, so every equipment piece is salvageable (GG-T42).</summary>
+        private static readonly Dictionary<(EquipmentSlot Slot, ItemRarity Rarity), (string Item, int Count)[]> FallbackSalvage =
+            new Dictionary<(EquipmentSlot, ItemRarity), (string, int)[]>
+            {
+                [(EquipmentSlot.Weapon, ItemRarity.Junk)] = new[] { ("mat_broken_blade", 1) },
+                [(EquipmentSlot.Weapon, ItemRarity.Common)] = new[] { ("mat_iron_ore", 2), ("mat_wood_plank", 1) },
+                [(EquipmentSlot.Weapon, ItemRarity.Uncommon)] = new[] { ("mat_iron_ore", 3), ("mat_arcane_dust", 1) },
+                [(EquipmentSlot.Weapon, ItemRarity.Rare)] = new[] { ("mat_iron_ore", 4), ("mat_arcane_dust", 2) },
+                [(EquipmentSlot.Weapon, ItemRarity.Epic)] = new[] { ("mat_demon_shard", 2), ("mat_arcane_dust", 2) },
+                [(EquipmentSlot.Weapon, ItemRarity.Legendary)] = new[] { ("mat_dragon_scale", 1), ("mat_demon_shard", 2) },
+
+                [(EquipmentSlot.Armor, ItemRarity.Junk)] = new[] { ("mat_tattered_cloth", 1) },
+                [(EquipmentSlot.Armor, ItemRarity.Common)] = new[] { ("mat_leather", 2), ("mat_cloth", 1) },
+                [(EquipmentSlot.Armor, ItemRarity.Uncommon)] = new[] { ("mat_leather", 3), ("mat_arcane_dust", 1) },
+                [(EquipmentSlot.Armor, ItemRarity.Rare)] = new[] { ("mat_troll_hide", 2), ("mat_leather", 2) },
+                [(EquipmentSlot.Armor, ItemRarity.Epic)] = new[] { ("mat_demon_shard", 2), ("mat_troll_hide", 2) },
+                [(EquipmentSlot.Armor, ItemRarity.Legendary)] = new[] { ("mat_dragon_scale", 1), ("mat_demon_shard", 1) },
+
+                [(EquipmentSlot.Relic1, ItemRarity.Junk)] = new[] { ("mat_cracked_fang", 1) },
+                [(EquipmentSlot.Relic1, ItemRarity.Common)] = new[] { ("mat_iron_ore", 1), ("mat_undead_bone", 1) },
+                [(EquipmentSlot.Relic1, ItemRarity.Uncommon)] = new[] { ("mat_arcane_dust", 2) },
+                [(EquipmentSlot.Relic1, ItemRarity.Rare)] = new[] { ("mat_naga_scale", 1), ("mat_arcane_dust", 1) },
+                [(EquipmentSlot.Relic1, ItemRarity.Epic)] = new[] { ("mat_ghost_ectoplasm", 2) },
+                [(EquipmentSlot.Relic1, ItemRarity.Legendary)] = new[] { ("mat_dragon_scale", 1) },
+            };
+
+        private static List<ItemCount> FullSalvageYield(ContentDb c, ItemDef item)
         {
             var recipe = c.Recipes.Values.FirstOrDefault(r => r.Result == item.Id && r.Station == CraftStation.Forge && r.BaseItem == null);
-            var list = new List<ItemCount>();
-            if (recipe == null) return list;
-            foreach (var ic in recipe.Inputs) list.Add(new ItemCount { Item = ic.Item, Count = Math.Max(1, ic.Count / 2) });
-            return list;
+            if (recipe != null)
+                return recipe.Inputs.Select(ic => new ItemCount { Item = ic.Item, Count = Math.Max(1, ic.Count / 2) }).ToList();
+            var bucket = item.Slot == EquipmentSlot.Relic2 || item.Slot == EquipmentSlot.Relic3 ? EquipmentSlot.Relic1 : item.Slot;
+            if (!FallbackSalvage.TryGetValue((bucket, item.Rarity), out var fallback)) return new List<ItemCount>();
+            return fallback.Select(f => new ItemCount { Item = f.Item, Count = f.Count }).ToList();
         }
 
+        /// <summary>Salvage yield for a piece at <paramref name="durability"/> out of its max: a near-dead or
+        /// Broken item returns proportionally less (floor), but never less than 1 of the cheapest input (GG-T42).</summary>
+        public static List<ItemCount> SalvageYield(ContentDb c, ItemDef item, int durability)
+        {
+            var full = FullSalvageYield(c, item);
+            if (full.Count == 0 || item.Durability <= 0) return full;
+            float frac = Math.Max(0f, Math.Min(1f, (float)durability / item.Durability));
+            var scaled = full.Select(ic => new ItemCount { Item = ic.Item, Count = (int)Math.Floor(ic.Count * frac) })
+                .Where(ic => ic.Count > 0).ToList();
+            if (scaled.Count == 0)
+            {
+                var cheapest = full.OrderBy(ic => c.TryItem(ic.Item)?.BaseCost ?? int.MaxValue).First();
+                scaled.Add(new ItemCount { Item = cheapest.Item, Count = 1 });
+            }
+            return scaled;
+        }
+
+        /// <summary>Preview of what salvaging the bag's worst (most-worn) copy of this item would yield, without consuming it.</summary>
+        public static List<ItemCount> SalvagePreview(ContentDb c, SaveData s, string itemId)
+        {
+            var item = c.TryItem(itemId);
+            return item == null ? new List<ItemCount>() : SalvageYield(c, item, PeekWorstDurability(s, item));
+        }
+
+        private static int PeekWorstDurability(SaveData s, ItemDef item)
+        {
+            if (item.Durability <= 0) return item.Durability;
+            return s.Worn.TryGetValue(item.Id, out var worn) && worn.Count > 0 ? worn.Min(w => w.Durability) : item.Durability;
+        }
+
+        /// <summary>Removes and returns the durability of the bag's single worst tracked copy, or the full
+        /// durability if every copy is factory-fresh (so salvaging always eats the junkiest piece first).</summary>
+        private static int TakeWorstDurability(SaveData s, ItemDef item)
+        {
+            if (item.Durability <= 0) return item.Durability;
+            if (!s.Worn.TryGetValue(item.Id, out var worn) || worn.Count == 0) return item.Durability;
+            int idx = 0;
+            for (int i = 1; i < worn.Count; i++) if (worn[i].Durability < worn[idx].Durability) idx = i;
+            int dur = worn[idx].Durability;
+            worn.RemoveAt(idx);
+            if (worn.Count == 0) s.Worn.Remove(item.Id);
+            return dur;
+        }
+
+        /// <summary>Salvages one bag copy of <paramref name="itemId"/> — the worst (most-worn) tracked copy first.</summary>
         public static Result Salvage(ContentDb c, SaveData s, string itemId)
         {
             var item = c.TryItem(itemId);
             if (item == null || s.Count(itemId) < 1) return Result.Fail("Nothing to salvage");
-            var yield = SalvageYield(c, item);
+            int durability = TakeWorstDurability(s, item);
+            var yield = SalvageYield(c, item, durability);
             if (yield.Count == 0) return Result.Fail("Can't be salvaged");
             s.AddItem(itemId, -1);
+            foreach (var ic in yield) s.AddItem(ic.Item, ic.Count);
+            StationProgress.Gain(s, StationKind.Blacksmith, SalvageXp);
+            return Result.Success($"Salvaged {item.Name}");
+        }
+
+        /// <summary>Salvages a hero's currently equipped weapon/armor directly (the "Salvage instead" offer on
+        /// an uneconomical repair, §25.2) — the piece is destroyed, not returned to the bag (GG-T42).</summary>
+        public static Result SalvageEquipped(ContentDb c, SaveData s, HeroSave h, EquipmentSlot slot)
+        {
+            var itemId = Equipment.Equipped(h, slot);
+            var item = itemId != null ? c.TryItem(itemId) : null;
+            if (item == null) return Result.Fail("Nothing equipped");
+            int durability = slot == EquipmentSlot.Weapon ? h.WeaponDurability : slot == EquipmentSlot.Armor ? h.ArmorDurability : 0;
+            var yield = SalvageYield(c, item, durability);
+            if (yield.Count == 0) return Result.Fail("Can't be salvaged");
+            switch (slot)
+            {
+                case EquipmentSlot.Weapon: h.WeaponId = null; h.WeaponDurability = 0; h.WeaponRepairs = 0; break;
+                case EquipmentSlot.Armor: h.ArmorId = null; h.ArmorDurability = 0; h.ArmorRepairs = 0; break;
+                default: return Result.Fail("Can't be salvaged");
+            }
             foreach (var ic in yield) s.AddItem(ic.Item, ic.Count);
             StationProgress.Gain(s, StationKind.Blacksmith, SalvageXp);
             return Result.Success($"Salvaged {item.Name}");
