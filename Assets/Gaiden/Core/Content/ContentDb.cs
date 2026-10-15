@@ -21,6 +21,7 @@ namespace Gaiden.Core.Content
         public CampaignDef Campaign = new CampaignDef();
         public SummonDef Summon = new SummonDef();
         public readonly Dictionary<string, CaravanUpgradeDef> Caravan = new Dictionary<string, CaravanUpgradeDef>(StringComparer.OrdinalIgnoreCase);
+        public readonly Dictionary<string, SkillTreeDef> SkillTrees = new Dictionary<string, SkillTreeDef>(StringComparer.OrdinalIgnoreCase);
 
         public ClassDef Class(string id) => Get(Classes, id, "class");
         public AbilityDef Ability(string id) => Get(Abilities, id, "ability");
@@ -34,6 +35,7 @@ namespace Gaiden.Core.Content
         public BuffDef TryBuff(string id) => id != null && Buffs.TryGetValue(id, out var a) ? a : null;
         public ClassDef TryClass(string id) => id != null && Classes.TryGetValue(id, out var a) ? a : null;
         public RecipeDef TryRecipe(string id) => id != null && Recipes.TryGetValue(id, out var a) ? a : null;
+        public SkillTreeDef TrySkillTree(string id) => id != null && SkillTrees.TryGetValue(id, out var a) ? a : null;
 
         private static T Get<T>(Dictionary<string, T> map, string id, string kind)
         {

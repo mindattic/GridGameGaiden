@@ -182,6 +182,10 @@ namespace Gaiden.Core.Content
         public int SnakeSegments;
         /// <summary>Hero role (§25.13): Tank, Healer, Mage, Striker or Support — what the class is for in a party.</summary>
         public string Role;
+        /// <summary>Archetype skill tree id (§25.6.1, GG-T50) every hero of this class spends skill points in.
+        /// Hero-only; required for Team.Hero, left null for Team.Enemy. The class's own starting kit
+        /// (<see cref="DefaultLoadout"/>) is known from level 1 regardless of what's unlocked in the tree.</summary>
+        public string HomeTree;
 
         public bool HasTag(string tag) => Tags != null && Tags.Contains(tag);
     }
@@ -503,5 +507,34 @@ namespace Gaiden.Core.Content
         public int ArcaneDust = 2;
         public int Gold = 150;
         public Stats Bonus = new Stats();
+    }
+
+    /// <summary>
+    /// One node in an archetype skill tree (§25.6.1, GG-T50). Unlocking it costs <see cref="Cost"/> skill
+    /// points and grants the ability or passive named by <see cref="Grants"/>. Gated by
+    /// <see cref="RequiredPointsInTree"/> (total points already spent anywhere in the tree) and
+    /// <see cref="Prerequisites"/> (sibling node ids in the same tree that must already be unlocked).
+    /// Spending points against a tree (and applying a granted passive to a hero in battle) is a later
+    /// ticket; this is the content shape that work will read.
+    /// </summary>
+    public sealed class SkillNodeDef
+    {
+        public string Id;
+        public string Name;
+        public string Description;
+        /// <summary>Ability or passive id granted when this node unlocks.</summary>
+        public string Grants;
+        public int Cost = 1;
+        public int RequiredPointsInTree;
+        public List<string> Prerequisites = new List<string>();
+    }
+
+    /// <summary>One archetype's skill tree (§25.6.1, GG-T50): named by a <see cref="ClassDef.HomeTree"/> id.</summary>
+    public sealed class SkillTreeDef
+    {
+        public string Id;
+        public string Name;
+        public string Description;
+        public List<SkillNodeDef> Nodes = new List<SkillNodeDef>();
     }
 }

@@ -1,0 +1,305 @@
+[
+  {
+    "Id": "guardian",
+    "Name": "Guardian",
+    "Description": "The Tank archetype: draw the enemy's eye and shrug off what lands.",
+    "Nodes": [
+      {
+        "Id": "guardian_shield_wall",
+        "Name": "Shield Wall",
+        "Description": "Learn to bash a foe off balance and open its guard.",
+        "Grants": "shield_bash",
+        "Cost": 1,
+        "RequiredPointsInTree": 0,
+        "Prerequisites": []
+      },
+      {
+        "Id": "guardian_iron_will",
+        "Name": "Iron Will",
+        "Description": "Shake off venom before it takes hold.",
+        "Grants": "antidote",
+        "Cost": 1,
+        "RequiredPointsInTree": 0,
+        "Prerequisites": []
+      },
+      {
+        "Id": "guardian_unbreakable",
+        "Name": "Unbreakable",
+        "Description": "Physical blows land at 70% — a hide no blade bites deep.",
+        "Grants": "tough_hide",
+        "Cost": 2,
+        "RequiredPointsInTree": 1,
+        "Prerequisites": [ "guardian_shield_wall" ]
+      },
+      {
+        "Id": "guardian_vigilance",
+        "Name": "Vigilance",
+        "Description": "Read a foe's resistances and weaknesses before the line breaks.",
+        "Grants": "scan",
+        "Cost": 1,
+        "RequiredPointsInTree": 1,
+        "Prerequisites": [ "guardian_iron_will" ]
+      },
+      {
+        "Id": "guardian_last_bastion",
+        "Name": "Last Bastion",
+        "Description": "Anything that lands a blow on you pays for it.",
+        "Grants": "counter_attack",
+        "Cost": 3,
+        "RequiredPointsInTree": 4,
+        "Prerequisites": [ "guardian_unbreakable", "guardian_vigilance" ]
+      }
+    ]
+  },
+  {
+    "Id": "warrior",
+    "Name": "Warrior",
+    "Description": "The Striker archetype: close the distance and keep swinging.",
+    "Nodes": [
+      {
+        "Id": "warrior_cleaving_strikes",
+        "Name": "Cleaving Strikes",
+        "Description": "A wide swing that catches more than one foe.",
+        "Grants": "cleave",
+        "Cost": 1,
+        "RequiredPointsInTree": 0,
+        "Prerequisites": []
+      },
+      {
+        "Id": "warrior_battle_fury",
+        "Name": "Battle Fury",
+        "Description": "A war cry that hardens the whole line.",
+        "Grants": "war_cry",
+        "Cost": 1,
+        "RequiredPointsInTree": 0,
+        "Prerequisites": []
+      },
+      {
+        "Id": "warrior_relentless_assault",
+        "Name": "Relentless Assault",
+        "Description": "Every pincer strike lands twice.",
+        "Grants": "double_attack",
+        "Cost": 2,
+        "RequiredPointsInTree": 1,
+        "Prerequisites": [ "warrior_cleaving_strikes" ]
+      },
+      {
+        "Id": "warrior_bloodlust",
+        "Name": "Bloodlust",
+        "Description": "Below half HP, every hit lands 35% harder.",
+        "Grants": "berserk",
+        "Cost": 2,
+        "RequiredPointsInTree": 1,
+        "Prerequisites": [ "warrior_battle_fury" ]
+      },
+      {
+        "Id": "warrior_undying_rampage",
+        "Name": "Undying Rampage",
+        "Description": "Every landed blow heals for half the damage it deals.",
+        "Grants": "lifesteal",
+        "Cost": 3,
+        "RequiredPointsInTree": 4,
+        "Prerequisites": [ "warrior_relentless_assault", "warrior_bloodlust" ]
+      }
+    ]
+  },
+  {
+    "Id": "ranger",
+    "Name": "Ranger",
+    "Description": "The Ranged archetype: never needs to be adjacent to strike.",
+    "Nodes": [
+      {
+        "Id": "ranger_focused_aim",
+        "Name": "Focused Aim",
+        "Description": "A called shot that picks the deadliest opening.",
+        "Grants": "ranged_calledshot",
+        "Cost": 1,
+        "RequiredPointsInTree": 0,
+        "Prerequisites": []
+      },
+      {
+        "Id": "ranger_covering_fire",
+        "Name": "Covering Fire",
+        "Description": "Pin down a whole line or column from range.",
+        "Grants": "ranged_suppressingfire",
+        "Cost": 1,
+        "RequiredPointsInTree": 0,
+        "Prerequisites": []
+      },
+      {
+        "Id": "ranger_deadeye",
+        "Name": "Deadeye",
+        "Description": "Every shot looses twice before the string settles.",
+        "Grants": "double_attack",
+        "Cost": 2,
+        "RequiredPointsInTree": 1,
+        "Prerequisites": [ "ranger_focused_aim" ]
+      },
+      {
+        "Id": "ranger_hunters_resilience",
+        "Name": "Hunter's Resilience",
+        "Description": "Field-worn leathers turn physical blows aside — they land at 70%.",
+        "Grants": "tough_hide",
+        "Cost": 2,
+        "RequiredPointsInTree": 3,
+        "Prerequisites": [ "ranger_deadeye", "ranger_covering_fire" ]
+      }
+    ]
+  },
+  {
+    "Id": "mage",
+    "Name": "Mage",
+    "Description": "The Mage archetype: ranged elemental AoE damage.",
+    "Nodes": [
+      {
+        "Id": "mage_arcane_bolt",
+        "Name": "Arcane Bolt",
+        "Description": "A fast, reliable bolt of raw mana.",
+        "Grants": "bolt",
+        "Cost": 1,
+        "RequiredPointsInTree": 0,
+        "Prerequisites": []
+      },
+      {
+        "Id": "mage_chilling_frost",
+        "Name": "Chilling Frost",
+        "Description": "Ice that locks a square of the field in place.",
+        "Grants": "frost",
+        "Cost": 1,
+        "RequiredPointsInTree": 0,
+        "Prerequisites": []
+      },
+      {
+        "Id": "mage_meteor_storm",
+        "Name": "Meteor Storm",
+        "Description": "A slow-charging strike that levels a wide area.",
+        "Grants": "meteor",
+        "Cost": 2,
+        "RequiredPointsInTree": 1,
+        "Prerequisites": [ "mage_arcane_bolt" ]
+      },
+      {
+        "Id": "mage_shockwave",
+        "Name": "Shockwave",
+        "Description": "A burst that catches everything adjacent to its center.",
+        "Grants": "shock_wave",
+        "Cost": 2,
+        "RequiredPointsInTree": 1,
+        "Prerequisites": [ "mage_chilling_frost" ]
+      },
+      {
+        "Id": "mage_archmage_focus",
+        "Name": "Archmage's Focus",
+        "Description": "Mana discipline that knits a little strength back every turn.",
+        "Grants": "regenerate",
+        "Cost": 3,
+        "RequiredPointsInTree": 4,
+        "Prerequisites": [ "mage_meteor_storm", "mage_shockwave" ]
+      }
+    ]
+  },
+  {
+    "Id": "cleric",
+    "Name": "Cleric",
+    "Description": "The Healer archetype: mend and cleanse.",
+    "Nodes": [
+      {
+        "Id": "cleric_mending_light",
+        "Name": "Mending Light",
+        "Description": "A wash of light that heals the whole party at once.",
+        "Grants": "mass_heal",
+        "Cost": 1,
+        "RequiredPointsInTree": 0,
+        "Prerequisites": []
+      },
+      {
+        "Id": "cleric_sacred_cleanse",
+        "Name": "Sacred Cleanse",
+        "Description": "Purge poison from an ally's blood.",
+        "Grants": "antidote",
+        "Cost": 1,
+        "RequiredPointsInTree": 0,
+        "Prerequisites": []
+      },
+      {
+        "Id": "cleric_rejuvenation",
+        "Name": "Rejuvenation",
+        "Description": "A deeper, slower-fading restoration.",
+        "Grants": "rejuvenate",
+        "Cost": 2,
+        "RequiredPointsInTree": 1,
+        "Prerequisites": [ "cleric_mending_light" ]
+      },
+      {
+        "Id": "cleric_devout_resolve",
+        "Name": "Devout Resolve",
+        "Description": "Faith hardens the body — physical blows land at 70%.",
+        "Grants": "tough_hide",
+        "Cost": 2,
+        "RequiredPointsInTree": 1,
+        "Prerequisites": [ "cleric_sacred_cleanse" ]
+      },
+      {
+        "Id": "cleric_divine_vigor",
+        "Name": "Divine Vigor",
+        "Description": "A standing blessing that knits wounds every turn.",
+        "Grants": "regenerate",
+        "Cost": 3,
+        "RequiredPointsInTree": 4,
+        "Prerequisites": [ "cleric_rejuvenation", "cleric_devout_resolve" ]
+      }
+    ]
+  },
+  {
+    "Id": "alchemist",
+    "Name": "Alchemist",
+    "Description": "The Support archetype: tempo, tonics and field remedies.",
+    "Nodes": [
+      {
+        "Id": "alchemist_quickening_brew",
+        "Name": "Quickening Brew",
+        "Description": "A tonic that hastens an ally's next turn.",
+        "Grants": "quicken",
+        "Cost": 1,
+        "RequiredPointsInTree": 0,
+        "Prerequisites": []
+      },
+      {
+        "Id": "alchemist_binding_toxin",
+        "Name": "Binding Toxin",
+        "Description": "A reagent that slows whatever it touches.",
+        "Grants": "slow",
+        "Cost": 1,
+        "RequiredPointsInTree": 0,
+        "Prerequisites": []
+      },
+      {
+        "Id": "alchemist_tonic_mastery",
+        "Name": "Tonic Mastery",
+        "Description": "A standing regeneration draught.",
+        "Grants": "regen",
+        "Cost": 2,
+        "RequiredPointsInTree": 1,
+        "Prerequisites": [ "alchemist_quickening_brew" ]
+      },
+      {
+        "Id": "alchemist_field_remedies",
+        "Name": "Field Remedies",
+        "Description": "Cure venom with reagents pulled straight from the pack.",
+        "Grants": "antidote",
+        "Cost": 1,
+        "RequiredPointsInTree": 1,
+        "Prerequisites": [ "alchemist_binding_toxin" ]
+      },
+      {
+        "Id": "alchemist_elixir_of_vigor",
+        "Name": "Elixir of Vigor",
+        "Description": "A reagent blend potent enough to mend wounds every turn, unasked.",
+        "Grants": "regenerate",
+        "Cost": 3,
+        "RequiredPointsInTree": 3,
+        "Prerequisites": [ "alchemist_tonic_mastery", "alchemist_field_remedies" ]
+      }
+    ]
+  }
+]

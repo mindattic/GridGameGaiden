@@ -14,7 +14,7 @@ namespace Gaiden.Core.Content
         public static readonly string[] Files =
         {
             "classes", "abilities", "buffs", "items", "recipes", "droptables",
-            "stages", "campaign", "traps", "bounties", "summon", "enchants", "caravan", "pickups",
+            "stages", "campaign", "traps", "bounties", "summon", "enchants", "caravan", "pickups", "skilltrees",
         };
 
         public static readonly JsonSerializerSettings Settings = new JsonSerializerSettings
@@ -46,6 +46,7 @@ namespace Gaiden.Core.Content
             db.Summon = ReadOne<SummonDef>(readText, "summon") ?? new SummonDef();
             AddAll(db.Caravan, ReadList<CaravanUpgradeDef>(readText, "caravan"), x => x.Id);
             AddAll(db.Pickups, ReadList<PickupDef>(readText, "pickups"), x => x.Id);
+            AddAll(db.SkillTrees, ReadList<SkillTreeDef>(readText, "skilltrees"), x => x.Id);
             return db;
         }
 
@@ -149,6 +150,54 @@ namespace Gaiden.Core.Content
             foreach (var b in db.Bounties.Values) { NeedClass(b.TargetClass, $"bounty {b.Id}"); NeedItem(b.RewardItem, $"bounty {b.Id}"); }
             foreach (var c in db.Summon.Pool) NeedClass(c, "summon pool");
             foreach (var e in db.Enchants.Values) NeedItem(e.Essence, $"enchant {e.Id}");
+
+            // Skill trees (§25.6.1, GG-T50): every node's grant and prerequisites must resolve, and every
+            // hero class must name a home tree that exists.
+            foreach (var t in db.SkillTrees.Values)
+            {
+                var nodeIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                foreach (var n in t.Nodes)
+                {
+                    if (string.IsNullOrEmpty(n.Id)) { p.Add($"tree {t.Id}: node with empty Id"); continue; }
+                    if (!nodeIds.Add(n.Id)) p.Add($"tree {t.Id}: duplicate node id '{n.Id}'");
+                }
+                foreach (var n in t.Nodes)
+                {
+                    NeedAbility(n.Grants, $"tree {t.Id} node {n.Id}");
+                    if (n.Cost <= 0) p.Add($"tree {t.Id} node {n.Id}: cost must be positive");
+                    if (n.RequiredPointsInTree < 0) p.Add($"tree {t.Id} node {n.Id}: required points can't be negative");
+                    foreach (var req in n.Prerequisites)
+                    {
+                        if (!nodeIds.Contains(req)) p.Add($"tree {t.Id} node {n.Id}: unknown prerequisite '{req}'");
+                        else if (req == n.Id) p.Add($"tree {t.Id} node {n.Id}: can't require itself");
+                    }
+                }
+                // Cycle check: walk each node's prerequisite chain and fail if it revisits a node.
+                foreach (var n in t.Nodes)
+                {
+                    var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    var stack = new Stack<SkillNodeDef>();
+                    stack.Push(n);
+                    bool cycle = false;
+                    while (stack.Count > 0 && !cycle)
+                    {
+                        var cur = stack.Pop();
+                        if (!seen.Add(cur.Id)) { cycle = true; break; }
+                        foreach (var req in cur.Prerequisites)
+                        {
+                            var reqNode = t.Nodes.Find(x => string.Equals(x.Id, req, StringComparison.OrdinalIgnoreCase));
+                            if (reqNode != null) stack.Push(reqNode);
+                        }
+                    }
+                    if (cycle) p.Add($"tree {t.Id} node {n.Id}: prerequisite cycle");
+                }
+            }
+            foreach (var c in db.Classes.Values)
+            {
+                if (c.Team != Team.Hero) continue;
+                if (string.IsNullOrEmpty(c.HomeTree)) p.Add($"class {c.Id}: hero needs a HomeTree");
+                else if (!db.SkillTrees.ContainsKey(c.HomeTree)) p.Add($"class {c.Id}: unknown home tree '{c.HomeTree}'");
+            }
             return p;
         }
     }
