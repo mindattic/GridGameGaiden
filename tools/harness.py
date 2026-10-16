@@ -139,13 +139,47 @@ def sweep(run="sweep"):
     print("errors:", [l for l in logs if l.startswith(("Error", "Exception"))])
 
 
-def campaign(run="campaign", stages=6, speed=3, extra=()):
+def _play_battle(tag, timeout=480):
+    """Turns on autoplay and waits for the current battle to leave the battle screen (win or lose).
+    Returns ("ended", state) | ("stalled", state) | ("timeout", state)."""
+    call("autoplay", on=1)
+    t0 = time.time(); last_clock = -1; stuck = 0; shot_taken = False
+    while time.time() - t0 < timeout:
+        time.sleep(1.0)
+        st = call("state")
+        if st["screen"] != "battle":
+            return "ended", st
+        b = st["battle"]
+        if not shot_taken and b["clock"] > 60:
+            shot(tag); shot_taken = True
+        stuck = stuck + 1 if b["clock"] == last_clock and not b["busy"] else 0
+        last_clock = b["clock"]
+        if stuck > 12:
+            return "stalled", b
+    return "timeout", call("state")
+
+
+def _skip_levelups(st):
+    for _ in range(8):  # one "Skip" per hero that leveled up (LevelUpScreen.Advance), capped at MaxPartySize
+        if st["screen"] != "levelup":
+            break
+        call("clicktext", text="Skip"); time.sleep(0.7)
+        st = call("state")
+    return st
+
+
+def campaign(run="campaign", stages=6, speed=3, extra=(), max_loss_retries=3):
     """Autoplays consecutive stages through the real UI (Next stage / Retry), checking for stalls and errors.
     Pass extra=("-capture", "video", "screen", "5") to record the run (capture.json must have "enabled": true).
     The raw tape grows fast at HighQuality — ~500MB+/minute of real time observed on one run — so a
     continuous capture of more than a handful of stages means a very large .mkv before it's finalized
     into the much smaller .mp4; capture.json's battle-start/battle-end rules (separate per-battle clips)
-    are the safer default for anything longer than a short highlight."""
+    are the safer default for anything longer than a short highlight.
+
+    A lost battle inside a multi-battle expedition restarts it from battle 1 by design (GG-T17): that's
+    not a harness bug to route around, so on defeat this clicks the real "Retry" button and replays, up
+    to max_loss_retries times, before giving up and recording DIFFICULTY_WALL — distinguishing a real
+    balance cliff for blind autoplay (loses every attempt) from one-off automation flakiness (wins on retry)."""
     launch(run, extra=extra)
     call("newgame", slot=0)
     time.sleep(1)
@@ -156,32 +190,41 @@ def campaign(run="campaign", stages=6, speed=3, extra=()):
         call("clicktext", text="Skip"); time.sleep(1.2)
     results = []
     for n in range(stages):
-        call("autoplay", on=1)
-        t0 = time.time(); last_clock = -1; stuck = 0; shot_taken = False; stalled = False
-        while time.time() - t0 < 480:
-            time.sleep(1.0)
-            st = call("state")
-            if st["screen"] != "battle":
-                break
-            b = st["battle"]
-            if not shot_taken and b["clock"] > 60:
-                shot(f"stage{n}-mid"); shot_taken = True
-            stuck = stuck + 1 if b["clock"] == last_clock and not b["busy"] else 0
-            last_clock = b["clock"]
-            if stuck > 12:
-                results.append({"stage": n, "result": "STALLED", "state": b})
-                stalled = True
-                break
-        if stalled:
-            # Battle never reached postbattle; recording a second entry below would misrepresent the run.
-            continue
+        outcome, st = _play_battle(f"stage{n}-mid")
+        if outcome != "ended":
+            results.append({"stage": n, "result": outcome.upper(), "state": st})
+            break
+
         time.sleep(1.2)
-        st = call("state")
-        for _ in range(8):  # one "Skip" per hero that leveled up (LevelUpScreen.Advance), capped at MaxPartySize
-            if st["screen"] != "levelup":
+        st = _skip_levelups(call("state"))
+
+        # Win or lose, PostBattleScreen always renders a "Continue" button; only a loss also renders
+        # "Retry". Probing for it both tells win from loss and, on a loss, is the retry tap itself.
+        gave_up = False
+        for attempt in range(1, max_loss_retries + 1):
+            r = call("clicktext", text="Retry")
+            if isinstance(r, dict) and r.get("error"):
+                break  # no "Retry" button visible: this was a win
+            print(f"stage{n}: lost, retrying ({attempt}/{max_loss_retries})")
+            time.sleep(1.5)
+            for _ in range(20):
+                if call("state")["screen"] == "battle":
+                    break
+                time.sleep(0.2)
+            outcome, st = _play_battle(f"stage{n}-retry{attempt}-mid")
+            if outcome != "ended":
+                results.append({"stage": n, "result": outcome.upper(), "state": st, "after_retries": attempt})
+                gave_up = True
                 break
-            call("clicktext", text="Skip"); time.sleep(0.7)
-            st = call("state")
+            time.sleep(1.2)
+            st = _skip_levelups(call("state"))
+        else:
+            results.append({"stage": n, "result": "DIFFICULTY_WALL", "retries": max_loss_retries})
+            print(f"stage{n}: lost {max_loss_retries} times running — real difficulty cliff, not automation flakiness, stopping")
+            gave_up = True
+        if gave_up:
+            break
+
         shot(f"stage{n}-result")
         results.append({"stage": n, "screen": st["screen"], "gold": st.get("save", {}).get("Gold"), "levels": st.get("save", {}).get("levels")})
         if st["screen"] != "postbattle":
