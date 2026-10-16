@@ -1,0 +1,224 @@
+using Gaiden.Core.Content;
+using Xunit;
+
+namespace Gaiden.Tests
+{
+    /// <summary>
+    /// Only the happy path (real content validates clean, ContentAndSoakTests) was covered before this
+    /// file: a regression in ContentLoader.Validate's cross-reference checks would go unnoticed because
+    /// nothing exercised the broken-reference paths. Each test here takes a small, fully valid fixture
+    /// and breaks exactly one reference, asserting Validate reports exactly that problem.
+    /// </summary>
+    public class ContentValidationTests
+    {
+        private static ContentDb ValidDb()
+        {
+            var db = new ContentDb();
+
+            db.Buffs["burning"] = new BuffDef { Id = "burning", Name = "Burning" };
+
+            db.Abilities["slash"] = new AbilityDef { Id = "slash", Name = "Slash", Kind = AbilityKind.Skill };
+            db.Abilities["bolt"] = new AbilityDef { Id = "bolt", Name = "Bolt", Kind = AbilityKind.Spell, ApplyBuff = "burning" };
+
+            db.Items["potion"] = new ItemDef { Id = "potion", Name = "Potion", Type = ItemType.Consumable };
+            db.Items["ore"] = new ItemDef { Id = "ore", Name = "Ore", Type = ItemType.CraftingMaterial };
+            db.Items["blade"] = new ItemDef { Id = "blade", Name = "Blade", Type = ItemType.Equipment };
+
+            db.DropTables["knightdrop"] = new DropTableDef
+            {
+                Id = "knightdrop",
+                Entries = { new DropEntry { Item = "potion", Chance = 1f } },
+            };
+
+            db.Recipes["r1"] = new RecipeDef
+            {
+                Id = "r1",
+                Station = CraftStation.Forge,
+                BaseItem = "ore",
+                Result = "blade",
+                Inputs = { new ItemCount { Item = "ore", Count = 1 } },
+            };
+
+            db.Traps["spike"] = new TrapDef { Id = "spike", Name = "Spike" };
+
+            db.Pickups["p1"] = new PickupDef { Id = "p1", Name = "Pickup", Weight = 1 };
+
+            db.Classes["goblin"] = new ClassDef { Id = "goblin", Name = "Goblin", Team = Team.Enemy };
+
+            db.Classes["boss"] = new ClassDef
+            {
+                Id = "boss",
+                Name = "Boss",
+                Team = Team.Enemy,
+                ChargeAbility = "bolt",
+                Trap = "spike",
+                Trail = "spike",
+                BossPhases = { new BossPhaseDef { HpThreshold = 0.5f, OnEnterAbility = "bolt" } },
+            };
+
+            db.Classes["knight"] = new ClassDef
+            {
+                Id = "knight",
+                Name = "Knight",
+                Team = Team.Hero,
+                Role = "Tank",
+                DropTable = "knightdrop",
+                Abilities = { "slash" },
+                DefaultLoadout = { "slash", "item:potion" },
+            };
+
+            db.Stages["s1"] = new StageDef
+            {
+                Id = "s1",
+                Name = "S1",
+                Waves =
+                {
+                    new WaveDef
+                    {
+                        Enemies = { new SpawnDef { Class = "goblin" } },
+                        Guests = { new SpawnDef { Class = "goblin" } },
+                        SurpriseSpeaker = "goblin",
+                    },
+                },
+            };
+            db.StageOrder.Add(db.Stages["s1"]);
+
+            db.Campaign.Themes.Add(new ThemeDef { Id = "t1", Name = "T1", Stages = { "s1" } });
+
+            return db;
+        }
+
+        /// <summary>Validates the fixture and asserts it reports exactly one problem, returning it.</summary>
+        private static string OneProblem(ContentDb db) => Assert.Single(ContentLoader.Validate(db));
+
+        [Fact]
+        public void Baseline_fixture_validates_clean()
+        {
+            Assert.Empty(ContentLoader.Validate(ValidDb()));
+        }
+
+        [Fact]
+        public void Unknown_class_in_stage_wave_enemy_is_reported()
+        {
+            var db = ValidDb();
+            db.Stages["s1"].Waves[0].Enemies[0].Class = "missing";
+            Assert.Contains("unknown class 'missing'", OneProblem(db));
+        }
+
+        [Fact]
+        public void Unknown_class_in_stage_wave_guest_is_reported()
+        {
+            var db = ValidDb();
+            db.Stages["s1"].Waves[0].Guests[0].Class = "missing";
+            Assert.Contains("unknown class 'missing'", OneProblem(db));
+        }
+
+        [Fact]
+        public void Unknown_class_as_surprise_speaker_is_reported()
+        {
+            var db = ValidDb();
+            db.Stages["s1"].Waves[0].SurpriseSpeaker = "missing";
+            Assert.Contains("surprise speaker", OneProblem(db));
+        }
+
+        [Fact]
+        public void Unknown_ability_in_loadout_is_reported()
+        {
+            var db = ValidDb();
+            db.Classes["knight"].DefaultLoadout[0] = "missing";
+            Assert.Contains("loadout", OneProblem(db));
+        }
+
+        [Fact]
+        public void Unknown_ability_as_charge_ability_is_reported()
+        {
+            var db = ValidDb();
+            db.Classes["boss"].ChargeAbility = "missing";
+            Assert.Contains("charge", OneProblem(db));
+        }
+
+        [Fact]
+        public void Unknown_ability_in_boss_phase_is_reported()
+        {
+            var db = ValidDb();
+            db.Classes["boss"].BossPhases[0].OnEnterAbility = "missing";
+            Assert.Contains("boss phase", OneProblem(db));
+        }
+
+        [Fact]
+        public void Null_loadout_entry_is_reported()
+        {
+            var db = ValidDb();
+            db.Classes["knight"].DefaultLoadout.Add(null);
+            Assert.Contains("null entry", OneProblem(db));
+        }
+
+        [Fact]
+        public void Unknown_item_in_recipe_is_reported()
+        {
+            var db = ValidDb();
+            db.Recipes["r1"].Result = "missing";
+            Assert.Contains("recipe r1: unknown item 'missing'", OneProblem(db));
+        }
+
+        [Fact]
+        public void Unknown_item_in_droptable_is_reported()
+        {
+            var db = ValidDb();
+            db.DropTables["knightdrop"].Entries[0].Item = "missing";
+            Assert.Contains("droptable knightdrop: unknown item 'missing'", OneProblem(db));
+        }
+
+        [Fact]
+        public void Unknown_buff_is_reported()
+        {
+            var db = ValidDb();
+            db.Abilities["bolt"].ApplyBuff = "missing";
+            Assert.Contains("unknown buff 'missing'", OneProblem(db));
+        }
+
+        [Fact]
+        public void Unknown_trap_is_reported()
+        {
+            var db = ValidDb();
+            db.Classes["boss"].Trap = "missing";
+            Assert.Contains("unknown trap 'missing'", OneProblem(db));
+        }
+
+        [Fact]
+        public void Unknown_trail_is_reported()
+        {
+            var db = ValidDb();
+            db.Classes["boss"].Trail = "missing";
+            Assert.Contains("unknown trail 'missing'", OneProblem(db));
+        }
+
+        [Fact]
+        public void Theme_referencing_unknown_stage_is_reported()
+        {
+            var db = ValidDb();
+            db.Campaign.Themes[0].Stages[0] = "missing";
+            Assert.Contains("theme t1: unknown stage 'missing'", OneProblem(db));
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-1)]
+        public void Pickup_with_nonpositive_weight_is_reported(int weight)
+        {
+            var db = ValidDb();
+            db.Pickups["p1"].Weight = weight;
+            Assert.Contains("weight must be positive", OneProblem(db));
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("Bogus")]
+        public void Invalid_role_is_reported(string role)
+        {
+            var db = ValidDb();
+            db.Classes["knight"].Role = role;
+            Assert.Contains("needs a Role", OneProblem(db));
+        }
+    }
+}
