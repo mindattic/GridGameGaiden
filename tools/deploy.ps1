@@ -7,7 +7,11 @@
     copy instead of a possibly-stale one.
 
 .DESCRIPTION
-    1. Stops any running GridGameGaiden.exe process (dev copy or deployed copy).
+    1. Stops any running GridGameGaiden.exe process launched from *this* repo's Build\ output or
+       from the deployed copy at C:\Apps\GridGameGaiden\ — never another git worktree's dev player
+       (GG-T21: Get-Process only sees the process name, so an unscoped Stop-Process -Force here
+       would silently kill a sibling worktree's unrelated long-running session, indistinguishable
+       to that session from an unexplained crash).
     2. Removes Build\WindowsRelease — the build OUTPUT only, never Library\ (Unity's asset
        import / script-compile cache, which survives exactly as it does for a normal
        Editor rebuild) — so the player build below is never a stale incremental copy.
@@ -35,7 +39,11 @@ $buildDir = Join-Path $repoDir 'Build\WindowsRelease'
 # ── Stop running instance ──────────────────────────────────────────────────
 Write-Host ''
 Write-Host '  Stopping running instance...' -ForegroundColor Yellow
-$procs = Get-Process 'GridGameGaiden' -ErrorAction SilentlyContinue
+$procs = Get-Process 'GridGameGaiden' -ErrorAction SilentlyContinue | Where-Object {
+    $exePath = $_.Path
+    $exePath -and ($exePath.StartsWith($repoDir, [System.StringComparison]::OrdinalIgnoreCase) `
+                   -or $exePath.StartsWith($out, [System.StringComparison]::OrdinalIgnoreCase))
+}
 if ($procs) {
     $procs | Stop-Process -Force
     Write-Host "    Stopped ($(@($procs).Count) process(es))" -ForegroundColor DarkYellow

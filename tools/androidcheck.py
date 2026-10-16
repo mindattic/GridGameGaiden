@@ -1,5 +1,7 @@
-"""Plays a session on an Android device/emulator through the dev-build automation endpoint
-(adb forward tcp:7787 tcp:7787 — or forward to match GAIDEN_PORT if you've overridden it)."""
+"""Plays a session on an Android device/emulator through the dev-build automation endpoint.
+harness.PORT is derived per-worktree (GG-T21); print it and adb forward to match:
+`python -c "import harness as h; print(h.PORT)"` then `adb forward tcp:<port> tcp:<port>`
+(or set GAIDEN_PORT yourself and forward that)."""
 import json, sys, time, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import harness as h

@@ -5,11 +5,13 @@ Self-play harness: launches the development player with the automation endpoint 
     python tools/harness.py sweep            # screenshot + layout-audit every menu screen
     python tools/harness.py clips N          # generate N random-stage/random-wave battle clips
     python tools/harness.py durability       # GG-T39: last-strike weapon badge + drag-preview shatter warning
+    python tools/harness.py stress HOURS     # unattended soak test (GG-T21); default 4h
     python tools/harness.py shot NAME        # screenshot the running player
     python tools/harness.py call PATH [k=v]  # raw endpoint call, e.g. call state
 
 Screenshots land in artifacts/<run>/. Design coordinates are 1170x2532 (top-left origin).
 """
+import hashlib
 import json
 import os
 import subprocess
@@ -20,8 +22,15 @@ import urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 EXE = os.path.join(ROOT, "Build", "Windows", "GridGameGaiden.exe")
-# GAIDEN_PORT keeps this project's player off ports other projects' harnesses use (GridGameCaravan also defaults to 7777).
-PORT = int(os.environ.get("GAIDEN_PORT", "7787"))
+# GG-T21: this used to default every worktree to the same fixed port (7787), so two agents running
+# harness.py in sibling GridGameGaiden worktrees at once would collide — the second one's launch()
+# sees the first's player already listening and calls quit on it, silently ending an unrelated
+# agent's run mid-battle with no crash/exception trail (confirmed live: a 5h stress run here died
+# after ~5 minutes with a clean Application.Quit() shutdown sequence in Player.log that this script
+# never requested). Deriving the default from the worktree's own path keeps every worktree's harness
+# on its own port automatically; GAIDEN_PORT still overrides it for anyone who wants a fixed value.
+_DEFAULT_PORT = 20000 + (int(hashlib.sha1(ROOT.encode()).hexdigest(), 16) % 20000)
+PORT = int(os.environ.get("GAIDEN_PORT", str(_DEFAULT_PORT)))
 BASE = f"http://127.0.0.1:{PORT}"
 
 BOARD_LEFT, BOARD_TOP, TILE = 45, 450, 180
@@ -345,6 +354,127 @@ def bestiary_drops(run="bestiary"):
     print("\n".join(files))
 
 
+def _report_death(art, returncode, n, extra_note=""):
+    """GG-T21: the player process can vanish mid-battle with no exception in Player.log and no
+    Windows "Application Error" event — the only report from that incident was a human skimming
+    Task Manager afterward. This captures the OS-level evidence immediately, while it's still fresh:
+    CrashDumps (WER only writes these for crashes it catches, which this one evidently wasn't) and
+    the Application event log window around the death, so a recurrence leaves an actual trail."""
+    report = os.path.join(art, "crash-report.txt")
+    lines = [f"process died after {n} clips (returncode={returncode}) at {time.strftime('%Y-%m-%d %H:%M:%S')}", extra_note]
+    dumps_dir = os.path.join(os.environ.get("LOCALAPPDATA", ""), "CrashDumps")
+    try:
+        names = [f for f in os.listdir(dumps_dir) if "GridGameGaiden" in f]
+        lines.append(f"CrashDumps matching GridGameGaiden: {names or 'none'}")
+    except Exception as e:
+        lines.append(f"could not list CrashDumps: {e}")
+    try:
+        ps = subprocess.run(
+            ["powershell", "-NoProfile", "-Command",
+             "Get-WinEvent -FilterHashtable @{LogName='Application'; StartTime=(Get-Date).AddMinutes(-15)} "
+             "-ErrorAction SilentlyContinue | Select-Object TimeCreated,ProviderName,Id,LevelDisplayName,Message "
+             "| Format-List | Out-String -Width 200"],
+            capture_output=True, text=True, timeout=30)
+        lines.append("Application event log, last 15 minutes:")
+        lines.append(ps.stdout.strip() or "(no matching events)")
+        if ps.stderr.strip():
+            lines.append(f"(stderr: {ps.stderr.strip()})")
+    except Exception as e:
+        lines.append(f"could not query event log: {e}")
+    log_path = os.path.join(art, "player.log")
+    if os.path.exists(log_path):
+        with open(log_path, "r", errors="replace") as f:
+            tail = f.readlines()[-40:]
+        lines.append("Player.log tail:")
+        lines.append("".join(tail))
+    text = "\n".join(lines)
+    with open(report, "w") as f:
+        f.write(text)
+    print(text)
+    print(f"\nfull report: {report}")
+
+
+def stress(run="stress", hours=4.0, speed=3, timeout=240):
+    """GG-T21 soak test: launches once and keeps generating random battle clips (same approach as
+    battle_clips) for `hours` of wall-clock time in one long-lived process, to try to reproduce the
+    process disappearing mid-battle during an earlier ~1h unattended run with no diagnostic trail.
+    Unlike battle_clips/campaign, this polls the OS process directly (Popen.poll()) on every
+    iteration instead of only noticing trouble when an HTTP call fails or times out, since the
+    original incident was the whole process vanishing, not a hang. On a process death it writes
+    artifacts/<run>/crash-report.txt with whatever OS-level evidence it can still gather."""
+    art = os.path.join(ROOT, "artifacts", run)
+    saves = os.path.join(art, "saves")
+    os.makedirs(saves, exist_ok=True)
+    args = [EXE, "-automation", str(PORT), "-artifacts", art, "-saveRoot", saves,
+            "-screen-width", "585", "-screen-height", "1266", "-screen-fullscreen", "0",
+            "-logFile", os.path.join(art, "player.log")]
+    proc = subprocess.Popen(args, cwd=ROOT)
+    for _ in range(60):
+        if alive():
+            break
+        time.sleep(0.5)
+    else:
+        raise RuntimeError("player did not start")
+
+    class Died(Exception):
+        pass
+
+    def checked_call(endpoint, **params):
+        # Every call() in this loop goes through here so a process death is always caught and
+        # reported, instead of the exception from a refused connection escaping uncaught (as it
+        # did the first time this ran: the process died between a poll() check and the next call()
+        # one line later, and only the calls adjacent to an explicit poll() check were guarded).
+        if proc.poll() is not None:
+            raise Died()
+        try:
+            return call(endpoint, **params)
+        except Exception as e:
+            if proc.poll() is not None:
+                raise Died(str(e))
+            raise
+
+    checked_call("speed", x=speed)
+    deadline = time.time() + hours * 3600
+    clips = []
+    n = 0
+    try:
+        while time.time() < deadline:
+            info = checked_call("randombattle")
+            if not isinstance(info, dict) or not info.get("ok"):
+                print(f"clip{n}: randombattle failed: {info}")
+                break
+            for _ in range(20):
+                if checked_call("state")["screen"] == "battle":
+                    break
+                time.sleep(0.2)
+            checked_call("autoplay", on=1)
+            t0 = time.time(); last_clock = -1; stuck = 0; result = "TIMEOUT"
+            while time.time() - t0 < timeout:
+                time.sleep(1.0)
+                st = checked_call("state")
+                if st["screen"] != "battle":
+                    result = st["screen"]
+                    break
+                b = st["battle"]
+                stuck = stuck + 1 if b["clock"] == last_clock and not b["busy"] else 0
+                last_clock = b["clock"]
+                if stuck > 12:
+                    result = "STALLED"
+                    break
+            clips.append({**info, "result": result})
+            n += 1
+            if n % 10 == 0:
+                elapsed = time.time() - (deadline - hours * 3600)
+                print(f"stress: {n} clips done, {elapsed/3600:.2f}h elapsed, process alive")
+    except Died as e:
+        _report_death(art, proc.returncode, n, extra_note=str(e))
+        return clips
+    logs = call("logs")
+    errors = [l[:300] for l in logs if l.startswith(("Error", "Exception")) and "first mouse" not in l]
+    print(json.dumps({"clips_completed": n, "hours": hours, "errors": errors}, indent=1))
+    return clips
+
+
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "smoke"
     if cmd == "smoke":
@@ -359,6 +489,8 @@ if __name__ == "__main__":
         durability()
     elif cmd == "bestiary":
         bestiary_drops(sys.argv[2] if len(sys.argv) > 2 else "bestiary")
+    elif cmd == "stress":
+        stress(hours=float(sys.argv[2]) if len(sys.argv) > 2 else 4.0)
     elif cmd == "shot":
         print(shot(sys.argv[2]))
     elif cmd == "call":
