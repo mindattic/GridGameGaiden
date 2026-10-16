@@ -221,13 +221,22 @@ namespace Gaiden.Tests
         }
 
         [Fact]
-        public void SalvageYield_is_empty_when_there_is_no_base_forge_recipe()
+        public void SalvageYield_is_empty_when_there_is_no_base_forge_recipe_and_no_fallback()
         {
             var c = BuildContent();
-            // "finehammer" is only produced by an upgrade recipe (BaseItem set), so it has no base forge recipe.
-            Assert.Empty(Crafting.SalvageYield(c, c.Item("finehammer")));
-            // "warhammer" does have one (craft_warhammer), so it should yield half its inputs.
-            var yield = Crafting.SalvageYield(c, c.Item("warhammer"));
+            // "herb" is a plain crafting material (no equipment slot), so it matches neither a base forge
+            // recipe nor the equipment type/rarity fallback table (GG-T42).
+            Assert.Empty(Crafting.SalvageYield(c, c.Item("herb"), 0));
+        }
+
+        [Fact]
+        public void SalvageYield_at_full_durability_matches_half_its_forge_recipe_inputs()
+        {
+            var c = BuildContent();
+            // "warhammer" has a base forge recipe (craft_warhammer), so at full durability it should yield
+            // half its inputs, unscaled.
+            var warhammer = c.Item("warhammer");
+            var yield = Crafting.SalvageYield(c, warhammer, warhammer.Durability);
             Assert.Single(yield);
             Assert.Equal("ore", yield[0].Item);
             Assert.Equal(1, yield[0].Count); // half of 2, floored, minimum 1
