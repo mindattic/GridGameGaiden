@@ -57,6 +57,7 @@ namespace Gaiden.Tests
             db.Abilities["steal"] = new AbilityDef { Id = "steal", Name = "Steal", Kind = AbilityKind.Skill, CooldownTurns = 3, StealsMana = true, Shape = TargetShape.Cross, Radius = 1, Mode = TargetMode.Auto, Filter = TargetFilter.EnemyOnly };
             db.Abilities["quicken"] = new AbilityDef { Id = "quicken", Name = "Quicken", Kind = AbilityKind.Spell, Cost = 1, HastenU = 0.3f, Shape = TargetShape.SingleActor, Mode = TargetMode.PickActor, Filter = TargetFilter.Any };
             db.Abilities["charge_bolt"] = new AbilityDef { Id = "charge_bolt", Name = "Dark Bolt", Kind = AbilityKind.Spell, CastTime = 2.5f, DamageType = DamageType.Dark, Shape = TargetShape.SingleActor };
+            db.Abilities["shield_bash"] = new AbilityDef { Id = "shield_bash", Name = "Shield Bash", Kind = AbilityKind.Skill, CooldownTurns = 2, BaseDamage = 12, Knockback = 2, AdjacentOnly = true, DamageType = DamageType.Physical, Shape = TargetShape.SingleActor, Mode = TargetMode.PickActor, Filter = TargetFilter.EnemyOnly };
             db.Buffs["burning"] = new BuffDef { Id = "burning", Name = "Burning", Unit = DurationUnit.Ticks, Duration = 5, DamagePerTick = 4, OnExpireApply = "warm" };
             db.Buffs["warm"] = new BuffDef { Id = "warm", Name = "Warm", Unit = DurationUnit.Ticks, Duration = 3 };
             db.Buffs["frozen"] = new BuffDef { Id = "frozen", Name = "Frozen", Unit = DurationUnit.Turns, Duration = 1, Immobile = true, HaltsTimeline = true, OnExpireApply = "wet" };
