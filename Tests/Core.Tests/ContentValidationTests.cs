@@ -56,6 +56,8 @@ namespace Gaiden.Tests
                 BossPhases = { new BossPhaseDef { HpThreshold = 0.5f, OnEnterAbility = "bolt" } },
             };
 
+            db.SkillTrees["tanktree"] = new SkillTreeDef { Id = "tanktree", Name = "Tank Tree" };
+
             db.Classes["knight"] = new ClassDef
             {
                 Id = "knight",
@@ -65,6 +67,7 @@ namespace Gaiden.Tests
                 DropTable = "knightdrop",
                 Abilities = { "slash" },
                 DefaultLoadout = { "slash", "item:potion" },
+                HomeTree = "tanktree",
             };
 
             db.Stages["s1"] = new StageDef
@@ -219,6 +222,47 @@ namespace Gaiden.Tests
             var db = ValidDb();
             db.Classes["knight"].Role = role;
             Assert.Contains("needs a Role", OneProblem(db));
+        }
+
+        [Fact]
+        public void Hero_missing_home_tree_is_reported()
+        {
+            var db = ValidDb();
+            db.Classes["knight"].HomeTree = null;
+            Assert.Contains("needs a HomeTree", OneProblem(db));
+        }
+
+        [Fact]
+        public void Unknown_home_tree_is_reported()
+        {
+            var db = ValidDb();
+            db.Classes["knight"].HomeTree = "missing";
+            Assert.Contains("unknown home tree 'missing'", OneProblem(db));
+        }
+
+        [Fact]
+        public void Skill_tree_node_with_unknown_grant_is_reported()
+        {
+            var db = ValidDb();
+            db.SkillTrees["tanktree"].Nodes.Add(new SkillNodeDef { Id = "n1", Grants = "missing" });
+            Assert.Contains("unknown ability 'missing'", OneProblem(db));
+        }
+
+        [Fact]
+        public void Skill_tree_node_with_unknown_prerequisite_is_reported()
+        {
+            var db = ValidDb();
+            db.SkillTrees["tanktree"].Nodes.Add(new SkillNodeDef { Id = "n1", Grants = "slash", Prerequisites = { "missing" } });
+            Assert.Contains("unknown prerequisite 'missing'", OneProblem(db));
+        }
+
+        [Fact]
+        public void Skill_tree_node_prerequisite_cycle_is_reported()
+        {
+            var db = ValidDb();
+            db.SkillTrees["tanktree"].Nodes.Add(new SkillNodeDef { Id = "n1", Grants = "slash", Prerequisites = { "n2" } });
+            db.SkillTrees["tanktree"].Nodes.Add(new SkillNodeDef { Id = "n2", Grants = "slash", Prerequisites = { "n1" } });
+            Assert.Contains("prerequisite cycle", string.Join(";", ContentLoader.Validate(db)));
         }
     }
 }
