@@ -7,33 +7,30 @@ using Gaiden.Core.Content;
 using Gaiden.Core.Rules;
 using Gaiden.Meta;
 using Newtonsoft.Json;
-using Xunit;
-using Xunit.Abstractions;
+using NUnit.Framework;
 using static Gaiden.Tests.TestKit;
 
 namespace Gaiden.Tests
 {
     public class MetaLoopTests
     {
-        private readonly ITestOutputHelper output;
-        public MetaLoopTests(ITestOutputHelper output) { this.output = output; }
 
-        [Fact]
+        [Test]
         public void New_game_has_starting_trio_gold_and_loadouts()
         {
             var s = Progression.NewGame(Real, "Test");
-            Assert.Equal(new[] { "paladin", "barbarian", "cleric", "redmage", "engineer" }, s.Party); // one of each role
-            Assert.Equal(new[] { "Tank", "Striker", "Healer", "Mage", "Support" }, s.Party.Select(id => Real.Classes[id].Role));
-            Assert.Equal(Progression.StartingGold, s.Gold);
-            Assert.All(s.Roster, h => Assert.Contains(h.Bar, e => e != null));
-            Assert.Equal(Progression.MaxBarSlots, Progression.UnlockedSlots(s)); // every slot open from the start (2026-10-11)
+            Assert.That(s.Party, Is.EqualTo(new[] { "paladin", "barbarian", "cleric", "redmage", "engineer" })); // one of each role
+            Assert.That(s.Party.Select(id => Real.Classes[id].Role), Is.EqualTo(new[] { "Tank", "Striker", "Healer", "Mage", "Support" }));
+            Assert.That(s.Gold, Is.EqualTo(Progression.StartingGold));
+            foreach (var h in s.Roster) Assert.That(h.Bar.Any(e => e != null), Is.True);
+            Assert.That(Progression.UnlockedSlots(s), Is.EqualTo(Progression.MaxBarSlots)); // every slot open from the start (2026-10-11)
             // One full-life stack per hero (amended 2026-10-11: the second X-Potion slot became each
             // class's new unique 5th skill).
-            Assert.All(s.Roster, h => Assert.Equal(1, h.Bar.Count(e => e == "item:x_potion")));
-            Assert.Equal(s.Roster.Count * Real.Items["x_potion"].MaxStack, s.Count("x_potion"));  // one full stack of 5 each
+            foreach (var h in s.Roster) Assert.That(h.Bar.Count(e => e == "item:x_potion"), Is.EqualTo(1));
+            Assert.That(s.Count("x_potion"), Is.EqualTo(s.Roster.Count * Real.Items["x_potion"].MaxStack));  // one full stack of 5 each
         }
 
-        [Fact]
+        [Test]
         public void Save_round_trips_through_json()
         {
             var s = Progression.NewGame(Real, "Round");
@@ -42,14 +39,14 @@ namespace Gaiden.Tests
             s.Roster[0].SkillPoints = 3;
             var json = JsonConvert.SerializeObject(s, Formatting.Indented, ContentLoader.Settings);
             var back = SaveMigrations.Migrate(JsonConvert.DeserializeObject<SaveData>(json, ContentLoader.Settings));
-            Assert.Equal(s.Gold, back.Gold);
-            Assert.Contains("greenvalley-01", back.ClearedStages);
-            Assert.Equal(2, back.Bestiary["slime00"].Defeated);
-            Assert.Equal(s.Roster[0].Bar, back.Roster[0].Bar);
-            Assert.Equal(3, back.Roster[0].SkillPoints); // a current-version save isn't re-backfilled
+            Assert.That(back.Gold, Is.EqualTo(s.Gold));
+            Assert.That(back.ClearedStages, Does.Contain("greenvalley-01"));
+            Assert.That(back.Bestiary["slime00"].Defeated, Is.EqualTo(2));
+            Assert.That(back.Roster[0].Bar, Is.EqualTo(s.Roster[0].Bar));
+            Assert.That(back.Roster[0].SkillPoints, Is.EqualTo(3)); // a current-version save isn't re-backfilled
         }
 
-        [Fact] // GG-T49
+        [Test] // GG-T49
         public void Migrating_a_v1_save_backfills_skill_points_once_for_heroes_already_past_level_1()
         {
             var s = Progression.NewGame(Real, "SPMigrate");
@@ -60,14 +57,14 @@ namespace Gaiden.Tests
 
             var migrated = SaveMigrations.Migrate(s);
             int expected = Formulas.SkillPointsForLevelUp(1, 6);
-            Assert.Equal(SaveData.CurrentVersion, migrated.Version);
-            Assert.Equal(expected, hero.SkillPoints);
+            Assert.That(migrated.Version, Is.EqualTo(SaveData.CurrentVersion));
+            Assert.That(hero.SkillPoints, Is.EqualTo(expected));
 
             SaveMigrations.Migrate(migrated); // re-migrating a current save must not grant the points twice
-            Assert.Equal(expected, hero.SkillPoints);
+            Assert.That(hero.SkillPoints, Is.EqualTo(expected));
         }
 
-        [Fact]
+        [Test]
         public void Full_loop_battle_commit_then_every_vendor()
         {
             var c = Real;
@@ -82,89 +79,89 @@ namespace Gaiden.Tests
                 var st = BotRunner.Play(c, setup, new HeroBot(i), 900); // the first battle is a 20-wave gauntlet
                 var rep = BattleFactory.Commit(c, s, st);
                 if (rep.Victory) victories++;
-                output.WriteLine($"{stage.Id}: {(rep.Victory ? "WIN" : "LOSS")} gold+{rep.Gold} xp+{rep.XpEach} items {string.Join(",", rep.Items.Select(kv => kv.Key + "x" + kv.Value))} lvls {string.Join(",", rep.LevelUps)}");
+                TestContext.Out.WriteLine($"{stage.Id}: {(rep.Victory ? "WIN" : "LOSS")} gold+{rep.Gold} xp+{rep.XpEach} items {string.Join(",", rep.Items.Select(kv => kv.Key + "x" + kv.Value))} lvls {string.Join(",", rep.LevelUps)}");
             }
-            Assert.True(victories >= 3, "bot should win the opening stages");
-            Assert.True(s.HighestClearedStage >= 2);
-            Assert.True(Progression.UnlockedSlots(s) >= 3);
-            output.WriteLine($"Gold {s.Gold}; inventory {string.Join(", ", s.Inventory.Select(kv => kv.Key + "x" + kv.Value))}");
+            Assert.That(victories >= 3, Is.True, "bot should win the opening stages");
+            Assert.That(s.HighestClearedStage >= 2, Is.True);
+            Assert.That(Progression.UnlockedSlots(s) >= 3, Is.True);
+            TestContext.Out.WriteLine($"Gold {s.Gold}; inventory {string.Join(", ", s.Inventory.Select(kv => kv.Key + "x" + kv.Value))}");
 
             // Merchant
             var stock = Shop.Stock(c);
-            Assert.NotEmpty(stock);
+            Assert.That(stock, Is.Not.Empty);
             s.Gold += 2000;
             var buy = new Dictionary<string, int> { [stock[0].Id] = 2 };
             int before = s.Count(stock[0].Id);
-            Assert.True(Shop.Buy(c, s, buy).Ok);
-            Assert.Equal(before + 2, s.Count(stock[0].Id));
-            Assert.True(Shop.Sell(c, s, new Dictionary<string, int> { [stock[0].Id] = 1 }).Ok);
+            Assert.That(Shop.Buy(c, s, buy).Ok, Is.True);
+            Assert.That(s.Count(stock[0].Id), Is.EqualTo(before + 2));
+            Assert.That(Shop.Sell(c, s, new Dictionary<string, int> { [stock[0].Id] = 1 }).Ok, Is.True);
 
             // Forge something: give ourselves the inputs of the cheapest forge recipe
             var recipe = Crafting.Recipes(c, CraftStation.Forge).First(r => r.BaseItem == null);
             foreach (var ic in recipe.Inputs) s.AddItem(ic.Item, ic.Count);
             var craft = Crafting.Craft(c, s, recipe);
-            Assert.True(craft.Ok, craft.Message);
+            Assert.That(craft.Ok, Is.True, craft.Message);
             var forged = c.Item(recipe.Result);
-            Assert.Equal(1, s.Count(forged.Id));
+            Assert.That(s.Count(forged.Id), Is.EqualTo(1));
 
             // Equip it on whoever it fits, then wear + repair it
             var hero = s.Hero(s.Party[0]);
             if (forged.Slot == EquipmentSlot.Weapon || forged.Slot == EquipmentSlot.Armor)
             {
-                Assert.True(Equipment.Equip(c, s, hero, forged.Slot, forged.Id).Ok);
-                Assert.Equal(forged.Id, Equipment.Equipped(hero, forged.Slot));
+                Assert.That(Equipment.Equip(c, s, hero, forged.Slot, forged.Id).Ok, Is.True);
+                Assert.That(Equipment.Equipped(hero, forged.Slot), Is.EqualTo(forged.Id));
                 if (forged.Slot == EquipmentSlot.Weapon && forged.Durability > 1)
                 {
                     hero.WeaponDurability = 1;
-                    Assert.True(Repair.Cost(forged, hero.WeaponDurability, hero.WeaponRepairs) > 0);
-                    Assert.True(Repair.RepairWeapon(c, s, hero).Ok);
-                    Assert.Equal(forged.Durability, hero.WeaponDurability);
-                    Assert.Equal(forged.Durability - 1, Repair.EffectiveMax(forged, hero.WeaponRepairs));
+                    Assert.That(Repair.Cost(forged, hero.WeaponDurability, hero.WeaponRepairs) > 0, Is.True);
+                    Assert.That(Repair.RepairWeapon(c, s, hero).Ok, Is.True);
+                    Assert.That(hero.WeaponDurability, Is.EqualTo(forged.Durability));
+                    Assert.That(Repair.EffectiveMax(forged, hero.WeaponRepairs), Is.EqualTo(forged.Durability - 1));
                 }
             }
 
             // Inn
             hero.Hp = 5;
-            Assert.True(Inn.Cost(c, s) > 0);
-            Assert.True(Inn.Rest(c, s).Ok);
-            Assert.Equal(0, hero.Hp);
+            Assert.That(Inn.Cost(c, s) > 0, Is.True);
+            Assert.That(Inn.Rest(c, s).Ok, Is.True);
+            Assert.That(hero.Hp, Is.EqualTo(0));
 
             // Learn + slot
             var learn = Abilities.Learnable(c, hero).First();
-            Assert.True(Abilities.Learn(c, s, hero, learn.Id).Ok);
-            Assert.True(Abilities.Assign(c, s, hero, 0, learn.Id).Ok);
-            Assert.Equal(learn.Id, hero.Bar[0]);
+            Assert.That(Abilities.Learn(c, s, hero, learn.Id).Ok, Is.True);
+            Assert.That(Abilities.Assign(c, s, hero, 0, learn.Id).Ok, Is.True);
+            Assert.That(hero.Bar[0], Is.EqualTo(learn.Id));
 
             // Summon
             var recruit = Summon.Pool(c, s).First(d => s.Hero(d.Id) == null);
             int price = Summon.Price(c, s);
-            Assert.True(Summon.Recruit(c, s, recruit.Id).Ok);
-            Assert.Equal(price + 250, Summon.Price(c, s));
+            Assert.That(Summon.Recruit(c, s, recruit.Id).Ok, Is.True);
+            Assert.That(Summon.Price(c, s), Is.EqualTo(price + 250));
             // GG-T49: a recruit arrives with the skill points its arrival level would already have earned.
             var recruited = s.Hero(recruit.Id);
-            Assert.Equal(Formulas.SkillPointsForLevelUp(1, Progression.Level(recruited)), recruited.SkillPoints);
+            Assert.That(recruited.SkillPoints, Is.EqualTo(Formulas.SkillPointsForLevelUp(1, Progression.Level(recruited))));
 
             // Party cap
             while (s.Party.Count < Progression.MaxPartySize)
             {
                 var extra = s.Roster.FirstOrDefault(h => !s.Party.Contains(h.ClassId));
-                if (extra != null) { Assert.True(Party.Toggle(s, extra.ClassId).Ok); continue; }
+                if (extra != null) { Assert.That(Party.Toggle(s, extra.ClassId).Ok, Is.True); continue; }
                 s.Gold += Summon.Price(c, s); // recruit until the party can fill (a recruit joins while there's room)
-                Assert.True(Summon.Recruit(c, s, Summon.Pool(c, s).First(d => s.Hero(d.Id) == null).Id).Ok);
+                Assert.That(Summon.Recruit(c, s, Summon.Pool(c, s).First(d => s.Hero(d.Id) == null).Id).Ok, Is.True);
             }
-            Assert.Equal(Progression.MaxPartySize, s.Party.Count);
-            Assert.Equal(5, Progression.MaxPartySize);
+            Assert.That(s.Party.Count, Is.EqualTo(Progression.MaxPartySize));
+            Assert.That(Progression.MaxPartySize, Is.EqualTo(5));
 
             // Bounty
             var bounty = Bounties.Posted(c, s).First();
-            Assert.True(Bounties.Accept(c, s, bounty.Id).Ok);
+            Assert.That(Bounties.Accept(c, s, bounty.Id).Ok, Is.True);
             Bounties.RecordKills(c, s, new Dictionary<string, int> { [bounty.TargetClass] = bounty.Kills });
             int g = s.Gold;
-            Assert.True(Bounties.Claim(c, s).Ok);
-            Assert.Equal(g + bounty.RewardGold, s.Gold);
+            Assert.That(Bounties.Claim(c, s).Ok, Is.True);
+            Assert.That(s.Gold, Is.EqualTo(g + bounty.RewardGold));
         }
 
-        [Fact]
+        [Test]
         public void Defeat_resets_wounds_and_grants_nothing()
         {
             var c = Real;
@@ -175,20 +172,20 @@ namespace Gaiden.Tests
             foreach (var u in st.Units.Where(u => u.IsHero)) u.Hp = 1;
             // shield until the party falls
             for (int i = 0; i < 400 && !st.IsOver; i++) BattleEngine.Apply(st, new ShieldCommand());
-            Assert.Equal(BattlePhase.Defeat, st.Phase);
+            Assert.That(st.Phase, Is.EqualTo(BattlePhase.Defeat));
             int gold = s.Gold;
             var rep = BattleFactory.Commit(c, s, st);
-            Assert.False(rep.Victory);
-            Assert.Equal(gold, s.Gold);
-            Assert.All(s.Roster, h => Assert.Equal(0, h.Hp));
-            Assert.Equal(-1, s.HighestClearedStage);
+            Assert.That(rep.Victory, Is.False);
+            Assert.That(s.Gold, Is.EqualTo(gold));
+            foreach (var h in s.Roster) Assert.That(h.Hp, Is.EqualTo(0));
+            Assert.That(s.HighestClearedStage, Is.EqualTo(-1));
         }
 
         // ── Expeditions (§22.5) ──
 
         private static BattleState Fight(ContentDb c, SaveData s, string stageId, bool win)
         {
-            Assert.True(Expeditions.CanLaunch(c, s, stageId, out var why), why);
+            Assert.That(Expeditions.CanLaunch(c, s, stageId, out var why), Is.True, why);
             Expeditions.Begin(c, s, stageId);
             var setup = BattleFactory.Build(c, s, stageId, 7);
             var st = BattleEngine.Create(c, setup, new List<BattleEvent>());
@@ -196,47 +193,47 @@ namespace Gaiden.Tests
             return st;
         }
 
-        [Fact]
+        [Test]
         public void An_expedition_runs_its_battles_in_order_carrying_mana_with_the_inn_closed()
         {
             var c = Real; var s = Progression.NewGame(c, "Ex");
             var theme = c.Campaign.Themes[0];
-            Assert.False(Expeditions.CanLaunch(c, s, theme.Stages[1], out _), "expeditions start at battle 1");
+            Assert.That(Expeditions.CanLaunch(c, s, theme.Stages[1], out _), Is.False, "expeditions start at battle 1");
             var b1 = Fight(c, s, theme.Stages[0], true);
             b1.Bank.Add(4);
             var rep = BattleFactory.Commit(c, s, b1);
-            Assert.NotNull(s.Expedition);
-            Assert.Equal(1, s.Expedition.Next);
-            Assert.Equal(b1.Bank.Count, s.Expedition.CarriedOrbs);
-            Assert.Equal(theme.Stages[1], rep.NextStageId);
-            Assert.False(Expeditions.CanLaunch(c, s, c.Campaign.Themes[1].Stages[0], out _), "one expedition at a time");
+            Assert.That(s.Expedition, Is.Not.Null);
+            Assert.That(s.Expedition.Next, Is.EqualTo(1));
+            Assert.That(s.Expedition.CarriedOrbs, Is.EqualTo(b1.Bank.Count));
+            Assert.That(rep.NextStageId, Is.EqualTo(theme.Stages[1]));
+            Assert.That(Expeditions.CanLaunch(c, s, c.Campaign.Themes[1].Stages[0], out _), Is.False, "one expedition at a time");
             s.Roster[0].Hp = 1;
-            Assert.False(Inn.Rest(c, s).Ok, "no inn on the road");
+            Assert.That(Inn.Rest(c, s).Ok, Is.False, "no inn on the road");
             var setup = BattleFactory.Build(c, s, theme.Stages[1], 3);
-            Assert.Equal(s.Expedition.CarriedOrbs, setup.StartOrbs);
+            Assert.That(setup.StartOrbs, Is.EqualTo(s.Expedition.CarriedOrbs));
             var b2 = BattleEngine.Create(c, setup, new List<BattleEvent>());
-            Assert.True(b2.Bank.Count >= setup.StartOrbs, "carried orbs seed the next battle's bank");
+            Assert.That(b2.Bank.Count >= setup.StartOrbs, Is.True, "carried orbs seed the next battle's bank");
         }
 
-        [Fact]
+        [Test]
         public void Finishing_an_expedition_pays_a_bonus_and_rests_the_party_while_defeat_restarts_it()
         {
             var c = Real; var s = Progression.NewGame(c, "Ex2");
             var theme = c.Campaign.Themes[0];
             BattleReport last = null;
             foreach (var id in theme.Stages) last = BattleFactory.Commit(c, s, Fight(c, s, id, true));
-            Assert.True(last.ExpeditionComplete);
-            Assert.True(last.ExpeditionBonus >= 0);
-            Assert.Null(s.Expedition);
-            Assert.All(s.Party, id => Assert.Equal(0, s.Hero(id).Hp));
+            Assert.That(last.ExpeditionComplete, Is.True);
+            Assert.That(last.ExpeditionBonus >= 0, Is.True);
+            Assert.That(s.Expedition, Is.Null);
+            foreach (var id in s.Party) Assert.That(s.Hero(id).Hp, Is.EqualTo(0));
 
             var s2 = Progression.NewGame(c, "Ex3");
             BattleFactory.Commit(c, s2, Fight(c, s2, theme.Stages[0], true));
             var lost = BattleFactory.Commit(c, s2, Fight(c, s2, theme.Stages[1], false));
-            Assert.True(lost.ExpeditionFailed);
-            Assert.Null(s2.Expedition);
-            Assert.True(Expeditions.CanLaunch(c, s2, theme.Stages[0], out _));
-            Assert.False(Expeditions.CanLaunch(c, s2, theme.Stages[1], out _), "a failed expedition restarts from battle 1");
+            Assert.That(lost.ExpeditionFailed, Is.True);
+            Assert.That(s2.Expedition, Is.Null);
+            Assert.That(Expeditions.CanLaunch(c, s2, theme.Stages[0], out _), Is.True);
+            Assert.That(Expeditions.CanLaunch(c, s2, theme.Stages[1], out _), Is.False, "a failed expedition restarts from battle 1");
         }
 
         // ── Voluntary retreat (§22.2, FFIV-style partial loss, owner direction 2026-10-11) ──
@@ -244,7 +241,7 @@ namespace Gaiden.Tests
         private static BattleState DirectBattle(ContentDb c, SaveData s, string stageId, int seed = 11) =>
             BattleEngine.Create(c, BattleFactory.Build(c, s, stageId, seed), new List<BattleEvent>());
 
-        [Fact]
+        [Test]
         public void A_voluntary_retreat_keeps_a_fraction_of_coins_and_items_but_not_the_rest()
         {
             var c = Real; var s = Progression.NewGame(c, "Retreat1");
@@ -255,14 +252,14 @@ namespace Gaiden.Tests
             int goldBefore = s.Gold;
             var rep = BattleFactory.Commit(c, s, st);
 
-            Assert.True(rep.Retreated);
+            Assert.That(rep.Retreated, Is.True);
             int expectedGold = (int)System.Math.Floor(100 * BattleConfig.RetreatKeepFraction);
-            Assert.Equal(expectedGold, rep.Gold);
-            Assert.Equal(goldBefore + expectedGold, s.Gold);
-            Assert.Equal((int)System.Math.Floor(4 * BattleConfig.RetreatKeepFraction), rep.Items.GetValueOrDefault("ether"));
+            Assert.That(rep.Gold, Is.EqualTo(expectedGold));
+            Assert.That(s.Gold, Is.EqualTo(goldBefore + expectedGold));
+            Assert.That(rep.Items.GetValueOrDefault("ether"), Is.EqualTo((int)System.Math.Floor(4 * BattleConfig.RetreatKeepFraction)));
         }
 
-        [Fact]
+        [Test]
         public void A_retreat_still_keeps_hard_won_xp_like_a_defeat()
         {
             var c = Real; var s = Progression.NewGame(c, "Retreat2");
@@ -271,12 +268,12 @@ namespace Gaiden.Tests
             st.Phase = BattlePhase.Retreated;
             var rep = BattleFactory.Commit(c, s, st);
 
-            Assert.Equal(40, rep.XpEach);
-            Assert.All(s.Party, id => Assert.True(s.Hero(id).TotalXp >= 40));
-            Assert.All(s.Party, id => Assert.Equal(0, s.Hero(id).SkillPoints)); // GG-T49: no level crossed, no points yet
+            Assert.That(rep.XpEach, Is.EqualTo(40));
+            foreach (var id in s.Party) Assert.That(s.Hero(id).TotalXp >= 40, Is.True);
+            foreach (var id in s.Party) Assert.That(s.Hero(id).SkillPoints, Is.EqualTo(0)); // GG-T49: no level crossed, no points yet
         }
 
-        [Fact]
+        [Test]
         public void Retreating_mid_expedition_ends_it_without_touching_already_banked_gold()
         {
             var c = Real; var s = Progression.NewGame(c, "Retreat3");
@@ -289,13 +286,13 @@ namespace Gaiden.Tests
             b2.Phase = BattlePhase.Retreated;
             var rep = BattleFactory.Commit(c, s, b2);
 
-            Assert.True(rep.ExpeditionFailed);
-            Assert.Null(s.Expedition);
+            Assert.That(rep.ExpeditionFailed, Is.True);
+            Assert.That(s.Expedition, Is.Null);
             int expectedKeep = (int)System.Math.Floor(60 * BattleConfig.RetreatKeepFraction);
-            Assert.Equal(goldAfterBattle1 + expectedKeep, s.Gold);
+            Assert.That(s.Gold, Is.EqualTo(goldAfterBattle1 + expectedKeep));
         }
 
-        [Fact]
+        [Test]
         public void Defeat_still_grants_only_hard_won_xp_after_the_retreat_refactor()
         {
             var c = Real; var s = Progression.NewGame(c, "Defeat1");
@@ -307,14 +304,14 @@ namespace Gaiden.Tests
             int goldBefore = s.Gold;
             var rep = BattleFactory.Commit(c, s, st);
 
-            Assert.False(rep.Retreated);
-            Assert.Equal(0, rep.Gold);
-            Assert.Equal(goldBefore, s.Gold);
-            Assert.Empty(rep.Items);
-            Assert.Equal(40, rep.XpEach);
+            Assert.That(rep.Retreated, Is.False);
+            Assert.That(rep.Gold, Is.EqualTo(0));
+            Assert.That(s.Gold, Is.EqualTo(goldBefore));
+            Assert.That(rep.Items, Is.Empty);
+            Assert.That(rep.XpEach, Is.EqualTo(40));
         }
 
-        [Fact] // GG-T49
+        [Test] // GG-T49
         public void Hard_won_xp_on_defeat_still_grants_skill_points_when_it_crosses_a_level()
         {
             var c = Real; var s = Progression.NewGame(c, "Defeat2");
@@ -325,15 +322,15 @@ namespace Gaiden.Tests
             st.Phase = BattlePhase.Defeat;
             BattleFactory.Commit(c, s, st);
 
-            Assert.Equal(2, Progression.Level(hero));
-            Assert.Equal(Formulas.SkillPointsForLevelUp(1, 2), hero.SkillPoints);
+            Assert.That(Progression.Level(hero), Is.EqualTo(2));
+            Assert.That(hero.SkillPoints, Is.EqualTo(Formulas.SkillPointsForLevelUp(1, 2)));
         }
 
         // ── Guest allies (§25.11) ──
 
         private static StageDef GuestStage(string guest) => new StageDef { Id = "g", Name = "G", IsTest = true, Waves = { new WaveDef { Enemies = { new SpawnDef { Class = "slime00", Level = 1, X = 2, Y = 1 } }, Guests = { new SpawnDef { Class = guest, Level = 3, X = 0, Y = 5 } } } } };
 
-        [Fact]
+        [Test]
         public void A_guest_who_survives_a_victory_joins_the_roster()
         {
             var c = Real; var s = Progression.NewGame(c, "G1");
@@ -342,18 +339,18 @@ namespace Gaiden.Tests
             var ev = new List<BattleEvent>();
             var st = BattleEngine.Create(c, setup, ev);
             var guest = st.Units.Single(u => u.IsGuest);
-            Assert.Equal("dervish", guest.Def.Id);
-            Assert.Contains(ev, e => e is GuestJoinedEvent);
+            Assert.That(guest.Def.Id, Is.EqualTo("dervish"));
+            Assert.That(ev.Any(e => e is GuestJoinedEvent), Is.True);
             st.Phase = BattlePhase.Victory;
             var rep = BattleFactory.Commit(c, s, st);
-            Assert.Contains("dervish", rep.GuestsJoined);
-            Assert.NotNull(s.Hero("dervish"));
-            Assert.Equal(Progression.MaxPartySize, s.Party.Count); // a full party: the rescued guest waits in reserve
+            Assert.That(rep.GuestsJoined, Does.Contain("dervish"));
+            Assert.That(s.Hero("dervish"), Is.Not.Null);
+            Assert.That(s.Party.Count, Is.EqualTo(Progression.MaxPartySize)); // a full party: the rescued guest waits in reserve
             // GG-T49: a rescued guest arrives with the skill points its battle level would already have earned.
-            Assert.Equal(Formulas.SkillPointsForLevelUp(1, guest.Level), s.Hero("dervish").SkillPoints);
+            Assert.That(s.Hero("dervish").SkillPoints, Is.EqualTo(Formulas.SkillPointsForLevelUp(1, guest.Level)));
         }
 
-        [Fact]
+        [Test]
         public void A_guest_who_falls_is_lost_forever()
         {
             var c = Real; var s = Progression.NewGame(c, "G2");
@@ -364,58 +361,58 @@ namespace Gaiden.Tests
             guest.Hp = 0; guest.OnBoard = false;
             st.Phase = BattlePhase.Victory;
             var rep = BattleFactory.Commit(c, s, st);
-            Assert.Contains("drifter", rep.GuestsLost);
-            Assert.Null(s.Hero("drifter"));
-            Assert.Contains("drifter", s.LostGuests);
+            Assert.That(rep.GuestsLost, Does.Contain("drifter"));
+            Assert.That(s.Hero("drifter"), Is.Null);
+            Assert.That(s.LostGuests, Does.Contain("drifter"));
             var again = BattleFactory.Build(c, s, c.CampaignStages()[0].Id, 2);
             again.Stage = GuestStage("drifter");
-            Assert.DoesNotContain(BattleEngine.Create(c, again, new List<BattleEvent>()).Units, u => u.IsGuest);
-            Assert.DoesNotContain(Summon.Pool(c, s), d => d.Id == "drifter");
+            Assert.That(BattleEngine.Create(c, again, new List<BattleEvent>()).Units.Any(u => u.IsGuest), Is.False);
+            Assert.That(Summon.Pool(c, s).Any(d => d.Id == "drifter"), Is.False);
         }
 
         // ── Caravan upgrades (§25.12) ──
 
-        [Fact]
+        [Test]
         public void Caravan_upgrades_cost_gold_and_change_how_expeditions_play()
         {
             var c = Real; var s = Progression.NewGame(c, "Car");
-            Assert.True(c.Caravan.Count >= 5);
+            Assert.That(c.Caravan.Count >= 5, Is.True);
             s.Gold = 10000;
             var stage0 = c.Campaign.Themes[0].Stages[0];
             int orbsBefore = BattleFactory.Build(c, s, stage0, 1).StartOrbs;
-            Assert.True(CaravanUpgrades.Buy(c, s, "mana_casks").Ok);
-            Assert.Equal(orbsBefore + 1, BattleFactory.Build(c, s, stage0, 1).StartOrbs);
-            Assert.True(10000 - c.Caravan["mana_casks"].Levels[0].Cost == s.Gold);
+            Assert.That(CaravanUpgrades.Buy(c, s, "mana_casks").Ok, Is.True);
+            Assert.That(BattleFactory.Build(c, s, stage0, 1).StartOrbs, Is.EqualTo(orbsBefore + 1));
+            Assert.That(10000 - c.Caravan["mana_casks"].Levels[0].Cost == s.Gold, Is.True);
 
             // Armory: cheaper repairs.
             var sword = c.Items.Values.First(i => i.Durability > 2 && i.Slot == EquipmentSlot.Weapon);
             int full = Repair.Cost(c, s, sword, 0, 0);
             CaravanUpgrades.Buy(c, s, "armory");
-            Assert.True(Repair.Cost(c, s, sword, 0, 0) < full);
+            Assert.That(Repair.Cost(c, s, sword, 0, 0) < full, Is.True);
 
             // Medic wagon: the inn opens on the road, at a premium.
             BattleFactory.Commit(c, s, Fight(c, s, stage0, true));
-            Assert.NotNull(s.Expedition);
+            Assert.That(s.Expedition, Is.Not.Null);
             s.Roster[0].Hp = 1;
-            Assert.False(Inn.Rest(c, s).Ok);
+            Assert.That(Inn.Rest(c, s).Ok, Is.False);
             CaravanUpgrades.Buy(c, s, "medic_wagon");
             int premium = Inn.Cost(c, s);
-            Assert.True(Inn.Rest(c, s).Ok, "the Medic Wagon opens the inn on the road");
-            Assert.True(premium > 0);
+            Assert.That(Inn.Rest(c, s).Ok, Is.True, "the Medic Wagon opens the inn on the road");
+            Assert.That(premium > 0, Is.True);
 
             // Maxing out.
-            while (CaravanUpgrades.NextLevel(c, s, "scouts") != null) Assert.True(CaravanUpgrades.Buy(c, s, "scouts").Ok);
-            Assert.False(CaravanUpgrades.Buy(c, s, "scouts").Ok);
+            while (CaravanUpgrades.NextLevel(c, s, "scouts") != null) Assert.That(CaravanUpgrades.Buy(c, s, "scouts").Ok, Is.True);
+            Assert.That(CaravanUpgrades.Buy(c, s, "scouts").Ok, Is.False);
         }
 
         // ── Crafting station progression (§24.6.1, GG-T35) ──
 
-        [Fact]
+        [Test]
         public void A_station_starts_at_apprentice_and_levels_up_from_real_crafting_actions()
         {
             var c = Real; var s = Progression.NewGame(c, "Station1");
-            Assert.Equal("Apprentice", StationProgress.LevelName(s, StationKind.Blacksmith));
-            Assert.Equal("Apprentice — 0/150 XP to Journeyman", StationProgress.HeaderText(s, StationKind.Blacksmith));
+            Assert.That(StationProgress.LevelName(s, StationKind.Blacksmith), Is.EqualTo("Apprentice"));
+            Assert.That(StationProgress.HeaderText(s, StationKind.Blacksmith), Is.EqualTo("Apprentice — 0/150 XP to Journeyman"));
 
             var t1 = Crafting.Recipes(c, CraftStation.Forge).First(r => r.Tier == 1);
             var t2 = Crafting.Recipes(c, CraftStation.Forge).First(r => r.Tier == 2);
@@ -429,31 +426,31 @@ namespace Gaiden.Tests
             void CraftT1()
             {
                 Stock(t1);
-                Assert.True(Crafting.Craft(c, s, t1).Ok);
+                Assert.That(Crafting.Craft(c, s, t1).Ok, Is.True);
                 s.AddItem(t1.Result, -s.Count(t1.Result)); // clear the bag so MaxStack never blocks the next craft
             }
 
             Stock(t2);
             var blocked = Crafting.Craft(c, s, t2);
-            Assert.False(blocked.Ok);
-            Assert.Contains("Journeyman", blocked.Message);
+            Assert.That(blocked.Ok, Is.False);
+            Assert.That(blocked.Message, Does.Contain("Journeyman"));
 
             for (int i = 0; i < 20 && StationProgress.Level(s, StationKind.Blacksmith) < 2; i++) CraftT1();
-            Assert.Equal("Journeyman", StationProgress.LevelName(s, StationKind.Blacksmith));
-            Assert.True(Crafting.Craft(c, s, t2).Ok, "Journeyman should unlock the tier-2 recipe");
+            Assert.That(StationProgress.LevelName(s, StationKind.Blacksmith), Is.EqualTo("Journeyman"));
+            Assert.That(Crafting.Craft(c, s, t2).Ok, Is.True, "Journeyman should unlock the tier-2 recipe");
 
             Stock(t3);
-            Assert.False(Crafting.Craft(c, s, t3).Ok, "tier-3 still needs Master");
+            Assert.That(Crafting.Craft(c, s, t3).Ok, Is.False, "tier-3 still needs Master");
             for (int i = 0; i < 40 && StationProgress.Level(s, StationKind.Blacksmith) < 3; i++) CraftT1();
-            Assert.Equal("Master", StationProgress.LevelName(s, StationKind.Blacksmith));
-            Assert.Equal("Master — every recipe tier unlocked", StationProgress.HeaderText(s, StationKind.Blacksmith));
+            Assert.That(StationProgress.LevelName(s, StationKind.Blacksmith), Is.EqualTo("Master"));
+            Assert.That(StationProgress.HeaderText(s, StationKind.Blacksmith), Is.EqualTo("Master — every recipe tier unlocked"));
             Stock(t3);
-            Assert.True(Crafting.Craft(c, s, t3).Ok);
+            Assert.That(Crafting.Craft(c, s, t3).Ok, Is.True);
 
-            Assert.Equal(0, StationProgress.Xp(s, StationKind.Alchemist)); // Forge crafting never touches the Alchemist
+            Assert.That(StationProgress.Xp(s, StationKind.Alchemist), Is.EqualTo(0)); // Forge crafting never touches the Alchemist
         }
 
-        [Fact]
+        [Test]
         public void Repair_and_salvage_grant_blacksmith_xp_but_never_alchemist()
         {
             var c = Real; var s = Progression.NewGame(c, "Station2");
@@ -462,63 +459,63 @@ namespace Gaiden.Tests
                 && c.Item(r.Result).Durability > 1);
             s.Gold += recipe.Gold;
             foreach (var ic in recipe.Inputs) s.AddItem(ic.Item, ic.Count);
-            Assert.True(Crafting.Craft(c, s, recipe).Ok);
-            Assert.Equal(Crafting.CraftXp, StationProgress.Xp(s, StationKind.Blacksmith));
+            Assert.That(Crafting.Craft(c, s, recipe).Ok, Is.True);
+            Assert.That(StationProgress.Xp(s, StationKind.Blacksmith), Is.EqualTo(Crafting.CraftXp));
 
             var item = c.Item(recipe.Result);
             var hero = s.Hero(s.Party[0]);
-            Assert.True(Equipment.Equip(c, s, hero, item.Slot, item.Id).Ok);
+            Assert.That(Equipment.Equip(c, s, hero, item.Slot, item.Id).Ok, Is.True);
             s.Gold += 1000;
             Result repaired;
             if (item.Slot == EquipmentSlot.Weapon) { hero.WeaponDurability = 1; repaired = Repair.RepairWeapon(c, s, hero); }
             else { hero.ArmorDurability = 1; repaired = Repair.RepairArmor(c, s, hero); }
-            Assert.True(repaired.Ok, repaired.Message);
-            Assert.Equal(Crafting.CraftXp + Repair.RepairXp, StationProgress.Xp(s, StationKind.Blacksmith));
+            Assert.That(repaired.Ok, Is.True, repaired.Message);
+            Assert.That(StationProgress.Xp(s, StationKind.Blacksmith), Is.EqualTo(Crafting.CraftXp + Repair.RepairXp));
 
             s.AddItem(recipe.Result, 1); // a spare copy to salvage
-            Assert.True(Crafting.Salvage(c, s, recipe.Result).Ok);
-            Assert.Equal(Crafting.CraftXp + Repair.RepairXp + Crafting.SalvageXp, StationProgress.Xp(s, StationKind.Blacksmith));
-            Assert.Equal(0, StationProgress.Xp(s, StationKind.Alchemist));
+            Assert.That(Crafting.Salvage(c, s, recipe.Result).Ok, Is.True);
+            Assert.That(StationProgress.Xp(s, StationKind.Blacksmith), Is.EqualTo(Crafting.CraftXp + Repair.RepairXp + Crafting.SalvageXp));
+            Assert.That(StationProgress.Xp(s, StationKind.Alchemist), Is.EqualTo(0));
         }
 
-        [Fact]
+        [Test]
         public void Caravan_upgrades_and_station_tiers_never_double_gate_each_other()
         {
             // §25.12 caravan upgrades are gold-bought stat bonuses, not recipe gates — GG-T35 must not
             // make either system move the other.
             var c = Real; var s = Progression.NewGame(c, "Station3");
             s.Gold = 10000;
-            Assert.True(CaravanUpgrades.Buy(c, s, "armory").Ok);
-            Assert.True(CaravanUpgrades.Buy(c, s, "mana_casks").Ok);
-            Assert.Equal(1, StationProgress.Level(s, StationKind.Blacksmith));
-            Assert.Equal(1, StationProgress.Level(s, StationKind.Alchemist));
+            Assert.That(CaravanUpgrades.Buy(c, s, "armory").Ok, Is.True);
+            Assert.That(CaravanUpgrades.Buy(c, s, "mana_casks").Ok, Is.True);
+            Assert.That(StationProgress.Level(s, StationKind.Blacksmith), Is.EqualTo(1));
+            Assert.That(StationProgress.Level(s, StationKind.Alchemist), Is.EqualTo(1));
 
             // Buying every caravan upgrade must not have unlocked a tier-2 recipe by itself.
             var t2 = Crafting.Recipes(c, CraftStation.Alchemy).First(r => r.Tier == 2);
             s.Gold += t2.Gold;
             foreach (var ic in t2.Inputs) s.AddItem(ic.Item, ic.Count);
-            Assert.False(Crafting.Craft(c, s, t2).Ok);
+            Assert.That(Crafting.Craft(c, s, t2).Ok, Is.False);
         }
 
         // ─────────────────────────────────────────────────────────────────────
         // Masterwork crafting (§24.6.2, GG-T46)
         // ─────────────────────────────────────────────────────────────────────
 
-        [Fact]
+        [Test]
         public void Masterwork_chance_grows_with_party_luck_and_blacksmith_level_and_caps()
         {
             var c = Real; var s = Progression.NewGame(c, "MW1");
             float baseChance = Crafting.MasterworkChance(c, s);
-            Assert.True(baseChance >= Crafting.MasterworkBaseChance);
+            Assert.That(baseChance >= Crafting.MasterworkBaseChance, Is.True);
 
             foreach (var h in s.Roster) h.TotalXp = Gaiden.Core.Rules.Formulas.TotalXpForLevel(20);
             float leveledChance = Crafting.MasterworkChance(c, s);
-            Assert.True(leveledChance > baseChance, "higher party Luck should raise the chance");
+            Assert.That(leveledChance > baseChance, Is.True, "higher party Luck should raise the chance");
 
             s.StationXp["blacksmith"] = 9999;
             float masterStationChance = Crafting.MasterworkChance(c, s);
-            Assert.True(masterStationChance > leveledChance, "a higher Blacksmith level should raise the chance further");
-            Assert.True(masterStationChance <= Crafting.MasterworkMaxChance);
+            Assert.That(masterStationChance > leveledChance, Is.True, "a higher Blacksmith level should raise the chance further");
+            Assert.That(masterStationChance <= Crafting.MasterworkMaxChance, Is.True);
         }
 
         private static RecipeDef FindMasterworkCandidate(ContentDb c) =>
@@ -544,7 +541,7 @@ namespace Gaiden.Tests
         private static float StatSum(Gaiden.Core.Content.Stats st) =>
             st.Strength + st.Vitality + st.Agility + st.Speed + st.Stamina + st.Intelligence + st.Wisdom + st.Luck;
 
-        [Fact]
+        [Test]
         public void Forge_craft_can_roll_a_masterwork_variant_with_boosted_stats_and_durability()
         {
             var c = Real; var s = Progression.NewGame(c, "MW2");
@@ -553,27 +550,27 @@ namespace Gaiden.Tests
             s.Gold += 10_000_000;
 
             var craft = CraftUntilMasterwork(c, s, recipe, item.Id);
-            Assert.True(Equipment.IsMasterwork(s, item.Id), "expected at least one Masterwork roll in 500 attempts");
-            Assert.Contains("★", craft.Message);
+            Assert.That(Equipment.IsMasterwork(s, item.Id), Is.True, "expected at least one Masterwork roll in 500 attempts");
+            Assert.That(craft.Message, Does.Contain("★"));
 
             var worn = s.Worn[item.Id].Single();
-            Assert.InRange(worn.Mastery, 1f + Crafting.MasterworkStatBonusMin, 1f + Crafting.MasterworkStatBonusMax);
-            Assert.Equal((int)System.Math.Round(item.Durability * BattleConfig.MasterworkDurabilityMultiplier), worn.Durability);
+            Assert.That(worn.Mastery, Is.InRange(1f + Crafting.MasterworkStatBonusMin, 1f + Crafting.MasterworkStatBonusMax));
+            Assert.That(worn.Durability, Is.EqualTo((int)System.Math.Round(item.Durability * BattleConfig.MasterworkDurabilityMultiplier)));
 
             var hero = s.Hero(s.Party[0]);
-            Assert.True(Equipment.Equip(c, s, hero, item.Slot, item.Id).Ok);
+            Assert.That(Equipment.Equip(c, s, hero, item.Slot, item.Id).Ok, Is.True);
             float mastery = item.Slot == EquipmentSlot.Weapon ? hero.WeaponMastery : hero.ArmorMastery;
             int dur = item.Slot == EquipmentSlot.Weapon ? hero.WeaponDurability : hero.ArmorDurability;
-            Assert.Equal(worn.Mastery, mastery);
-            Assert.Equal(worn.Durability, dur);
+            Assert.That(mastery, Is.EqualTo(worn.Mastery));
+            Assert.That(dur, Is.EqualTo(worn.Durability));
 
             // The bonus reaches battle: GearStats and (for a weapon) WeaponPower scale by the rolled multiplier.
             var boosted = Progression.Preview(c, hero);
-            Assert.Equal((double)(StatSum(item.Stats) * worn.Mastery), (double)StatSum(boosted.GearStats), 2);
-            if (item.Slot == EquipmentSlot.Weapon) Assert.Equal((double)(item.BaseDamage * worn.Mastery), (double)boosted.WeaponPower, 2);
+            Assert.That((double)StatSum(boosted.GearStats), Is.EqualTo((double)(StatSum(item.Stats) * worn.Mastery)).Within(1e-2));
+            if (item.Slot == EquipmentSlot.Weapon) Assert.That((double)boosted.WeaponPower, Is.EqualTo((double)(item.BaseDamage * worn.Mastery)).Within(1e-2));
         }
 
-        [Fact]
+        [Test]
         public void Unequipping_a_masterwork_weapon_remembers_its_roll_and_requipping_restores_it()
         {
             var c = Real; var s = Progression.NewGame(c, "MW3");
@@ -583,22 +580,22 @@ namespace Gaiden.Tests
             s.Gold += 10_000_000;
 
             CraftUntilMasterwork(c, s, recipe, item.Id);
-            Assert.True(Equipment.IsMasterwork(s, item.Id));
+            Assert.That(Equipment.IsMasterwork(s, item.Id), Is.True);
             float rolledMastery = s.Worn[item.Id].Single().Mastery;
 
             var hero = s.Hero(s.Party[0]);
-            Assert.True(Equipment.Equip(c, s, hero, EquipmentSlot.Weapon, item.Id).Ok);
-            Assert.Equal(rolledMastery, hero.WeaponMastery);
+            Assert.That(Equipment.Equip(c, s, hero, EquipmentSlot.Weapon, item.Id).Ok, Is.True);
+            Assert.That(hero.WeaponMastery, Is.EqualTo(rolledMastery));
 
-            Assert.True(Equipment.Unequip(c, s, hero, EquipmentSlot.Weapon).Ok);
-            Assert.Equal(1f, hero.WeaponMastery);
-            Assert.True(Equipment.IsMasterwork(s, item.Id)); // the bag copy still remembers its roll
+            Assert.That(Equipment.Unequip(c, s, hero, EquipmentSlot.Weapon).Ok, Is.True);
+            Assert.That(hero.WeaponMastery, Is.EqualTo(1f));
+            Assert.That(Equipment.IsMasterwork(s, item.Id), Is.True); // the bag copy still remembers its roll
 
-            Assert.True(Equipment.Equip(c, s, hero, EquipmentSlot.Weapon, item.Id).Ok);
-            Assert.Equal(rolledMastery, hero.WeaponMastery);
+            Assert.That(Equipment.Equip(c, s, hero, EquipmentSlot.Weapon, item.Id).Ok, Is.True);
+            Assert.That(hero.WeaponMastery, Is.EqualTo(rolledMastery));
         }
 
-        [Fact]
+        [Test]
         public void Enchant_crafts_never_roll_masterwork_even_though_they_also_touch_weapons()
         {
             var c = Real; var s = Progression.NewGame(c, "MW4");
@@ -608,9 +605,9 @@ namespace Gaiden.Tests
             foreach (var ic in recipe.Inputs) s.AddItem(ic.Item, ic.Count);
             if (recipe.BaseItem != null) s.AddItem(recipe.BaseItem, 1);
             var craft = Crafting.Craft(c, s, recipe);
-            Assert.True(craft.Ok, craft.Message);
-            Assert.False(Equipment.IsMasterwork(s, recipe.Result));
-            Assert.DoesNotContain("★", craft.Message);
+            Assert.That(craft.Ok, Is.True, craft.Message);
+            Assert.That(Equipment.IsMasterwork(s, recipe.Result), Is.False);
+            Assert.That(craft.Message, Does.Not.Contain("★"));
         }
     }
 }

@@ -1,5 +1,6 @@
 using Gaiden.Core.Content;
-using Xunit;
+using System.Linq;
+using NUnit.Framework;
 
 namespace Gaiden.Tests
 {
@@ -92,177 +93,178 @@ namespace Gaiden.Tests
         }
 
         /// <summary>Validates the fixture and asserts it reports exactly one problem, returning it.</summary>
-        private static string OneProblem(ContentDb db) => Assert.Single(ContentLoader.Validate(db));
-
-        [Fact]
-        public void Baseline_fixture_validates_clean()
+        private static string OneProblem(ContentDb db)
         {
-            Assert.Empty(ContentLoader.Validate(ValidDb()));
+            var problems = ContentLoader.Validate(db);
+            Assert.That(problems, Has.Exactly(1).Items);
+            return problems.Single();
         }
 
-        [Fact]
+        [Test]
+        public void Baseline_fixture_validates_clean()
+        {
+            Assert.That(ContentLoader.Validate(ValidDb()), Is.Empty);
+        }
+
+        [Test]
         public void Unknown_class_in_stage_wave_enemy_is_reported()
         {
             var db = ValidDb();
             db.Stages["s1"].Waves[0].Enemies[0].Class = "missing";
-            Assert.Contains("unknown class 'missing'", OneProblem(db));
+            Assert.That(OneProblem(db), Does.Contain("unknown class 'missing'"));
         }
 
-        [Fact]
+        [Test]
         public void Unknown_class_in_stage_wave_guest_is_reported()
         {
             var db = ValidDb();
             db.Stages["s1"].Waves[0].Guests[0].Class = "missing";
-            Assert.Contains("unknown class 'missing'", OneProblem(db));
+            Assert.That(OneProblem(db), Does.Contain("unknown class 'missing'"));
         }
 
-        [Fact]
+        [Test]
         public void Unknown_class_as_surprise_speaker_is_reported()
         {
             var db = ValidDb();
             db.Stages["s1"].Waves[0].SurpriseSpeaker = "missing";
-            Assert.Contains("surprise speaker", OneProblem(db));
+            Assert.That(OneProblem(db), Does.Contain("surprise speaker"));
         }
 
-        [Fact]
+        [Test]
         public void Unknown_ability_in_loadout_is_reported()
         {
             var db = ValidDb();
             db.Classes["knight"].DefaultLoadout[0] = "missing";
-            Assert.Contains("loadout", OneProblem(db));
+            Assert.That(OneProblem(db), Does.Contain("loadout"));
         }
 
-        [Fact]
+        [Test]
         public void Unknown_ability_as_charge_ability_is_reported()
         {
             var db = ValidDb();
             db.Classes["boss"].ChargeAbility = "missing";
-            Assert.Contains("charge", OneProblem(db));
+            Assert.That(OneProblem(db), Does.Contain("charge"));
         }
 
-        [Fact]
+        [Test]
         public void Unknown_ability_in_boss_phase_is_reported()
         {
             var db = ValidDb();
             db.Classes["boss"].BossPhases[0].OnEnterAbility = "missing";
-            Assert.Contains("boss phase", OneProblem(db));
+            Assert.That(OneProblem(db), Does.Contain("boss phase"));
         }
 
-        [Fact]
+        [Test]
         public void Null_loadout_entry_is_reported()
         {
             var db = ValidDb();
             db.Classes["knight"].DefaultLoadout.Add(null);
-            Assert.Contains("null entry", OneProblem(db));
+            Assert.That(OneProblem(db), Does.Contain("null entry"));
         }
 
-        [Fact]
+        [Test]
         public void Unknown_item_in_recipe_is_reported()
         {
             var db = ValidDb();
             db.Recipes["r1"].Result = "missing";
-            Assert.Contains("recipe r1: unknown item 'missing'", OneProblem(db));
+            Assert.That(OneProblem(db), Does.Contain("recipe r1: unknown item 'missing'"));
         }
 
-        [Fact]
+        [Test]
         public void Unknown_item_in_droptable_is_reported()
         {
             var db = ValidDb();
             db.DropTables["knightdrop"].Entries[0].Item = "missing";
-            Assert.Contains("droptable knightdrop: unknown item 'missing'", OneProblem(db));
+            Assert.That(OneProblem(db), Does.Contain("droptable knightdrop: unknown item 'missing'"));
         }
 
-        [Fact]
+        [Test]
         public void Unknown_buff_is_reported()
         {
             var db = ValidDb();
             db.Abilities["bolt"].ApplyBuff = "missing";
-            Assert.Contains("unknown buff 'missing'", OneProblem(db));
+            Assert.That(OneProblem(db), Does.Contain("unknown buff 'missing'"));
         }
 
-        [Fact]
+        [Test]
         public void Unknown_trap_is_reported()
         {
             var db = ValidDb();
             db.Classes["boss"].Trap = "missing";
-            Assert.Contains("unknown trap 'missing'", OneProblem(db));
+            Assert.That(OneProblem(db), Does.Contain("unknown trap 'missing'"));
         }
 
-        [Fact]
+        [Test]
         public void Unknown_trail_is_reported()
         {
             var db = ValidDb();
             db.Classes["boss"].Trail = "missing";
-            Assert.Contains("unknown trail 'missing'", OneProblem(db));
+            Assert.That(OneProblem(db), Does.Contain("unknown trail 'missing'"));
         }
 
-        [Fact]
+        [Test]
         public void Theme_referencing_unknown_stage_is_reported()
         {
             var db = ValidDb();
             db.Campaign.Themes[0].Stages[0] = "missing";
-            Assert.Contains("theme t1: unknown stage 'missing'", OneProblem(db));
+            Assert.That(OneProblem(db), Does.Contain("theme t1: unknown stage 'missing'"));
         }
-
-        [Theory]
-        [InlineData(0)]
-        [InlineData(-1)]
+        [TestCase(0)]
+        [TestCase(-1)]
         public void Pickup_with_nonpositive_weight_is_reported(int weight)
         {
             var db = ValidDb();
             db.Pickups["p1"].Weight = weight;
-            Assert.Contains("weight must be positive", OneProblem(db));
+            Assert.That(OneProblem(db), Does.Contain("weight must be positive"));
         }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("Bogus")]
+        [TestCase(null)]
+        [TestCase("Bogus")]
         public void Invalid_role_is_reported(string role)
         {
             var db = ValidDb();
             db.Classes["knight"].Role = role;
-            Assert.Contains("needs a Role", OneProblem(db));
+            Assert.That(OneProblem(db), Does.Contain("needs a Role"));
         }
 
-        [Fact]
+        [Test]
         public void Hero_missing_home_tree_is_reported()
         {
             var db = ValidDb();
             db.Classes["knight"].HomeTree = null;
-            Assert.Contains("needs a HomeTree", OneProblem(db));
+            Assert.That(OneProblem(db), Does.Contain("needs a HomeTree"));
         }
 
-        [Fact]
+        [Test]
         public void Unknown_home_tree_is_reported()
         {
             var db = ValidDb();
             db.Classes["knight"].HomeTree = "missing";
-            Assert.Contains("unknown home tree 'missing'", OneProblem(db));
+            Assert.That(OneProblem(db), Does.Contain("unknown home tree 'missing'"));
         }
 
-        [Fact]
+        [Test]
         public void Skill_tree_node_with_unknown_grant_is_reported()
         {
             var db = ValidDb();
             db.SkillTrees["tanktree"].Nodes.Add(new SkillNodeDef { Id = "n1", Grants = "missing" });
-            Assert.Contains("unknown ability 'missing'", OneProblem(db));
+            Assert.That(OneProblem(db), Does.Contain("unknown ability 'missing'"));
         }
 
-        [Fact]
+        [Test]
         public void Skill_tree_node_with_unknown_prerequisite_is_reported()
         {
             var db = ValidDb();
             db.SkillTrees["tanktree"].Nodes.Add(new SkillNodeDef { Id = "n1", Grants = "slash", Prerequisites = { "missing" } });
-            Assert.Contains("unknown prerequisite 'missing'", OneProblem(db));
+            Assert.That(OneProblem(db), Does.Contain("unknown prerequisite 'missing'"));
         }
 
-        [Fact]
+        [Test]
         public void Skill_tree_node_prerequisite_cycle_is_reported()
         {
             var db = ValidDb();
             db.SkillTrees["tanktree"].Nodes.Add(new SkillNodeDef { Id = "n1", Grants = "slash", Prerequisites = { "n2" } });
             db.SkillTrees["tanktree"].Nodes.Add(new SkillNodeDef { Id = "n2", Grants = "slash", Prerequisites = { "n1" } });
-            Assert.Contains("prerequisite cycle", string.Join(";", ContentLoader.Validate(db)));
+            Assert.That(string.Join(";", ContentLoader.Validate(db)), Does.Contain("prerequisite cycle"));
         }
     }
 }

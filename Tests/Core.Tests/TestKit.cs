@@ -5,7 +5,7 @@ using System.Linq;
 using Gaiden.Core;
 using Gaiden.Core.Battle;
 using Gaiden.Core.Content;
-using Xunit;
+using NUnit.Framework;
 
 namespace Gaiden.Tests
 {
@@ -102,28 +102,28 @@ namespace Gaiden.Tests
             var seen = new Dictionary<Coord, int>();
             foreach (var u in s.Units)
             {
-                Assert.InRange(u.Hp, 0, u.MaxHp);
+                Assert.That(u.Hp, Is.InRange(0, u.MaxHp));
                 if (!u.Alive) continue;
                 foreach (var t in u.Tiles())
                 {
-                    Assert.True(BattleState.InBounds(t), $"{u} out of bounds at {t}");
-                    Assert.False(seen.ContainsKey(t), $"Two units on {t}: {u.Id} and {(seen.ContainsKey(t) ? seen[t] : -1)}");
+                    Assert.That(BattleState.InBounds(t), Is.True, $"{u} out of bounds at {t}");
+                    Assert.That(seen.ContainsKey(t), Is.False, $"Two units on {t}: {u.Id} and {(seen.ContainsKey(t) ? seen[t] : -1)}");
                     seen[t] = u.Id;
                 }
             }
-            Assert.InRange(s.Bank.Count, 0, s.Bank.Capacity);
+            Assert.That(s.Bank.Count, Is.InRange(0, s.Bank.Capacity));
             foreach (var e in s.Timeline)
             {
                 var owner = s.UnitById(e.OwnerId);
-                Assert.True(owner != null && owner.Alive, $"Timeline entry {e.Id} owned by dead/missing unit {e.OwnerId}");
+                Assert.That(owner != null && owner.Alive, Is.True, $"Timeline entry {e.Id} owned by dead/missing unit {e.OwnerId}");
             }
             if (!s.IsOver)
             {
-                Assert.True(s.Units.Any(u => u.Alive && u.IsHero), "No heroes but battle not over");
+                Assert.That(s.Units.Any(u => u.Alive && u.IsHero), Is.True, "No heroes but battle not over");
                 // A reinforcement queued for the current wave (§14.8) legitimately holds the battle open with
                 // the board clear — mirrors the same check BattleRunner.CheckEnd makes before ending a wave.
                 bool reinforcementPending = s.PendingSpawns.Any(p => !p.Consumed && p.Wave == s.Wave);
-                Assert.True(s.Units.Any(u => u.Alive && !u.IsHero) || reinforcementPending, "No enemies but battle not over");
+                Assert.That(s.Units.Any(u => u.Alive && !u.IsHero) || reinforcementPending, Is.True, "No enemies but battle not over");
             }
         }
     }

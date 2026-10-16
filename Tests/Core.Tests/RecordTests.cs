@@ -5,8 +5,7 @@ using Gaiden.Core.Battle;
 using Gaiden.Core.Bot;
 using Gaiden.Meta;
 using Newtonsoft.Json.Linq;
-using Xunit;
-using Xunit.Abstractions;
+using NUnit.Framework;
 using static Gaiden.Tests.TestKit;
 
 namespace Gaiden.Tests
@@ -17,8 +16,6 @@ namespace Gaiden.Tests
     /// </summary>
     public class RecordTests
     {
-        private readonly ITestOutputHelper output;
-        public RecordTests(ITestOutputHelper output) { this.output = output; }
 
         private static (BattleState state, JObject record) PlayRecorded(int seed, float randomness, string label, int maxActions = 700)
         {
@@ -39,30 +36,30 @@ namespace Gaiden.Tests
             return (s, rec.Finish(s));
         }
 
-        [Fact]
+        [Test]
         public void A_recorded_battle_round_trips_as_json_with_every_turn()
         {
             var (s, rec) = PlayRecorded(3, 0f, "bot:greedy", 60);
             var parsed = JObject.Parse(rec.ToString());
-            Assert.Equal(BattleRecorder.SchemaVersion, (int)parsed["schema"]);
-            Assert.Equal(5, (int)parsed["waves"]);
+            Assert.That((int)parsed["schema"], Is.EqualTo(BattleRecorder.SchemaVersion));
+            Assert.That((int)parsed["waves"], Is.EqualTo(5));
             var turns = (JArray)parsed["turns"];
-            Assert.True(turns.Count > 10);
+            Assert.That(turns.Count > 10, Is.True);
             var first = turns[0];
-            Assert.NotNull(first["before"]["units"]);
-            Assert.NotNull(first["command"]["type"]);
-            Assert.True(((JArray)first["events"]).Count > 0);
-            Assert.All(turns, t => Assert.NotNull(t["after"]["heroHp"]));
-            Assert.NotNull(parsed["outcome"]["phase"]);
-            Assert.All((JArray)parsed["party"], h => Assert.Equal(1, ((JArray)h["bar"]).Count(b => b.Type == JTokenType.Object && (string)b["item"] == "x_potion")));
+            Assert.That(first["before"]["units"], Is.Not.Null);
+            Assert.That(first["command"]["type"], Is.Not.Null);
+            Assert.That(((JArray)first["events"]).Count > 0, Is.True);
+            foreach (var t in turns) Assert.That(t["after"]["heroHp"], Is.Not.Null);
+            Assert.That(parsed["outcome"]["phase"], Is.Not.Null);
+            foreach (var h in (JArray)parsed["party"]) Assert.That(((JArray)h["bar"]).Count(b => b.Type == JTokenType.Object && (string)b["item"] == "x_potion"), Is.EqualTo(1));
         }
 
-        [Fact]
+        [Test]
         public void Record_soak_of_the_first_battle()
         {
             var dir = Environment.GetEnvironmentVariable("GAIDEN_RECORDS");
             int seeds = int.TryParse(Environment.GetEnvironmentVariable("GAIDEN_RECORD_SEEDS"), out var n) ? n : 12;
-            if (string.IsNullOrEmpty(dir)) { output.WriteLine("GAIDEN_RECORDS not set — nothing written"); return; }
+            if (string.IsNullOrEmpty(dir)) { TestContext.Out.WriteLine("GAIDEN_RECORDS not set — nothing written"); return; }
             Directory.CreateDirectory(dir);
             foreach (var (label, randomness) in new[] { ("bot:greedy", 0f), ("bot:casual", 0.5f) })
                 for (int seed = 1; seed <= seeds; seed++)
@@ -70,7 +67,7 @@ namespace Gaiden.Tests
                     var (s, rec) = PlayRecorded(seed, randomness, label);
                     var file = Path.Combine(dir, $"greenvalley-01_{label.Replace(':', '-')}_{seed:000}.json");
                     File.WriteAllText(file, rec.ToString(Newtonsoft.Json.Formatting.None));
-                    output.WriteLine($"{label} seed {seed}: {s.Phase} at wave {s.Wave + 1}, {s.Results.ActionsTaken} actions");
+                    TestContext.Out.WriteLine($"{label} seed {seed}: {s.Phase} at wave {s.Wave + 1}, {s.Results.ActionsTaken} actions");
                 }
         }
     }

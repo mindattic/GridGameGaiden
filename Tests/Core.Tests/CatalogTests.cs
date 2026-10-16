@@ -4,8 +4,7 @@ using Gaiden.Core;
 using Gaiden.Core.Battle;
 using Gaiden.Core.Content;
 using Gaiden.Meta;
-using Xunit;
-using Xunit.Abstractions;
+using NUnit.Framework;
 using static Gaiden.Tests.TestKit;
 
 namespace Gaiden.Tests
@@ -13,14 +12,10 @@ namespace Gaiden.Tests
     /// <summary>Exercises every entry of the real content catalogs through the engine (no ability is "data only").</summary>
     public class CatalogTests
     {
-        private readonly ITestOutputHelper output;
-        public CatalogTests(ITestOutputHelper output) { this.output = output; }
 
         public static IEnumerable<object[]> HeroAbilities() =>
             Real.Abilities.Values.Where(Gaiden.Meta.Abilities.IsHeroUsable).Select(a => new object[] { a.Id });
-
-        [Theory]
-        [MemberData(nameof(HeroAbilities))]
+        [TestCaseSource(nameof(HeroAbilities))]
         public void Every_hero_ability_resolves_against_a_live_board(string abilityId)
         {
             var c = Real;
@@ -36,35 +31,33 @@ namespace Gaiden.Tests
             var h = s.Units.First(u => u.IsHero);
             h.Hp = h.MaxHp / 2; // so heals have something to do
             var status = BattleEngine.GetSlotStatus(s, h.Id, 0);
-            Assert.Equal(SlotStatus.Ready, status);
+            Assert.That(status, Is.EqualTo(SlotStatus.Ready));
             Coord target = h.Pos;
             if (a.Mode != TargetMode.Auto)
             {
                 var targets = BattleEngine.ValidTargets(s, h.Id, 0);
-                Assert.True(targets.Count > 0, $"{a.Id}: no valid targets");
+                Assert.That(targets.Count > 0, Is.True, $"{a.Id}: no valid targets");
                 target = targets[0];
             }
             var ev = BattleEngine.Apply(s, new UseSlotCommand { HeroId = h.Id, Slot = 0, Target = target });
-            Assert.DoesNotContain(ev, e => e is AbilityRefusedEvent);
+            Assert.That(ev.Any(e => e is AbilityRefusedEvent), Is.False);
             bool resolvedNow = ev.Any(e => e is AbilityResolvedEvent r && r.AbilityId == a.Id) || ev.Any(e => e is TeleportedEvent);
             bool queued = ev.Any(e => e is CastQueuedEvent q && q.AbilityId == a.Id);
-            Assert.True(resolvedNow || queued, $"{a.Id} neither resolved nor queued: {string.Join(" | ", ev)}");
+            Assert.That(resolvedNow || queued, Is.True, $"{a.Id} neither resolved nor queued: {string.Join(" | ", ev)}");
             for (int i = 0; i < 6 && queued && !resolvedNow && !s.IsOver; i++)
                 resolvedNow = BattleEngine.Apply(s, new ShieldCommand()).Any(e => e is AbilityResolvedEvent r && r.AbilityId == a.Id);
-            Assert.True(resolvedNow || s.IsOver, $"{a.Id}: cast never resolved");
+            Assert.That(resolvedNow || s.IsOver, Is.True, $"{a.Id}: cast never resolved");
             AssertInvariants(s);
         }
 
         public static IEnumerable<object[]> ChargeAbilities() =>
             Real.Abilities.Values.Where(a => a.Id.StartsWith("charge_")).Select(a => new object[] { a.Id });
-
-        [Theory]
-        [MemberData(nameof(ChargeAbilities))]
+        [TestCaseSource(nameof(ChargeAbilities))]
         public void Every_enemy_charge_telegraphs_and_resolves(string abilityId)
         {
             var c = Real;
             var caster = c.Classes.Values.FirstOrDefault(x => x.ChargeAbility == abilityId && x.Footprint.W == 1);
-            if (caster == null) { output.WriteLine($"{abilityId}: no 1x1 caster uses it"); return; }
+            if (caster == null) { TestContext.Out.WriteLine($"{abilityId}: no 1x1 caster uses it"); return; }
             var stage = new StageDef { Id = "chg", IsTest = true, Waves = { new WaveDef { Enemies = { new SpawnDef { Class = caster.Id, Level = 1, X = 0, Y = 0 } } } } };
             var setup = new BattleSetup { Stage = stage, Seed = 5, UnlockedSlots = 2 };
             setup.Party.Add(new HeroSpec { ClassId = "paladin", Level = 20, Start = new Coord(5, 7) });
@@ -74,19 +67,19 @@ namespace Gaiden.Tests
             if (c.Abilities[abilityId].BaseHeal > 0) { var me = s.Units.First(u => !u.IsHero); me.Hp = me.MaxHp / 3; }
             var all = new List<BattleEvent>();
             for (int i = 0; i < 12 && !s.IsOver; i++) all.AddRange(BattleEngine.Apply(s, new ShieldCommand()));
-            Assert.Contains(all, e => e is CastQueuedEvent q && q.IsCharge);
-            Assert.Contains(all, e => e is AbilityResolvedEvent r && r.AbilityId == abilityId);
+            Assert.That(all.Any(e => e is CastQueuedEvent q && q.IsCharge), Is.True);
+            Assert.That(all.Any(e => e is AbilityResolvedEvent r && r.AbilityId == abilityId), Is.True);
             AssertInvariants(s);
         }
 
-        [Fact]
+        [Test]
         public void Every_consumable_has_a_working_battle_effect_or_is_camp_only()
         {
             var c = Real;
             var problems = new List<string>();
             foreach (var item in c.Items.Values.Where(i => i.Type == ItemType.Consumable))
             {
-                if (item.OutOfBattleOnly) { Assert.True(Camp.UsableAtCamp(item), $"{item.Id}: camp-only item unusable at camp"); continue; }
+                if (item.OutOfBattleOnly) { Assert.That(Camp.UsableAtCamp(item), Is.True, $"{item.Id}: camp-only item unusable at camp"); continue; }
                 var stage = new StageDef { Id = "itm", IsTest = true, Waves = { new WaveDef { Enemies = { new SpawnDef { Class = "slime00", Level = 1, X = 2, Y = 2 } } } } };
                 var setup = new BattleSetup { Stage = stage, Seed = 2, UnlockedSlots = 5 };
                 setup.Party.Add(new HeroSpec { ClassId = "paladin", Level = 3, Start = new Coord(2, 3), Bar = new List<string> { "item:" + item.Id }, ItemCounts = { [item.Id] = 2 } });
@@ -108,10 +101,10 @@ namespace Gaiden.Tests
                 if (!effect) problems.Add($"{item.Id}: used but nothing happened");
                 AssertInvariants(s);
             }
-            Assert.True(problems.Count == 0, string.Join("\n", problems));
+            Assert.That(problems.Count == 0, Is.True, string.Join("\n", problems));
         }
 
-        [Fact]
+        [Test]
         public void Smoke_bomb_escapes_and_keeps_wounds()
         {
             var c = Real;
@@ -123,16 +116,16 @@ namespace Gaiden.Tests
             var pal = s.Units.First(u => u.Def.Id == "paladin");
             pal.Hp = 20;
             BattleEngine.Apply(s, new UseSlotCommand { HeroId = pal.Id, Slot = 0, Target = pal.Pos });
-            Assert.Equal(BattlePhase.Escaped, s.Phase);
+            Assert.That(s.Phase, Is.EqualTo(BattlePhase.Escaped));
             int gold = save.Gold;
             var rep = BattleFactory.Commit(c, save, s);
-            Assert.True(rep.Escaped);
-            Assert.Equal(gold, save.Gold);
-            Assert.Equal(20, save.Hero("paladin").Hp);
-            Assert.Equal(0, save.Count("smoke_bomb"));
+            Assert.That(rep.Escaped, Is.True);
+            Assert.That(save.Gold, Is.EqualTo(gold));
+            Assert.That(save.Hero("paladin").Hp, Is.EqualTo(20));
+            Assert.That(save.Count("smoke_bomb"), Is.EqualTo(0));
         }
 
-        [Fact]
+        [Test]
         public void Camp_potion_heals_a_wounded_hero_and_tent_heals_everyone()
         {
             var c = Real;
@@ -141,16 +134,16 @@ namespace Gaiden.Tests
             h.Hp = 10;
             save.AddItem("healing_potion_basic", 1);
             int before = save.Count("healing_potion_basic");
-            Assert.True(Camp.Use(c, save, "healing_potion_basic", "paladin").Ok);
-            Assert.True(h.Hp > 10 || h.Hp == 0);
-            Assert.Equal(before - 1, save.Count("healing_potion_basic"));
+            Assert.That(Camp.Use(c, save, "healing_potion_basic", "paladin").Ok, Is.True);
+            Assert.That(h.Hp > 10 || h.Hp == 0, Is.True);
+            Assert.That(save.Count("healing_potion_basic"), Is.EqualTo(before - 1));
             save.Hero("cleric").Hp = 3;
             save.AddItem("tent", 1);
-            Assert.True(Camp.Use(c, save, "tent", null).Ok);
-            Assert.All(save.Roster, x => Assert.Equal(0, x.Hp));
+            Assert.That(Camp.Use(c, save, "tent", null).Ok, Is.True);
+            foreach (var x in save.Roster) Assert.That(x.Hp, Is.EqualTo(0));
         }
 
-        [Fact]
+        [Test]
         public void Every_recipe_is_craftable_with_its_inputs()
         {
             var c = Real;
@@ -162,8 +155,8 @@ namespace Gaiden.Tests
                 foreach (var ic in r.Inputs) s.AddItem(ic.Item, ic.Count);
                 if (r.BaseItem != null) s.AddItem(r.BaseItem, 1);
                 var res = Crafting.Craft(c, s, r);
-                Assert.True(res.Ok, $"{r.Id}: {res.Message}");
-                Assert.True(s.Count(r.Result) >= r.ResultCount);
+                Assert.That(res.Ok, Is.True, $"{r.Id}: {res.Message}");
+                Assert.That(s.Count(r.Result) >= r.ResultCount, Is.True);
             }
         }
 
@@ -171,74 +164,69 @@ namespace Gaiden.Tests
         /// the Alchemist, and brewing it (gold only — its reagents come from field drops) must cost
         /// meaningfully less per unit than just buying it, so gathering-and-mixing stays the efficient
         /// path while the shop stays the convenient one.</summary>
-        [Fact]
+        [Test]
         public void Every_sold_healing_or_cure_potion_is_meaningfully_cheaper_brewed_than_bought()
         {
             var c = Real;
             bool IsHealingOrCure(ItemDef i) => i.Type == ItemType.Consumable && (i.BaseHealing > 0 || i.CuresBuff != null || i.CuresAll || i.Revives);
             var potions = c.Items.Values.Where(i => i.SoldByVendor && IsHealingOrCure(i)).ToList();
-            Assert.NotEmpty(potions);
+            Assert.That(potions, Is.Not.Empty);
             foreach (var potion in potions)
             {
                 var recipe = c.Recipes.Values.FirstOrDefault(r => r.Station == CraftStation.Alchemy && r.Result == potion.Id);
-                Assert.True(recipe != null, $"{potion.Id}: sold by the Merchant but has no Alchemy recipe");
+                Assert.That(recipe != null, Is.True, $"{potion.Id}: sold by the Merchant but has no Alchemy recipe");
                 float brewCostPerUnit = (float)recipe.Gold / recipe.ResultCount;
-                Assert.True(brewCostPerUnit < potion.BaseCost * 0.6f,
-                    $"{potion.Id}: brewing ({brewCostPerUnit}g/unit) isn't meaningfully cheaper than buying ({potion.BaseCost}g)");
+                Assert.That(brewCostPerUnit < potion.BaseCost * 0.6f, Is.True, $"{potion.Id}: brewing ({brewCostPerUnit}g/unit) isn't meaningfully cheaper than buying ({potion.BaseCost}g)");
             }
         }
 
         public static IEnumerable<object[]> PotencyRecipes() =>
             Real.Recipes.Values.Where(r => r.PotencyResult != null).Select(r => new object[] { r.Id });
-
-        [Theory]
-        [MemberData(nameof(PotencyRecipes))]
+        [TestCaseSource(nameof(PotencyRecipes))]
         public void Brewing_with_the_potency_reagent_yields_the_greater_result_instead(string recipeId)
         {
             var c = Real;
             var r = c.Recipes[recipeId];
             var s = new SaveData { Gold = r.Gold, StationXp = { ["blacksmith"] = 9999, ["alchemist"] = 9999 } };
             foreach (var ic in r.PotencyInputs) s.AddItem(ic.Item, ic.Count);
-            Assert.False(Crafting.HasInputs(s, r), $"{recipeId}: potency reagents shouldn't also satisfy the base recipe");
-            Assert.True(Crafting.HasPotencyInputs(s, r));
+            Assert.That(Crafting.HasInputs(s, r), Is.False, $"{recipeId}: potency reagents shouldn't also satisfy the base recipe");
+            Assert.That(Crafting.HasPotencyInputs(s, r), Is.True);
             var res = Crafting.Craft(c, s, r, potency: true);
-            Assert.True(res.Ok, $"{recipeId}: {res.Message}");
-            Assert.Equal(r.PotencyResultCount, s.Count(r.PotencyResult));
-            Assert.Equal(0, s.Count(r.Result));
-            foreach (var ic in r.PotencyInputs) Assert.Equal(0, s.Count(ic.Item));
+            Assert.That(res.Ok, Is.True, $"{recipeId}: {res.Message}");
+            Assert.That(s.Count(r.PotencyResult), Is.EqualTo(r.PotencyResultCount));
+            Assert.That(s.Count(r.Result), Is.EqualTo(0));
+            foreach (var ic in r.PotencyInputs) Assert.That(s.Count(ic.Item), Is.EqualTo(0));
             var greater = c.Item(r.PotencyResult);
             var basic = c.Item(r.Result);
-            Assert.True(greater.BaseHealing >= basic.BaseHealing && (greater.BaseHealing > basic.BaseHealing || greater.CuresAll && !basic.CuresAll),
-                $"{recipeId}: {greater.Id} should be a strict upgrade over {basic.Id}");
+            Assert.That(greater.BaseHealing >= basic.BaseHealing && (greater.BaseHealing > basic.BaseHealing || greater.CuresAll && !basic.CuresAll), Is.True, $"{recipeId}: {greater.Id} should be a strict upgrade over {basic.Id}");
         }
 
-        [Fact] // GG-T47
+        [Test] // GG-T47
         public void Every_weapon_upgrade_lines_top_step_has_a_named_passive()
         {
             var c = Real;
             var baseItems = c.Recipes.Values.Where(r => r.Station == CraftStation.Forge && r.BaseItem != null).Select(r => r.BaseItem).ToHashSet();
             var tops = c.Recipes.Values.Where(r => r.Station == CraftStation.Forge && r.BaseItem != null && !baseItems.Contains(r.Result))
                 .Select(r => r.Result).Distinct().ToList();
-            Assert.Equal(13, tops.Count);
+            Assert.That(tops.Count, Is.EqualTo(13));
             foreach (var id in tops)
             {
                 var item = c.Items[id];
-                Assert.False(string.IsNullOrEmpty(item.PassiveName), $"{id} has no named passive");
-                Assert.False(string.IsNullOrEmpty(item.PassiveDescription), $"{id} has no passive description");
-                Assert.True(item.PincerApplyBuff != null || item.LifestealFraction > 0f || item.AdjacentAllyDamageReduction > 0f,
-                    $"{id}'s passive ({item.PassiveName}) has no mechanic wired");
+                Assert.That(string.IsNullOrEmpty(item.PassiveName), Is.False, $"{id} has no named passive");
+                Assert.That(string.IsNullOrEmpty(item.PassiveDescription), Is.False, $"{id} has no passive description");
+                Assert.That(item.PincerApplyBuff != null || item.LifestealFraction > 0f || item.AdjacentAllyDamageReduction > 0f, Is.True, $"{id}'s passive ({item.PassiveName}) has no mechanic wired");
             }
         }
 
-        [Fact]
+        [Test]
         public void Every_class_can_be_instantiated_and_has_art_reference()
         {
             foreach (var cls in Real.Classes.Values)
             {
-                Assert.False(string.IsNullOrEmpty(cls.Name), cls.Id);
+                Assert.That(string.IsNullOrEmpty(cls.Name), Is.False, cls.Id);
                 var st = Gaiden.Core.Rules.Formulas.StatsAtLevel(cls, 10);
-                Assert.True(Gaiden.Core.Rules.Formulas.MaxHp(st, 10) > 0, cls.Id);
-                Assert.True(System.IO.File.Exists(System.IO.Path.Combine(RepoRoot, "Assets", "Gaiden", "Resources", "Thumbs", cls.Id + ".png")), $"missing thumb for {cls.Id}");
+                Assert.That(Gaiden.Core.Rules.Formulas.MaxHp(st, 10) > 0, Is.True, cls.Id);
+                Assert.That(System.IO.File.Exists(System.IO.Path.Combine(RepoRoot, "Assets", "Gaiden", "Resources", "Thumbs", cls.Id + ".png")), Is.True, $"missing thumb for {cls.Id}");
             }
         }
     }

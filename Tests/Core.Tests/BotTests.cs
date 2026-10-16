@@ -4,7 +4,7 @@ using Gaiden.Core;
 using Gaiden.Core.Battle;
 using Gaiden.Core.Bot;
 using Gaiden.Core.Content;
-using Xunit;
+using NUnit.Framework;
 using static Gaiden.Tests.TestKit;
 
 namespace Gaiden.Tests
@@ -13,52 +13,52 @@ namespace Gaiden.Tests
     {
         // ── HeroBot.LPaths ──────────────────────────────────────────────────
 
-        [Fact]
+        [Test]
         public void LPaths_yields_one_path_for_a_straight_line()
         {
             var paths = HeroBot.LPaths(new Coord(1, 2), new Coord(4, 2)).ToList();
-            Assert.Single(paths);
-            Assert.Equal(new List<Coord> { new Coord(2, 2), new Coord(3, 2), new Coord(4, 2) }, paths[0]);
+            Assert.That(paths, Has.Exactly(1).Items);
+            Assert.That(paths[0], Is.EqualTo(new List<Coord> { new Coord(2, 2), new Coord(3, 2), new Coord(4, 2) }));
         }
 
-        [Fact]
+        [Test]
         public void LPaths_yields_both_L_orders_for_a_diagonal_destination()
         {
             var from = new Coord(1, 1);
             var to = new Coord(3, 4);
             var paths = HeroBot.LPaths(from, to).ToList();
-            Assert.Equal(2, paths.Count);
-            Assert.All(paths, p => Assert.Equal(to, p[p.Count - 1]));
+            Assert.That(paths.Count, Is.EqualTo(2));
+            foreach (var p in paths) Assert.That(p[p.Count - 1], Is.EqualTo(to));
             // First order moves X before Y: it turns the corner at (to.X, from.Y).
-            Assert.Contains(new Coord(to.X, from.Y), paths[0]);
-            Assert.DoesNotContain(new Coord(from.X, to.Y), paths[0]);
+            Assert.That(paths[0], Does.Contain(new Coord(to.X, from.Y)));
+            Assert.That(paths[0], Does.Not.Contain(new Coord(from.X, to.Y)));
             // Second order moves Y before X: it turns the corner at (from.X, to.Y).
-            Assert.Contains(new Coord(from.X, to.Y), paths[1]);
-            Assert.DoesNotContain(new Coord(to.X, from.Y), paths[1]);
+            Assert.That(paths[1], Does.Contain(new Coord(from.X, to.Y)));
+            Assert.That(paths[1], Does.Not.Contain(new Coord(to.X, from.Y)));
         }
 
-        [Fact]
+        [Test]
         public void LPaths_yields_nothing_when_from_equals_to()
         {
             var here = new Coord(2, 5);
             var paths = HeroBot.LPaths(here, here).ToList();
-            Assert.Single(paths);
-            Assert.Empty(paths[0]);
+            Assert.That(paths, Has.Exactly(1).Items);
+            Assert.That(paths[0], Is.Empty);
         }
 
         // ── HeroBot.Decide / BestMove ───────────────────────────────────────
 
-        [Fact]
+        [Test]
         public void BestMove_returns_null_when_no_hero_can_move()
         {
             var db = Mini();
             var (s, _) = Battle(db, Stage(("wolf", 0, 0)), ("knight", 5, 7), ("cleric", 4, 7));
             foreach (var h in s.LivingList(Team.Hero)) h.Buffs.Add(new BuffInstance { Def = db.Buffs["sleep"], Remaining = 3 });
             var bot = new HeroBot(1);
-            Assert.Null(bot.BestMove(s));
+            Assert.That(bot.BestMove(s), Is.Null);
         }
 
-        [Fact]
+        [Test]
         public void Decide_is_deterministic_for_a_fixed_seed_and_battle_state()
         {
             var db = Mini();
@@ -74,7 +74,7 @@ namespace Gaiden.Tests
             AssertSameCommand(cmd1, cmd2);
         }
 
-        [Fact]
+        [Test]
         public void SkillLevel_100_always_picks_the_clearly_best_move()
         {
             // bible §1.4 setup: C(2,3) g(3,3) g(4,3) K(5,3) — dragging K to (4,3) shoves the far goblin
@@ -88,13 +88,15 @@ namespace Gaiden.Tests
             for (int seed = 1; seed <= 10; seed++)
             {
                 var bot = new HeroBot(seed) { SkillLevel = 100f };
-                var cmd = Assert.IsType<MoveCommand>(bot.Decide(s));
-                Assert.Equal(knight.Id, cmd.HeroId);
-                Assert.Equal(new List<Coord> { new Coord(4, 3) }, cmd.Path);
+                var decided = bot.Decide(s);
+                Assert.That(decided, Is.TypeOf<MoveCommand>());
+                var cmd = (MoveCommand)decided;
+                Assert.That(cmd.HeroId, Is.EqualTo(knight.Id));
+                Assert.That(cmd.Path, Is.EqualTo(new List<Coord> { new Coord(4, 3) }));
             }
         }
 
-        [Fact]
+        [Test]
         public void Randomness_and_softened_skill_still_only_return_legal_commands()
         {
             var db = Mini();
@@ -116,16 +118,16 @@ namespace Gaiden.Tests
             switch (cmd)
             {
                 case MoveCommand mc:
-                    Assert.True(BattleEngine.CanMove(s, mc.HeroId), "move command on a hero who cannot move");
+                    Assert.That(BattleEngine.CanMove(s, mc.HeroId), Is.True, "move command on a hero who cannot move");
                     var pv = BattleEngine.PreviewMove(s, mc.HeroId, mc.Path);
-                    Assert.Equal(mc.Path.Count, pv.StepsTaken.Count);
+                    Assert.That(pv.StepsTaken.Count, Is.EqualTo(mc.Path.Count));
                     break;
                 case UseSlotCommand uc:
-                    Assert.Equal(SlotStatus.Ready, BattleEngine.GetSlotStatus(s, uc.HeroId, uc.Slot));
+                    Assert.That(BattleEngine.GetSlotStatus(s, uc.HeroId, uc.Slot), Is.EqualTo(SlotStatus.Ready));
                     var hero = s.UnitById(uc.HeroId);
                     var ability = BattleEngine.SlotAbility(s, hero, uc.Slot);
                     if (ability.Mode != TargetMode.Auto)
-                        Assert.Contains(uc.Target, BattleEngine.ValidTargets(s, uc.HeroId, uc.Slot));
+                        Assert.That(BattleEngine.ValidTargets(s, uc.HeroId, uc.Slot), Does.Contain(uc.Target));
                     break;
                 case ShieldCommand _:
                     break;
@@ -137,17 +139,17 @@ namespace Gaiden.Tests
 
         private static void AssertSameCommand(BattleCommand a, BattleCommand b)
         {
-            Assert.Equal(a.GetType(), b.GetType());
+            Assert.That(b.GetType(), Is.EqualTo(a.GetType()));
             switch (a)
             {
                 case MoveCommand ma when b is MoveCommand mb:
-                    Assert.Equal(ma.HeroId, mb.HeroId);
-                    Assert.Equal(ma.Path, mb.Path);
+                    Assert.That(mb.HeroId, Is.EqualTo(ma.HeroId));
+                    Assert.That(mb.Path, Is.EqualTo(ma.Path));
                     break;
                 case UseSlotCommand ua when b is UseSlotCommand ub:
-                    Assert.Equal(ua.HeroId, ub.HeroId);
-                    Assert.Equal(ua.Slot, ub.Slot);
-                    Assert.Equal(ua.Target, ub.Target);
+                    Assert.That(ub.HeroId, Is.EqualTo(ua.HeroId));
+                    Assert.That(ub.Slot, Is.EqualTo(ua.Slot));
+                    Assert.That(ub.Target, Is.EqualTo(ua.Target));
                     break;
                 case ShieldCommand _ when b is ShieldCommand _:
                     break;
@@ -159,13 +161,13 @@ namespace Gaiden.Tests
 
         // ── MetaHeuristics ──────────────────────────────────────────────────
 
-        [Fact]
+        [Test]
         public void Score_of_null_item_is_zero()
         {
-            Assert.Equal(0f, MetaHeuristics.Score(null));
+            Assert.That(MetaHeuristics.Score(null), Is.EqualTo(0f));
         }
 
-        [Fact]
+        [Test]
         public void Score_sums_stats_plus_half_base_damage()
         {
             var item = new ItemDef
@@ -177,17 +179,17 @@ namespace Gaiden.Tests
                 Stats = new Stats { Strength = 3, Vitality = 2, Agility = 1, Speed = 4, Intelligence = 5, Wisdom = 6, Luck = 7, Stamina = 8 },
             };
             // 3+2+1+4+5+6+7+8 = 36, plus half of 10 base damage = 41.
-            Assert.Equal(41f, MetaHeuristics.Score(item));
+            Assert.That(MetaHeuristics.Score(item), Is.EqualTo(41f));
         }
 
-        [Fact]
+        [Test]
         public void BestFirst_orders_items_by_descending_score()
         {
             var weak = new ItemDef { Id = "weak", Name = "Weak", Type = ItemType.Equipment, Stats = new Stats { Strength = 1 } };
             var strong = new ItemDef { Id = "strong", Name = "Strong", Type = ItemType.Equipment, Stats = new Stats { Strength = 10 } };
             var mid = new ItemDef { Id = "mid", Name = "Mid", Type = ItemType.Equipment, Stats = new Stats { Strength = 5 } };
             var ordered = MetaHeuristics.BestFirst(new[] { weak, strong, mid }).ToList();
-            Assert.Equal(new[] { strong, mid, weak }, ordered);
+            Assert.That(ordered, Is.EqualTo(new[] { strong, mid, weak }));
         }
     }
 }

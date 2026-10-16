@@ -73,7 +73,7 @@ GridGame Gaiden is **NOT**:
  │  Bot/HeroBot, BotRunner   Util/Rng,Coord│
  │  Content/ContentLoader, ContentDb, ContentModels ◀── Resources/Content/*.json              │
  └─────────────────────────────────────────┘
-          ▲ compiled and run outside Unity by Tests/Core.Tests (xUnit, dotnet test)
+          ▲ compiled and run outside Unity by Tests/Core.Tests (NUnit, dotnet test)
 ```
 
 ### 4.1 Projects / assemblies
@@ -82,7 +82,7 @@ GridGame Gaiden is **NOT**:
 - `Gaiden.Meta` (`noEngineReferences: true`, references Core) — save model and every Camp service.
 - `Gaiden.App` (references Core, Meta, `Unity.InputSystem`) — presentation, input, audio, automation.
 - `Gaiden.Editor` (Editor only) — `Editor/GaidenBuild.cs`: batchmode entry points (`EnsureScene`, `BuildWindowsDev`, `BuildWindowsRelease`, `BuildAndroid`, `BuildWebGL`, `CompileCheck`, `ReimportArt`). This file is the only "scene authoring" the project has.
-- `Tests/Gaiden.Core/Gaiden.Core.csproj` — compiles the Unity source of Core + Meta as a plain .NET Standard 2.1 library (proving [GG-LAW-9](#GG-LAW-9) on every build); `Tests/Core.Tests/Core.Tests.csproj` — the xUnit suite on top of it, run with `dotnet test` (no Unity needed).
+- `Tests/Gaiden.Core/Gaiden.Core.csproj` — compiles the Unity source of Core + Meta as a plain .NET Standard 2.1 library (proving [GG-LAW-9](#GG-LAW-9) on every build); `Tests/Core.Tests/Core.Tests.csproj` — the NUnit suite on top of it, run with `dotnet test` (no Unity needed).
 
 ### 4.2 Domain model — the NOUNS
 

@@ -5,7 +5,7 @@ using Gaiden.Core.Battle;
 using Gaiden.Core.Content;
 using Gaiden.Core.Rules;
 using Gaiden.Meta;
-using Xunit;
+using NUnit.Framework;
 using static Gaiden.Tests.TestKit;
 
 namespace Gaiden.Tests
@@ -23,7 +23,7 @@ namespace Gaiden.Tests
             return db;
         }
 
-        [Fact]
+        [Test]
         public void A_taunting_hero_draws_every_enemy_that_can_choose()
         {
             var db = WithRoleKit();
@@ -33,17 +33,17 @@ namespace Gaiden.Tests
             var knight = Hero(s, "knight");
             var mage = Hero(s, "mage");
             mage.Hp = 3; // the weakest, and right next to it
-            Assert.Same(mage, EnemyPlanner.PickTarget(s, gob));
+            Assert.That(EnemyPlanner.PickTarget(s, gob), Is.SameAs(mage));
 
             knight.Bar[0] = new AbilitySlot { AbilityId = "taunt" };
             var ev = BattleEngine.Apply(s, new UseSlotCommand { HeroId = knight.Id, Slot = 0 });
-            Assert.Contains(ev, e => e is BuffAppliedEvent b && b.BuffId == "taunting" && b.UnitId == knight.Id);
-            Assert.True(knight.IsTaunting);
-            Assert.Same(knight, EnemyPlanner.PickTarget(s, gob));
-            Assert.Equal(3, knight.Cooldowns["taunt"] + 1); // started at 3, ticked once at control return
+            Assert.That(ev.Any(e => e is BuffAppliedEvent b && b.BuffId == "taunting" && b.UnitId == knight.Id), Is.True);
+            Assert.That(knight.IsTaunting, Is.True);
+            Assert.That(EnemyPlanner.PickTarget(s, gob), Is.SameAs(knight));
+            Assert.That(knight.Cooldowns["taunt"] + 1, Is.EqualTo(3)); // started at 3, ticked once at control return
         }
 
-        [Fact]
+        [Test]
         public void Taunt_only_overrides_among_heroes_in_reach()
         {
             var db = WithRoleKit();
@@ -51,28 +51,28 @@ namespace Gaiden.Tests
             var gob = s.Units.Single(u => u.Def.Id == "goblin");
             Hero(s, "knight").Buffs.Add(new BuffInstance { Def = db.Buffs["taunting"], Remaining = 2 });
             // In melee only the mage is adjacent: the taunter can't be hit from here, so the mage still takes the blow.
-            Assert.Same(Hero(s, "mage"), EnemyPlanner.PickFrom(s, gob, new List<Unit> { Hero(s, "mage") }));
-            Assert.Same(Hero(s, "knight"), EnemyPlanner.PickTarget(s, gob));
+            Assert.That(EnemyPlanner.PickFrom(s, gob, new List<Unit> { Hero(s, "mage") }), Is.SameAs(Hero(s, "mage")));
+            Assert.That(EnemyPlanner.PickTarget(s, gob), Is.SameAs(Hero(s, "knight")));
         }
 
-        [Fact]
+        [Test]
         public void Caster_power_makes_a_mage_out_hit_a_fighter_and_a_sage_out_heal()
         {
             var c = Real;
             var fire = c.Abilities["fireball"];
             var mage = new Unit { Def = c.Classes["redmage"], Team = Team.Hero, LevelStats = c.Classes["redmage"].BaseStats.Clone() };
             var fighter = new Unit { Def = c.Classes["fighter"], Team = Team.Hero, LevelStats = c.Classes["fighter"].BaseStats.Clone() };
-            Assert.True(Formulas.CasterPower(fire, mage) > 1.2f);
-            Assert.True(Formulas.CasterPower(fire, fighter) < 1f);
+            Assert.That(Formulas.CasterPower(fire, mage) > 1.2f, Is.True);
+            Assert.That(Formulas.CasterPower(fire, fighter) < 1f, Is.True);
             var cleave = c.Abilities["cleave"];
-            Assert.True(Formulas.CasterPower(cleave, fighter) > Formulas.CasterPower(cleave, mage), "physical skills scale with STR");
+            Assert.That(Formulas.CasterPower(cleave, fighter) > Formulas.CasterPower(cleave, mage), Is.True, "physical skills scale with STR");
             var sage = new Unit { Def = c.Classes["sage"], Team = Team.Hero, LevelStats = c.Classes["sage"].BaseStats.Clone() };
-            Assert.True(Formulas.HealPower(sage) > Formulas.HealPower(fighter));
+            Assert.That(Formulas.HealPower(sage) > Formulas.HealPower(fighter), Is.True);
             var enemy = new Unit { Def = c.Classes["hag00"], Team = Team.Enemy, LevelStats = c.Classes["hag00"].BaseStats.Clone() };
-            Assert.Equal(1f, Formulas.CasterPower(fire, enemy)); // enemy kits keep their tuned numbers
+            Assert.That(Formulas.CasterPower(fire, enemy), Is.EqualTo(1f)); // enemy kits keep their tuned numbers
         }
 
-        [Fact]
+        [Test]
         public void War_cry_empowers_every_ally_and_their_pincers_hit_harder()
         {
             var db = WithRoleKit();
@@ -84,14 +84,14 @@ namespace Gaiden.Tests
                     var m = Hero(s, "mage");
                     m.Bar[0] = new AbilitySlot { AbilityId = "war_cry" };
                     var ev0 = BattleEngine.Apply(s, new UseSlotCommand { HeroId = m.Id, Slot = 0 });
-                    Assert.Equal(3, ev0.OfType<BuffAppliedEvent>().Count(b => b.BuffId == "empowered"));
+                    Assert.That(ev0.OfType<BuffAppliedEvent>().Count(b => b.BuffId == "empowered"), Is.EqualTo(3));
                 }
                 var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = Hero(s, "cleric").Id, Path = P((3, 3)) });
                 return ev.OfType<DamagedEvent>().Where(d => d.SourceId == Hero(s, "knight").Id && d.Hit != HitKind.Miss).Sum(d => d.Amount);
             }
             int plain = Pincer(false), loud = Pincer(true);
-            Assert.True(plain > 0);
-            Assert.True(loud > plain, $"empowered {loud} should beat {plain}");
+            Assert.That(plain > 0, Is.True);
+            Assert.That(loud > plain, Is.True, $"empowered {loud} should beat {plain}");
         }
 
         private static ContentDb WithPickups(float heal = 0.5f, int orbs = 0)
@@ -101,7 +101,7 @@ namespace Gaiden.Tests
             return db;
         }
 
-        [Fact]
+        [Test]
         public void Stepping_on_a_pickup_collects_it_and_heals()
         {
             var db = WithPickups();
@@ -110,12 +110,12 @@ namespace Gaiden.Tests
             k.Hp = 5;
             s.Pickups.Add(new Pickup { Id = 1, PickupId = "pk", At = new Coord(3, 5), ActionsLeft = 4 });
             var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = k.Id, Path = P((3, 5)) });
-            Assert.Contains(ev, e => e is PickupCollectedEvent pc && pc.UnitId == k.Id);
-            Assert.Contains(ev, e => e is HealedEvent h && h.TargetId == k.Id);
-            Assert.Empty(s.Pickups);
+            Assert.That(ev.Any(e => e is PickupCollectedEvent pc && pc.UnitId == k.Id), Is.True);
+            Assert.That(ev.Any(e => e is HealedEvent h && h.TargetId == k.Id), Is.True);
+            Assert.That(s.Pickups, Is.Empty);
         }
 
-        [Fact]
+        [Test]
         public void A_round_trip_drag_that_only_grabs_a_pickup_still_counts_as_a_move()
         {
             var db = WithPickups(0f, 2);
@@ -124,11 +124,11 @@ namespace Gaiden.Tests
             s.Pickups.Add(new Pickup { Id = 1, PickupId = "pk", At = new Coord(3, 5), ActionsLeft = 4 });
             int before = s.Bank.Count;
             var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = k.Id, Path = P((3, 5), (3, 6)) });
-            Assert.DoesNotContain(ev, e => e is AbilityRefusedEvent);
-            Assert.True(s.Bank.Count >= before + 2);
+            Assert.That(ev.Any(e => e is AbilityRefusedEvent), Is.False);
+            Assert.That(s.Bank.Count >= before + 2, Is.True);
         }
 
-        [Fact]
+        [Test]
         public void Pickups_fade_after_their_lifetime()
         {
             var db = WithPickups();
@@ -136,13 +136,13 @@ namespace Gaiden.Tests
             s.Pickups.Add(new Pickup { Id = 1, PickupId = "pk", At = new Coord(0, 5), ActionsLeft = 2 });
             var k = Hero(s, "knight");
             BattleEngine.Apply(s, new MoveCommand { HeroId = k.Id, Path = P((2, 6)) });
-            Assert.Single(s.Pickups);
+            Assert.That(s.Pickups, Has.Exactly(1).Items);
             var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = k.Id, Path = P((3, 6)) });
-            Assert.Contains(ev, e => e is PickupExpiredEvent);
-            Assert.Empty(s.Pickups);
+            Assert.That(ev.Any(e => e is PickupExpiredEvent), Is.True);
+            Assert.That(s.Pickups, Is.Empty);
         }
 
-        [Fact]
+        [Test]
         public void Fallen_enemies_sometimes_leave_pickups()
         {
             var db = WithPickups();
@@ -154,54 +154,54 @@ namespace Gaiden.Tests
                 setup.Party.Add(new HeroSpec { ClassId = "cleric", Start = new Coord(3, 4) });
                 var s = BattleEngine.Create(db, setup, new List<BattleEvent>());
                 var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = Hero(s, "cleric").Id, Path = P((3, 3)) });
-                if (ev.Any(e => e is PickupDroppedEvent)) { drops++; Assert.Single(s.Pickups); AssertInvariants(s); }
+                if (ev.Any(e => e is PickupDroppedEvent)) { drops++; Assert.That(s.Pickups, Has.Exactly(1).Items); AssertInvariants(s); }
             }
-            Assert.InRange(drops, 6, 40); // 20% base
+            Assert.That(drops, Is.InRange(6, 40)); // 20% base
         }
 
-        [Fact]
+        [Test]
         public void Every_hero_has_a_role_and_kits_match_it()
         {
             var c = Real;
-            Assert.Empty(ContentLoader.Validate(c));
+            Assert.That(ContentLoader.Validate(c), Is.Empty);
             foreach (var h in c.Classes.Values.Where(x => x.Team == Team.Hero))
             {
                 var bar = h.DefaultLoadout.Where(x => !x.StartsWith("item:")).ToList();
                 switch (h.Role)
                 {
                     case "Tank":
-                        Assert.Contains("taunt", bar);
+                        Assert.That(bar, Does.Contain("taunt"));
                         // A lone tank (party wiped around it) can't pincer by itself — it needs some non-pincer
                         // damage source in its own bar or it can soft-lock against a weak enemy neither side can
                         // finish (found live 2026-10-13: a paladin with every bar slot non-damage/on
                         // cooldown/unaffordable stalled ~40 simulated minutes against a 7-HP straggler).
-                        Assert.True(bar.Any(x => c.Abilities[x].BaseDamage > 0), h.Id);
+                        Assert.That(bar.Any(x => c.Abilities[x].BaseDamage > 0), Is.True, h.Id);
                         break;
-                    case "Healer": Assert.Contains("heal", bar); break;
-                    case "Mage": Assert.True(bar.Count(x => c.Abilities[x].Kind == AbilityKind.Spell && c.Abilities[x].BaseDamage > 0) >= 2, h.Id); break;
-                    case "Striker": Assert.Contains("cleave", bar); break;
-                    case "Support": Assert.True(bar.Contains("quicken") || bar.Contains("regen"), h.Id); break;
-                    case "Ranged": Assert.True(bar.All(x => !c.Abilities[x].AdjacentOnly), h.Id); break;
+                    case "Healer": Assert.That(bar, Does.Contain("heal")); break;
+                    case "Mage": Assert.That(bar.Count(x => c.Abilities[x].Kind == AbilityKind.Spell && c.Abilities[x].BaseDamage > 0) >= 2, Is.True, h.Id); break;
+                    case "Striker": Assert.That(bar, Does.Contain("cleave")); break;
+                    case "Support": Assert.That(bar.Contains("quicken") || bar.Contains("regen"), Is.True, h.Id); break;
+                    case "Ranged": Assert.That(bar.All(x => !c.Abilities[x].AdjacentOnly), Is.True, h.Id); break;
                 }
-                foreach (var a in bar) Assert.Contains(a, h.Abilities);
+                foreach (var a in bar) Assert.That(h.Abilities, Does.Contain(a));
             }
         }
     
-        [Fact]
+        [Test]
         public void The_bar_can_be_reordered_within_unlocked_slots()
         {
             var c = Real; var save = Progression.NewGame(c, "Org");
             var h = save.Hero("paladin");
             var first = h.Bar[0]; var second = h.Bar[1];
-            Assert.True(Abilities.Swap(save, h, 0, 1).Ok);
-            Assert.Equal(second, h.Bar[0]);
-            Assert.Equal(first, h.Bar[1]);
-            Assert.False(Abilities.Swap(save, h, 1, Progression.MaxBarSlots).Ok, "there is no sixth slot");
+            Assert.That(Abilities.Swap(save, h, 0, 1).Ok, Is.True);
+            Assert.That(h.Bar[0], Is.EqualTo(second));
+            Assert.That(h.Bar[1], Is.EqualTo(first));
+            Assert.That(Abilities.Swap(save, h, 1, Progression.MaxBarSlots).Ok, Is.False, "there is no sixth slot");
         }
     
         // ── Mana charge (§3.1.9) ──
 
-        [Fact]
+        [Test]
         public void More_heroes_in_a_pincer_earn_less_mana_per_hp_taken()
         {
             var db = Mini();
@@ -216,11 +216,11 @@ namespace Gaiden.Tests
                 return (ev.OfType<ManaChargedEvent>().Single(c => c.Reason == "pincer").Amount, (tank.MaxHp - tank.Hp) / (float)tank.MaxHp);
             }
             var lean = Run(false); var crowd = Run(true);
-            Assert.True(crowd.share >= lean.share, "the supporter adds damage…");
-            Assert.True(crowd.amount / crowd.share < lean.amount / lean.share, "…but each point of HP taken charges less");
+            Assert.That(crowd.share >= lean.share, Is.True, "the supporter adds damage…");
+            Assert.That(crowd.amount / crowd.share < lean.amount / lean.share, Is.True, "…but each point of HP taken charges less");
         }
 
-        [Fact]
+        [Test]
         public void Charge_rolls_over_into_orbs_and_keeps_the_remainder()
         {
             var db = Mini();
@@ -229,25 +229,25 @@ namespace Gaiden.Tests
             int before = s.Bank.Count;
             var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = Hero(s, "cleric").Id, Path = P((3, 3)) });
             var c = ev.OfType<ManaChargedEvent>().First(x => x.Reason == "pincer");
-            Assert.Contains(ev, e => e is OrbMintedEvent o && o.Reason == "pincer");
-            Assert.True(s.Bank.Count >= before + 1);
-            Assert.InRange(s.ManaCharge, 0, BattleConfig.ManaChargePerOrb - 1);
-            Assert.Equal((BattleConfig.ManaChargePerOrb - 1 + c.Amount) % BattleConfig.ManaChargePerOrb, c.Total);
+            Assert.That(ev.Any(e => e is OrbMintedEvent o && o.Reason == "pincer"), Is.True);
+            Assert.That(s.Bank.Count >= before + 1, Is.True);
+            Assert.That(s.ManaCharge, Is.InRange(0, BattleConfig.ManaChargePerOrb - 1));
+            Assert.That(c.Total, Is.EqualTo((BattleConfig.ManaChargePerOrb - 1 + c.Amount) % BattleConfig.ManaChargePerOrb));
         }
 
-        [Fact]
+        [Test]
         public void A_killing_pincer_earns_mana_by_hp_taken_not_per_hero()
         {
             var db = Mini();
             var (s, _) = Battle(db, Stage(("goblin", 2, 3)), ("knight", 1, 3), ("cleric", 3, 4));
             var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = Hero(s, "cleric").Id, Path = P((3, 3)) });
-            Assert.Contains(ev, e => e is DiedEvent);
+            Assert.That(ev.Any(e => e is DiedEvent), Is.True);
             var charge = ev.OfType<ManaChargedEvent>().Single(c => c.Reason == "pincer");
-            Assert.Equal((int)System.Math.Round(BattleConfig.PincerChargePerHp), charge.Amount); // the whole foe: share 1, two heroes ×1
-            Assert.Equal(charge.Amount / BattleConfig.ManaChargePerOrb, ev.OfType<OrbMintedEvent>().Count(o => o.Reason == "pincer")); // one per 100, not one per hero
+            Assert.That(charge.Amount, Is.EqualTo((int)System.Math.Round(BattleConfig.PincerChargePerHp))); // the whole foe: share 1, two heroes ×1
+            Assert.That(ev.OfType<OrbMintedEvent>().Count(o => o.Reason == "pincer"), Is.EqualTo(charge.Amount / BattleConfig.ManaChargePerOrb)); // one per 100, not one per hero
         }
 
-        [Fact] // owner direction 2026-10-11: "more combos more xp and mana get generated" — chain depth already paid mana, now XP too
+        [Test] // owner direction 2026-10-11: "more combos more xp and mana get generated" — chain depth already paid mana, now XP too
         public void A_kill_deeper_in_a_pincer_chain_earns_bonus_xp()
         {
             var db = Mini();
@@ -256,9 +256,9 @@ namespace Gaiden.Tests
             var goblins = s.Units.Where(u => u.Def.Id == "goblin").ToList();
             var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = Hero(s, "cleric").Id, Path = P((2, 0)) });
             var pincers = ev.OfType<PincerFormedEvent>().OrderBy(p => p.ChainIndex).ToList();
-            Assert.Equal(2, pincers.Count);
+            Assert.That(pincers.Count, Is.EqualTo(2));
             var loots = ev.OfType<LootEvent>().ToList();
-            Assert.Equal(2, loots.Count);
+            Assert.That(loots.Count, Is.EqualTo(2));
             foreach (var p in pincers)
             {
                 var deadId = p.Opponents.Single();
@@ -266,26 +266,26 @@ namespace Gaiden.Tests
                 var loot = loots.Single(l => l.FromUnitId == deadId);
                 int baseXp = Formulas.XpReward(goblin);
                 int expected = (int)System.Math.Round(baseXp * (1f + BattleConfig.ChargeChainBonus * p.ChainIndex));
-                Assert.Equal(expected, loot.Xp);
+                Assert.That(loot.Xp, Is.EqualTo(expected));
             }
-            Assert.True(loots.Single(l => l.FromUnitId == pincers[1].Opponents.Single()).Xp >
-                        loots.Single(l => l.FromUnitId == pincers[0].Opponents.Single()).Xp, "deeper in the chain should pay out more XP");
+            Assert.That(loots.Single(l => l.FromUnitId == pincers[1].Opponents.Single()).Xp >
+                        loots.Single(l => l.FromUnitId == pincers[0].Opponents.Single()).Xp, Is.True, "deeper in the chain should pay out more XP");
         }
 
-        [Fact]
+        [Test]
         public void The_first_battle_has_five_waves_of_rising_difficulty()
         {
             var c = Real;
             var first = c.CampaignStages()[0];
-            Assert.Equal(5, first.Waves.Count);
+            Assert.That(first.Waves.Count, Is.EqualTo(5));
             int Weight(WaveDef w) => w.Enemies.Sum(e => { var d = c.Classes[e.Class]; return (int)(d.BaseStats.Vitality + d.BaseStats.Strength) * e.Level + (d.ChargeAbility != null ? 5 : 0) + (d.Trap != null ? 5 : 0); });
             for (int i = 1; i < first.Waves.Count; i++)
-                Assert.True(Weight(first.Waves[i]) > Weight(first.Waves[i - 1]), $"wave {i + 1} should be harder than wave {i}");
+                Assert.That(Weight(first.Waves[i]) > Weight(first.Waves[i - 1]), Is.True, $"wave {i + 1} should be harder than wave {i}");
         }
     
         // ── Enemy brains (§14.6) ──
 
-        [Fact]
+        [Test]
         public void Every_enemy_family_plays_differently()
         {
             var c = Real;
@@ -298,7 +298,7 @@ namespace Gaiden.Tests
                 if (sig.TryGetValue(key, out var other) && other != fam) Assert.Fail($"{fam} plays exactly like {other}: {key}");
                 sig[key] = fam;
             }
-            Assert.True(c.Classes.Values.Where(x => x.Team == Team.Enemy).Select(x => x.Brain).Distinct().Count() >= 18);
+            Assert.That(c.Classes.Values.Where(x => x.Team == Team.Enemy).Select(x => x.Brain).Distinct().Count() >= 18, Is.True);
         }
 
         private static ContentDb BrainDb(Brain brain, int move = 1)
@@ -310,45 +310,45 @@ namespace Gaiden.Tests
             return db;
         }
 
-        [Fact]
+        [Test]
         public void An_ambusher_waits_until_a_hero_comes_close()
         {
             var (s, _) = Battle(BrainDb(Brain.Ambusher), Stage(("wolf", 2, 0)), ("knight", 2, 6), ("cleric", 5, 7));
             var w = s.Units.Single(u => u.Def.Id == "wolf");
-            Assert.Equal(w.Pos, EnemyPlanner.PlanStep(s, w));
+            Assert.That(EnemyPlanner.PlanStep(s, w), Is.EqualTo(w.Pos));
             Hero(s, "knight").Pos = new Coord(2, 2);
-            Assert.NotEqual(w.Pos, EnemyPlanner.PlanStep(s, w));
+            Assert.That(EnemyPlanner.PlanStep(s, w), Is.Not.EqualTo(w.Pos));
         }
 
-        [Fact]
+        [Test]
         public void A_sentinel_never_moves_and_a_sluggish_foe_moves_every_other_turn()
         {
             var (s, _) = Battle(BrainDb(Brain.Sentinel), Stage(("wolf", 2, 0)), ("knight", 2, 3), ("cleric", 5, 7));
             var w = s.Units.Single(u => u.Def.Id == "wolf");
-            Assert.Equal(w.Pos, EnemyPlanner.PlanStep(s, w));
+            Assert.That(EnemyPlanner.PlanStep(s, w), Is.EqualTo(w.Pos));
             var (s2, _) = Battle(BrainDb(Brain.Sluggish), Stage(("wolf", 2, 0)), ("knight", 2, 3), ("cleric", 5, 7));
             var w2 = s2.Units.Single(u => u.Def.Id == "wolf");
-            w2.TurnsTaken = 1; Assert.NotEqual(w2.Pos, EnemyPlanner.PlanStep(s2, w2));
-            w2.TurnsTaken = 2; Assert.Equal(w2.Pos, EnemyPlanner.PlanStep(s2, w2));
+            w2.TurnsTaken = 1; Assert.That(EnemyPlanner.PlanStep(s2, w2), Is.Not.EqualTo(w2.Pos));
+            w2.TurnsTaken = 2; Assert.That(EnemyPlanner.PlanStep(s2, w2), Is.EqualTo(w2.Pos));
         }
 
-        [Fact]
+        [Test]
         public void A_hopper_leaps_two_tiles_over_a_unit()
         {
             var (s, _) = Battle(BrainDb(Brain.Hopper), Stage(("wolf", 2, 0), ("tank", 2, 1)), ("knight", 2, 4), ("cleric", 5, 7));
             var w = s.Units.Single(u => u.Def.Id == "wolf");
-            Assert.Equal(new Coord(2, 2), EnemyPlanner.PlanStep(s, w));
+            Assert.That(EnemyPlanner.PlanStep(s, w), Is.EqualTo(new Coord(2, 2)));
         }
 
-        [Fact]
+        [Test]
         public void A_bomber_dives_where_it_touches_the_most_heroes()
         {
             var (s, _) = Battle(BrainDb(Brain.Bomber), Stage(("wolf", 2, 2)), ("knight", 1, 3), ("cleric", 3, 3), ("mage", 0, 0));
             var w = s.Units.Single(u => u.Def.Id == "wolf");
-            Assert.Equal(new Coord(2, 3), EnemyPlanner.PlanStep(s, w)); // between knight and cleric: touches two
+            Assert.That(EnemyPlanner.PlanStep(s, w), Is.EqualTo(new Coord(2, 3))); // between knight and cleric: touches two
         }
 
-        [Fact]
+        [Test]
         public void A_skirmisher_strikes_then_darts_away()
         {
             var db = BrainDb(Brain.Skirmisher);
@@ -357,11 +357,11 @@ namespace Gaiden.Tests
             var w = s.Units.Single(u => u.Def.Id == "wolf");
             s.TurnEntryOf(w.Id).Ip = BattleConfig.BarLength - 1;
             var ev = BattleEngine.Apply(s, new ShieldCommand());
-            Assert.Contains(ev, e => e is AttackEvent a && a.AttackerId == w.Id);
-            Assert.True(w.DistanceTo(Hero(s, "knight")) >= 2, "it backed off after the strike");
+            Assert.That(ev.Any(e => e is AttackEvent a && a.AttackerId == w.Id), Is.True);
+            Assert.That(w.DistanceTo(Hero(s, "knight")) >= 2, Is.True, "it backed off after the strike");
         }
 
-        [Fact]
+        [Test]
         public void A_burrower_surfaces_beside_its_target()
         {
             var db = BrainDb(Brain.Burrower);
@@ -371,18 +371,18 @@ namespace Gaiden.Tests
             w.TurnsTaken = 2; // its next turn is the third: it burrows
             s.TurnEntryOf(w.Id).Ip = BattleConfig.BarLength - 1;
             var ev = BattleEngine.Apply(s, new ShieldCommand());
-            Assert.Contains(ev, e => e is TeleportedEvent t && t.UnitId == w.Id);
-            Assert.True(s.Units.Where(u => u.IsHero).Any(h => w.IsAdjacentTo(h)));
+            Assert.That(ev.Any(e => e is TeleportedEvent t && t.UnitId == w.Id), Is.True);
+            Assert.That(s.Units.Where(u => u.IsHero).Any(h => w.IsAdjacentTo(h)), Is.True);
         }
 
-        [Fact]
+        [Test]
         public void A_guardian_stays_by_its_ward()
         {
             var db = BrainDb(Brain.Guardian);
             var (s, _) = Battle(db, Stage(("wolf", 2, 1), ("witch", 0, 0)), ("knight", 2, 6), ("cleric", 5, 7));
             var w = s.Units.Single(u => u.Def.Id == "wolf");
             var step = EnemyPlanner.PlanStep(s, w);
-            Assert.True(step.Manhattan(new Coord(0, 0)) <= w.Pos.Manhattan(new Coord(0, 0)), "it closes on the witch, not the heroes");
+            Assert.That(step.Manhattan(new Coord(0, 0)) <= w.Pos.Manhattan(new Coord(0, 0)), Is.True, "it closes on the witch, not the heroes");
         }
     
         // ── Armor plates (§13.5) and corpses (§14.7) ──
@@ -396,37 +396,37 @@ namespace Gaiden.Tests
             return db;
         }
 
-        [Fact]
+        [Test]
         public void A_plate_takes_the_blow_from_its_facing_side_and_the_flank_hits_flesh()
         {
             var (s, _) = Battle(Plated(), Stage(("goblin", 2, 3), ("tank", 0, 0)), ("knight", 2, 4), ("cleric", 2, 0));
             var gob = s.Units.Single(u => u.Def.Id == "goblin");
-            Assert.Equal(new Coord(0, 1), gob.Facing); // it faces the closest hero, below it
+            Assert.That(gob.Facing, Is.EqualTo(new Coord(0, 1))); // it faces the closest hero, below it
             int hp = gob.Hp;
             var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = Hero(s, "cleric").Id, Path = P((2, 1), (2, 2)) });
-            Assert.Contains(ev, e => e is PlateHitEvent ph && ph.AttackerId == Hero(s, "knight").Id);
-            Assert.Contains(ev, e => e is DamagedEvent d && d.TargetId == gob.Id && d.SourceId == Hero(s, "cleric").Id);
-            Assert.DoesNotContain(ev, e => e is DamagedEvent d && d.TargetId == gob.Id && d.SourceId == Hero(s, "knight").Id);
-            Assert.True(gob.PlateHp < gob.PlateMax);
+            Assert.That(ev.Any(e => e is PlateHitEvent ph && ph.AttackerId == Hero(s, "knight").Id), Is.True);
+            Assert.That(ev.Any(e => e is DamagedEvent d && d.TargetId == gob.Id && d.SourceId == Hero(s, "cleric").Id), Is.True);
+            Assert.That(ev.Any(e => e is DamagedEvent d && d.TargetId == gob.Id && d.SourceId == Hero(s, "knight").Id), Is.False);
+            Assert.That(gob.PlateHp < gob.PlateMax, Is.True);
         }
 
-        [Fact]
+        [Test]
         public void A_pincer_across_its_line_of_sight_skips_the_plate_and_a_broken_plate_stops_blocking()
         {
             var (s, _) = Battle(Plated(), Stage(("goblin", 2, 3), ("tank", 0, 0)), ("knight", 2, 4), ("cleric", 3, 3), ("mage", 0, 3));
             var gob = s.Units.Single(u => u.Def.Id == "goblin");
             var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = Hero(s, "mage").Id, Path = P((1, 3)) }); // mage (1,3) · goblin · cleric (3,3): from the sides
-            Assert.DoesNotContain(ev, e => e is PlateHitEvent);
-            Assert.Contains(ev, e => e is DamagedEvent d && d.TargetId == gob.Id && d.Amount > 0);
+            Assert.That(ev.Any(e => e is PlateHitEvent), Is.False);
+            Assert.That(ev.Any(e => e is DamagedEvent d && d.TargetId == gob.Id && d.Amount > 0), Is.True);
 
             var (s2, _) = Battle(Plated(1), Stage(("goblin", 2, 3), ("tank", 0, 0)), ("knight", 2, 4), ("cleric", 2, 0));
             var g2 = s2.Units.Single(u => u.Def.Id == "goblin");
             var ev2 = BattleEngine.Apply(s2, new MoveCommand { HeroId = Hero(s2, "cleric").Id, Path = P((2, 1), (2, 2)) });
-            Assert.Contains(ev2, e => e is PlateBrokenEvent);
-            Assert.False(g2.HasPlate);
+            Assert.That(ev2.Any(e => e is PlateBrokenEvent), Is.True);
+            Assert.That(g2.HasPlate, Is.False);
         }
 
-        [Fact]
+        [Test]
         public void Spells_go_around_the_plate()
         {
             var db = Plated();
@@ -436,8 +436,8 @@ namespace Gaiden.Tests
             m.Bar[0] = new AbilitySlot { AbilityId = "fireball" };
             s.Bank.Add(3);
             var ev = BattleEngine.Apply(s, new UseSlotCommand { HeroId = m.Id, Slot = 0, Target = gob.Pos });
-            Assert.DoesNotContain(ev, e => e is PlateHitEvent);
-            Assert.Contains(ev, e => e is DamagedEvent d && d.TargetId == gob.Id && d.Amount > 0);
+            Assert.That(ev.Any(e => e is PlateHitEvent), Is.False);
+            Assert.That(ev.Any(e => e is DamagedEvent d && d.TargetId == gob.Id && d.Amount > 0), Is.True);
         }
 
         private static ContentDb WithCorpses()
@@ -449,20 +449,20 @@ namespace Gaiden.Tests
             return db;
         }
 
-        [Fact]
+        [Test]
         public void A_fallen_foe_leaves_a_corpse_that_blocks_the_way_but_not_the_win()
         {
             var db = WithCorpses();
             var (s, _) = Battle(db, Stage(("goblin", 2, 3)), ("knight", 1, 3), ("cleric", 3, 4));
             var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = Hero(s, "cleric").Id, Path = P((3, 3)) });
-            Assert.Contains(ev, e => e is RemainsLeftEvent);
+            Assert.That(ev.Any(e => e is RemainsLeftEvent), Is.True);
             var corpse = s.Units.Single(u => u.Alive && u.IsCorpse);
-            Assert.Equal(new Coord(2, 3), corpse.Pos);
-            Assert.Equal(BattlePhase.Victory, s.Phase); // only a body left: the wave is clear
-            Assert.DoesNotContain(s.Timeline, e => e.OwnerId == corpse.Id);
+            Assert.That(corpse.Pos, Is.EqualTo(new Coord(2, 3)));
+            Assert.That(s.Phase, Is.EqualTo(BattlePhase.Victory)); // only a body left: the wave is clear
+            Assert.That(s.Timeline.Any(e => e.OwnerId == corpse.Id), Is.False);
         }
 
-        [Fact]
+        [Test]
         public void A_corpse_blocks_movement_and_rots_away()
         {
             var db = WithCorpses();
@@ -471,10 +471,10 @@ namespace Gaiden.Tests
             var corpse = s.Units.Single(u => u.Alive && u.IsCorpse);
             var k = Hero(s, "knight");
             var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = k.Id, Path = P((2, 3)) });
-            Assert.Contains(ev, e => e is StepBlockedEvent);
+            Assert.That(ev.Any(e => e is StepBlockedEvent), Is.True);
             for (int i = 0; i < BattleConfig.CorpseDecayActions + 1 && corpse.Alive; i++)
                 BattleEngine.Apply(s, new ShieldCommand());
-            Assert.False(corpse.Alive, "it rotted away");
+            Assert.That(corpse.Alive, Is.False, "it rotted away");
         }
     }
 }

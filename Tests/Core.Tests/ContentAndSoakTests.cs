@@ -5,28 +5,25 @@ using Gaiden.Core;
 using Gaiden.Core.Battle;
 using Gaiden.Core.Bot;
 using Gaiden.Core.Content;
-using Xunit;
-using Xunit.Abstractions;
+using NUnit.Framework;
 using static Gaiden.Tests.TestKit;
 
 namespace Gaiden.Tests
 {
     public class ContentAndSoakTests
     {
-        private readonly ITestOutputHelper output;
-        public ContentAndSoakTests(ITestOutputHelper output) { this.output = output; }
 
-        [Fact]
+        [Test]
         public void Real_content_loads_and_cross_references_resolve()
         {
             var db = Real;
-            Assert.NotEmpty(db.Classes);
-            Assert.NotEmpty(db.Stages);
+            Assert.That(db.Classes, Is.Not.Empty);
+            Assert.That(db.Stages, Is.Not.Empty);
             var problems = ContentLoader.Validate(db);
-            Assert.True(problems.Count == 0, string.Join("\n", problems));
+            Assert.That(problems.Count == 0, Is.True, string.Join("\n", problems));
         }
 
-        [Fact]
+        [Test]
         public void Every_enemy_family_has_a_drop_table_with_a_signature_material()
         {
             var db = Real;
@@ -35,13 +32,13 @@ namespace Gaiden.Tests
             // Remains (gravestones/bone piles) and eggs give no loot by design (§14.5/§14.8) and
             // must stay undroppable rather than silently losing a table in a future content pass.
             var lootless = enemies.Where(c => c.Tags.Contains("Remains") || c.Tags.Contains("Egg")).ToList();
-            Assert.NotEmpty(lootless);
-            foreach (var c in lootless) Assert.Null(c.DropTable);
+            Assert.That(lootless, Is.Not.Empty);
+            foreach (var c in lootless) Assert.That(c.DropTable, Is.Null);
 
             var lootable = enemies.Except(lootless).ToList();
-            Assert.NotEmpty(lootable);
+            Assert.That(lootable, Is.Not.Empty);
             var missing = lootable.Where(c => c.DropTable == null || !db.DropTables.ContainsKey(c.DropTable) || db.DropTables[c.DropTable].Entries.Count == 0).Select(c => c.Id).ToList();
-            Assert.True(missing.Count == 0, "enemy classes with no drop table: " + string.Join(", ", missing));
+            Assert.That(missing.Count == 0, Is.True, "enemy classes with no drop table: " + string.Join(", ", missing));
 
             // GG-T43's own new materials must stay each family's exclusive ingredient — reused
             // across tables, they'd stop telling the player "farm this stage for this reagent".
@@ -57,14 +54,14 @@ namespace Gaiden.Tests
             foreach (var item in newMaterials)
             {
                 var tablesWithIt = db.DropTables.Values.Where(t => t.Entries.Any(e => e.Item == item)).Select(t => t.Id).ToList();
-                Assert.True(tablesWithIt.Count == 1, $"{item} should belong to exactly one family's drop table, found in: {string.Join(", ", tablesWithIt)}");
+                Assert.That(tablesWithIt.Count == 1, Is.True, $"{item} should belong to exactly one family's drop table, found in: {string.Join(", ", tablesWithIt)}");
             }
 
             // Spot-check the families the ticket names explicitly (GG-T43).
-            Assert.Contains(db.DropTables["frog"].Entries, e => e.Item == "mat_frog_gland");
-            Assert.Contains(db.DropTables["goblinthug00"].Entries, e => e.Item == "mat_goblin_scrap_iron");
-            Assert.Contains(db.DropTables["slime"].Entries, e => e.Item == "mat_slime_gel");
-            Assert.Contains(db.DropTables["undead"].Entries, e => e.Item == "mat_undead_bone");
+            Assert.That(db.DropTables["frog"].Entries.Any(e => e.Item == "mat_frog_gland"), Is.True);
+            Assert.That(db.DropTables["goblinthug00"].Entries.Any(e => e.Item == "mat_goblin_scrap_iron"), Is.True);
+            Assert.That(db.DropTables["slime"].Entries.Any(e => e.Item == "mat_slime_gel"), Is.True);
+            Assert.That(db.DropTables["undead"].Entries.Any(e => e.Item == "mat_undead_bone"), Is.True);
         }
 
         public static List<HeroSpec> StarterParty(ContentDb db, int level)
@@ -79,10 +76,8 @@ namespace Gaiden.Tests
             }
             return party;
         }
-
-        [Theory]
-        [InlineData(0f)]
-        [InlineData(0.6f)]
+        [TestCase(0f)]
+        [TestCase(0.6f)]
         public void Bots_play_every_stage_without_breaking_invariants(float randomness)
         {
             var db = Real;
@@ -108,10 +103,10 @@ namespace Gaiden.Tests
                 report.AppendLine($"{stage.Id,-22} win {stageWins,2}/{stageRuns}  avg actions {actions / (float)stageRuns:F1}");
             }
             report.AppendLine($"TOTAL win {wins}/{total}, unfinished {stalls}");
-            output.WriteLine(report.ToString());
+            TestContext.Out.WriteLine(report.ToString());
         }
 
-        [Fact]
+        [Test]
         public void Battles_replay_identically_from_seed()
         {
             var db = Real;
@@ -123,7 +118,7 @@ namespace Gaiden.Tests
                 BotRunner.Play(db, setup, new HeroBot(5), 120, (cmd, ev, st) => { sb.AppendLine(cmd?.ToString()); foreach (var e in ev) sb.AppendLine(e.ToString()); });
                 return sb.ToString();
             }
-            Assert.Equal(Run(), Run());
+            Assert.That(Run(), Is.EqualTo(Run()));
         }
     }
 }

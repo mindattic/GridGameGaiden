@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Gaiden.Core.Content;
 using Gaiden.Meta;
-using Xunit;
+using NUnit.Framework;
 using static Gaiden.Tests.TestKit;
 
 namespace Gaiden.Tests
@@ -43,98 +43,96 @@ namespace Gaiden.Tests
 
         // ── Shop.Buy ──
 
-        [Fact]
+        [Test]
         public void Buy_rejects_an_empty_cart_without_touching_gold()
         {
             var c = BuildContent();
             var s = NewSave(1000);
             var result = Shop.Buy(c, s, new Dictionary<string, int>());
-            Assert.False(result.Ok);
-            Assert.Equal(1000, s.Gold);
-            Assert.Empty(s.Inventory);
+            Assert.That(result.Ok, Is.False);
+            Assert.That(s.Gold, Is.EqualTo(1000));
+            Assert.That(s.Inventory, Is.Empty);
         }
 
-        [Fact]
+        [Test]
         public void Buy_rejects_insufficient_gold_without_touching_gold_or_inventory()
         {
             var c = BuildContent();
             var s = NewSave(5); // elixir costs 20
             var result = Shop.Buy(c, s, new Dictionary<string, int> { ["elixir"] = 1 });
-            Assert.False(result.Ok);
-            Assert.Equal(5, s.Gold);
-            Assert.Equal(0, s.Count("elixir"));
+            Assert.That(result.Ok, Is.False);
+            Assert.That(s.Gold, Is.EqualTo(5));
+            Assert.That(s.Count("elixir"), Is.EqualTo(0));
         }
 
-        [Fact]
+        [Test]
         public void Buy_rejects_quantity_above_MaxBuy_without_touching_gold_or_inventory()
         {
             var c = BuildContent();
             var s = NewSave(10000);
             int tooMany = Shop.MaxBuy(s, c.Item("elixir")) + 1;
             var result = Shop.Buy(c, s, new Dictionary<string, int> { ["elixir"] = tooMany });
-            Assert.False(result.Ok);
-            Assert.Equal(10000, s.Gold);
-            Assert.Equal(0, s.Count("elixir"));
+            Assert.That(result.Ok, Is.False);
+            Assert.That(s.Gold, Is.EqualTo(10000));
+            Assert.That(s.Count("elixir"), Is.EqualTo(0));
         }
 
-        [Fact]
+        [Test]
         public void Buy_rejects_a_negative_quantity_without_touching_gold_or_inventory()
         {
             var c = BuildContent();
             var s = NewSave(10000);
             var result = Shop.Buy(c, s, new Dictionary<string, int> { ["elixir"] = -1 });
-            Assert.False(result.Ok);
-            Assert.Equal(10000, s.Gold);
-            Assert.Equal(0, s.Count("elixir"));
+            Assert.That(result.Ok, Is.False);
+            Assert.That(s.Gold, Is.EqualTo(10000));
+            Assert.That(s.Count("elixir"), Is.EqualTo(0));
         }
 
-        [Fact]
+        [Test]
         public void Buy_rejects_an_unknown_item_without_touching_gold_or_inventory()
         {
             var c = BuildContent();
             var s = NewSave(10000);
             var result = Shop.Buy(c, s, new Dictionary<string, int> { ["no_such_item"] = 1 });
-            Assert.False(result.Ok);
-            Assert.Equal(10000, s.Gold);
-            Assert.Empty(s.Inventory);
+            Assert.That(result.Ok, Is.False);
+            Assert.That(s.Gold, Is.EqualTo(10000));
+            Assert.That(s.Inventory, Is.Empty);
         }
 
         // ── Shop.Sell ──
 
-        [Fact]
+        [Test]
         public void Sell_rejects_selling_more_than_owned_without_touching_gold_or_inventory()
         {
             var c = BuildContent();
             var s = NewSave(0);
             s.AddItem("elixir", 2);
             var result = Shop.Sell(c, s, new Dictionary<string, int> { ["elixir"] = 3 });
-            Assert.False(result.Ok);
-            Assert.Equal(0, s.Gold);
-            Assert.Equal(2, s.Count("elixir"));
+            Assert.That(result.Ok, Is.False);
+            Assert.That(s.Gold, Is.EqualTo(0));
+            Assert.That(s.Count("elixir"), Is.EqualTo(2));
         }
 
         // ── Shop.SellPrice / CartTotal / Sellable ──
-
-        [Theory]
-        [InlineData(1, 1)]   // floor(0.5) = 0, clamped to minimum 1
-        [InlineData(7, 3)]   // floor(3.5) = 3
-        [InlineData(100, 50)]
+        [TestCase(1, 1)]   // floor(0.5) = 0, clamped to minimum 1
+        [TestCase(7, 3)]   // floor(3.5) = 3
+        [TestCase(100, 50)]
         public void SellPrice_is_half_BaseCost_floored_with_a_minimum_of_one(int baseCost, int expected)
         {
             var item = new ItemDef { Id = "x", BaseCost = baseCost };
-            Assert.Equal(expected, Shop.SellPrice(item));
+            Assert.That(Shop.SellPrice(item), Is.EqualTo(expected));
         }
 
-        [Fact]
+        [Test]
         public void CartTotal_prices_buying_at_BaseCost_and_selling_at_SellPrice()
         {
             var c = BuildContent();
             var cart = new Dictionary<string, int> { ["elixir"] = 3 };
-            Assert.Equal(3 * c.Item("elixir").BaseCost, Shop.CartTotal(c, cart, selling: false));
-            Assert.Equal(3 * Shop.SellPrice(c.Item("elixir")), Shop.CartTotal(c, cart, selling: true));
+            Assert.That(Shop.CartTotal(c, cart, selling: false), Is.EqualTo(3 * c.Item("elixir").BaseCost));
+            Assert.That(Shop.CartTotal(c, cart, selling: true), Is.EqualTo(3 * Shop.SellPrice(c.Item("elixir"))));
         }
 
-        [Fact]
+        [Test]
         public void Sellable_excludes_quest_items_and_zero_cost_items()
         {
             var c = BuildContent();
@@ -143,56 +141,56 @@ namespace Gaiden.Tests
             s.AddItem("questkey", 1);
             s.AddItem("trash", 1);
             var sellable = Shop.Sellable(c, s);
-            Assert.Contains(sellable, i => i.Id == "elixir");
-            Assert.DoesNotContain(sellable, i => i.Id == "questkey");
-            Assert.DoesNotContain(sellable, i => i.Id == "trash");
+            Assert.That(sellable.Any(i => i.Id == "elixir"), Is.True);
+            Assert.That(sellable.Any(i => i.Id == "questkey"), Is.False);
+            Assert.That(sellable.Any(i => i.Id == "trash"), Is.False);
         }
 
         // ── Crafting.Craft / HasInputs ──
 
-        [Fact]
+        [Test]
         public void Craft_fails_on_gold_without_touching_gold_or_inventory()
         {
             var c = BuildContent();
             var s = NewSave(0);
             s.AddItem("herb", 2);
             var result = Crafting.Craft(c, s, c.Recipes["craft_elixir"]);
-            Assert.False(result.Ok);
-            Assert.Equal(0, s.Gold);
-            Assert.Equal(2, s.Count("herb"));
-            Assert.Equal(0, s.Count("elixir"));
+            Assert.That(result.Ok, Is.False);
+            Assert.That(s.Gold, Is.EqualTo(0));
+            Assert.That(s.Count("herb"), Is.EqualTo(2));
+            Assert.That(s.Count("elixir"), Is.EqualTo(0));
         }
 
-        [Fact]
+        [Test]
         public void Craft_fails_on_missing_inputs_without_touching_gold_or_inventory()
         {
             var c = BuildContent();
             var s = NewSave(100);
             s.AddItem("herb", 1); // recipe needs 2
             var result = Crafting.Craft(c, s, c.Recipes["craft_elixir"]);
-            Assert.False(result.Ok);
-            Assert.Equal(100, s.Gold);
-            Assert.Equal(1, s.Count("herb"));
-            Assert.Equal(0, s.Count("elixir"));
-            Assert.False(Crafting.HasInputs(s, c.Recipes["craft_elixir"]));
+            Assert.That(result.Ok, Is.False);
+            Assert.That(s.Gold, Is.EqualTo(100));
+            Assert.That(s.Count("herb"), Is.EqualTo(1));
+            Assert.That(s.Count("elixir"), Is.EqualTo(0));
+            Assert.That(Crafting.HasInputs(s, c.Recipes["craft_elixir"]), Is.False);
         }
 
-        [Fact]
+        [Test]
         public void Craft_fails_on_missing_BaseItem_without_touching_gold_or_inventory()
         {
             var c = BuildContent();
             var recipe = c.Recipes["upgrade_warhammer"];
             var s = NewSave(100);
             s.AddItem("ore", 1); // has the input, but no warhammer to upgrade
-            Assert.False(Crafting.HasInputs(s, recipe));
+            Assert.That(Crafting.HasInputs(s, recipe), Is.False);
             var result = Crafting.Craft(c, s, recipe);
-            Assert.False(result.Ok);
-            Assert.Equal(100, s.Gold);
-            Assert.Equal(1, s.Count("ore"));
-            Assert.Equal(0, s.Count("finehammer"));
+            Assert.That(result.Ok, Is.False);
+            Assert.That(s.Gold, Is.EqualTo(100));
+            Assert.That(s.Count("ore"), Is.EqualTo(1));
+            Assert.That(s.Count("finehammer"), Is.EqualTo(0));
         }
 
-        [Fact]
+        [Test]
         public void Craft_fails_at_the_result_stack_cap_without_touching_gold_or_inventory()
         {
             var c = BuildContent();
@@ -201,35 +199,35 @@ namespace Gaiden.Tests
             s.AddItem("herb", 4);
             s.AddItem("elixir", c.Item("elixir").MaxStack); // already full
             var result = Crafting.Craft(c, s, recipe);
-            Assert.False(result.Ok);
-            Assert.Equal(100, s.Gold);
-            Assert.Equal(4, s.Count("herb"));
-            Assert.Equal(c.Item("elixir").MaxStack, s.Count("elixir"));
+            Assert.That(result.Ok, Is.False);
+            Assert.That(s.Gold, Is.EqualTo(100));
+            Assert.That(s.Count("herb"), Is.EqualTo(4));
+            Assert.That(s.Count("elixir"), Is.EqualTo(c.Item("elixir").MaxStack));
         }
 
-        [Fact]
+        [Test]
         public void HasInputs_is_true_only_once_every_input_and_the_base_item_are_present()
         {
             var c = BuildContent();
             var recipe = c.Recipes["upgrade_warhammer"];
             var s = NewSave(0);
-            Assert.False(Crafting.HasInputs(s, recipe));
+            Assert.That(Crafting.HasInputs(s, recipe), Is.False);
             s.AddItem("ore", 1);
-            Assert.False(Crafting.HasInputs(s, recipe), "still missing the base item");
+            Assert.That(Crafting.HasInputs(s, recipe), Is.False, "still missing the base item");
             s.AddItem("warhammer", 1);
-            Assert.True(Crafting.HasInputs(s, recipe));
+            Assert.That(Crafting.HasInputs(s, recipe), Is.True);
         }
 
-        [Fact]
+        [Test]
         public void SalvageYield_is_empty_when_there_is_no_base_forge_recipe_and_no_fallback()
         {
             var c = BuildContent();
             // "herb" is a plain crafting material (no equipment slot), so it matches neither a base forge
             // recipe nor the equipment type/rarity fallback table (GG-T42).
-            Assert.Empty(Crafting.SalvageYield(c, c.Item("herb"), 0));
+            Assert.That(Crafting.SalvageYield(c, c.Item("herb"), 0), Is.Empty);
         }
 
-        [Fact]
+        [Test]
         public void SalvageYield_at_full_durability_matches_half_its_forge_recipe_inputs()
         {
             var c = BuildContent();
@@ -237,21 +235,21 @@ namespace Gaiden.Tests
             // half its inputs, unscaled.
             var warhammer = c.Item("warhammer");
             var yield = Crafting.SalvageYield(c, warhammer, warhammer.Durability);
-            Assert.Single(yield);
-            Assert.Equal("ore", yield[0].Item);
-            Assert.Equal(1, yield[0].Count); // half of 2, floored, minimum 1
+            Assert.That(yield, Has.Exactly(1).Items);
+            Assert.That(yield[0].Item, Is.EqualTo("ore"));
+            Assert.That(yield[0].Count, Is.EqualTo(1)); // half of 2, floored, minimum 1
         }
 
         // ── Repair ──
 
-        [Fact]
+        [Test]
         public void Repair_cost_is_zero_at_full_durability()
         {
             var item = new ItemDef { Id = "w", BaseCost = 100, Durability = 10 };
-            Assert.Equal(0, Repair.Cost(item, Repair.EffectiveMax(item, 0), 0));
+            Assert.That(Repair.Cost(item, Repair.EffectiveMax(item, 0), 0), Is.EqualTo(0));
         }
 
-        [Fact]
+        [Test]
         public void Repair_cost_grows_roughly_1_6x_per_prior_repair()
         {
             var item = new ItemDef { Id = "w", BaseCost = 100, Durability = 100 };
@@ -260,35 +258,35 @@ namespace Gaiden.Tests
             int cost0 = Repair.Cost(item, Repair.EffectiveMax(item, 0) - 10, 0);
             int cost1 = Repair.Cost(item, Repair.EffectiveMax(item, 1) - 10, 1);
             int cost2 = Repair.Cost(item, Repair.EffectiveMax(item, 2) - 10, 2);
-            Assert.True(cost1 > cost0);
-            Assert.True(cost2 > cost1);
-            Assert.InRange((double)cost1 / cost0, 1.5, 1.8);
-            Assert.InRange((double)cost2 / cost1, 1.5, 1.8);
+            Assert.That(cost1 > cost0, Is.True);
+            Assert.That(cost2 > cost1, Is.True);
+            Assert.That((double)cost1 / cost0, Is.InRange(1.5, 1.8));
+            Assert.That((double)cost2 / cost1, Is.InRange(1.5, 1.8));
         }
 
-        [Fact]
+        [Test]
         public void Repair_cost_never_drops_below_one_when_anything_is_missing()
         {
             var item = new ItemDef { Id = "w", BaseCost = 1, Durability = 1000 };
-            Assert.Equal(1, Repair.Cost(item, Repair.EffectiveMax(item, 0) - 1, 0));
+            Assert.That(Repair.Cost(item, Repair.EffectiveMax(item, 0) - 1, 0), Is.EqualTo(1));
         }
 
-        [Fact]
+        [Test]
         public void EffectiveMax_floors_at_one_once_repairs_exceed_durability()
         {
             var item = new ItemDef { Id = "w", BaseCost = 10, Durability = 3 };
-            Assert.Equal(1, Repair.EffectiveMax(item, 5));
+            Assert.That(Repair.EffectiveMax(item, 5), Is.EqualTo(1));
         }
 
-        [Fact]
+        [Test]
         public void IsUneconomical_once_repeated_repairs_push_cost_to_or_past_BaseCost()
         {
             var item = new ItemDef { Id = "w", BaseCost = 10, Durability = 10 };
-            Assert.False(Repair.IsUneconomical(item, 0, 0));
-            Assert.True(Repair.IsUneconomical(item, 0, 4));
+            Assert.That(Repair.IsUneconomical(item, 0, 0), Is.False);
+            Assert.That(Repair.IsUneconomical(item, 0, 4), Is.True);
         }
 
-        [Fact]
+        [Test]
         public void Armory_discount_rounds_the_price_up_not_down()
         {
             var c = BuildContent();
@@ -298,15 +296,15 @@ namespace Gaiden.Tests
             // fraction (4.9), so a floor vs. ceiling would disagree.
             int current = Repair.EffectiveMax(item, 0) - 21;
             int full = Repair.Cost(item, current, 0);
-            Assert.Equal(7, full);
+            Assert.That(full, Is.EqualTo(7));
             s.Caravan["armory"] = 1;
             int discounted = Repair.Cost(c, s, item, current, 0);
-            Assert.True(discounted < full);
-            Assert.Equal((int)Math.Ceiling(full * (1f - 0.3f)), discounted);
-            Assert.NotEqual((int)Math.Floor(full * (1f - 0.3f)), discounted);
+            Assert.That(discounted < full, Is.True);
+            Assert.That(discounted, Is.EqualTo((int)Math.Ceiling(full * (1f - 0.3f))));
+            Assert.That(discounted, Is.Not.EqualTo((int)Math.Floor(full * (1f - 0.3f))));
         }
 
-        [Fact]
+        [Test]
         public void RepairWeapon_fails_without_gold_and_succeeds_restoring_durability()
         {
             var c = BuildContent();
@@ -315,16 +313,16 @@ namespace Gaiden.Tests
             hero.WeaponDurability = 1;
             hero.WeaponRepairs = 0;
             var s = NewSave(0);
-            Assert.False(Repair.RepairWeapon(c, s, hero).Ok);
-            Assert.Equal(1, hero.WeaponDurability);
+            Assert.That(Repair.RepairWeapon(c, s, hero).Ok, Is.False);
+            Assert.That(hero.WeaponDurability, Is.EqualTo(1));
 
             s.Gold = 10000;
-            Assert.True(Repair.RepairWeapon(c, s, hero).Ok);
-            Assert.Equal(Repair.EffectiveMax(c.Item("warhammer"), 0), hero.WeaponDurability);
-            Assert.Equal(1, hero.WeaponRepairs);
+            Assert.That(Repair.RepairWeapon(c, s, hero).Ok, Is.True);
+            Assert.That(hero.WeaponDurability, Is.EqualTo(Repair.EffectiveMax(c.Item("warhammer"), 0)));
+            Assert.That(hero.WeaponRepairs, Is.EqualTo(1));
         }
 
-        [Fact]
+        [Test]
         public void RepairArmor_fails_without_gold_and_succeeds_restoring_durability()
         {
             var c = BuildContent();
@@ -333,18 +331,18 @@ namespace Gaiden.Tests
             hero.ArmorDurability = 1;
             hero.ArmorRepairs = 0;
             var s = NewSave(0);
-            Assert.False(Repair.RepairArmor(c, s, hero).Ok);
-            Assert.Equal(1, hero.ArmorDurability);
+            Assert.That(Repair.RepairArmor(c, s, hero).Ok, Is.False);
+            Assert.That(hero.ArmorDurability, Is.EqualTo(1));
 
             s.Gold = 10000;
-            Assert.True(Repair.RepairArmor(c, s, hero).Ok);
-            Assert.Equal(Repair.EffectiveMax(c.Item("plate"), 0), hero.ArmorDurability);
-            Assert.Equal(1, hero.ArmorRepairs);
+            Assert.That(Repair.RepairArmor(c, s, hero).Ok, Is.True);
+            Assert.That(hero.ArmorDurability, Is.EqualTo(Repair.EffectiveMax(c.Item("plate"), 0)));
+            Assert.That(hero.ArmorRepairs, Is.EqualTo(1));
         }
 
         // ── Inn ──
 
-        [Fact]
+        [Test]
         public void MissingHp_is_zero_at_full_health()
         {
             var c = BuildContent();
@@ -353,16 +351,16 @@ namespace Gaiden.Tests
             int max = Progression.Preview(c, hero).MaxHp;
 
             hero.Hp = 0; // save convention: 0 = full health
-            Assert.Equal(0, Inn.MissingHp(c, s, hero));
+            Assert.That(Inn.MissingHp(c, s, hero), Is.EqualTo(0));
 
             hero.Hp = max;
-            Assert.Equal(0, Inn.MissingHp(c, s, hero));
+            Assert.That(Inn.MissingHp(c, s, hero), Is.EqualTo(0));
 
             hero.Hp = max - 1;
-            Assert.Equal(1, Inn.MissingHp(c, s, hero));
+            Assert.That(Inn.MissingHp(c, s, hero), Is.EqualTo(1));
         }
 
-        [Fact]
+        [Test]
         public void Inn_cost_applies_the_medic_wagon_premium_only_while_on_an_expedition()
         {
             var c = BuildContent();
@@ -374,13 +372,13 @@ namespace Gaiden.Tests
             s.Roster.Add(hero);
 
             int homeCost = Inn.Cost(c, s);
-            Assert.Equal((int)Math.Ceiling(missing * Inn.GoldPerHp), homeCost);
+            Assert.That(homeCost, Is.EqualTo((int)Math.Ceiling(missing * Inn.GoldPerHp)));
 
             s.Caravan["medic_wagon"] = 1; // Levels[0].Value = 2x premium
             s.Expedition = new ExpeditionSave();
             int roadCost = Inn.Cost(c, s);
-            Assert.Equal((int)Math.Ceiling(missing * Inn.GoldPerHp * 2f), roadCost);
-            Assert.True(roadCost > homeCost);
+            Assert.That(roadCost, Is.EqualTo((int)Math.Ceiling(missing * Inn.GoldPerHp * 2f)));
+            Assert.That(roadCost > homeCost, Is.True);
         }
     }
 }

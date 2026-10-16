@@ -5,7 +5,7 @@ using Gaiden.Core;
 using Gaiden.Core.Battle;
 using Gaiden.Core.Content;
 using Gaiden.Core.Rules;
-using Xunit;
+using NUnit.Framework;
 using static Gaiden.Tests.TestKit;
 
 namespace Gaiden.Tests
@@ -14,27 +14,27 @@ namespace Gaiden.Tests
     {
         private static Unit Enemy(BattleState s, string cls) => s.Units.First(u => u.Def.Id == cls && u.Alive);
 
-        [Fact]
+        [Test]
         public void Immobile_enemy_does_not_move()
         {
             var db = Mini();
             var (s, _) = Battle(db, Stage(("wolf", 0, 0)), ("knight", 5, 7), ("cleric", 4, 7));
             var wolf = Enemy(s, "wolf");
             wolf.Buffs.Add(new BuffInstance { Def = db.Buffs["sleep"], Remaining = 3 });
-            Assert.Equal(wolf.Pos, EnemyPlanner.PlanStep(s, wolf));
+            Assert.That(EnemyPlanner.PlanStep(s, wolf), Is.EqualTo(wolf.Pos));
         }
 
-        [Fact]
+        [Test]
         public void Enemy_never_steps_into_a_flank()
         {
             var db = Mini();
             // Heroes at (1,2) and (3,2): the tile (2,2) between them is a flank trap for the wolf at (2,1).
             var (s, _) = Battle(db, Stage(("wolf", 2, 1)), ("knight", 1, 2), ("cleric", 3, 2));
             var wolf = Enemy(s, "wolf");
-            Assert.NotEqual(new Coord(2, 2), EnemyPlanner.PlanStep(s, wolf));
+            Assert.That(EnemyPlanner.PlanStep(s, wolf), Is.Not.EqualTo(new Coord(2, 2)));
         }
 
-        [Fact]
+        [Test]
         public void Humanoid_enemy_seeks_a_pincer_on_a_hero()
         {
             var db = Mini();
@@ -43,10 +43,10 @@ namespace Gaiden.Tests
             var (s, _) = Battle(db, Stage(("goblin", 0, 3), ("goblin", 3, 2)), ("knight", 1, 3), ("cleric", 5, 7));
             var b = s.Units.First(u => u.Def.Id == "goblin" && u.Pos == new Coord(3, 2));
             var plan = EnemyPlanner.PlanStep(s, b);
-            Assert.True(plan == new Coord(2, 3) || plan == new Coord(3, 3) || plan == new Coord(2, 2), $"planned {plan}");
+            Assert.That(plan == new Coord(2, 3) || plan == new Coord(3, 3) || plan == new Coord(2, 2), Is.True, $"planned {plan}");
         }
 
-        [Fact]
+        [Test]
         public void Wounded_enemy_retreats_from_its_target()
         {
             var db = Mini();
@@ -56,10 +56,10 @@ namespace Gaiden.Tests
             var knight = Hero(s, "knight");
             int before = wolf.DistanceTo(knight);
             var plan = EnemyPlanner.PlanStep(s, wolf);
-            Assert.True(plan.Manhattan(knight.Pos) >= before, "a wounded enemy must not advance");
+            Assert.That(plan.Manhattan(knight.Pos) >= before, Is.True, "a wounded enemy must not advance");
         }
 
-        [Fact]
+        [Test]
         public void Two_by_two_boss_shoves_a_hero_into_the_tile_it_vacates()
         {
             var db = Mini();
@@ -71,10 +71,10 @@ namespace Gaiden.Tests
             s.TurnEntryOf(boss.Id).Ip = 999;
             BattleEngine.Apply(s, new ShieldCommand());
             AssertInvariants(s);
-            if (boss.Pos == new Coord(1, 0)) Assert.Equal(new Coord(0, 1), knight.Pos);
+            if (boss.Pos == new Coord(1, 0)) Assert.That(knight.Pos, Is.EqualTo(new Coord(0, 1)));
         }
 
-        [Fact]
+        [Test]
         public void Line_charge_hits_heroes_on_the_line_or_reports_a_dodge()
         {
             var db = Mini();
@@ -84,14 +84,14 @@ namespace Gaiden.Tests
             s.TurnEntryOf(Enemy(s, "witch").Id).Ip = 999;
             var ev = BattleEngine.Apply(s, new ShieldCommand());
             var q = ev.OfType<CastQueuedEvent>().Single();
-            Assert.NotNull(q.LineTiles);
-            Assert.Contains(new Coord(4, 0), q.LineTiles);
+            Assert.That(q.LineTiles, Is.Not.Null);
+            Assert.That(q.LineTiles, Does.Contain(new Coord(4, 0)));
             var all = new List<BattleEvent>();
             for (int i = 0; i < 6 && !all.Any(e => e is AbilityResolvedEvent); i++) all.AddRange(BattleEngine.Apply(s, new ShieldCommand()));
-            Assert.Contains(all, e => e is DamagedEvent d && d.TargetId == Hero(s, "knight").Id);
+            Assert.That(all.Any(e => e is DamagedEvent d && d.TargetId == Hero(s, "knight").Id), Is.True);
         }
 
-        [Fact]
+        [Test]
         public void Clutch_instantly_resolves_a_hero_cast_when_rolled()
         {
             var db = Mini();
@@ -112,10 +112,10 @@ namespace Gaiden.Tests
                 var ev = BattleEngine.Apply(s, new ShieldCommand());
                 sawClutch = ev.Any(e => e is ClutchEvent);
             }
-            Assert.True(sawClutch, "a 20% clutch should proc within 80 seeded hits");
+            Assert.That(sawClutch, Is.True, "a 20% clutch should proc within 80 seeded hits");
         }
 
-        [Fact]
+        [Test]
         public void Drag_timer_remainder_banks_blue_orbs_at_the_enemy_handoff()
         {
             var db = Mini();
@@ -123,10 +123,10 @@ namespace Gaiden.Tests
             s.TurnEntryOf(Enemy(s, "wolf").Id).Ip = 999;
             var k = Hero(s, "knight");
             var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = k.Id, Path = P((5, 6)), TimeLeftSeconds = 3.9f });
-            Assert.Equal(3, ev.OfType<OrbMintedEvent>().Count(o => o.Reason == "time bank"));
+            Assert.That(ev.OfType<OrbMintedEvent>().Count(o => o.Reason == "time bank"), Is.EqualTo(3));
         }
 
-        [Fact]
+        [Test]
         public void Mage_robe_seeds_battle_start_orbs_and_gear_resistance_applies()
         {
             var db = Mini();
@@ -135,11 +135,11 @@ namespace Gaiden.Tests
             setup.Party.Add(new HeroSpec { ClassId = "knight", Start = new Coord(5, 7), EquippedItemIds = { "robe" } });
             setup.Party.Add(new HeroSpec { ClassId = "cleric", Start = new Coord(4, 7) });
             var s = BattleEngine.Create(db, setup, new List<BattleEvent>());
-            Assert.Equal(2, s.Bank.Count);
-            Assert.Equal(0.5f, Hero(s, "knight").ResistanceMultiplier(DamageType.Fire), 3);
+            Assert.That(s.Bank.Count, Is.EqualTo(2));
+            Assert.That(Hero(s, "knight").ResistanceMultiplier(DamageType.Fire), Is.EqualTo(0.5f).Within(1e-3));
         }
 
-        [Fact]
+        [Test]
         public void Boss_phase_fires_once_when_hp_crosses_threshold()
         {
             var db = Mini();
@@ -150,11 +150,11 @@ namespace Gaiden.Tests
             tank.Hp = tank.MaxHp / 3;
             var all = new List<BattleEvent>();
             for (int i = 0; i < 30; i++) all.AddRange(BattleEngine.Apply(s, new ShieldCommand()));
-            Assert.Single(all.OfType<BossPhaseEvent>());
-            Assert.Contains(all, e => e is HastenedEvent h && h.UnitId == tank.Id);
+            Assert.That(all.OfType<BossPhaseEvent>(), Has.Exactly(1).Items);
+            Assert.That(all.Any(e => e is HastenedEvent h && h.UnitId == tank.Id), Is.True);
         }
 
-        [Fact]
+        [Test]
         public void Snake_body_follows_the_head_and_is_armored_tail_first()
         {
             var db = Mini();
@@ -162,17 +162,17 @@ namespace Gaiden.Tests
             var (s, _) = Battle(db, Stage(("naga", 2, 3)), ("knight", 2, 7), ("cleric", 5, 7));
             var head = s.Units.First(u => u.Def.Id == "naga" && u.SnakeIndex == 0);
             var segs = s.Units.Where(u => u.SnakeHeadId == head.Id && u.SnakeIndex > 0).OrderBy(u => u.SnakeIndex).ToList();
-            Assert.Equal(3, segs.Count);
-            Assert.True(BattleEngine.IsArmored(s, head));
-            Assert.False(BattleEngine.IsArmored(s, segs.Last()));
+            Assert.That(segs.Count, Is.EqualTo(3));
+            Assert.That(BattleEngine.IsArmored(s, head), Is.True);
+            Assert.That(BattleEngine.IsArmored(s, segs.Last()), Is.False);
             var headBefore = head.Pos;
             s.TurnEntryOf(head.Id).Ip = 999;
             BattleEngine.Apply(s, new ShieldCommand());
-            if (head.Pos != headBefore) Assert.Equal(headBefore, segs[0].Pos);
+            if (head.Pos != headBefore) Assert.That(segs[0].Pos, Is.EqualTo(headBefore));
             AssertInvariants(s);
         }
 
-        [Fact]
+        [Test]
         public void Trap_layer_arms_a_tile_and_a_hero_stepping_on_it_triggers_it()
         {
             var db = Mini();
@@ -187,11 +187,11 @@ namespace Gaiden.Tests
             k.Pos = placed.At + (placed.At.Y < 7 ? Coord.Down : Coord.Up);
             if (s.UnitAt(k.Pos) != null && s.UnitAt(k.Pos) != k) return;
             ev = BattleEngine.Apply(s, new MoveCommand { HeroId = k.Id, Path = new List<Coord> { placed.At } });
-            Assert.Contains(ev, e => e is TrapTriggeredEvent);
-            Assert.Null(s.TrapAt(placed.At));
+            Assert.That(ev.Any(e => e is TrapTriggeredEvent), Is.True);
+            Assert.That(s.TrapAt(placed.At), Is.Null);
         }
 
-        [Fact]
+        [Test]
         public void Mug_steals_and_hits_exactly_once_per_target()
         {
             var db = Mini();
@@ -201,10 +201,10 @@ namespace Gaiden.Tests
             k.Bar[0] = new AbilitySlot { AbilityId = "mug" };
             var ev = BattleEngine.Apply(s, new UseSlotCommand { HeroId = k.Id, Slot = 0, Target = k.Pos });
             var tank = Enemy(s, "tank");
-            Assert.Single(ev.OfType<DamagedEvent>().Where(d => d.TargetId == tank.Id && d.SourceId == k.Id));
+            Assert.That(ev.OfType<DamagedEvent>().Where(d => d.TargetId == tank.Id && d.SourceId == k.Id), Has.Exactly(1).Items);
         }
 
-        [Fact]
+        [Test]
         public void Silenced_caster_does_not_start_a_charge()
         {
             var db = Mini();
@@ -212,10 +212,10 @@ namespace Gaiden.Tests
             var (s, _) = Battle(db, Stage(("witch", 2, 0)), ("knight", 5, 7), ("cleric", 0, 7));
             var witch = Enemy(s, "witch");
             witch.Buffs.Add(new BuffInstance { Def = db.Buffs["silenced"], Remaining = 2 });
-            Assert.Null(EnemyPlanner.PlanCast(s, witch, false));
+            Assert.That(EnemyPlanner.PlanCast(s, witch, false), Is.Null);
         }
 
-        [Fact]
+        [Test]
         public void Frozen_costs_the_enemy_a_full_cycle_before_thawing()
         {
             var db = Mini();
@@ -225,15 +225,15 @@ namespace Gaiden.Tests
             s.Bank.Add(2);
             var tank = Enemy(s, "tank");
             BattleEngine.Apply(s, new UseSlotCommand { HeroId = m.Id, Slot = 0, Target = new Coord(2, 2) });
-            Assert.True(tank.HasBuff("frozen"), "still frozen after the casting action");
+            Assert.That(tank.HasBuff("frozen"), Is.True, "still frozen after the casting action");
             int ip = s.TurnEntryOf(tank.Id).Ip;
             BattleEngine.Apply(s, new MoveCommand { HeroId = Hero(s, "knight").Id, Path = P((5, 6)) });
-            Assert.Equal(ip, s.TurnEntryOf(tank.Id).Ip); // halted for the whole next action
-            Assert.False(tank.HasBuff("frozen"));
-            Assert.True(tank.HasBuff("wet"));
+            Assert.That(s.TurnEntryOf(tank.Id).Ip, Is.EqualTo(ip)); // halted for the whole next action
+            Assert.That(tank.HasBuff("frozen"), Is.False);
+            Assert.That(tank.HasBuff("wet"), Is.True);
         }
 
-        [Fact]
+        [Test]
         public void Time_bank_carries_until_the_next_enemy_turn()
         {
             var db = Mini();
@@ -243,26 +243,26 @@ namespace Gaiden.Tests
             var k = Hero(s, "knight");
             k.Bar[0] = new AbilitySlot { ItemId = "potion", Charges = 3, MaxCharges = 9 };
             var first = BattleEngine.Apply(s, new MoveCommand { HeroId = k.Id, Path = P((5, 6)), TimeLeftSeconds = 2.6f });
-            Assert.DoesNotContain(first, e => e is TurnStartedEvent);
+            Assert.That(first.Any(e => e is TurnStartedEvent), Is.False);
             var second = BattleEngine.Apply(s, new UseSlotCommand { HeroId = k.Id, Slot = 0, Target = k.Pos });
-            Assert.Contains(second, e => e is TurnStartedEvent);
-            Assert.Equal(2, second.OfType<OrbMintedEvent>().Count(o => o.Reason == "time bank"));
+            Assert.That(second.Any(e => e is TurnStartedEvent), Is.True);
+            Assert.That(second.OfType<OrbMintedEvent>().Count(o => o.Reason == "time bank"), Is.EqualTo(2));
         }
 
 
         // ── Targeting personalities (§14.1) and windup overtakes (§2) ──────────
 
-        [Fact]
+        [Test]
         public void Dumb_enemies_attack_the_closest_hero()
         {
             var db = Mini();
             db.Classes["wolf"].Targeting = Targeting.Closest;
             var (s, _) = Battle(db, Stage(("wolf", 2, 2)), ("knight", 2, 3), ("cleric", 2, 0));
             Hero(s, "cleric").Hp = 1;
-            Assert.Equal(Hero(s, "knight").Id, EnemyPlanner.PickTarget(s, Enemy(s, "wolf")).Id);
+            Assert.That(EnemyPlanner.PickTarget(s, Enemy(s, "wolf")).Id, Is.EqualTo(Hero(s, "knight").Id));
         }
 
-        [Fact]
+        [Test]
         public void Smart_enemies_hunt_the_weakest_hero_even_across_the_board()
         {
             var db = Mini();
@@ -270,22 +270,22 @@ namespace Gaiden.Tests
             var (s, _) = Battle(db, Stage(("wolf", 2, 2)), ("knight", 2, 3), ("cleric", 5, 7));
             Hero(s, "cleric").Hp = 3;
             var wolf = Enemy(s, "wolf");
-            Assert.Equal(Hero(s, "cleric").Id, EnemyPlanner.PickTarget(s, wolf).Id);
+            Assert.That(EnemyPlanner.PickTarget(s, wolf).Id, Is.EqualTo(Hero(s, "cleric").Id));
             var step = EnemyPlanner.PlanStep(s, wolf);
-            Assert.True(Math.Abs(step.X - 5) + Math.Abs(step.Y - 7) < Math.Abs(2 - 5) + Math.Abs(2 - 7), "it walks toward the weak hero");
+            Assert.That(Math.Abs(step.X - 5) + Math.Abs(step.Y - 7) < Math.Abs(2 - 5) + Math.Abs(2 - 7), Is.True, "it walks toward the weak hero");
         }
 
-        [Fact]
+        [Test]
         public void Assassins_target_the_most_fragile_hero()
         {
             var db = Mini();
             db.Classes["wolf"].Targeting = Targeting.Squishy;
             db.Classes["mage"].BaseStats.Vitality = 3;
             var (s, _) = Battle(db, Stage(("wolf", 2, 2)), ("knight", 2, 3), ("mage", 5, 7));
-            Assert.Equal(Hero(s, "mage").Id, EnemyPlanner.PickTarget(s, Enemy(s, "wolf")).Id);
+            Assert.That(EnemyPlanner.PickTarget(s, Enemy(s, "wolf")).Id, Is.EqualTo(Hero(s, "mage").Id));
         }
 
-        [Fact]
+        [Test]
         public void Erratic_enemies_keep_one_target_per_turn_but_vary_between_turns()
         {
             var db = Mini();
@@ -297,22 +297,22 @@ namespace Gaiden.Tests
             {
                 s.Clock = clock;
                 var a = EnemyPlanner.PickTarget(s, wolf);
-                Assert.Same(a, EnemyPlanner.PickTarget(s, wolf));
+                Assert.That(EnemyPlanner.PickTarget(s, wolf), Is.SameAs(a));
                 seen.Add(a.Id);
             }
-            Assert.True(seen.Count >= 2);
+            Assert.That(seen.Count >= 2, Is.True);
         }
 
-        [Fact]
+        [Test]
         public void Every_real_enemy_has_a_targeting_personality_and_a_speed_tier()
         {
             var enemies = Real.Classes.Values.Where(c => c.Team == Team.Enemy && !c.HasTag("Remains") && !c.HasTag("Egg")).ToList();
-            Assert.All(enemies, c => Assert.NotEqual(Targeting.Auto, c.Targeting));
-            Assert.All(enemies, c => Assert.Contains(c.BaseStats.Speed, new[] { 8f, 11f, 15f, 18f }));
-            Assert.True(enemies.Select(c => c.Targeting).Distinct().Count() >= 4);
+            foreach (var c in enemies) Assert.That(c.Targeting, Is.Not.EqualTo(Targeting.Auto));
+            foreach (var c in enemies) Assert.That(new[] { 8f, 11f, 15f, 18f }, Does.Contain(c.BaseStats.Speed));
+            Assert.That(enemies.Select(c => c.Targeting).Distinct().Count() >= 4, Is.True);
         }
 
-        [Fact]
+        [Test]
         public void A_fast_enemy_overtakes_a_slow_one_during_the_windup()
         {
             var db = Mini();
@@ -321,10 +321,10 @@ namespace Gaiden.Tests
             wolf.LevelStats.Speed = 18; tank.LevelStats.Speed = 8;
             s.TurnEntryOf(wolf.Id).Ip = 0;     // fast one starts at the very back
             s.TurnEntryOf(tank.Id).Ip = 300;   // slow one has a head start
-            Assert.True(BattleEngine.TicksUntilTurn(s, wolf.Id) < BattleEngine.TicksUntilTurn(s, tank.Id));
+            Assert.That(BattleEngine.TicksUntilTurn(s, wolf.Id) < BattleEngine.TicksUntilTurn(s, tank.Id), Is.True);
         }
 
-        [Fact]
+        [Test]
         public void Burning_stacks_up_to_its_cap_and_each_stack_burns()
         {
             var db = Mini();
@@ -340,22 +340,22 @@ namespace Gaiden.Tests
                 s.Bank.Add(2);
                 BattleEngine.Apply(s, new UseSlotCommand { HeroId = m.Id, Slot = 0, Target = tank.Pos });
             }
-            Assert.Equal(3, tank.Buffs.Count(b => b.Def.Id == "burning"));
-            Assert.Equal(BuffStacking.Stack, Real.Buffs["burning"].Stacking);
-            Assert.Equal(3, Real.Buffs["burning"].MaxStacks);
+            Assert.That(tank.Buffs.Count(b => b.Def.Id == "burning"), Is.EqualTo(3));
+            Assert.That(Real.Buffs["burning"].Stacking, Is.EqualTo(BuffStacking.Stack));
+            Assert.That(Real.Buffs["burning"].MaxStacks, Is.EqualTo(3));
         }
 
         // ── Power Amplifier (§1.2.6) ───────────────────────────────────────────
 
-        [Fact]
+        [Test]
         public void Amplifier_chance_grows_with_party_luck_and_caps()
         {
-            Assert.True(Formulas.AmplifierChance(40f) > Formulas.AmplifierChance(10f));
-            Assert.Equal(BattleConfig.AmplifierMaxChance, Formulas.AmplifierChance(10000f));
-            Assert.Equal(BattleConfig.AmplifierBaseChance, Formulas.AmplifierChance(0f), 3);
+            Assert.That(Formulas.AmplifierChance(40f) > Formulas.AmplifierChance(10f), Is.True);
+            Assert.That(Formulas.AmplifierChance(10000f), Is.EqualTo(BattleConfig.AmplifierMaxChance));
+            Assert.That(Formulas.AmplifierChance(0f), Is.EqualTo(BattleConfig.AmplifierBaseChance).Within(1e-3));
         }
 
-        [Fact]
+        [Test]
         public void An_attacker_on_the_amplifier_strikes_harder_adds_mana_charge_and_uses_it_up()
         {
             int Hit(bool amp)
@@ -367,16 +367,16 @@ namespace Gaiden.Tests
                 var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = knight.Id, Path = P((4, 3)) });
                 if (amp)
                 {
-                    Assert.Single(ev.OfType<AmplifierUsedEvent>());
-                    Assert.Contains(ev, e => e is ManaChargedEvent o && o.Reason == "amplifier" && o.Amount == BattleConfig.AmplifierCharge);
-                    Assert.True(s.Amplifier == null || ev.OfType<AmplifierSpawnedEvent>().Any());
+                    Assert.That(ev.OfType<AmplifierUsedEvent>(), Has.Exactly(1).Items);
+                    Assert.That(ev.Any(e => e is ManaChargedEvent o && o.Reason == "amplifier" && o.Amount == BattleConfig.AmplifierCharge), Is.True);
+                    Assert.That(s.Amplifier == null || ev.OfType<AmplifierSpawnedEvent>().Any(), Is.True);
                 }
                 return ev.OfType<DamagedEvent>().Where(d => d.SourceId == knight.Id).Sum(d => d.Amount);
             }
-            Assert.True(Hit(true) > Hit(false));
+            Assert.That(Hit(true) > Hit(false), Is.True);
         }
 
-        [Fact]
+        [Test]
         public void Enemies_cannot_use_the_amplifier_but_stepping_on_it_shoves_it_back()
         {
             var db = Mini();
@@ -386,13 +386,13 @@ namespace Gaiden.Tests
             s.Amplifier = new Coord(2, 3); // on the wolf's path to the knight
             var ev = BattleEngine.Apply(s, new ShieldCommand());
             var moved = ev.OfType<AmplifierMovedEvent>().FirstOrDefault();
-            Assert.NotNull(moved);
-            Assert.Equal(new Coord(2, 3), moved.From);
-            Assert.Equal(new Coord(2, 2), moved.To);
-            Assert.DoesNotContain(ev, e => e is AmplifierUsedEvent);
+            Assert.That(moved, Is.Not.Null);
+            Assert.That(moved.From, Is.EqualTo(new Coord(2, 3)));
+            Assert.That(moved.To, Is.EqualTo(new Coord(2, 2)));
+            Assert.That(ev.Any(e => e is AmplifierUsedEvent), Is.False);
         }
 
-        [Fact]
+        [Test]
         public void The_amplifier_is_a_movable_tile_heroes_push_and_nothing_spawns_on()
         {
             var db = Mini();
@@ -400,9 +400,9 @@ namespace Gaiden.Tests
             s.Amplifier = new Coord(1, 3);
             var knight = Hero(s, "knight");
             var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = knight.Id, Path = P((1, 3)) });
-            Assert.Contains(ev, e => e is AmplifierMovedEvent m && m.From == new Coord(1, 3) && m.To == new Coord(0, 3));
-            Assert.Equal(new Coord(1, 3), knight.Pos);
-            Assert.False(s.FreeForSpawn(s.Amplifier.Value));
+            Assert.That(ev.Any(e => e is AmplifierMovedEvent m && m.From == new Coord(1, 3) && m.To == new Coord(0, 3)), Is.True);
+            Assert.That(knight.Pos, Is.EqualTo(new Coord(1, 3)));
+            Assert.That(s.FreeForSpawn(s.Amplifier.Value), Is.False);
         }
 
         // ── Knockback (§6.3) ──
@@ -416,16 +416,16 @@ namespace Gaiden.Tests
             return (s, k);
         }
 
-        [Fact]
+        [Test]
         public void Shield_bash_shoves_the_target_two_tiles_away()
         {
             var (s, k) = Bash(Mini(), Stage(("tank", 2, 3)));
             var tank = Enemy(s, "tank");
             BattleEngine.Apply(s, new UseSlotCommand { HeroId = k.Id, Slot = 0, Target = tank.Pos });
-            Assert.Equal(new Coord(2, 1), tank.Pos);
+            Assert.That(tank.Pos, Is.EqualTo(new Coord(2, 1)));
         }
 
-        [Fact]
+        [Test]
         public void Bashing_into_a_unit_crashes_both_and_into_stone_slams_hard()
         {
             int Taken(StageDef st, out int other)
@@ -442,16 +442,16 @@ namespace Gaiden.Tests
             int crash = Taken(Stage(("tank", 2, 3), ("tank", 2, 2)), out int otherHurt);
             var stone = Stage(("tank", 2, 3)); stone.Blocks.Add(new Coord(2, 2));
             int slam = Taken(stone, out _);
-            Assert.True(crash > free, $"crash {crash} vs free {free}");
-            Assert.True(otherHurt > 0, "the unit it crashed into is hurt too");
-            Assert.True(slam > crash, $"slam {slam} vs crash {crash}");
+            Assert.That(crash > free, Is.True, $"crash {crash} vs free {free}");
+            Assert.That(otherHurt > 0, Is.True, "the unit it crashed into is hurt too");
+            Assert.That(slam > crash, Is.True, $"slam {slam} vs crash {crash}");
         }
 
-        [Fact]
+        [Test]
         public void Shield_bash_needs_an_adjacent_target()
         {
             var (s, k) = Bash(Mini(), Stage(("tank", 2, 1)));
-            Assert.False(TargetResolver.IsValidPick(s, s.Content.Abilities["shield_bash"], k, new Coord(2, 1)));
+            Assert.That(TargetResolver.IsValidPick(s, s.Content.Abilities["shield_bash"], k, new Coord(2, 1)), Is.False);
         }
 
         // ── Gravestones (§14.5) ──
@@ -464,7 +464,7 @@ namespace Gaiden.Tests
             return db;
         }
 
-        [Fact]
+        [Test]
         public void A_slain_undead_leaves_solid_remains_that_block_the_wave_from_clearing()
         {
             var db = GraveDb();
@@ -472,13 +472,13 @@ namespace Gaiden.Tests
             Enemy(s, "wolf").Hp = 1;
             var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = Hero(s, "knight").Id, Path = P((5, 3), (4, 3)) });
             var left = ev.OfType<RemainsLeftEvent>().SingleOrDefault();
-            Assert.NotNull(left);
-            Assert.Equal(new Coord(3, 3), left.At);
-            Assert.True(s.UnitById(left.RemainsId).Alive);
-            Assert.False(s.IsOver, "the wave isn't cleared while the remains stand");
+            Assert.That(left, Is.Not.Null);
+            Assert.That(left.At, Is.EqualTo(new Coord(3, 3)));
+            Assert.That(s.UnitById(left.RemainsId).Alive, Is.True);
+            Assert.That(s.IsOver, Is.False, "the wave isn't cleared while the remains stand");
         }
 
-        [Fact]
+        [Test]
         public void Remains_left_alone_raise_their_owner_at_half_hp_without_loot()
         {
             var db = GraveDb();
@@ -492,22 +492,22 @@ namespace Gaiden.Tests
             s.Timeline.Add(new TimelineEntry { Id = s.NextEntryId++, Kind = TimelineKind.Turn, OwnerId = remains.Id, Ip = 990 });
             var ev = BattleEngine.Apply(s, new ShieldCommand());
             var rose = ev.OfType<RoseAgainEvent>().SingleOrDefault();
-            Assert.NotNull(rose);
+            Assert.That(rose, Is.Not.Null);
             var risen = s.UnitById(rose.UnitId);
-            Assert.Equal("wolf", risen.Def.Id);
-            Assert.True(risen.NoLoot);
-            Assert.False(remains.Alive);
+            Assert.That(risen.Def.Id, Is.EqualTo("wolf"));
+            Assert.That(risen.NoLoot, Is.True);
+            Assert.That(remains.Alive, Is.False);
         }
 
-        [Fact]
+        [Test]
         public void Remains_are_solid_and_real_undead_leave_them()
         {
             var db = GraveDb();
             var (s, _) = Battle(db, Stage(("grave", 1, 3)), ("knight", 0, 3), ("cleric", 5, 7));
             var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = Hero(s, "knight").Id, Path = P((1, 3)) });
-            Assert.Contains(ev, e => e is StepBlockedEvent b && b.Reason == "immovable");
-            Assert.Equal("gravestone", Real.Classes["undead00"].Remains);
-            Assert.Equal("bonepile", Real.Classes["skelepede00"].Remains);
+            Assert.That(ev.Any(e => e is StepBlockedEvent b && b.Reason == "immovable"), Is.True);
+            Assert.That(Real.Classes["undead00"].Remains, Is.EqualTo("gravestone"));
+            Assert.That(Real.Classes["skelepede00"].Remains, Is.EqualTo("bonepile"));
         }
 
         // ── Eggs (§14.8) ──
@@ -520,7 +520,7 @@ namespace Gaiden.Tests
             return db;
         }
 
-        [Fact]
+        [Test]
         public void An_egg_hatches_into_its_real_enemy_at_full_hp_on_schedule()
         {
             var db = EggDb();
@@ -531,11 +531,11 @@ namespace Gaiden.Tests
             s.Timeline.Add(new TimelineEntry { Id = s.NextEntryId++, Kind = TimelineKind.Turn, OwnerId = egg.Id, Ip = 990 });
             var ev = BattleEngine.Apply(s, new ShieldCommand());
             var hatched = ev.OfType<EggHatchedEvent>().SingleOrDefault();
-            Assert.NotNull(hatched);
+            Assert.That(hatched, Is.Not.Null);
             var u = s.UnitById(hatched.UnitId);
-            Assert.Equal("naga", u.Def.Id);
-            Assert.Equal(u.MaxHp, u.Hp); // full HP — a fresh enemy, not a weakened return
-            Assert.False(egg.Alive);
+            Assert.That(u.Def.Id, Is.EqualTo("naga"));
+            Assert.That(u.Hp, Is.EqualTo(u.MaxHp)); // full HP — a fresh enemy, not a weakened return
+            Assert.That(egg.Alive, Is.False);
         }
     }
 }

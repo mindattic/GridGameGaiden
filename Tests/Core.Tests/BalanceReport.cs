@@ -4,8 +4,7 @@ using System.Text;
 using Gaiden.Core.Battle;
 using Gaiden.Core.Bot;
 using Gaiden.Meta;
-using Xunit;
-using Xunit.Abstractions;
+using NUnit.Framework;
 using static Gaiden.Tests.TestKit;
 
 namespace Gaiden.Tests
@@ -18,8 +17,6 @@ namespace Gaiden.Tests
     /// </summary>
     public class BalanceReport
     {
-        private readonly ITestOutputHelper output;
-        public BalanceReport(ITestOutputHelper output) { this.output = output; }
 
         private sealed class Row { public int Runs, Wins, Actions, HpPct; }
 
@@ -52,13 +49,11 @@ namespace Gaiden.Tests
             }
             return rows;
         }
-
-        [Theory]
-        [InlineData(0.0f, "greedy", false)]
-        [InlineData(0.5f, "casual", false)]
-        [InlineData(0.85f, "button-masher", false)]
-        [InlineData(0.0f, "greedy+camp", true)]
-        [InlineData(0.5f, "casual+camp", true)]
+        [TestCase(0.0f, "greedy", false)]
+        [TestCase(0.5f, "casual", false)]
+        [TestCase(0.85f, "button-masher", false)]
+        [TestCase(0.0f, "greedy+camp", true)]
+        [TestCase(0.5f, "casual+camp", true)]
         public void Campaign_pacing_table(float randomness, string label, bool manageCamp)
         {
             var total = new Dictionary<string, Row>();
@@ -79,8 +74,8 @@ namespace Gaiden.Tests
             sb.AppendLine("stage                  win%   actions   hp-left%");
             foreach (var kv in total)
                 sb.AppendLine($"{kv.Key,-22} {100 * kv.Value.Wins / kv.Value.Runs,4}%   {kv.Value.Actions / (float)kv.Value.Runs,7:F1}   {kv.Value.HpPct / kv.Value.Runs,6}%");
-            output.WriteLine(sb.ToString());
-            if (randomness == 0f) Assert.True(finishedRuns >= 1, "a greedy bot should be able to finish the campaign");
+            TestContext.Out.WriteLine(sb.ToString());
+            if (randomness == 0f) Assert.That(finishedRuns >= 1, Is.True, "a greedy bot should be able to finish the campaign");
         }
     }
 }
