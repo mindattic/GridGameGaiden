@@ -98,6 +98,10 @@ namespace Gaiden.App
         public BattleScreen(string stageId) { this.stageId = stageId; }
         public BattleScreen(BattleSetup setup) { setupOverride = setup; stageId = setup.Stage.Id; }
 
+        /// <summary>board.Lines lives on the global Overlay (see Build), which outlives this screen's own
+        /// root — remove it explicitly so it doesn't linger on top of whatever screen comes next.</summary>
+        public override void OnHidden() => board?.Lines.RemoveFromHierarchy();
+
         private bool Colorblind => App.Save?.Settings.ColorblindMode ?? false;
         private bool ReduceMotion => App.Save?.Settings.ReduceMotion ?? false;
 
@@ -145,6 +149,17 @@ namespace Gaiden.App
             boardHost.style.left = BoardLeft; boardHost.style.top = BoardTop;
             board = new BoardView(boardHost, State.Stage.Theme);
             board.Root.pickingMode = PickingMode.Position;
+            // Reparent the pincer-outline/line layer onto the global Overlay (where cut-in cards live) and
+            // above it — Overlay renders over the whole screen tree (GameApp.cs), so a SupporterPop/ActionCard
+            // popping in during a pincer resolve was drawing over part of the outline and making a correctly
+            // 1-wide pincer line read as a broken/wider box (GG-T65). ActionCard() keeps it on top as cards
+            // are added; OnHidden removes it so it doesn't leak into the next screen.
+            board.Lines.RemoveFromHierarchy();
+            board.Lines.style.left = BoardLeft; board.Lines.style.top = BoardTop;
+            board.Lines.style.right = StyleKeyword.Auto; board.Lines.style.bottom = StyleKeyword.Auto;
+            board.Lines.style.width = BoardView.Tile * BattleConfig.Cols;
+            board.Lines.style.height = BoardView.Tile * BattleConfig.Rows;
+            App.Overlay.Add(board.Lines);
             board.Root.RegisterCallback<PointerDownEvent>(OnPointerDown);
             board.Root.RegisterCallback<PointerMoveEvent>(OnPointerMove);
             board.Root.RegisterCallback<PointerUpEvent>(OnPointerUp);

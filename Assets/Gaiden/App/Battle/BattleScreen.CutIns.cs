@@ -121,6 +121,9 @@ namespace Gaiden.App
                 }
             }).Every(16);
             App.Overlay.Add(root);
+            // board.Lines also lives on Overlay now (BattleScreen.Build, GG-T65) so the pincer outline
+            // stays visible; re-assert it as the topmost sibling each time a card joins after it.
+            board.Lines.BringToFront();
             return root;
         }
 
