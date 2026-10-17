@@ -88,7 +88,7 @@ namespace Gaiden.Core.Rules
             var a = attacker.Effective;
             var d = defender.Effective;
             float off = a.Strength + attacker.WeaponPower;
-            float def = d.Vitality + defender.ArmorRating;
+            float def = d.Vitality;
             float raw = Mitigate(off, def);
             raw *= defender.ResistanceMultiplier(DamageType.Physical);
             float varied = raw * Variance(a, rng, 0.10f);

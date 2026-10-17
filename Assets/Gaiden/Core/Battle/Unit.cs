@@ -15,6 +15,16 @@ namespace Gaiden.Core.Battle
         public BuffInstance Clone() => (BuffInstance)MemberwiseClone();
     }
 
+    /// <summary>One armor piece worn in battle (§24.2, GG-T89): mirrors the save's per-piece durability/mastery.</summary>
+    public sealed class EquippedPiece
+    {
+        public string ItemId;
+        public int Durability;
+        public float Mastery = 1f;
+
+        public EquippedPiece Clone() => (EquippedPiece)MemberwiseClone();
+    }
+
     /// <summary>One AbilityBar slot: an ability (skill/spell) or a consumable item stack.</summary>
     public sealed class AbilitySlot
     {
@@ -69,11 +79,9 @@ namespace Gaiden.Core.Battle
         public int WeaponDurability;
         /// <summary>Masterwork stat multiplier for the current weapon (1 = normal, §24.6.2, GG-T46).</summary>
         public float WeaponMastery = 1f;
-        public float ArmorRating;
-        public string ArmorId;
-        public int ArmorDurability;
-        /// <summary>Masterwork stat multiplier for the current armor (1 = normal, §24.6.2, GG-T46).</summary>
-        public float ArmorMastery = 1f;
+        /// <summary>Armor pieces currently worn (Head/Torso/Legs/Gloves/Boots), each with its own durability
+        /// and Masterwork multiplier; a piece is removed from here the instant it breaks (§24.2, GG-T89).</summary>
+        public Dictionary<EquipmentSlot, EquippedPiece> Gear = new Dictionary<EquipmentSlot, EquippedPiece>();
         public float PincerDamageBonus;
         public int RegenPerTurn;
         public Dictionary<DamageType, float> GearResist = new Dictionary<DamageType, float>();
@@ -229,6 +237,8 @@ namespace Gaiden.Core.Battle
             u.Bar = new List<AbilitySlot>(Bar.Count);
             foreach (var s in Bar) u.Bar.Add(s.Clone());
             u.GearResist = new Dictionary<DamageType, float>(GearResist);
+            u.Gear = new Dictionary<EquipmentSlot, EquippedPiece>();
+            foreach (var kv in Gear) u.Gear[kv.Key] = kv.Value.Clone();
             return u;
         }
 

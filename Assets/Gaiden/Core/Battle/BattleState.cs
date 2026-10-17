@@ -24,15 +24,22 @@ namespace Gaiden.Core.Battle
         public int WeaponDurability;
         /// <summary>Masterwork stat multiplier carried from the save (§24.6.2, GG-T46); 1 = normal.</summary>
         public float WeaponMastery = 1f;
-        public string ArmorId;
-        public int ArmorDurability;
-        public float ArmorMastery = 1f;
+        /// <summary>Armor equipped per slot (Head/Torso/Legs/Gloves/Boots), each with its own durability/mastery (§24.2, GG-T89).</summary>
+        public Dictionary<EquipmentSlot, ArmorPieceSpec> Armor = new Dictionary<EquipmentSlot, ArmorPieceSpec>();
         public List<string> EquippedItemIds = new List<string>();
         /// <summary>Ability bar entries: ability id, or "item:id". Null/empty = empty slot.</summary>
         public List<string> Bar = new List<string>();
         /// <summary>Item id → owned count, used to size bar item stacks.</summary>
         public Dictionary<string, int> ItemCounts = new Dictionary<string, int>();
         public Coord? Start;
+    }
+
+    /// <summary>One equipped armor piece carried from the save into a battle (§24.2, GG-T89).</summary>
+    public sealed class ArmorPieceSpec
+    {
+        public string ItemId;
+        public int Durability;
+        public float Mastery = 1f;
     }
 
     public sealed class BattleSetup
@@ -64,8 +71,8 @@ namespace Gaiden.Core.Battle
         public Dictionary<string, int> ItemsConsumed = new Dictionary<string, int>();
         /// <summary>Hero class → weapon durability after battle (-1 = shattered/removed).</summary>
         public Dictionary<string, int> WeaponDurability = new Dictionary<string, int>();
-        /// <summary>Hero class → armor durability after battle (-1 = broke).</summary>
-        public Dictionary<string, int> ArmorDurability = new Dictionary<string, int>();
+        /// <summary>Hero class → armor slot → durability after battle (-1 = that slot broke/was never equipped, GG-T89).</summary>
+        public Dictionary<string, Dictionary<EquipmentSlot, int>> ArmorDurability = new Dictionary<string, Dictionary<EquipmentSlot, int>>();
         /// <summary>Hero class → weapon equipped at the end (after bar swaps), and what the bar slot then held.</summary>
         public Dictionary<string, string> FinalWeapon = new Dictionary<string, string>();
         public Dictionary<string, List<string>> FinalBar = new Dictionary<string, List<string>>();
@@ -85,6 +92,13 @@ namespace Gaiden.Core.Battle
             return copy;
         }
 
+        private static Dictionary<string, Dictionary<EquipmentSlot, int>> CloneArmorMap(Dictionary<string, Dictionary<EquipmentSlot, int>> map)
+        {
+            var copy = new Dictionary<string, Dictionary<EquipmentSlot, int>>();
+            foreach (var kv in map) copy[kv.Key] = new Dictionary<EquipmentSlot, int>(kv.Value);
+            return copy;
+        }
+
         public BattleResults Clone()
         {
             return new BattleResults
@@ -96,7 +110,7 @@ namespace Gaiden.Core.Battle
                 Scanned = new HashSet<string>(Scanned),
                 ItemsConsumed = new Dictionary<string, int>(ItemsConsumed),
                 WeaponDurability = new Dictionary<string, int>(WeaponDurability),
-                ArmorDurability = new Dictionary<string, int>(ArmorDurability),
+                ArmorDurability = CloneArmorMap(ArmorDurability),
                 FinalWeapon = new Dictionary<string, string>(FinalWeapon),
                 FinalBar = new Dictionary<string, List<string>>(FinalBar),
                 BrokenWeapons = CloneListMap(BrokenWeapons),

@@ -2813,5 +2813,213 @@
     "Result": "eq_wand_crystal_ench_holy",
     "ResultCount": 1,
     "Tier": 3
+  },
+  {
+    "Id": "recipe_legs_leather",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_leather",
+        "Count": 3
+      }
+    ],
+    "Gold": 20,
+    "BaseItem": null,
+    "Result": "eq_legs_leather",
+    "ResultCount": 1
+  },
+  {
+    "Id": "recipe_legs_chain",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 3
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 2
+      }
+    ],
+    "Gold": 60,
+    "BaseItem": null,
+    "Result": "eq_legs_chain",
+    "ResultCount": 1
+  },
+  {
+    "Id": "recipe_legs_plate",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 6
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 3
+      },
+      {
+        "Item": "mat_cloth",
+        "Count": 2
+      }
+    ],
+    "Gold": 140,
+    "BaseItem": null,
+    "Result": "eq_legs_plate",
+    "ResultCount": 1
+  },
+  {
+    "Id": "recipe_legs_runed",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 4
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 2
+      }
+    ],
+    "Gold": 260,
+    "BaseItem": null,
+    "Result": "eq_legs_runed",
+    "ResultCount": 1
+  },
+  {
+    "Id": "recipe_gloves_leather",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_leather",
+        "Count": 2
+      }
+    ],
+    "Gold": 18,
+    "BaseItem": null,
+    "Result": "eq_gloves_leather",
+    "ResultCount": 1
+  },
+  {
+    "Id": "recipe_gloves_studded",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 2
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 2
+      }
+    ],
+    "Gold": 55,
+    "BaseItem": null,
+    "Result": "eq_gloves_studded",
+    "ResultCount": 1
+  },
+  {
+    "Id": "recipe_gloves_mail",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 4
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 3
+      }
+    ],
+    "Gold": 130,
+    "BaseItem": null,
+    "Result": "eq_gloves_mail",
+    "ResultCount": 1
+  },
+  {
+    "Id": "recipe_gloves_spellweave",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 3
+      },
+      {
+        "Item": "mat_cloth",
+        "Count": 2
+      }
+    ],
+    "Gold": 240,
+    "BaseItem": null,
+    "Result": "eq_gloves_spellweave",
+    "ResultCount": 1
+  },
+  {
+    "Id": "recipe_earring_copper",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 1
+      }
+    ],
+    "Gold": 15,
+    "BaseItem": null,
+    "Result": "eq_earring_copper",
+    "ResultCount": 1
+  },
+  {
+    "Id": "recipe_earring_silver",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 50,
+    "BaseItem": null,
+    "Result": "eq_earring_silver",
+    "ResultCount": 1
+  },
+  {
+    "Id": "recipe_earring_gold",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_naga_scale",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 110,
+    "BaseItem": null,
+    "Result": "eq_earring_gold",
+    "ResultCount": 1
+  },
+  {
+    "Id": "recipe_earring_starfall",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_ghost_ectoplasm",
+        "Count": 2
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 240,
+    "BaseItem": null,
+    "Result": "eq_earring_starfall",
+    "ResultCount": 1
   }
 ]

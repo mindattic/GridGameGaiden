@@ -402,24 +402,29 @@ namespace Gaiden.Core.Battle
             if (buff != null && target.Alive && S.Rng.Chance(attacker.Def.OnHitChance)) ApplyBuff(target, buff, buff.Duration);
         }
 
-        /// <summary>Armor loses one durability per landing enemy hit; at 0 it breaks and its bonuses are gone (US-243).</summary>
+        /// <summary>Every equipped armor piece loses one durability per landing enemy hit; each breaks (and its
+        /// bonuses go) independently at 0 (US-243, GG-T89 five-slot armor).</summary>
         private void WearArmor(Unit hero)
         {
-            if (hero.ArmorId == null || hero.ArmorDurability <= 0) return;
-            hero.ArmorDurability--;
-            if (hero.ArmorDurability > 0) return;
-            var armor = C.TryItem(hero.ArmorId);
-            if (armor != null)
+            var slots = new List<EquipmentSlot>(hero.Gear.Keys);
+            foreach (var slot in slots)
             {
-                hero.GearStats = hero.GearStats + armor.Stats * -hero.ArmorMastery;
-                foreach (var kv in armor.Resistances)
-                    if (hero.GearResist.TryGetValue(kv.Key, out var cur) && kv.Value != 0f) hero.GearResist[kv.Key] = cur / kv.Value;
+                var piece = hero.Gear[slot];
+                if (piece.Durability <= 0) continue;
+                piece.Durability--;
+                if (piece.Durability > 0) continue;
+                var armor = C.TryItem(piece.ItemId);
+                if (armor != null)
+                {
+                    hero.GearStats = hero.GearStats + armor.Stats * -piece.Mastery;
+                    foreach (var kv in armor.Resistances)
+                        if (hero.GearResist.TryGetValue(kv.Key, out var cur) && kv.Value != 0f) hero.GearResist[kv.Key] = cur / kv.Value;
+                }
+                Emit(new ArmorBrokenEvent { UnitId = hero.Id, ArmorId = piece.ItemId });
+                Announce($"{armor?.Name ?? "Armor"} broken!", hero.Id);
+                RecordBroken(S.Results.BrokenArmors, hero.Def.Id, piece.ItemId);
+                hero.Gear.Remove(slot);
             }
-            Emit(new ArmorBrokenEvent { UnitId = hero.Id, ArmorId = hero.ArmorId });
-            Announce("Armor broken!", hero.Id);
-            RecordBroken(S.Results.BrokenArmors, hero.Def.Id, hero.ArmorId);
-            hero.ArmorId = null;
-            hero.ArmorMastery = 1f;
         }
 
         /// <summary>One durability per pincer; at 0 the weapon shatters: the strike already dealt ×1.5, the wielder takes 15% MaxHP (§24.5).</summary>

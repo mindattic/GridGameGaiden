@@ -63,13 +63,13 @@ namespace Gaiden.App.Tests
             var data = new SaveData();
             data.Roster.Add(new HeroSave { ClassId = "knight" });
             data.Roster[0].Bar.Clear();
-            data.Roster[0].Relics.Clear();
             store.Write(0, data);
 
             var loaded = store.Load(0);
 
             Assert.AreEqual(5, loaded.Roster[0].Bar.Count);
-            Assert.AreEqual(3, loaded.Roster[0].Relics.Count);
+            Assert.IsNotNull(loaded.Roster[0].Armor);
+            Assert.IsNotNull(loaded.Roster[0].Jewelry);
         }
 
         [Test]

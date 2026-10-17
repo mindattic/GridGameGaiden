@@ -28,7 +28,7 @@ namespace Gaiden.Tests
             Item("questkey", ItemType.QuestItem, 50);
             Item("warhammer", ItemType.Equipment, 100, maxStack: 1, durability: 100, slot: EquipmentSlot.Weapon);
             Item("finehammer", ItemType.Equipment, 150, maxStack: 1, durability: 100, slot: EquipmentSlot.Weapon);
-            Item("plate", ItemType.Equipment, 100, maxStack: 1, durability: 100, slot: EquipmentSlot.Armor);
+            Item("plate", ItemType.Equipment, 100, maxStack: 1, durability: 100, slot: EquipmentSlot.Torso);
 
             c.Recipes["craft_elixir"] = new RecipeDef { Id = "craft_elixir", Station = CraftStation.Alchemy, Inputs = { new ItemCount { Item = "herb", Count = 2 } }, Gold = 10, Result = "elixir", ResultCount = 1 };
             c.Recipes["craft_warhammer"] = new RecipeDef { Id = "craft_warhammer", Station = CraftStation.Forge, Inputs = { new ItemCount { Item = "ore", Count = 2 } }, Gold = 30, Result = "warhammer", ResultCount = 1 };
@@ -327,17 +327,15 @@ namespace Gaiden.Tests
         {
             var c = BuildContent();
             var hero = Progression.NewHero(c, "knight");
-            hero.ArmorId = "plate";
-            hero.ArmorDurability = 1;
-            hero.ArmorRepairs = 0;
+            hero.Armor[EquipmentSlot.Torso] = new EquippedArmor { ItemId = "plate", Durability = 1, Repairs = 0 };
             var s = NewSave(0);
-            Assert.That(Repair.RepairArmor(c, s, hero).Ok, Is.False);
-            Assert.That(hero.ArmorDurability, Is.EqualTo(1));
+            Assert.That(Repair.RepairArmor(c, s, hero, EquipmentSlot.Torso).Ok, Is.False);
+            Assert.That(hero.Armor[EquipmentSlot.Torso].Durability, Is.EqualTo(1));
 
             s.Gold = 10000;
-            Assert.That(Repair.RepairArmor(c, s, hero).Ok, Is.True);
-            Assert.That(hero.ArmorDurability, Is.EqualTo(Repair.EffectiveMax(c.Item("plate"), 0)));
-            Assert.That(hero.ArmorRepairs, Is.EqualTo(1));
+            Assert.That(Repair.RepairArmor(c, s, hero, EquipmentSlot.Torso).Ok, Is.True);
+            Assert.That(hero.Armor[EquipmentSlot.Torso].Durability, Is.EqualTo(Repair.EffectiveMax(c.Item("plate"), 0)));
+            Assert.That(hero.Armor[EquipmentSlot.Torso].Repairs, Is.EqualTo(1));
         }
 
         // ── Inn ──

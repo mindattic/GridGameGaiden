@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Gaiden.Core.Content;
 using Gaiden.Meta;
 using System.Linq;
 using NUnit.Framework;
@@ -41,15 +42,49 @@ namespace Gaiden.Tests
         }
 
         [Test]
-        public void Migrate_pads_short_hero_bar_and_relics()
+        public void Migrate_pads_short_hero_bar()
         {
             var s = NewSave();
             s.Roster[0].Bar = new List<string> { "attack" };
-            s.Roster[0].Relics = new List<string>();
             var back = SaveMigrations.Migrate(s);
             Assert.That(back.Roster[0].Bar.Count, Is.EqualTo(5));
             Assert.That(back.Roster[0].Bar[0], Is.EqualTo("attack"));
-            Assert.That(back.Roster[0].Relics.Count, Is.EqualTo(3));
+        }
+
+        /// <summary>GG-T89: a pre-v3 save's single Armor slot becomes the new Torso slot, carrying its
+        /// durability/repairs/mastery along with it (not just the item id).</summary>
+        [Test]
+        public void Migrate_v2_drains_the_old_armor_slot_into_torso()
+        {
+            var s = NewSave();
+            s.Version = 2;
+            s.Roster[0].ArmorId = "eq_armor_leather";
+            s.Roster[0].ArmorDurability = 40;
+            s.Roster[0].ArmorRepairs = 2;
+            s.Roster[0].ArmorMastery = 1.2f;
+            var back = SaveMigrations.Migrate(s);
+            Assert.That(back.Version, Is.EqualTo(SaveData.CurrentVersion));
+            Assert.That(back.Roster[0].Armor.ContainsKey(EquipmentSlot.Torso), Is.True);
+            var piece = back.Roster[0].Armor[EquipmentSlot.Torso];
+            Assert.That(piece.ItemId, Is.EqualTo("eq_armor_leather"));
+            Assert.That(piece.Durability, Is.EqualTo(40));
+            Assert.That(piece.Repairs, Is.EqualTo(2));
+            Assert.That(piece.Mastery, Is.EqualTo(1.2f));
+            Assert.That(back.Roster[0].ArmorId, Is.Null); // legacy field drained and cleared
+        }
+
+        /// <summary>GG-T89: a pre-v3 save's three generic Relic slots become named jewelry slots, in order
+        /// (Necklace, then Earring1, then Earring2) — a best-effort carry-over, not a category match.</summary>
+        [Test]
+        public void Migrate_v2_drains_the_old_relic_list_into_named_jewelry_slots()
+        {
+            var s = NewSave();
+            s.Version = 2;
+            s.Roster[0].Relics = new List<string> { "eq_ring_copper", "eq_amulet_iron", null };
+            var back = SaveMigrations.Migrate(s);
+            Assert.That(back.Roster[0].Jewelry[EquipmentSlot.Necklace], Is.EqualTo("eq_ring_copper"));
+            Assert.That(back.Roster[0].Jewelry[EquipmentSlot.Earring1], Is.EqualTo("eq_amulet_iron"));
+            Assert.That(back.Roster[0].Jewelry.ContainsKey(EquipmentSlot.Earring2), Is.False);
         }
 
         [Test]

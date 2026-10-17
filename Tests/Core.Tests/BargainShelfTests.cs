@@ -26,7 +26,7 @@ namespace Gaiden.Tests
                 {
                     Assert.That(seen.Add(o.Item.Id), Is.True, "the shelf should never roll the same item twice in one rotation");
                     Assert.That(o.Item.Type, Is.EqualTo(ItemType.Equipment));
-                    Assert.That(o.Item.Slot == EquipmentSlot.Weapon || o.Item.Slot == EquipmentSlot.Armor, Is.True);
+                    Assert.That(o.Item.Slot == EquipmentSlot.Weapon || System.Array.IndexOf(BattleEngine.ArmorSlots, o.Item.Slot) >= 0, Is.True);
                     Assert.That(o.Item.Durability > 0, Is.True);
                     Assert.That(o.Price, Is.InRange((int)(o.Item.BaseCost * Bargains.MinPriceFraction) - 1, (int)System.Math.Ceiling(o.Item.BaseCost * Bargains.MaxPriceFraction) + 1));
                     Assert.That(o.Durability, Is.InRange(1, (int)System.Math.Ceiling(o.Item.Durability * Bargains.MaxDurabilityFraction) + 1));

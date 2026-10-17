@@ -106,7 +106,7 @@ namespace Gaiden.Tests
 
             // Equip it on whoever it fits, then wear + repair it
             var hero = s.Hero(s.Party[0]);
-            if (forged.Slot == EquipmentSlot.Weapon || forged.Slot == EquipmentSlot.Armor)
+            if (forged.Slot == EquipmentSlot.Weapon || System.Array.IndexOf(BattleEngine.ArmorSlots, forged.Slot) >= 0)
             {
                 Assert.That(Equipment.Equip(c, s, hero, forged.Slot, forged.Id).Ok, Is.True);
                 Assert.That(Equipment.Equipped(hero, forged.Slot), Is.EqualTo(forged.Id));
@@ -455,7 +455,7 @@ namespace Gaiden.Tests
         {
             var c = Real; var s = Progression.NewGame(c, "Station2");
             var recipe = Crafting.Recipes(c, CraftStation.Forge).First(r => r.Tier == 1
-                && (c.Item(r.Result).Slot == EquipmentSlot.Weapon || c.Item(r.Result).Slot == EquipmentSlot.Armor)
+                && (c.Item(r.Result).Slot == EquipmentSlot.Weapon || System.Array.IndexOf(BattleEngine.ArmorSlots, c.Item(r.Result).Slot) >= 0)
                 && c.Item(r.Result).Durability > 1);
             s.Gold += recipe.Gold;
             foreach (var ic in recipe.Inputs) s.AddItem(ic.Item, ic.Count);
@@ -468,7 +468,7 @@ namespace Gaiden.Tests
             s.Gold += 1000;
             Result repaired;
             if (item.Slot == EquipmentSlot.Weapon) { hero.WeaponDurability = 1; repaired = Repair.RepairWeapon(c, s, hero); }
-            else { hero.ArmorDurability = 1; repaired = Repair.RepairArmor(c, s, hero); }
+            else { hero.Armor[item.Slot].Durability = 1; repaired = Repair.RepairArmor(c, s, hero, item.Slot); }
             Assert.That(repaired.Ok, Is.True, repaired.Message);
             Assert.That(StationProgress.Xp(s, StationKind.Blacksmith), Is.EqualTo(Crafting.CraftXp + Repair.RepairXp));
 
@@ -520,7 +520,7 @@ namespace Gaiden.Tests
 
         private static RecipeDef FindMasterworkCandidate(ContentDb c) =>
             Crafting.Recipes(c, CraftStation.Forge).First(r => r.BaseItem == null
-                && (c.Item(r.Result).Slot == EquipmentSlot.Weapon || c.Item(r.Result).Slot == EquipmentSlot.Armor)
+                && (c.Item(r.Result).Slot == EquipmentSlot.Weapon || System.Array.IndexOf(BattleEngine.ArmorSlots, c.Item(r.Result).Slot) >= 0)
                 && c.Item(r.Result).Durability > 1);
 
         /// <summary>Hunts for a seed that rolls Masterwork (probabilistic by design), same pattern as
@@ -559,8 +559,8 @@ namespace Gaiden.Tests
 
             var hero = s.Hero(s.Party[0]);
             Assert.That(Equipment.Equip(c, s, hero, item.Slot, item.Id).Ok, Is.True);
-            float mastery = item.Slot == EquipmentSlot.Weapon ? hero.WeaponMastery : hero.ArmorMastery;
-            int dur = item.Slot == EquipmentSlot.Weapon ? hero.WeaponDurability : hero.ArmorDurability;
+            float mastery = item.Slot == EquipmentSlot.Weapon ? hero.WeaponMastery : hero.Armor[item.Slot].Mastery;
+            int dur = item.Slot == EquipmentSlot.Weapon ? hero.WeaponDurability : hero.Armor[item.Slot].Durability;
             Assert.That(mastery, Is.EqualTo(worn.Mastery));
             Assert.That(dur, Is.EqualTo(worn.Durability));
 

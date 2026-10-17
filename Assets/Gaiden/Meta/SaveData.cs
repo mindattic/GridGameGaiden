@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Gaiden.Core.Content;
 using Gaiden.Core.Rules;
 
 namespace Gaiden.Meta
@@ -22,7 +23,7 @@ namespace Gaiden.Meta
 
     public sealed class SaveData
     {
-        public const int CurrentVersion = 2;
+        public const int CurrentVersion = 3;
 
         public int Version = CurrentVersion;
         public string Name = "Lightbearer";
@@ -116,11 +117,30 @@ namespace Gaiden.Meta
         public int WeaponRepairs;
         /// <summary>Masterwork stat multiplier (§24.6.2, GG-T46); 1 = normal gear.</summary>
         public float WeaponMastery = 1f;
+        /// <summary>Armor equipped in Head/Torso/Legs/Gloves/Boots, each with its own durability/repairs/mastery —
+        /// the same per-piece tracking Weapon already had (§24.2, GG-T89).</summary>
+        public Dictionary<EquipmentSlot, EquippedArmor> Armor = new Dictionary<EquipmentSlot, EquippedArmor>();
+        /// <summary>Jewelry equipped in Necklace/Earring1/Earring2/Ring1/Ring2 — plain item ids, no durability
+        /// (the same no-wear rule the old Relic slots had, GG-T89).</summary>
+        public Dictionary<EquipmentSlot, string> Jewelry = new Dictionary<EquipmentSlot, string>();
+
+        // ── v2-and-earlier save shape, kept only so SaveMigrations can drain them into Armor/Jewelry above.
+        // Never read anywhere else — a v3+ save always has these empty/default. ──
         public string ArmorId;
         public int ArmorDurability;
         public int ArmorRepairs;
         public float ArmorMastery = 1f;
         public List<string> Relics = new List<string> { null, null, null };
+    }
+
+    /// <summary>One equipped armor piece (§24.2, GG-T89): mirrors <see cref="WornGear"/>'s shape plus the item id,
+    /// since (unlike the bag's Worn list, keyed by item id already) a hero's Armor dict is keyed by slot.</summary>
+    public sealed class EquippedArmor
+    {
+        public string ItemId;
+        public int Durability;
+        public int Repairs;
+        public float Mastery = 1f;
     }
 
     public sealed class WornGear
@@ -212,10 +232,31 @@ namespace Gaiden.Meta
             s.Settings ??= new SettingsSave();
             s.StationXp ??= new Dictionary<string, int>();
             s.DiscoveredRecipes ??= new HashSet<string>();
+            foreach (var h in s.Roster) while (h.Bar.Count < 5) h.Bar.Add(null);
+            if (s.Version < 3)
+            {
+                // GG-T89: one Armor slot split into five (Head/Torso/Legs/Gloves/Boots) and Relic1-3 became
+                // named jewelry (Necklace/Earring1/Earring2). Best-effort carry-over so nobody's gear vanishes:
+                // the old Armor piece becomes Torso (the closest match), and relics fill in order — a relic's
+                // own category may not match the slot it lands in, but it still contributes its stats there.
+                var jewelrySlots = new[] { EquipmentSlot.Necklace, EquipmentSlot.Earring1, EquipmentSlot.Earring2 };
+                foreach (var h in s.Roster)
+                {
+                    h.Armor ??= new Dictionary<EquipmentSlot, EquippedArmor>();
+                    h.Jewelry ??= new Dictionary<EquipmentSlot, string>();
+                    if (h.ArmorId != null)
+                        h.Armor[EquipmentSlot.Torso] = new EquippedArmor { ItemId = h.ArmorId, Durability = h.ArmorDurability, Repairs = h.ArmorRepairs, Mastery = h.ArmorMastery };
+                    for (int i = 0; i < jewelrySlots.Length && i < (h.Relics?.Count ?? 0); i++)
+                        if (h.Relics[i] != null) h.Jewelry[jewelrySlots[i]] = h.Relics[i];
+                    h.ArmorId = null; h.ArmorDurability = 0; h.ArmorRepairs = 0; h.ArmorMastery = 1f;
+                    h.Relics = new List<string>();
+                }
+                s.Version = 3;
+            }
             foreach (var h in s.Roster)
             {
-                while (h.Bar.Count < 5) h.Bar.Add(null);
-                while (h.Relics.Count < 3) h.Relics.Add(null);
+                h.Armor ??= new Dictionary<EquipmentSlot, EquippedArmor>();
+                h.Jewelry ??= new Dictionary<EquipmentSlot, string>();
             }
             return s;
         }

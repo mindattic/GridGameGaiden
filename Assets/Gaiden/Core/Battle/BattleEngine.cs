@@ -22,6 +22,12 @@ namespace Gaiden.Core.Battle
     /// </summary>
     public static class BattleEngine
     {
+        /// <summary>The five armor-piece slots, in the order §24.2's equip screen lists them (GG-T89).</summary>
+        public static readonly EquipmentSlot[] ArmorSlots =
+        {
+            EquipmentSlot.Head, EquipmentSlot.Torso, EquipmentSlot.Legs, EquipmentSlot.Gloves, EquipmentSlot.Boots,
+        };
+
         public static BattleState Create(ContentDb content, BattleSetup setup, List<BattleEvent> events)
         {
             var r = new BattleRunner(new BattleState

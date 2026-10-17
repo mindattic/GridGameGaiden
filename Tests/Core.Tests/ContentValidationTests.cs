@@ -266,5 +266,20 @@ namespace Gaiden.Tests
             db.SkillTrees["tanktree"].Nodes.Add(new SkillNodeDef { Id = "n2", Grants = "slash", Prerequisites = { "n1" } });
             Assert.That(string.Join(";", ContentLoader.Validate(db)), Does.Contain("prerequisite cycle"));
         }
+
+        /// <summary>Two branches that both trace back to the same ancestor (e.g. a finale node requiring two
+        /// capstones that each descend from a shared root) is a valid diamond, not a cycle — a regression here
+        /// would make every real archetype tree's finale node (GG-T74) fail validation.</summary>
+        [Test]
+        public void Skill_tree_diamond_shaped_prerequisites_are_not_a_cycle()
+        {
+            var db = ValidDb();
+            var tree = db.SkillTrees["tanktree"];
+            tree.Nodes.Add(new SkillNodeDef { Id = "root", Grants = "slash", Cost = 1 });
+            tree.Nodes.Add(new SkillNodeDef { Id = "branch_a", Grants = "slash", Cost = 1, Prerequisites = { "root" } });
+            tree.Nodes.Add(new SkillNodeDef { Id = "branch_b", Grants = "slash", Cost = 1, Prerequisites = { "root" } });
+            tree.Nodes.Add(new SkillNodeDef { Id = "finale", Grants = "slash", Cost = 1, Prerequisites = { "branch_a", "branch_b" } });
+            Assert.That(ContentLoader.Validate(db), Is.Empty);
+        }
     }
 }

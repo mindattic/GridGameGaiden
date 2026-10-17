@@ -72,12 +72,14 @@ namespace Gaiden.Core.Battle
             };
             u.LevelStats = Formulas.StatsAtLevel(def, u.Level);
             u.WeaponMastery = spec.WeaponMastery;
-            u.ArmorMastery = spec.ArmorMastery;
+            var masteryById = new Dictionary<string, float>();
+            if (spec.WeaponId != null) masteryById[spec.WeaponId] = spec.WeaponMastery;
+            foreach (var kv in spec.Armor) if (kv.Value?.ItemId != null) masteryById[kv.Value.ItemId] = kv.Value.Mastery;
             foreach (var itemId in spec.EquippedItemIds)
             {
                 var item = C.TryItem(itemId);
                 if (item == null) continue;
-                float mastery = itemId == spec.WeaponId ? spec.WeaponMastery : itemId == spec.ArmorId ? spec.ArmorMastery : 1f;
+                float mastery = masteryById.TryGetValue(itemId, out var m) ? m : 1f;
                 u.GearStats = u.GearStats + item.Stats * mastery;
                 pendingStartOrbs += Math.Max(0, item.BattleStartManaOrbs);
                 pendingBankBonus += Math.Max(0, item.BankCapacityBonus);
@@ -101,11 +103,17 @@ namespace Gaiden.Core.Battle
                     u.GearStats = u.GearStats + weapon.Stats * spec.WeaponMastery;
                 }
             }
-            var armor = C.TryItem(spec.ArmorId);
-            if (armor != null && armor.Durability > 0)
+            foreach (var slot in BattleEngine.ArmorSlots)
             {
-                u.ArmorId = armor.Id;
-                u.ArmorDurability = spec.ArmorDurability > 0 ? spec.ArmorDurability : armor.Durability;
+                if (!spec.Armor.TryGetValue(slot, out var piece) || piece?.ItemId == null) continue;
+                var armor = C.TryItem(piece.ItemId);
+                if (armor == null || armor.Durability <= 0) continue;
+                u.Gear[slot] = new EquippedPiece
+                {
+                    ItemId = armor.Id,
+                    Durability = piece.Durability > 0 ? piece.Durability : armor.Durability,
+                    Mastery = piece.Mastery,
+                };
             }
             u.MaxHp = Formulas.MaxHp(u.Effective, u.Level);
             u.Hp = spec.Hp > 0 ? Math.Min(spec.Hp, u.MaxHp) : u.MaxHp;

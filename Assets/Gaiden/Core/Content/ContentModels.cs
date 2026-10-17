@@ -45,7 +45,14 @@ namespace Gaiden.Core.Content
 
     public enum ItemRarity { Junk, Common, Uncommon, Rare, Epic, Legendary }
 
-    public enum EquipmentSlot { None, Weapon, Armor, Relic1, Relic2, Relic3 }
+    /// <summary>
+    /// Every equip slot (§24.2, GG-T89). Weapon and the five armor pieces (Head/Torso/Legs/Gloves/Boots) each
+    /// hold exactly one exact-matching item (<see cref="ItemDef.Slot"/> == the slot). Necklace is the same
+    /// (one exact slot). Earring1/Earring2 and Ring1/Ring2 are *instances* of a slot category: any item flagged
+    /// <see cref="ItemDef.IsEarring"/>/<see cref="ItemDef.IsRing"/> fits either of its pair, the same way any
+    /// <c>IsRelic</c> item used to fit any of the old Relic1-3.
+    /// </summary>
+    public enum EquipmentSlot { None, Weapon, Head, Torso, Legs, Gloves, Boots, Necklace, Earring1, Earring2, Ring1, Ring2 }
 
     public enum CraftStation { Forge, Alchemy, Enchant }
 
@@ -331,7 +338,11 @@ namespace Gaiden.Core.Content
         public float AdjacentAllyDamageReduction;
 
         public int EffectiveSellValue => SellValue >= 0 ? SellValue : System.Math.Max(1, BaseCost / 2);
-        public bool IsRelic => Slot == EquipmentSlot.Relic1 || Slot == EquipmentSlot.Relic2 || Slot == EquipmentSlot.Relic3;
+        /// <summary>Content authors always set <c>Slot: "Earring1"</c> for an earring item; this flag (not an
+        /// exact slot match) is what lets it fit either Earring1 or Earring2 (GG-T89).</summary>
+        public bool IsEarring => Slot == EquipmentSlot.Earring1 || Slot == EquipmentSlot.Earring2;
+        /// <summary>Content authors always set <c>Slot: "Ring1"</c> for a ring item; fits either Ring1 or Ring2.</summary>
+        public bool IsRing => Slot == EquipmentSlot.Ring1 || Slot == EquipmentSlot.Ring2;
     }
 
     public sealed class ItemCount

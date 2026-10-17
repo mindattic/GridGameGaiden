@@ -18,19 +18,19 @@ namespace Gaiden.Tests
         public void Armor_wears_per_enemy_hit_and_breaks_at_zero()
         {
             var db = Mini();
-            db.Items["mail"] = new ItemDef { Id = "mail", Name = "Mail", Type = ItemType.Equipment, Slot = EquipmentSlot.Armor, Durability = 1, Stats = new Stats { Vitality = 5 } };
+            db.Items["mail"] = new ItemDef { Id = "mail", Name = "Mail", Type = ItemType.Equipment, Slot = EquipmentSlot.Torso, Durability = 1, Stats = new Stats { Vitality = 5 } };
             db.Classes["wolf"].MoveRange = 0;
             db.Classes["wolf"].BaseStats.Luck = 0;
             var setup = new BattleSetup { Stage = Stage(("wolf", 2, 2)), Seed = 3, UnlockedSlots = 2 };
-            setup.Party.Add(new HeroSpec { ClassId = "knight", Start = new Coord(2, 3), ArmorId = "mail", EquippedItemIds = { "mail" } });
+            setup.Party.Add(new HeroSpec { ClassId = "knight", Start = new Coord(2, 3), Armor = { [EquipmentSlot.Torso] = new ArmorPieceSpec { ItemId = "mail" } }, EquippedItemIds = { "mail" } });
             setup.Party.Add(new HeroSpec { ClassId = "cleric", Start = new Coord(5, 7) });
             var s = BattleEngine.Create(db, setup, new List<BattleEvent>());
             var k = Hero(s, "knight");
             float vit = k.Effective.Vitality;
             var all = new List<BattleEvent>();
-            for (int i = 0; i < 6 && k.ArmorId != null; i++) { s.TurnEntryOf(Enemy(s, "wolf").Id).Ip = 999; all.AddRange(BattleEngine.Apply(s, new ShieldCommand())); }
+            for (int i = 0; i < 6 && k.Gear.ContainsKey(EquipmentSlot.Torso); i++) { s.TurnEntryOf(Enemy(s, "wolf").Id).Ip = 999; all.AddRange(BattleEngine.Apply(s, new ShieldCommand())); }
             Assert.That(all.Any(e => e is ArmorBrokenEvent), Is.True);
-            Assert.That(k.ArmorId, Is.Null);
+            Assert.That(k.Gear.ContainsKey(EquipmentSlot.Torso), Is.False);
             Assert.That(k.Effective.Vitality, Is.EqualTo(vit - 5));
         }
 
@@ -94,7 +94,7 @@ namespace Gaiden.Tests
         public void Bank_capacity_bonus_gear_widens_the_orb_line()
         {
             var db = Mini();
-            db.Items["star"] = new ItemDef { Id = "star", Name = "Star", Type = ItemType.Equipment, Slot = EquipmentSlot.Relic1, BankCapacityBonus = 2 };
+            db.Items["star"] = new ItemDef { Id = "star", Name = "Star", Type = ItemType.Equipment, Slot = EquipmentSlot.Ring1, BankCapacityBonus = 2 };
             var setup = new BattleSetup { Stage = Stage(("tank", 0, 0)), Seed = 1, UnlockedSlots = 2 };
             setup.Party.Add(new HeroSpec { ClassId = "knight", Start = new Coord(5, 7), EquippedItemIds = { "star" } });
             setup.Party.Add(new HeroSpec { ClassId = "cleric", Start = new Coord(4, 7) });
@@ -106,7 +106,7 @@ namespace Gaiden.Tests
         public void Relic_passives_boost_pincers_regen_and_protect()
         {
             var db = Mini();
-            db.Items["fang"] = new ItemDef { Id = "fang", Name = "Fang", Type = ItemType.Equipment, Slot = EquipmentSlot.Relic1, PincerDamageBonus = 1f, RegenPerTurn = 5, StartsProtected = true };
+            db.Items["fang"] = new ItemDef { Id = "fang", Name = "Fang", Type = ItemType.Equipment, Slot = EquipmentSlot.Necklace, PincerDamageBonus = 1f, RegenPerTurn = 5, StartsProtected = true };
             var setup = new BattleSetup { Stage = Stage(("tank", 2, 3)), Seed = 2, UnlockedSlots = 2 };
             setup.Party.Add(new HeroSpec { ClassId = "knight", Start = new Coord(1, 3), EquippedItemIds = { "fang" } });
             setup.Party.Add(new HeroSpec { ClassId = "cleric", Start = new Coord(3, 4) });

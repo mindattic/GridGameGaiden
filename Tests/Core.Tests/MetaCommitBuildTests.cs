@@ -77,19 +77,16 @@ namespace Gaiden.Tests
         {
             var c = Real; var s = Progression.NewGame(c, "AD");
             var hero = s.Hero(s.Party[0]);
-            var armor = c.Items.Values.First(i => i.Slot == EquipmentSlot.Armor && i.Durability > 0);
-            hero.ArmorId = armor.Id;
-            hero.ArmorDurability = armor.Durability;
+            var armor = c.Items.Values.First(i => i.Slot == EquipmentSlot.Torso && i.Durability > 0);
+            hero.Armor[EquipmentSlot.Torso] = new EquippedArmor { ItemId = armor.Id, Durability = armor.Durability };
 
             var st = DirectWin(c, s, c.CampaignStages()[0].Id);
             var unit = st.Units.First(u => u.IsHero && u.Def.Id == hero.ClassId);
-            unit.ArmorId = null; // broke mid-battle
-            st.Results.ArmorDurability[hero.ClassId] = -1;
+            unit.Gear.Remove(EquipmentSlot.Torso); // broke mid-battle
+            st.Results.ArmorDurability[hero.ClassId] = new Dictionary<EquipmentSlot, int> { [EquipmentSlot.Torso] = -1 };
             BattleFactory.Commit(c, s, st);
 
-            Assert.That(hero.ArmorId, Is.Null);
-            Assert.That(hero.ArmorDurability, Is.EqualTo(0));
-            Assert.That(hero.ArmorRepairs, Is.EqualTo(0));
+            Assert.That(hero.Armor.ContainsKey(EquipmentSlot.Torso), Is.False);
         }
 
         [Test] // GG-T41
@@ -118,18 +115,17 @@ namespace Gaiden.Tests
         {
             var c = Real; var s = Progression.NewGame(c, "BA");
             var hero = s.Hero(s.Party[0]);
-            var armor = c.Items.Values.First(i => i.Slot == EquipmentSlot.Armor && i.Durability > 0);
-            hero.ArmorId = armor.Id;
-            hero.ArmorDurability = armor.Durability;
+            var armor = c.Items.Values.First(i => i.Slot == EquipmentSlot.Torso && i.Durability > 0);
+            hero.Armor[EquipmentSlot.Torso] = new EquippedArmor { ItemId = armor.Id, Durability = armor.Durability };
 
             var st = DirectWin(c, s, c.CampaignStages()[0].Id);
             var unit = st.Units.First(u => u.IsHero && u.Def.Id == hero.ClassId);
-            unit.ArmorId = null; // broke mid-battle
-            st.Results.ArmorDurability[hero.ClassId] = -1;
+            unit.Gear.Remove(EquipmentSlot.Torso); // broke mid-battle
+            st.Results.ArmorDurability[hero.ClassId] = new Dictionary<EquipmentSlot, int> { [EquipmentSlot.Torso] = -1 };
             st.Results.BrokenArmors[hero.ClassId] = new List<string> { armor.Id };
             BattleFactory.Commit(c, s, st);
 
-            Assert.That(hero.ArmorId, Is.Null);
+            Assert.That(hero.Armor.ContainsKey(EquipmentSlot.Torso), Is.False);
             Assert.That(s.Count(armor.Id), Is.EqualTo(0));
             Assert.That(s.BrokenCount(armor.Id), Is.EqualTo(1));
         }

@@ -119,6 +119,12 @@ def item_rule(it, manifest):
             svg = "lorc/pointy-hat"
         elif any(k in name for k in ("Boots", "Greaves", "Sabatons", "Runners")):
             svg = "lorc/boots"
+        elif any(k in name for k in ("Legging", "Trousers")):
+            svg = "delapouite/leg-armor"
+        elif any(k in name for k in ("Glove", "Gauntlet")):
+            svg = "delapouite/gloves"
+        elif "Earring" in name:
+            svg = "delapouite/drop-earrings"
         elif "Rob" in name:
             svg = "lorc/robe"
         elif "Vest" in name:

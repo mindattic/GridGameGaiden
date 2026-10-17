@@ -327,13 +327,20 @@ namespace Gaiden.App
                 if (u.IsHero)
                 {
                     var weaponDef = u.WeaponId != null ? App.Content.TryItem(u.WeaponId) : null;
-                    var armorDef = u.ArmorId != null ? App.Content.TryItem(u.ArmorId) : null;
                     bool hasWeapon = weaponDef != null && weaponDef.Durability > 0;
-                    bool hasArmor = armorDef != null && armorDef.Durability > 0;
                     float wMax = hasWeapon ? weaponDef.Durability * (u.WeaponMastery > 1f ? BattleConfig.MasterworkDurabilityMultiplier : 1f) : 1f;
-                    float aMax = hasArmor ? armorDef.Durability * (u.ArmorMastery > 1f ? BattleConfig.MasterworkDurabilityMultiplier : 1f) : 1f;
                     float wFrac = hasWeapon ? u.WeaponDurability / wMax : 1f;
-                    float aFrac = hasArmor ? u.ArmorDurability / aMax : 1f;
+                    // Five armor pieces condense to one gear icon: any equipped at all, worst-condition fraction (GG-T89).
+                    bool hasArmor = u.Gear.Count > 0;
+                    float aFrac = 1f;
+                    foreach (var piece in u.Gear.Values)
+                    {
+                        var def = App.Content.TryItem(piece.ItemId);
+                        if (def == null || def.Durability <= 0) continue;
+                        float max = def.Durability * (piece.Mastery > 1f ? BattleConfig.MasterworkDurabilityMultiplier : 1f);
+                        float frac = max > 0f ? piece.Durability / max : 1f;
+                        if (frac < aFrac) aFrac = frac;
+                    }
                     v.SetGear(hasWeapon, wFrac, hasWeapon && u.WeaponDurability == 1, hasArmor, aFrac, !ReduceMotion);
                 }
                 else v.SetGear(false, 0f, false, false, 0f, !ReduceMotion);

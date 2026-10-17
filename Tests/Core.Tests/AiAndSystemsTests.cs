@@ -130,7 +130,7 @@ namespace Gaiden.Tests
         public void Mage_robe_seeds_battle_start_orbs_and_gear_resistance_applies()
         {
             var db = Mini();
-            db.Items["robe"] = new ItemDef { Id = "robe", Name = "Mage Robe", Type = ItemType.Equipment, Slot = EquipmentSlot.Armor, BattleStartManaOrbs = 2, Resistances = { [DamageType.Fire] = 0.5f } };
+            db.Items["robe"] = new ItemDef { Id = "robe", Name = "Mage Robe", Type = ItemType.Equipment, Slot = EquipmentSlot.Torso, BattleStartManaOrbs = 2, Resistances = { [DamageType.Fire] = 0.5f } };
             var setup = new BattleSetup { Stage = Stage(("tank", 0, 0)), Seed = 3, UnlockedSlots = 2 };
             setup.Party.Add(new HeroSpec { ClassId = "knight", Start = new Coord(5, 7), EquippedItemIds = { "robe" } });
             setup.Party.Add(new HeroSpec { ClassId = "cleric", Start = new Coord(4, 7) });

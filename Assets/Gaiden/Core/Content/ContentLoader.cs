@@ -172,24 +172,26 @@ namespace Gaiden.Core.Content
                         else if (req == n.Id) p.Add($"tree {t.Id} node {n.Id}: can't require itself");
                     }
                 }
-                // Cycle check: walk each node's prerequisite chain and fail if it revisits a node.
+                // Cycle check: walk each node's prerequisite chain and fail only if it revisits a node
+                // already on the *current* path. Two branches sharing a common ancestor (e.g. a finale
+                // node requiring two capstones that both trace back to the same root) is a valid diamond,
+                // not a cycle — tracking "seen anywhere" instead of "seen on this path" flagged those too.
                 foreach (var n in t.Nodes)
                 {
-                    var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                    var stack = new Stack<SkillNodeDef>();
-                    stack.Push(n);
-                    bool cycle = false;
-                    while (stack.Count > 0 && !cycle)
+                    var onPath = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    if (HasCycle(n)) p.Add($"tree {t.Id} node {n.Id}: prerequisite cycle");
+
+                    bool HasCycle(SkillNodeDef cur)
                     {
-                        var cur = stack.Pop();
-                        if (!seen.Add(cur.Id)) { cycle = true; break; }
+                        if (!onPath.Add(cur.Id)) return true;
                         foreach (var req in cur.Prerequisites)
                         {
                             var reqNode = t.Nodes.Find(x => string.Equals(x.Id, req, StringComparison.OrdinalIgnoreCase));
-                            if (reqNode != null) stack.Push(reqNode);
+                            if (reqNode != null && HasCycle(reqNode)) return true;
                         }
+                        onPath.Remove(cur.Id);
+                        return false;
                     }
-                    if (cycle) p.Add($"tree {t.Id} node {n.Id}: prerequisite cycle");
                 }
             }
             foreach (var c in db.Classes.Values)

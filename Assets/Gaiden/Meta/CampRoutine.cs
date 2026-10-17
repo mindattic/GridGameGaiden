@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Gaiden.Core.Battle;
 using Gaiden.Core.Bot;
 using Gaiden.Core.Content;
 
@@ -42,11 +43,12 @@ namespace Gaiden.Meta
                     if (w != null && Repair.IsUneconomical(w, h.WeaponDurability, h.WeaponRepairs, h.WeaponMastery)) Note(Crafting.SalvageEquipped(c, s, h, EquipmentSlot.Weapon));
                     else Note(Repair.RepairWeapon(c, s, h));
                 }
-                if (h.ArmorId != null)
+                foreach (var slot in BattleEngine.ArmorSlots)
                 {
-                    var a = c.TryItem(h.ArmorId);
-                    if (a != null && Repair.IsUneconomical(a, h.ArmorDurability, h.ArmorRepairs, h.ArmorMastery)) Note(Crafting.SalvageEquipped(c, s, h, EquipmentSlot.Armor));
-                    else Note(Repair.RepairArmor(c, s, h));
+                    if (!h.Armor.TryGetValue(slot, out var piece)) continue;
+                    var a = c.TryItem(piece.ItemId);
+                    if (a != null && Repair.IsUneconomical(a, piece.Durability, piece.Repairs, piece.Mastery)) Note(Crafting.SalvageEquipped(c, s, h, slot));
+                    else Note(Repair.RepairArmor(c, s, h, slot));
                 }
             }
             if (Inn.Cost(c, s) > 0 && Inn.Cost(c, s) <= s.Gold) Note(Inn.Rest(c, s));
@@ -56,7 +58,7 @@ namespace Gaiden.Meta
             foreach (var id in s.Party)
             {
                 var h = s.Hero(id);
-                foreach (var slot in new[] { EquipmentSlot.Weapon, EquipmentSlot.Armor })
+                foreach (var slot in new[] { EquipmentSlot.Weapon }.Concat(BattleEngine.ArmorSlots))
                 {
                     float current = MetaHeuristics.Score(c.TryItem(Equipment.Equipped(h, slot)));
                     var owned = MetaHeuristics.BestFirst(Equipment.Candidates(c, s, slot)).FirstOrDefault();

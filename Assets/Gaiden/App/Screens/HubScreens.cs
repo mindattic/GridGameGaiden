@@ -15,7 +15,7 @@ namespace Gaiden.App
         {
             switch (i.Type)
             {
-                case ItemType.Equipment: return i.Slot == EquipmentSlot.Weapon ? "Weapon" : i.Slot == EquipmentSlot.Armor ? "Armor" : "Relic";
+                case ItemType.Equipment: return i.Slot == EquipmentSlot.Weapon ? "Weapon" : Array.IndexOf(BattleEngine.ArmorSlots, i.Slot) >= 0 ? "Armor" : "Jewelry";
                 case ItemType.Consumable: return "Item";
                 case ItemType.CraftingMaterial: return "Material";
                 case ItemType.RecipeScroll: return "Recipe Scroll";
@@ -23,11 +23,15 @@ namespace Gaiden.App
             }
         }
 
+        public static string SlotName(EquipmentSlot s) =>
+            s == EquipmentSlot.Earring1 ? "Earring I" : s == EquipmentSlot.Earring2 ? "Earring II" :
+            s == EquipmentSlot.Ring1 ? "Ring I" : s == EquipmentSlot.Ring2 ? "Ring II" : s.ToString();
+
         public static string Glyph(ItemDef i)
         {
             switch (i.Type)
             {
-                case ItemType.Equipment: return i.Slot == EquipmentSlot.Weapon ? "†" : i.Slot == EquipmentSlot.Armor ? "◆" : "✧";
+                case ItemType.Equipment: return i.Slot == EquipmentSlot.Weapon ? "†" : Array.IndexOf(BattleEngine.ArmorSlots, i.Slot) >= 0 ? "◆" : "✧";
                 case ItemType.Consumable: return "✚";
                 case ItemType.CraftingMaterial: return "◈";
                 case ItemType.RecipeScroll: return "❖";
@@ -235,17 +239,23 @@ namespace Gaiden.App
             Stat("INT", e.Intelligence); Stat("WIS", e.Wisdom); Stat("LCK", e.Luck);
 
             var gear = Ui.El("col", w); gear.style.marginTop = 16;
-            void G(string slot, string id, int dur = -1, float mastery = 1f)
+            void G(string label, string id, int dur = -1, int repairs = 0, float mastery = 1f)
             {
                 var it = C.TryItem(id);
                 var r = Ui.El("row", gear);
-                Ui.Text(slot, "small dim", r).style.width = 180;
+                Ui.Text(label, "small dim", r).style.width = 180;
                 string name = it == null ? "—" : (mastery > 1f ? "★ " : "") + it.Name +
-                    (dur >= 0 && it.Durability > 0 ? $"  ({dur}/{Repair.EffectiveMax(it, slot == "Weapon" ? h.WeaponRepairs : h.ArmorRepairs, mastery)})" : "");
+                    (dur >= 0 && it.Durability > 0 ? $"  ({dur}/{Repair.EffectiveMax(it, repairs, mastery)})" : "");
                 Ui.Text(name, "small " + (it != null ? Ui.RarityClass(it.Rarity) : "dim"), r);
             }
-            G("Weapon", h.WeaponId, h.WeaponDurability, h.WeaponMastery); G("Armor", h.ArmorId, h.ArmorDurability, h.ArmorMastery);
-            for (int i = 0; i < 3; i++) G($"Relic {i + 1}", h.Relics[i]);
+            G("Weapon", h.WeaponId, h.WeaponDurability, h.WeaponRepairs, h.WeaponMastery);
+            foreach (var slot in BattleEngine.ArmorSlots)
+            {
+                h.Armor.TryGetValue(slot, out var piece);
+                G(slot.ToString(), piece?.ItemId, piece?.Durability ?? -1, piece?.Repairs ?? 0, piece?.Mastery ?? 1f);
+            }
+            foreach (var slot in Equipment.JewelrySlots)
+                G(ItemUi.SlotName(slot), h.Jewelry.TryGetValue(slot, out var jid) ? jid : null);
             var lore = Ui.Text(Ui.Keywords(def.Lore ?? def.Description ?? ""), "small dim", w);
             lore.style.whiteSpace = WhiteSpace.Normal; lore.style.marginTop = 16;
         }
@@ -260,22 +270,28 @@ namespace Gaiden.App
         public EquipScreen(string heroId) : base(heroId) { }
         public override string Id => "equip";
         protected override string Title => "Equip";
-        private static readonly EquipmentSlot[] Slots = { EquipmentSlot.Weapon, EquipmentSlot.Armor, EquipmentSlot.Relic1, EquipmentSlot.Relic2, EquipmentSlot.Relic3 };
-
         protected override void BuildBody(VisualElement body)
         {
             HeroSwitcher(body);
             var h = Hero;
-            var slotsW = Ui.Window(null, body);
-            foreach (var sl in Slots)
+            bool MasteryFor(EquipmentSlot sl) => sl == EquipmentSlot.Weapon ? h.WeaponMastery > 1f : h.Armor.TryGetValue(sl, out var piece) && piece.Mastery > 1f;
+            void SlotGroup(string title, IEnumerable<EquipmentSlot> slots)
             {
-                var s2 = sl;
-                var it = C.TryItem(Equipment.Equipped(h, sl));
-                bool mastery = sl == EquipmentSlot.Weapon ? h.WeaponMastery > 1f : sl == EquipmentSlot.Armor && h.ArmorMastery > 1f;
-                var row = Ui.MenuRow(SlotName(sl), it == null ? "—" : (mastery ? "★ " : "") + it.Name, () => { slot = s2; previewId = null; Refresh(); }, slotsW);
-                if (it != null) row.Q<Label>("value").AddToClassList(Ui.RarityClass(it.Rarity));
-                if (sl == slot) Ui.Select(row);
+                var w = Ui.Window(title, body);
+                foreach (var sl in slots)
+                {
+                    var s2 = sl;
+                    var it = C.TryItem(Equipment.Equipped(h, sl));
+                    bool mastery = MasteryFor(sl);
+                    var row = Ui.MenuRow(ItemUi.SlotName(sl), it == null ? "—" : (mastery ? "★ " : "") + it.Name, () => { slot = s2; previewId = null; Refresh(); }, w);
+                    if (it != null) row.Q<Label>("value").AddToClassList(Ui.RarityClass(it.Rarity));
+                    if (sl == slot) Ui.Select(row);
+                }
             }
+            // §24.2 equip screen layout (GG-T89): Weapon, then the five armor pieces, then the five jewelry pieces.
+            SlotGroup("Weapon", new[] { EquipmentSlot.Weapon });
+            SlotGroup("Armor", BattleEngine.ArmorSlots);
+            SlotGroup("Jewelry", Equipment.JewelrySlots);
 
             var cmp = Ui.Window(null, body);
             var curId = Equipment.Equipped(h, slot);
@@ -298,7 +314,7 @@ namespace Gaiden.App
                     Ui.Text($"Then: {thenItem.PassiveName} — {thenItem.PassiveDescription}", "small gold", prow).style.whiteSpace = WhiteSpace.Normal;
             }
 
-            var w = Ui.Window($"{SlotName(slot)} — your bag", body);
+            var w = Ui.Window($"{ItemUi.SlotName(slot)} — your bag", body);
             w.style.flexGrow = 1;
             var list = Ui.List(w);
             if (Equipment.Equipped(h, slot) != null)
@@ -316,8 +332,6 @@ namespace Gaiden.App
                 if (item.Id == previewId) Ui.Select(row);
             }
         }
-
-        private static string SlotName(EquipmentSlot s) => s == EquipmentSlot.Relic1 ? "Relic I" : s == EquipmentSlot.Relic2 ? "Relic II" : s == EquipmentSlot.Relic3 ? "Relic III" : s.ToString();
     }
 
     // ── Abilities: learn + slot the bar ───────────────────────────────────────────
@@ -747,17 +761,20 @@ namespace Gaiden.App
                     if (bad) row.Q<Label>("value").AddToClassList("warn");
                     if (bad) SalvageInsteadRow(list, hero, EquipmentSlot.Weapon, w, h.WeaponDurability, cost);
                 }
-                var a = C.TryItem(h.ArmorId);
-                if (a != null && a.Durability > 0)
+                foreach (var slot in BattleEngine.ArmorSlots)
                 {
+                    if (!h.Armor.TryGetValue(slot, out var piece)) continue;
+                    var a = C.TryItem(piece.ItemId);
+                    if (a == null || a.Durability <= 0) continue;
+                    var armorSlot = slot;
                     any = true;
-                    int cost = Repair.Cost(C, S, a, h.ArmorDurability, h.ArmorRepairs, h.ArmorMastery);
-                    bool bad = cost > 0 && Repair.IsUneconomical(a, h.ArmorDurability, h.ArmorRepairs, h.ArmorMastery);
-                    string name = (h.ArmorMastery > 1f ? "★ " : "") + a.Name;
-                    var row = Ui.MenuRow($"{C.Class(h.ClassId).Name} — {name}  {h.ArmorDurability}/{Repair.EffectiveMax(a, h.ArmorRepairs, h.ArmorMastery)}", cost > 0 ? Ui.Gold(cost) : "OK",
-                        () => Done(Repair.RepairArmor(C, S, hero)), list, null, cost > 0);
+                    int cost = Repair.Cost(C, S, a, piece.Durability, piece.Repairs, piece.Mastery);
+                    bool bad = cost > 0 && Repair.IsUneconomical(a, piece.Durability, piece.Repairs, piece.Mastery);
+                    string name = (piece.Mastery > 1f ? "★ " : "") + a.Name;
+                    var row = Ui.MenuRow($"{C.Class(h.ClassId).Name} — {name}  {piece.Durability}/{Repair.EffectiveMax(a, piece.Repairs, piece.Mastery)}", cost > 0 ? Ui.Gold(cost) : "OK",
+                        () => Done(Repair.RepairArmor(C, S, hero, armorSlot)), list, null, cost > 0);
                     if (bad) row.Q<Label>("value").AddToClassList("warn");
-                    if (bad) SalvageInsteadRow(list, hero, EquipmentSlot.Armor, a, h.ArmorDurability, cost);
+                    if (bad) SalvageInsteadRow(list, hero, armorSlot, a, piece.Durability, cost);
                 }
             }
             if (!any) Ui.Text("Nobody has gear that wears out. Equip forged weapons first.", "small dim", list).style.whiteSpace = WhiteSpace.Normal;

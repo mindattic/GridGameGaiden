@@ -11,12 +11,15 @@ Authors: carl-olsen, darkzaitzev, delapouite, faithtoken, lorc, sbed, skoll, zer
 - delapouite/biceps
 - delapouite/bow-arrow
 - delapouite/dart
+- delapouite/drop-earrings
 - delapouite/elf-ear
 - delapouite/eyelashes
 - delapouite/flanged-mace
+- delapouite/gloves
 - delapouite/healing
 - delapouite/health-potion
 - delapouite/holy-water
+- delapouite/leg-armor
 - delapouite/log
 - delapouite/magic-potion
 - delapouite/night-sleep

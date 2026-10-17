@@ -17,19 +17,29 @@ namespace Gaiden.Tests
             var c = Real;
             var material = c.Items.Values.First(i => i.Type == ItemType.CraftingMaterial);
             Assert.That(Equipment.Fits(material, EquipmentSlot.Weapon), Is.False);
-            Assert.That(Equipment.Fits(null, EquipmentSlot.Relic1), Is.False);
+            Assert.That(Equipment.Fits(null, EquipmentSlot.Ring1), Is.False);
         }
 
         [Test]
-        public void Fits_allows_a_relic_only_into_any_relic_slot()
+        public void Fits_allows_a_ring_only_into_either_ring_slot()
         {
             var c = Real;
-            var relic = c.Items.Values.First(i => i.IsRelic);
-            Assert.That(Equipment.Fits(relic, EquipmentSlot.Relic1), Is.True);
-            Assert.That(Equipment.Fits(relic, EquipmentSlot.Relic2), Is.True);
-            Assert.That(Equipment.Fits(relic, EquipmentSlot.Relic3), Is.True);
-            Assert.That(Equipment.Fits(relic, EquipmentSlot.Weapon), Is.False);
-            Assert.That(Equipment.Fits(relic, EquipmentSlot.Armor), Is.False);
+            var ring = c.Items.Values.First(i => i.IsRing);
+            Assert.That(Equipment.Fits(ring, EquipmentSlot.Ring1), Is.True);
+            Assert.That(Equipment.Fits(ring, EquipmentSlot.Ring2), Is.True);
+            Assert.That(Equipment.Fits(ring, EquipmentSlot.Earring1), Is.False);
+            Assert.That(Equipment.Fits(ring, EquipmentSlot.Weapon), Is.False);
+            Assert.That(Equipment.Fits(ring, EquipmentSlot.Torso), Is.False);
+        }
+
+        [Test]
+        public void Fits_allows_an_earring_only_into_either_earring_slot()
+        {
+            var c = Real;
+            var earring = c.Items.Values.First(i => i.IsEarring);
+            Assert.That(Equipment.Fits(earring, EquipmentSlot.Earring1), Is.True);
+            Assert.That(Equipment.Fits(earring, EquipmentSlot.Earring2), Is.True);
+            Assert.That(Equipment.Fits(earring, EquipmentSlot.Ring1), Is.False);
         }
 
         [Test]
@@ -37,11 +47,11 @@ namespace Gaiden.Tests
         {
             var c = Real;
             var weapon = c.Items.Values.First(i => i.Slot == EquipmentSlot.Weapon);
-            var armor = c.Items.Values.First(i => i.Slot == EquipmentSlot.Armor);
+            var armor = c.Items.Values.First(i => i.Slot == EquipmentSlot.Torso);
             Assert.That(Equipment.Fits(weapon, EquipmentSlot.Weapon), Is.True);
-            Assert.That(Equipment.Fits(weapon, EquipmentSlot.Armor), Is.False);
-            Assert.That(Equipment.Fits(weapon, EquipmentSlot.Relic1), Is.False);
-            Assert.That(Equipment.Fits(armor, EquipmentSlot.Armor), Is.True);
+            Assert.That(Equipment.Fits(weapon, EquipmentSlot.Torso), Is.False);
+            Assert.That(Equipment.Fits(weapon, EquipmentSlot.Ring1), Is.False);
+            Assert.That(Equipment.Fits(armor, EquipmentSlot.Torso), Is.True);
             Assert.That(Equipment.Fits(armor, EquipmentSlot.Weapon), Is.False);
         }
 
@@ -53,7 +63,7 @@ namespace Gaiden.Tests
             var c = Real;
             var s = Progression.NewGame(c, "Eq1");
             var hero = s.Hero(s.Party[0]);
-            var armor = c.Items.Values.First(i => i.Slot == EquipmentSlot.Armor);
+            var armor = c.Items.Values.First(i => i.Slot == EquipmentSlot.Torso);
             s.AddItem(armor.Id, 1);
             var result = Equipment.Equip(c, s, hero, EquipmentSlot.Weapon, armor.Id);
             Assert.That(result.Ok, Is.False);
@@ -80,8 +90,8 @@ namespace Gaiden.Tests
             var c = Real;
             var s = Progression.NewGame(c, "Eq3");
             var hero = s.Hero(s.Party[0]);
-            Assert.That(Equipment.Equipped(hero, EquipmentSlot.Relic1), Is.Null);
-            Assert.That(Equipment.Unequip(c, s, hero, EquipmentSlot.Relic1).Ok, Is.False);
+            Assert.That(Equipment.Equipped(hero, EquipmentSlot.Ring1), Is.Null);
+            Assert.That(Equipment.Unequip(c, s, hero, EquipmentSlot.Ring1).Ok, Is.False);
         }
 
         [Test]
@@ -94,6 +104,63 @@ namespace Gaiden.Tests
             var (now, then) = Equipment.Compare(c, hero, EquipmentSlot.Weapon, weapon.Id);
             Assert.That(hero.WeaponId, Is.Null); // Compare previews only; it doesn't mutate the hero
             Assert.That(then.Strength, Is.Not.EqualTo(now.Strength));
+        }
+
+        /// <summary>A Masterwork weapon's stat bonus must carry into the "then" preview unchanged when the slot
+        /// being compared is a different one (armor): Compare's scratch copy used to drop WeaponMastery/ArmorMastery
+        /// for every slot except the one being swapped, understating the preview for any hero with Masterwork gear.</summary>
+        [Test]
+        public void Compare_keeps_the_other_equipped_slots_masterwork_bonus()
+        {
+            var c = Real;
+            var s = Progression.NewGame(c, "Eq5");
+            var hero = s.Hero(s.Party[0]);
+            var weapon = c.Items.Values.First(i => i.Slot == EquipmentSlot.Weapon && i.Stats.Strength > 0);
+            s.AddItem(weapon.Id, 1);
+            Equipment.Equip(c, s, hero, EquipmentSlot.Weapon, weapon.Id);
+            hero.WeaponMastery = 1.2f; // simulate an equipped Masterwork weapon
+            var armor = c.Items.Values.First(i => i.Slot == EquipmentSlot.Torso && i.Stats.Strength == 0);
+            var (now, then) = Equipment.Compare(c, hero, EquipmentSlot.Torso, armor.Id);
+            Assert.That(then.Strength, Is.EqualTo(now.Strength)); // swapping armor must not touch the weapon's own bonus
+        }
+
+        /// <summary>GG-T89: Head/Torso/Legs/Gloves/Boots are five independent slots — equipping one must not
+        /// disturb another, and each tracks its own durability.</summary>
+        [Test]
+        public void Equip_fills_each_armor_slot_independently()
+        {
+            var c = Real;
+            var s = Progression.NewGame(c, "Eq6");
+            var hero = s.Hero(s.Party[0]);
+            var head = c.Items.Values.First(i => i.Slot == EquipmentSlot.Head);
+            var torso = c.Items.Values.First(i => i.Slot == EquipmentSlot.Torso);
+            s.AddItem(head.Id, 1);
+            s.AddItem(torso.Id, 1);
+            Assert.That(Equipment.Equip(c, s, hero, EquipmentSlot.Head, head.Id).Ok, Is.True);
+            Assert.That(Equipment.Equip(c, s, hero, EquipmentSlot.Torso, torso.Id).Ok, Is.True);
+            Assert.That(Equipment.Equipped(hero, EquipmentSlot.Head), Is.EqualTo(head.Id));
+            Assert.That(Equipment.Equipped(hero, EquipmentSlot.Torso), Is.EqualTo(torso.Id));
+            Assert.That(Equipment.Unequip(c, s, hero, EquipmentSlot.Head).Ok, Is.True);
+            Assert.That(Equipment.Equipped(hero, EquipmentSlot.Head), Is.Null);
+            Assert.That(Equipment.Equipped(hero, EquipmentSlot.Torso), Is.EqualTo(torso.Id)); // untouched
+        }
+
+        /// <summary>Ring1 and Ring2 are independent instances of the same category — two different rings can be
+        /// worn at once (GG-T89), the same way the old Relic1-3 let you mix and match.</summary>
+        [Test]
+        public void Equip_fills_both_ring_slots_with_different_rings()
+        {
+            var c = Real;
+            var s = Progression.NewGame(c, "Eq7");
+            var hero = s.Hero(s.Party[0]);
+            var rings = c.Items.Values.Where(i => i.IsRing).Take(2).ToList();
+            Assert.That(rings.Count, Is.EqualTo(2), "content needs at least 2 ring items for this test");
+            s.AddItem(rings[0].Id, 1);
+            s.AddItem(rings[1].Id, 1);
+            Assert.That(Equipment.Equip(c, s, hero, EquipmentSlot.Ring1, rings[0].Id).Ok, Is.True);
+            Assert.That(Equipment.Equip(c, s, hero, EquipmentSlot.Ring2, rings[1].Id).Ok, Is.True);
+            Assert.That(Equipment.Equipped(hero, EquipmentSlot.Ring1), Is.EqualTo(rings[0].Id));
+            Assert.That(Equipment.Equipped(hero, EquipmentSlot.Ring2), Is.EqualTo(rings[1].Id));
         }
 
         // ── Abilities.Assign ──

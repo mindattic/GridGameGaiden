@@ -607,7 +607,8 @@ namespace Gaiden.App.Automation
                     units = s.Units.Where(u => u.Alive).Select(u => new
                     {
                         u.Id, cls = u.Def.Id, team = u.Team.ToString(), x = u.Pos.X, y = u.Pos.Y, u.W, u.H, u.Hp, u.MaxHp, u.Level,
-                        weapon = u.WeaponId, weaponDurability = u.WeaponDurability, armor = u.ArmorId, armorDurability = u.ArmorDurability,
+                        weapon = u.WeaponId, weaponDurability = u.WeaponDurability,
+                        armor = u.Gear.ToDictionary(kv => kv.Key.ToString(), kv => new { item = kv.Value.ItemId, durability = kv.Value.Durability }),
                         buffs = u.Buffs.Select(x => x.Def.Id + ":" + x.Remaining).ToList(),
                         acts_in = u.IsHero ? -1 : BattleEngine.ActionsUntilTurn(s, u.Id),
                         bar = u.IsHero ? Enumerable.Range(0, u.Bar.Count).Select(i => (u.Bar[i].AbilityId ?? u.Bar[i].ItemId ?? "-") + "=" + BattleEngine.GetSlotStatus(s, u.Id, i)).ToList() : null,

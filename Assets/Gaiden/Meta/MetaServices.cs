@@ -275,11 +275,15 @@ namespace Gaiden.Meta
             {
                 ClassId = h.ClassId, Level = Progression.Level(h), Hp = h.Hp,
                 WeaponId = h.WeaponId, WeaponDurability = h.WeaponDurability, WeaponMastery = h.WeaponMastery,
-                ArmorId = h.ArmorId, ArmorDurability = h.ArmorDurability, ArmorMastery = h.ArmorMastery,
             };
             if (h.WeaponId != null) spec.EquippedItemIds.Add(h.WeaponId);
-            if (h.ArmorId != null) spec.EquippedItemIds.Add(h.ArmorId);
-            foreach (var r in h.Relics) if (r != null) spec.EquippedItemIds.Add(r);
+            foreach (var kv in h.Armor)
+            {
+                if (kv.Value?.ItemId == null) continue;
+                spec.Armor[kv.Key] = new ArmorPieceSpec { ItemId = kv.Value.ItemId, Durability = kv.Value.Durability, Mastery = kv.Value.Mastery };
+                spec.EquippedItemIds.Add(kv.Value.ItemId);
+            }
+            foreach (var id in h.Jewelry.Values) if (id != null) spec.EquippedItemIds.Add(id);
             spec.Bar = new List<string>(h.Bar);
             return spec;
         }
@@ -368,11 +372,13 @@ namespace Gaiden.Meta
                         if (dur < 0 && h.WeaponId != null && u.WeaponId == null) { h.WeaponId = null; h.WeaponDurability = 0; h.WeaponRepairs = 0; h.WeaponMastery = 1f; }
                         else if (dur >= 0 && h.WeaponId != null) h.WeaponDurability = dur;
                     }
-                    if (r.ArmorDurability.TryGetValue(u.Def.Id, out var adur))
-                    {
-                        if (adur < 0 && h.ArmorId != null && u.ArmorId == null) { h.ArmorId = null; h.ArmorDurability = 0; h.ArmorRepairs = 0; h.ArmorMastery = 1f; }
-                        else if (adur >= 0 && h.ArmorId != null) h.ArmorDurability = adur;
-                    }
+                    if (r.ArmorDurability.TryGetValue(u.Def.Id, out var armorDur))
+                        foreach (var slot in BattleEngine.ArmorSlots)
+                        {
+                            if (!armorDur.TryGetValue(slot, out var adur) || !h.Armor.TryGetValue(slot, out var piece)) continue;
+                            if (adur < 0 && !u.Gear.ContainsKey(slot)) h.Armor.Remove(slot); // broke mid-battle
+                            else if (adur >= 0) piece.Durability = adur; // survived: sync current wear
+                        }
                 }
                 // Shattered weapons and broken armor become salvage-only Broken fragments instead of
                 // vanishing outright (GG-T41) — can't be equipped or repaired, only scrapped for materials.
@@ -594,7 +600,7 @@ namespace Gaiden.Meta
         public const float MinDurabilityFraction = 0.10f, MaxDurabilityFraction = 0.40f;
 
         private static bool Eligible(ItemDef i) => i.Type == ItemType.Equipment && i.Durability > 0 &&
-            (i.Slot == EquipmentSlot.Weapon || i.Slot == EquipmentSlot.Armor);
+            (i.Slot == EquipmentSlot.Weapon || Array.IndexOf(BattleEngine.ArmorSlots, i.Slot) >= 0);
 
         /// <summary>
         /// This rotation's stock. Deterministic from <see cref="SaveData.BargainRotation"/> alone, so it
@@ -752,7 +758,7 @@ namespace Gaiden.Meta
         }
 
         private static bool MasterworkEligible(ItemDef item) =>
-            item.Type == ItemType.Equipment && item.Durability > 0 && (item.Slot == EquipmentSlot.Weapon || item.Slot == EquipmentSlot.Armor);
+            item.Type == ItemType.Equipment && item.Durability > 0 && (item.Slot == EquipmentSlot.Weapon || Array.IndexOf(BattleEngine.ArmorSlots, item.Slot) >= 0);
 
         /// <summary>Whether this recipe has a reagent-quality variant (GG-T45) and the player holds its
         /// higher-rarity inputs — e.g. a Pure Slime Gel in place of a plain one brews a Greater Healing Potion.</summary>
@@ -790,10 +796,36 @@ namespace Gaiden.Meta
             return Result.Success(masterwork ? $"★ Masterwork {result.Name}!" : $"Made {result.Name}");
         }
 
-        /// <summary>Pieces without a base Forge recipe (upgrades, enchants, relics) fall back to a flat
+        /// <summary>Junk..Legendary materials for any armor piece (Head/Torso/Legs/Gloves/Boots) without its own
+        /// Forge recipe (GG-T89, extends GG-T42's fallback table to five slots instead of one).</summary>
+        private static readonly (string Item, int Count)[][] ArmorFallbackTiers =
+        {
+            new[] { ("mat_tattered_cloth", 1) },
+            new[] { ("mat_leather", 2), ("mat_cloth", 1) },
+            new[] { ("mat_leather", 3), ("mat_arcane_dust", 1) },
+            new[] { ("mat_troll_hide", 2), ("mat_leather", 2) },
+            new[] { ("mat_demon_shard", 2), ("mat_troll_hide", 2) },
+            new[] { ("mat_dragon_scale", 1), ("mat_demon_shard", 1) },
+        };
+
+        /// <summary>Junk..Legendary materials for any jewelry piece (Necklace/Earring/Ring) without its own recipe.</summary>
+        private static readonly (string Item, int Count)[][] JewelryFallbackTiers =
+        {
+            new[] { ("mat_cracked_fang", 1) },
+            new[] { ("mat_iron_ore", 1), ("mat_undead_bone", 1) },
+            new[] { ("mat_arcane_dust", 2) },
+            new[] { ("mat_naga_scale", 1), ("mat_arcane_dust", 1) },
+            new[] { ("mat_ghost_ectoplasm", 2) },
+            new[] { ("mat_dragon_scale", 1) },
+        };
+
+        /// <summary>Pieces without a base Forge recipe (upgrades, enchants, jewelry) fall back to a flat
         /// materials-by-type-and-rarity table, so every equipment piece is salvageable (GG-T42).</summary>
-        private static readonly Dictionary<(EquipmentSlot Slot, ItemRarity Rarity), (string Item, int Count)[]> FallbackSalvage =
-            new Dictionary<(EquipmentSlot, ItemRarity), (string, int)[]>
+        private static readonly Dictionary<(EquipmentSlot Slot, ItemRarity Rarity), (string Item, int Count)[]> FallbackSalvage = BuildFallbackSalvage();
+
+        private static Dictionary<(EquipmentSlot, ItemRarity), (string, int)[]> BuildFallbackSalvage()
+        {
+            var map = new Dictionary<(EquipmentSlot, ItemRarity), (string, int)[]>
             {
                 [(EquipmentSlot.Weapon, ItemRarity.Junk)] = new[] { ("mat_broken_blade", 1) },
                 [(EquipmentSlot.Weapon, ItemRarity.Common)] = new[] { ("mat_iron_ore", 2), ("mat_wood_plank", 1) },
@@ -801,28 +833,25 @@ namespace Gaiden.Meta
                 [(EquipmentSlot.Weapon, ItemRarity.Rare)] = new[] { ("mat_iron_ore", 4), ("mat_arcane_dust", 2) },
                 [(EquipmentSlot.Weapon, ItemRarity.Epic)] = new[] { ("mat_demon_shard", 2), ("mat_arcane_dust", 2) },
                 [(EquipmentSlot.Weapon, ItemRarity.Legendary)] = new[] { ("mat_dragon_scale", 1), ("mat_demon_shard", 2) },
-
-                [(EquipmentSlot.Armor, ItemRarity.Junk)] = new[] { ("mat_tattered_cloth", 1) },
-                [(EquipmentSlot.Armor, ItemRarity.Common)] = new[] { ("mat_leather", 2), ("mat_cloth", 1) },
-                [(EquipmentSlot.Armor, ItemRarity.Uncommon)] = new[] { ("mat_leather", 3), ("mat_arcane_dust", 1) },
-                [(EquipmentSlot.Armor, ItemRarity.Rare)] = new[] { ("mat_troll_hide", 2), ("mat_leather", 2) },
-                [(EquipmentSlot.Armor, ItemRarity.Epic)] = new[] { ("mat_demon_shard", 2), ("mat_troll_hide", 2) },
-                [(EquipmentSlot.Armor, ItemRarity.Legendary)] = new[] { ("mat_dragon_scale", 1), ("mat_demon_shard", 1) },
-
-                [(EquipmentSlot.Relic1, ItemRarity.Junk)] = new[] { ("mat_cracked_fang", 1) },
-                [(EquipmentSlot.Relic1, ItemRarity.Common)] = new[] { ("mat_iron_ore", 1), ("mat_undead_bone", 1) },
-                [(EquipmentSlot.Relic1, ItemRarity.Uncommon)] = new[] { ("mat_arcane_dust", 2) },
-                [(EquipmentSlot.Relic1, ItemRarity.Rare)] = new[] { ("mat_naga_scale", 1), ("mat_arcane_dust", 1) },
-                [(EquipmentSlot.Relic1, ItemRarity.Epic)] = new[] { ("mat_ghost_ectoplasm", 2) },
-                [(EquipmentSlot.Relic1, ItemRarity.Legendary)] = new[] { ("mat_dragon_scale", 1) },
             };
+            var rarities = (ItemRarity[])Enum.GetValues(typeof(ItemRarity)); // declared order: Junk..Legendary
+            void Fill(EquipmentSlot slot, (string, int)[][] tiers)
+            {
+                for (int i = 0; i < rarities.Length && i < tiers.Length; i++) map[(slot, rarities[i])] = tiers[i];
+            }
+            foreach (var slot in BattleEngine.ArmorSlots) Fill(slot, ArmorFallbackTiers);
+            // Only the canonical instance of each multi-slot jewelry category needs an entry (see the
+            // bucket redirect in FullSalvageYield below) — Necklace has just the one slot either way.
+            foreach (var slot in new[] { EquipmentSlot.Necklace, EquipmentSlot.Earring1, EquipmentSlot.Ring1 }) Fill(slot, JewelryFallbackTiers);
+            return map;
+        }
 
         private static List<ItemCount> FullSalvageYield(ContentDb c, ItemDef item)
         {
             var recipe = c.Recipes.Values.FirstOrDefault(r => r.Result == item.Id && r.Station == CraftStation.Forge && r.BaseItem == null);
             if (recipe != null)
                 return recipe.Inputs.Select(ic => new ItemCount { Item = ic.Item, Count = Math.Max(1, ic.Count / 2) }).ToList();
-            var bucket = item.Slot == EquipmentSlot.Relic2 || item.Slot == EquipmentSlot.Relic3 ? EquipmentSlot.Relic1 : item.Slot;
+            var bucket = item.Slot == EquipmentSlot.Earring2 ? EquipmentSlot.Earring1 : item.Slot == EquipmentSlot.Ring2 ? EquipmentSlot.Ring1 : item.Slot;
             if (!FallbackSalvage.TryGetValue((bucket, item.Rarity), out var fallback)) return new List<ItemCount>();
             return fallback.Select(f => new ItemCount { Item = f.Item, Count = f.Count }).ToList();
         }
@@ -892,13 +921,13 @@ namespace Gaiden.Meta
             var itemId = Equipment.Equipped(h, slot);
             var item = itemId != null ? c.TryItem(itemId) : null;
             if (item == null) return Result.Fail("Nothing equipped");
-            int durability = slot == EquipmentSlot.Weapon ? h.WeaponDurability : slot == EquipmentSlot.Armor ? h.ArmorDurability : 0;
+            int durability = slot == EquipmentSlot.Weapon ? h.WeaponDurability : h.Armor.TryGetValue(slot, out var ap) ? ap.Durability : 0;
             var yield = SalvageYield(c, item, durability);
             if (yield.Count == 0) return Result.Fail("Can't be salvaged");
             switch (slot)
             {
                 case EquipmentSlot.Weapon: h.WeaponId = null; h.WeaponDurability = 0; h.WeaponRepairs = 0; h.WeaponMastery = 1f; break;
-                case EquipmentSlot.Armor: h.ArmorId = null; h.ArmorDurability = 0; h.ArmorRepairs = 0; h.ArmorMastery = 1f; break;
+                case var armorSlot when Array.IndexOf(BattleEngine.ArmorSlots, armorSlot) >= 0: h.Armor.Remove(armorSlot); break;
                 default: return Result.Fail("Can't be salvaged");
             }
             foreach (var ic in yield) s.AddItem(ic.Item, ic.Count);
@@ -1053,16 +1082,19 @@ namespace Gaiden.Meta
             return Result.Success($"Repaired {item.Name}");
         }
 
-        public static Result RepairArmor(ContentDb c, SaveData s, HeroSave h)
+        /// <summary>Repairs one equipped armor piece (Head/Torso/Legs/Gloves/Boots) — each slot has its own
+        /// durability/repair count, so this takes which slot instead of assuming the single old Armor slot (GG-T89).</summary>
+        public static Result RepairArmor(ContentDb c, SaveData s, HeroSave h, EquipmentSlot slot)
         {
-            var item = c.TryItem(h.ArmorId);
+            if (!h.Armor.TryGetValue(slot, out var piece)) return Result.Fail("Nothing equipped");
+            var item = c.TryItem(piece.ItemId);
             if (item == null || item.Durability <= 0) return Result.Fail("Nothing to repair");
-            int cost = Cost(c, s, item, h.ArmorDurability, h.ArmorRepairs, h.ArmorMastery);
+            int cost = Cost(c, s, item, piece.Durability, piece.Repairs, piece.Mastery);
             if (cost == 0) return Result.Fail("Already in top shape");
             if (s.Gold < cost) return Result.Fail("Not enough gold");
             s.Gold -= cost;
-            h.ArmorDurability = EffectiveMax(item, h.ArmorRepairs, h.ArmorMastery);
-            h.ArmorRepairs++;
+            piece.Durability = EffectiveMax(item, piece.Repairs, piece.Mastery);
+            piece.Repairs++;
             StationProgress.Gain(s, StationKind.Blacksmith, RepairXp);
             return Result.Success($"Repaired {item.Name}");
         }
@@ -1109,23 +1141,28 @@ namespace Gaiden.Meta
 
     public static class Equipment
     {
+        /// <summary>The five jewelry slots, in the order §24.2's equip screen lists them (GG-T89).</summary>
+        public static readonly EquipmentSlot[] JewelrySlots =
+        {
+            EquipmentSlot.Necklace, EquipmentSlot.Earring1, EquipmentSlot.Earring2, EquipmentSlot.Ring1, EquipmentSlot.Ring2,
+        };
+
+        private static bool IsArmorSlot(EquipmentSlot slot) => Array.IndexOf(BattleEngine.ArmorSlots, slot) >= 0;
+        private static bool IsJewelrySlot(EquipmentSlot slot) => Array.IndexOf(JewelrySlots, slot) >= 0;
+
         public static string Equipped(HeroSave h, EquipmentSlot slot)
         {
-            switch (slot)
-            {
-                case EquipmentSlot.Weapon: return h.WeaponId;
-                case EquipmentSlot.Armor: return h.ArmorId;
-                case EquipmentSlot.Relic1: return h.Relics[0];
-                case EquipmentSlot.Relic2: return h.Relics[1];
-                case EquipmentSlot.Relic3: return h.Relics[2];
-                default: return null;
-            }
+            if (slot == EquipmentSlot.Weapon) return h.WeaponId;
+            if (IsArmorSlot(slot)) return h.Armor.TryGetValue(slot, out var a) ? a.ItemId : null;
+            if (IsJewelrySlot(slot)) return h.Jewelry.TryGetValue(slot, out var id) ? id : null;
+            return null;
         }
 
         public static bool Fits(ItemDef item, EquipmentSlot slot)
         {
             if (item == null || item.Type != ItemType.Equipment) return false;
-            if (slot == EquipmentSlot.Relic1 || slot == EquipmentSlot.Relic2 || slot == EquipmentSlot.Relic3) return item.IsRelic;
+            if (slot == EquipmentSlot.Earring1 || slot == EquipmentSlot.Earring2) return item.IsEarring;
+            if (slot == EquipmentSlot.Ring1 || slot == EquipmentSlot.Ring2) return item.IsRing;
             return item.Slot == slot;
         }
 
@@ -1142,17 +1179,17 @@ namespace Gaiden.Meta
             if (!Fits(item, slot)) return Result.Fail("That doesn't go there");
             if (s.Count(itemId) < 1) return Result.Fail("You don't own that");
             Unequip(c, s, h, slot);
+            if (IsJewelrySlot(slot))
+            {
+                s.AddItem(itemId, -1);
+                h.Jewelry[slot] = itemId;
+                return Result.Success($"Equipped {item.Name}");
+            }
             // Fresh copies first; otherwise the best of the worn ones (per-instance durability, US-246).
             var copy = TakeCopy(s, item);
             s.AddItem(itemId, -1);
-            switch (slot)
-            {
-                case EquipmentSlot.Weapon: h.WeaponId = itemId; h.WeaponDurability = copy.Durability; h.WeaponRepairs = copy.Repairs; h.WeaponMastery = copy.Mastery; break;
-                case EquipmentSlot.Armor: h.ArmorId = itemId; h.ArmorDurability = copy.Durability; h.ArmorRepairs = copy.Repairs; h.ArmorMastery = copy.Mastery; break;
-                case EquipmentSlot.Relic1: h.Relics[0] = itemId; break;
-                case EquipmentSlot.Relic2: h.Relics[1] = itemId; break;
-                case EquipmentSlot.Relic3: h.Relics[2] = itemId; break;
-            }
+            if (slot == EquipmentSlot.Weapon) { h.WeaponId = itemId; h.WeaponDurability = copy.Durability; h.WeaponRepairs = copy.Repairs; h.WeaponMastery = copy.Mastery; }
+            else h.Armor[slot] = new EquippedArmor { ItemId = itemId, Durability = copy.Durability, Repairs = copy.Repairs, Mastery = copy.Mastery };
             return Result.Success(copy.Mastery > 1f ? $"Equipped ★ {item.Name}" : $"Equipped {item.Name}");
         }
 
@@ -1174,23 +1211,23 @@ namespace Gaiden.Meta
             var id = Equipped(h, slot);
             if (id == null) return Result.Fail("Nothing equipped");
             var item = c.TryItem(id);
-            int dur = slot == EquipmentSlot.Weapon ? h.WeaponDurability : slot == EquipmentSlot.Armor ? h.ArmorDurability : 0;
-            int reps = slot == EquipmentSlot.Weapon ? h.WeaponRepairs : slot == EquipmentSlot.Armor ? h.ArmorRepairs : 0;
-            float mastery = slot == EquipmentSlot.Weapon ? h.WeaponMastery : slot == EquipmentSlot.Armor ? h.ArmorMastery : 1f;
+            if (IsJewelrySlot(slot))
+            {
+                s.AddItem(id, 1);
+                h.Jewelry.Remove(slot);
+                return Result.Success("Unequipped");
+            }
+            int dur = 0, reps = 0; float mastery = 1f;
+            if (slot == EquipmentSlot.Weapon) { dur = h.WeaponDurability; reps = h.WeaponRepairs; mastery = h.WeaponMastery; }
+            else if (h.Armor.TryGetValue(slot, out var a)) { dur = a.Durability; reps = a.Repairs; mastery = a.Mastery; }
             s.AddItem(id, 1);
             if (item != null && item.Durability > 0 && (dur < item.Durability || reps > 0 || mastery > 1f))
             {
                 if (!s.Worn.TryGetValue(id, out var list)) s.Worn[id] = list = new List<WornGear>();
                 list.Add(new WornGear { Durability = dur, Repairs = reps, Mastery = mastery });
             }
-            switch (slot)
-            {
-                case EquipmentSlot.Weapon: h.WeaponId = null; h.WeaponDurability = 0; h.WeaponRepairs = 0; h.WeaponMastery = 1f; break;
-                case EquipmentSlot.Armor: h.ArmorId = null; h.ArmorDurability = 0; h.ArmorRepairs = 0; h.ArmorMastery = 1f; break;
-                case EquipmentSlot.Relic1: h.Relics[0] = null; break;
-                case EquipmentSlot.Relic2: h.Relics[1] = null; break;
-                case EquipmentSlot.Relic3: h.Relics[2] = null; break;
-            }
+            if (slot == EquipmentSlot.Weapon) { h.WeaponId = null; h.WeaponDurability = 0; h.WeaponRepairs = 0; h.WeaponMastery = 1f; }
+            else h.Armor.Remove(slot);
             return Result.Success("Unequipped");
         }
 
@@ -1200,16 +1237,14 @@ namespace Gaiden.Meta
             var now = Progression.Preview(c, h).Effective;
             var copy = new HeroSave
             {
-                ClassId = h.ClassId, TotalXp = h.TotalXp, WeaponId = h.WeaponId, ArmorId = h.ArmorId, Relics = new List<string>(h.Relics),
+                ClassId = h.ClassId, TotalXp = h.TotalXp,
+                WeaponId = h.WeaponId, WeaponMastery = h.WeaponMastery,
+                Armor = h.Armor.ToDictionary(kv => kv.Key, kv => new EquippedArmor { ItemId = kv.Value.ItemId, Mastery = kv.Value.Mastery }),
+                Jewelry = new Dictionary<EquipmentSlot, string>(h.Jewelry),
             };
-            switch (slot)
-            {
-                case EquipmentSlot.Weapon: copy.WeaponId = itemId; break;
-                case EquipmentSlot.Armor: copy.ArmorId = itemId; break;
-                case EquipmentSlot.Relic1: copy.Relics[0] = itemId; break;
-                case EquipmentSlot.Relic2: copy.Relics[1] = itemId; break;
-                case EquipmentSlot.Relic3: copy.Relics[2] = itemId; break;
-            }
+            if (slot == EquipmentSlot.Weapon) copy.WeaponId = itemId;
+            else if (IsJewelrySlot(slot)) copy.Jewelry[slot] = itemId;
+            else copy.Armor[slot] = new EquippedArmor { ItemId = itemId, Mastery = 1f };
             return (now, Progression.Preview(c, copy).Effective);
         }
     }

@@ -49,7 +49,8 @@ namespace Gaiden.Core.Battle
                 ["party"] = new JArray(s.Units.Where(u => u.IsHero).Select(u => new JObject
                 {
                     ["id"] = u.Id, ["class"] = u.Def.Id, ["role"] = u.Def.Role, ["level"] = u.Level, ["maxHp"] = u.MaxHp,
-                    ["stats"] = Stats(u.Effective), ["weapon"] = u.WeaponId, ["armor"] = u.ArmorId,
+                    ["stats"] = Stats(u.Effective), ["weapon"] = u.WeaponId,
+                    ["armor"] = new JObject(u.Gear.Select(kv => new JProperty(kv.Key.ToString(), kv.Value.ItemId))),
                     ["bar"] = Bar(u), ["guest"] = u.IsGuest,
                 })),
                 ["opening"] = new JObject { ["state"] = Snapshot(s), ["events"] = Events(openingEvents) },
