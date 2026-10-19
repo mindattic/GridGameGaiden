@@ -93,6 +93,34 @@ namespace Gaiden.Tests
             Assert.That(TestLoop.PickStage(c, s, 100), Is.EqualTo(themes[1].Stages[1]));
         }
 
+        /// <summary>GG-T100: the owner's Test Mode bar includes "learn abilities". Over a 10-cycle run the starting
+        /// X-Potion slot runs dry, and the camp routine must learn an ability into it (not spend every coin on
+        /// gear first) and put it on the bar.</summary>
+        [Test]
+        public void Ten_cycle_headless_run_learns_and_slots_an_ability()
+        {
+            var c = Real; var s = TestLoop.NewSave(c);
+            int losses = 0, seed = 93;
+            var camp = new List<string>();
+            for (int n = 1; n <= 10; n++)
+            {
+                string stageId = TestLoop.PickStage(c, s, losses);
+                Expeditions.Begin(c, s, stageId);
+                var cycle = TestCycle.Begin(c, s, stageId, n);
+                var st = BotRunner.Play(c, BattleFactory.Build(c, s, stageId, seed++), new HeroBot(seed), 900);
+                var report = BattleFactory.Commit(c, s, st);
+                cycle.Battle(c, s, report);
+                losses = report.Victory ? 0 : losses + 1;
+                cycle.RunCamp(c, s);
+                camp.AddRange(cycle.Camp);
+                TestContext.Out.WriteLine(cycle.ToString());
+            }
+            Assert.That(TestLoop.LearnedAnAbility(camp), Is.True, "a 10-cycle Test Mode run never learned an ability");
+            var learnedOnBar = s.Party.Select(s.Hero).Any(h => h.Bar.Any(e => e != null && !e.Contains(":") &&
+                !c.Class(h.ClassId).DefaultLoadout.Contains(e)));
+            Assert.That(learnedOnBar, Is.True, "a learned ability never made it onto a bar");
+        }
+
         [Test]
         public void Headless_loop_runs_battle_results_and_camp_every_cycle()
         {

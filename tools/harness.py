@@ -404,7 +404,8 @@ def testmode(run="testmode", cycles=4, timeout_per_cycle=600):
     lets it drive itself through `cycles` full launch → battle → results → camp loops. Screenshots each
     cycle's battle, results and camp (the Hub after CampRoutine ran), collects the one-line-per-cycle
     "[TestMode] cycle N | ..." log into artifacts/<run>/testmode.log, and checks the evidence: every cycle
-    logged, a battle/results/hub screen seen per cycle, the party level never falling, and no errors."""
+    logged, a battle/results/hub screen seen per cycle, the party level never falling, an ability learned
+    in any run of 6+ cycles (GG-T100), and no errors."""
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")  # camp lines carry ★ (masterwork) glyphs
     art = launch(run, extra=("-testmode",), fresh=True)
     lines, errors, seen = [], [], []
@@ -451,6 +452,9 @@ def testmode(run="testmode", cycles=4, timeout_per_cycle=600):
         "battle_results_camp_each_cycle": all({"battle", "postbattle", "hub"} <= per_cycle.get(n, set()) for n in range(1, cycles + 1)),
         "party_level_never_falls": all(b >= a for a, b in levels) and all(levels[i + 1][0] >= levels[i][1] for i in range(len(levels) - 1)),
         "camp_did_something": any(": nothing to do" not in l for l in cycle_lines),
+        # GG-T100: "learn abilities" is part of what Test Mode must prove — a run of 6+ cycles that never
+        # learned one fails (CampRoutine logs "<Hero> learned <Ability> (<price>g)"; TestLoop.CyclesThatMustLearnAnAbility).
+        "learned_an_ability": len(cycle_lines) < 6 or any(" learned " in l for l in cycle_lines),
         "no_errors": not errors,
     }
     try:

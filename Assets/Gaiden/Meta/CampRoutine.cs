@@ -8,8 +8,8 @@ namespace Gaiden.Meta
 {
     /// <summary>
     /// "What a sensible player does at camp": scrap worn-out gear, rest, repair, forge and equip better
-    /// gear (owned bag, then Forge, then the Merchant's Bargain shelf), learn a spell, fill empty bar
-    /// slots, keep potions stocked, work the Bounty Board and recruit at the Summon Circle into an open
+    /// gear (owned bag, then Forge, then the Merchant's Bargain shelf), learn abilities into dead bar
+    /// slots (GG-T100), keep potions stocked, work the Bounty Board and recruit at the Summon Circle into an open
     /// party slot (GG-T87). Used by the balance simulation and the in-game auto-manage helper;
     /// every step goes through the same services the screens call.
     /// </summary>
@@ -66,6 +66,10 @@ namespace Gaiden.Meta
                 if (recruit != null) Note(Summon.Recruit(c, s, recruit.Id));
             }
 
+            // Fill the ability bar (GG-T100) before the discretionary gear pass, so a full gear shopping list
+            // can't starve it every visit.
+            FillBars(c, s, log);
+
             // The best affordable upgrade for each party member's weapon and armor: an owned bag copy
             // first, then a Forge recipe, then the Merchant's Bargain shelf (skipping near-shatter rolls).
             foreach (var id in s.Party)
@@ -99,26 +103,10 @@ namespace Gaiden.Meta
                 }
             }
 
-            // Learn one affordable spell per hero when gold allows, and slot it.
-            int unlocked = Progression.UnlockedSlots(s);
-            foreach (var id in s.Party)
-            {
-                var h = s.Hero(id);
-                var learn = Abilities.Learnable(c, h).FirstOrDefault(a => (a.Kind == AbilityKind.Spell || a.Universal) && Abilities.Price(a) <= s.Gold / 3);
-                if (learn != null) Note(Abilities.Learn(c, s, h, learn.Id));
-                for (int i = 0; i < unlocked; i++)
-                {
-                    if (h.Bar[i] != null) continue;
-                    var next = h.Known.FirstOrDefault(k => !h.Bar.Contains(k));
-                    if (next != null) Abilities.Assign(c, s, h, i, next);
-                    else if (s.Count("healing_potion_basic") > 0 && !h.Bar.Contains("item:healing_potion_basic")) Abilities.Assign(c, s, h, i, "item:healing_potion_basic");
-                }
-            }
-
             // Keep a potion stock — brewing it (reagents from field drops) undercuts the shop price
             // (GG-T44), so brew first and only fall back to buying once the reagents run dry.
-            var potion = c.TryItem("healing_potion_basic");
-            var brew = c.Recipes.Values.FirstOrDefault(r => r.Station == CraftStation.Alchemy && r.Result == "healing_potion_basic");
+            var potion = c.TryItem(StopgapPotion);
+            var brew = c.Recipes.Values.FirstOrDefault(r => r.Station == CraftStation.Alchemy && r.Result == StopgapPotion);
             while (potion != null && s.Count(potion.Id) < System.Math.Min(6, potion.MaxStack))
             {
                 if (brew != null && Crafting.IsUnlocked(s, brew) && Crafting.HasInputs(s, brew) && s.Gold >= brew.Gold)
@@ -128,6 +116,75 @@ namespace Gaiden.Meta
                 else break;
             }
             return log;
+        }
+
+        /// <summary>Text in a camp log line that records learning an ability ("Cleric learned Rejuvenate (280g)");
+        /// the Test Mode check looks for it.</summary>
+        public const string LearnedMarker = " learned ";
+
+        /// <summary>The cheap shop potion the routine stocks and parks in a bar slot when it has nothing better.</summary>
+        public const string StopgapPotion = "healing_potion_basic";
+
+        /// <summary>A bar slot that does nothing in battle: empty, or an item/backup-weapon entry whose bag stack
+        /// has run dry (the starting X-Potion slot is spent within the first few battles and stays dead).</summary>
+        public static bool IsDeadSlot(SaveData s, string entry)
+        {
+            if (entry == null) return true;
+            if (entry.StartsWith("item:")) return s.Count(entry.Substring(5)) <= 0;
+            if (entry.StartsWith("weapon:")) return s.Count(entry.Substring(7)) <= 0;
+            return false;
+        }
+
+        /// <summary>The ability a sensible player buys for an open slot (GG-T100): the priciest (highest-tier)
+        /// affordable one from the hero's own class list, in list order on ties; only once the class list is
+        /// fully learned does it reach into the general catalog.</summary>
+        public static AbilityDef BestLearnable(ContentDb c, HeroSave h, int gold)
+        {
+            var learnable = Abilities.Learnable(c, h);
+            var classList = c.TryClass(h.ClassId)?.Abilities ?? new List<string>();
+            var own = learnable.Where(a => classList.Contains(a.Id)).ToList();
+            var pool = own.Count > 0 ? own : learnable;
+            return pool.Where(a => Abilities.Price(a) <= gold)
+                .OrderByDescending(Abilities.Price).ThenBy(a => classList.IndexOf(a.Id))
+                .FirstOrDefault();
+        }
+
+        /// <summary>For every party hero, put something useful in each dead bar slot — and upgrade a slot
+        /// holding only the stopgap potion: an already-known but unslotted ability first, else learn the
+        /// <see cref="BestLearnable"/> one the gold allows, else (dead slots only) the stopgap potion if any is
+        /// stocked. Runs before discretionary gear so learning isn't permanently outbid by gear (GG-T100).</summary>
+        private static void FillBars(ContentDb c, SaveData s, List<string> log)
+        {
+            int unlocked = System.Math.Min(Progression.UnlockedSlots(s), Progression.MaxBarSlots);
+            string stopgap = "item:" + StopgapPotion;
+            foreach (var id in s.Party)
+            {
+                var h = s.Hero(id);
+                if (h == null) continue;
+                while (h.Bar.Count < Progression.MaxBarSlots) h.Bar.Add(null);
+                string heroName = c.TryClass(h.ClassId)?.Name ?? h.ClassId;
+                for (int i = 0; i < unlocked; i++)
+                {
+                    bool dead = IsDeadSlot(s, h.Bar[i]);
+                    if (!dead && h.Bar[i] != stopgap) continue;
+                    string entry = h.Known.FirstOrDefault(k => !h.Bar.Contains(k));
+                    if (entry == null)
+                    {
+                        var learn = BestLearnable(c, h, s.Gold);
+                        if (learn != null)
+                        {
+                            var r = Abilities.Learn(c, s, h, learn.Id);
+                            if (r.Ok) { log.Add($"{heroName}{LearnedMarker}{learn.Name} ({Abilities.Price(learn)}g)"); entry = learn.Id; }
+                        }
+                    }
+                    if (entry == null && dead && s.Count(StopgapPotion) > 0 && !h.Bar.Contains(stopgap)) entry = stopgap;
+                    if (entry == null) continue;
+                    var assigned = Abilities.Assign(c, s, h, i, entry);
+                    if (!assigned.Ok) break;
+                    string label = entry.StartsWith("item:") ? c.TryItem(entry.Substring(5))?.Name ?? entry : c.TryAbility(entry)?.Name ?? entry;
+                    log.Add($"{heroName} slotted {label} (slot {i + 1})");
+                }
+            }
         }
 
         /// <summary>Claim a completed bounty; abandon an active one the stages still ahead can no longer finish;

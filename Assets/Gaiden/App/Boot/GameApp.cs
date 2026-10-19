@@ -347,6 +347,7 @@ namespace Gaiden.App
         public static string LastLine { get; private set; }
         private static TestCycle current;
         private static int losses;
+        private static bool learned;
 
         public static void Start()
         {
@@ -391,6 +392,9 @@ namespace Gaiden.App
                 LastLine = current.ToString();
                 Completed++;
                 Debug.Log(LastLine);
+                learned |= TestLoop.LearnedAnAbility(current.Camp);
+                if (!learned && Completed == TestLoop.CyclesThatMustLearnAnAbility)
+                    Debug.LogWarning($"[TestMode] check failed: {Completed} cycles and camp never learned an ability (GG-T100)");
                 if (app.Router.Current == hub) hub.Refresh();
                 yield return new WaitForSecondsRealtime(1.5f);
             }

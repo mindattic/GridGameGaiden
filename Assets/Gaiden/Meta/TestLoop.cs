@@ -66,6 +66,14 @@ namespace Gaiden.Meta
             return levels.Count == 0 ? (rec, rec) : (levels.Min(), levels.Max());
         }
 
+        /// <summary>A run of at least this many cycles that never learned an ability fails the Test Mode check
+        /// (GG-T100: "learn abilities" is part of what the owner wants Test Mode to prove). The harness
+        /// (tools/harness.py testmode) applies the same rule to the logged camp lines.</summary>
+        public const int CyclesThatMustLearnAnAbility = 6;
+
+        /// <summary>Whether any camp action in the run was learning an ability (see <see cref="CampRoutine.LearnedMarker"/>).</summary>
+        public static bool LearnedAnAbility(IEnumerable<string> campActions) => campActions.Any(a => a.Contains(CampRoutine.LearnedMarker));
+
         /// <summary>Crafting materials in a battle's loot.</summary>
         public static Dictionary<string, int> Materials(ContentDb c, BattleReport r) =>
             r.Items.Where(kv => c.TryItem(kv.Key)?.Type == ItemType.CraftingMaterial).ToDictionary(kv => kv.Key, kv => kv.Value);
