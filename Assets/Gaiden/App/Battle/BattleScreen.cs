@@ -833,7 +833,10 @@ namespace Gaiden.App
         // Commands
         // ─────────────────────────────────────────────────────────────────────────
 
-        public bool CanCommand() => !playing && !ended && !State.IsOver;
+        /// <summary>Not while a drag is in progress either: a second finger tapping GUARD or a slot mid-drag would
+        /// commit that instead and silently drop the drag, leaving the previewed units out of place (GG-T70).
+        /// CommitDrag clears <c>dragging</c> before it commits, so the drag's own command still goes through.</summary>
+        public bool CanCommand() => !playing && !ended && !State.IsOver && !dragging;
 
         /// <summary>Dev/automation helper: add orbs to the bank (cheat — development builds only call this).</summary>
         public void DevGiveMana(int n)
