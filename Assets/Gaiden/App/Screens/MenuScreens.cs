@@ -562,7 +562,10 @@ namespace Gaiden.App
                     bool cleared = S.ClearedStages.Contains(st.Id);
                     bool can = Expeditions.CanLaunch(C, S, st.Id, out var why) && Progression.IsStageUnlocked(S, index);
                     string label = (cleared ? "★ " : can ? "☆ " : "◇ ") + st.Name;
-                    var row = Ui.MenuRow(label, can ? $"Lv {Progression.RecommendedLevel(index)} · {st.Waves.Count} waves" : (why ?? "Locked"), () => Launch(st, index), list.contentContainer, null, can);
+                    // Same level BattleFactory.Build actually fights it at: the postgame bonus stages carry a
+                    // LevelOverride, so the index-based curve alone advertised the wrong level for them (GG-T70).
+                    int recommended = st.LevelOverride ?? Progression.RecommendedLevel(index);
+                    var row = Ui.MenuRow(label, can ? $"Lv {recommended} · {st.Waves.Count} waves" : (why ?? "Locked"), () => Launch(st, index), list.contentContainer, null, can);
                     row.style.marginLeft = 40;
                     if (CaravanUpgrades.Level(S, "scouts") > 0)
                     {
