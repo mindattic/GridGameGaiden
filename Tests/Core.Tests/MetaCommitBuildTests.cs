@@ -397,6 +397,34 @@ namespace Gaiden.Tests
             Assert.That(s.Count("mat_slime_gel") < 20, Is.True, "reagents weren't spent — camp routine bought potions instead of brewing them");
         }
 
+        /// <summary>GG-T111: the potion-restock loop used to ignore a failed brew/buy and spin forever. Here every
+        /// restock call fails (the brew always overflows the stack, the shop cart totals 0g → "Nothing to buy")
+        /// while the loop's pre-checks still pass; Run must give up and return.</summary>
+        [Test]
+        public void CampRoutine_terminates_when_every_potion_restock_fails()
+        {
+            var c = ContentLoader.Load(name =>
+            {
+                var p = System.IO.Path.Combine(ContentDir, name + ".json");
+                return System.IO.File.Exists(p) ? System.IO.File.ReadAllText(p) : null;
+            });
+            var potion = c.Item(CampRoutine.StopgapPotion);
+            potion.BaseCost = 0;
+            var brew = c.Recipes.Values.First(r => r.Station == CraftStation.Alchemy && r.Result == potion.Id);
+            brew.ResultCount = potion.MaxStack + 1;
+            var s = Progression.NewGame(c, "CRFail");
+            s.Inventory.Remove(potion.Id);
+            s.Gold = 5000;
+            foreach (var ic in brew.Inputs) s.AddItem(ic.Item, ic.Count * 10);
+            Assert.That(Crafting.IsUnlocked(s, brew), Is.True, "precondition: the brew must look possible so the loop tries it");
+
+            List<string> log = null;
+            var run = System.Threading.Tasks.Task.Run(() => log = CampRoutine.Run(c, s));
+            Assert.That(run.Wait(System.TimeSpan.FromSeconds(20)), Is.True, "CampRoutine.Run never returned — the restock loop spun on failed calls");
+            Assert.That(s.Count(potion.Id), Is.EqualTo(0));
+            Assert.That(log, Is.Not.Null);
+        }
+
         /// <summary>GG-T54: Broken fragments (GG-T41) can't be equipped or repaired, so a camp visit should
         /// always scrap them for materials instead of letting them sit in the bag forever.</summary>
         [Test]

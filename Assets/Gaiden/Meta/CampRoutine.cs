@@ -30,8 +30,11 @@ namespace Gaiden.Meta
             // reason to let them sit in the bag; salvage every copy of every one.
             foreach (var itemId in s.Broken.Keys.ToList())
             {
+                // Stops on a failed call, or one that didn't use up a fragment, rather than spinning (GG-T111).
                 Result r;
-                do { r = Crafting.SalvageBroken(c, s, itemId); Note(r); } while (r.Ok && s.BrokenCount(itemId) > 0);
+                int left;
+                do { left = s.BrokenCount(itemId); r = Crafting.SalvageBroken(c, s, itemId); Note(r); }
+                while (r.Ok && s.BrokenCount(itemId) > 0 && s.BrokenCount(itemId) < left);
             }
 
             // A repair that costs as much as the item is worth (GG-T42's "Salvage instead" offer) is a
@@ -104,16 +107,24 @@ namespace Gaiden.Meta
             }
 
             // Keep a potion stock — brewing it (reagents from field drops) undercuts the shop price
-            // (GG-T44), so brew first and only fall back to buying once the reagents run dry.
+            // (GG-T44), so brew first and only fall back to buying once the reagents run dry. Every pass
+            // must add stock: a failed brew falls back to buying, and a pass where neither worked (or one
+            // that "succeeded" without adding a potion) ends the loop instead of spinning forever (GG-T111).
             var potion = c.TryItem(StopgapPotion);
             var brew = c.Recipes.Values.FirstOrDefault(r => r.Station == CraftStation.Alchemy && r.Result == StopgapPotion);
             while (potion != null && s.Count(potion.Id) < System.Math.Min(6, potion.MaxStack))
             {
+                int before = s.Count(potion.Id);
+                bool ok = false;
                 if (brew != null && Crafting.IsUnlocked(s, brew) && Crafting.HasInputs(s, brew) && s.Gold >= brew.Gold)
-                    Note(Crafting.Craft(c, s, brew));
-                else if (s.Gold >= potion.BaseCost * 3)
-                    Note(Shop.Buy(c, s, new Dictionary<string, int> { [potion.Id] = System.Math.Min(3, Shop.MaxBuy(s, potion)) }));
-                else break;
+                {
+                    var r = Crafting.Craft(c, s, brew); Note(r); ok = r.Ok;
+                }
+                if (!ok && s.Gold >= potion.BaseCost * 3)
+                {
+                    var r = Shop.Buy(c, s, new Dictionary<string, int> { [potion.Id] = System.Math.Min(3, Shop.MaxBuy(s, potion)) }); Note(r); ok = r.Ok;
+                }
+                if (!ok || s.Count(potion.Id) <= before) break;
             }
             return log;
         }
