@@ -82,11 +82,13 @@ def main():
     art = h.launch("uicheck", fresh=True)
 
     with section('Title / save slots'):
-        check("title shows New Game", has_text("New Game"))
+        check("title shows New Game", until(lambda: has_text("New Game")))
         check("title music", h.call("music")["track"] == "TellerOfTheTales")
-        h.call("clicktext", text="New Game"); time.sleep(0.8)
+        time.sleep(0.6)  # the title's fade-in swallows a tap sent the moment it mounts
+        # Taps can be dropped (title fade-in, or a focus steal — GG-T121): retry the tap, never the assertion.
+        h._tap_until(lambda: h.call("clicktext", text="New Game"), lambda: until(lambda: has_text("Slot 1"), 1.5), tries=3, wait=0.2)
         check("slot screen lists 3 slots", sum(1 for t in texts() if t.startswith("Slot ")) == 3)
-        h.call("clicktext", text="Slot 1")
+        h._tap_until(lambda: h.call("clicktext", text="Slot 1"), lambda: until(lambda: h.call("state")["screen"] == "charselect", 2.0), tries=3, wait=0.2)
         # New Game opens the party pick first (CharacterSelectScreen, since 43fd442); lock in the
         # fixed starting five through the real UI so every later check sees the same squad.
         if on_screen("new game opens the party select", "charselect"):
