@@ -106,6 +106,10 @@ namespace Gaiden.App
             board?.Lines.RemoveFromHierarchy();
             pauseVeil?.RemoveFromHierarchy();
             pauseVeil = null;
+            // The billboard lives on the Overlay too; without this, each battle left one behind (lines from the
+            // last ~1.6 s showing over the PostBattle screen) and they piled up battle after battle (GG-T70).
+            billboard?.RemoveFromHierarchy();
+            billboard = null;
         }
 
         private bool Colorblind => App.Save?.Settings.ColorblindMode ?? false;

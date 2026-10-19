@@ -916,10 +916,11 @@ namespace Gaiden.App
             l.style.whiteSpace = WhiteSpace.Normal; // a wider font should wrap here, never overflow the window
             while (billboard.childCount > 3) billboard[0].RemoveFromHierarchy();
             App.StartCoroutine(Tween.Pop(row, 1.12f, 0.12f));
-            billboard.schedule.Execute(() =>
+            var bb = billboard; // OnHidden may null the field before this fires
+            bb.schedule.Execute(() =>
             {
                 row.RemoveFromHierarchy();
-                if (billboard.childCount == 0) billboard.style.display = DisplayStyle.None;
+                if (bb.childCount == 0) bb.style.display = DisplayStyle.None;
             }).ExecuteLater((long)(1600 / Mathf.Max(0.5f, Tween.Speed)));
         }
 
