@@ -93,7 +93,7 @@ def drag_tiles(*tiles, step=0.12):
 
 
 def smoke(run="smoke"):
-    art = launch(run)
+    launch(run)
     files = [shot("01-title")]
     call("clicktext", text="New Game"); time.sleep(0.8)
     call("clicktext", text="Slot 1"); time.sleep(1.2)

@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using Gaiden.Core.Content;
 
 namespace Gaiden.Core.Battle
 {

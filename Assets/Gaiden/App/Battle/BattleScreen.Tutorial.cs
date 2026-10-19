@@ -77,14 +77,11 @@ namespace Gaiden.App
         };
 
         public int TutorialStep { get; private set; } = -1;
-        public int TutorialLessons => Lessons.Length;
         private int tutorialActions;
         private bool TutorialActive => TutorialStep >= 0;
         private Lesson CurrentLesson => TutorialActive ? Lessons[TutorialStep] : null;
         private bool LessonWaiting => CurrentLesson != null && State.Wave < CurrentLesson.Wave;
         private bool TutorialDemoMove => CurrentLesson != null && CurrentLesson.DemoMove && !LessonWaiting;
-
-        public void SkipTutorial() => FinishTutorial();
 
         private void FinishTutorial()
         {

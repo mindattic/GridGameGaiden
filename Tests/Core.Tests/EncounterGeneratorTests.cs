@@ -1,6 +1,5 @@
 using System.IO;
 using System.Linq;
-using Gaiden.Core;
 using Gaiden.Core.Battle;
 using Gaiden.Core.Bot;
 using Gaiden.Core.Content;

@@ -884,20 +884,6 @@ namespace Gaiden.App
             }).ExecuteLater((long)(1600 / Mathf.Max(0.5f, Tween.Speed)));
         }
 
-        // ── Cut-in modes ──
-
-        private VisualElement PortraitCard(Unit u, float h, Team team)
-        {
-            var card = new VisualElement { name = "cutin-card-" + u.Id, pickingMode = PickingMode.Ignore };
-            card.style.position = Position.Absolute;
-            card.style.width = h * 0.62f; card.style.height = h;
-            card.style.backgroundImage = new StyleBackground(Art.Portrait(u.Def.Id));
-            card.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Contain);
-            card.style.unityBackgroundImageTintColor = team == Team.Hero ? Color.white : new Color(1f, 0.8f, 0.8f);
-            App.Overlay.Add(card);
-            return card;
-        }
-
         /// <summary>Gold shown on the HUD: the party's purse plus what this battle has dropped so far.</summary>
         private int shownCoins = -1;
         public int CoinsShown => shownCoins;

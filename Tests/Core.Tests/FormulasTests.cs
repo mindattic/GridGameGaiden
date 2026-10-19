@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Gaiden.Core;
 using Gaiden.Core.Battle;
 using Gaiden.Core.Content;

@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Gaiden.Core;
 using Gaiden.Core.Battle;
 using Gaiden.Core.Bot;
 using Gaiden.Core.Content;

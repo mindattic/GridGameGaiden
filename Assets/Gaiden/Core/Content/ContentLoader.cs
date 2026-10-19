@@ -11,12 +11,6 @@ namespace Gaiden.Core.Content
     /// </summary>
     public static class ContentLoader
     {
-        public static readonly string[] Files =
-        {
-            "classes", "abilities", "buffs", "items", "recipes", "droptables",
-            "stages", "campaign", "traps", "bounties", "summon", "enchants", "caravan", "pickups", "skilltrees",
-        };
-
         public static readonly JsonSerializerSettings Settings = new JsonSerializerSettings
         {
             Converters = { new StringEnumConverter() },

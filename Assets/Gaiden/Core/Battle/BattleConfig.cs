@@ -40,9 +40,6 @@ namespace Gaiden.Core.Battle
         public const float PushbackMaxU = 0.15f;
         public const int BaseStunTicks = 4;
 
-        // ── Hasten (§2.7.1) ─────────────────────────────────────────────────────────
-        public const float DefaultHastenU = 0.30f;
-
         // ── Buffs (§8.3) ────────────────────────────────────────────────────────────
         public const int BuffTickInterval = 10;            // one tick-unit step per 1.0 s of timeline
         public const float LightningWhenWetMultiplier = 1.5f;

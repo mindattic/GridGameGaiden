@@ -257,7 +257,6 @@ namespace Gaiden.App
 
         // ── Mana charge (§3.1.9): the forming bubble and the arithmetic, shown as it happens ──
         private int shownCharge;
-        public int ChargeShown => shownCharge;
 
         private IEnumerator ChargeAnim(ManaChargedEvent mc)
         {

@@ -32,7 +32,6 @@ def panel(i):
     im = Image.open(hi).convert("RGBA")
     bg = Image.new("RGBA", im.size, (90, 96, 120, 255))
     bg.alpha_composite(im)
-    ov = Image.new("RGBA", im.size, (0, 0, 0, 0))
     pad = 26
     can = Image.new("RGBA", (bg.width + pad, bg.height + pad + 22), (20, 22, 40, 255))
     can.paste(bg, (pad, pad + 22))

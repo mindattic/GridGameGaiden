@@ -423,12 +423,12 @@ namespace Gaiden.Meta
                     if (n > 0) kept[kv.Key] = n;
                 }
                 GrantItems(c, s, rep, kept);
-                GrantHardWonXp(c, s, battle, r, rep);
+                GrantHardWonXp(s, battle, r, rep);
             }
             else
             {
                 foreach (var id in s.Party) { var h = s.Hero(id); if (h != null) h.Hp = 0; } // defeat = retry at full (§22.2)
-                GrantHardWonXp(c, s, battle, r, rep);
+                GrantHardWonXp(s, battle, r, rep);
             }
             // Guests: alive at a victory → they join the caravan; fallen at any point → lost forever.
             foreach (var g in battle.Units.Where(u => u.IsGuest))
@@ -472,7 +472,7 @@ namespace Gaiden.Meta
 
         /// <summary>Hard-won experience (amended 2026-10-11): the XP of every foe felled is kept on a non-victory
         /// end, so each retry of a long gauntlet leaves the party stronger. Shared by Defeat and Retreat.</summary>
-        private static void GrantHardWonXp(ContentDb c, SaveData s, BattleState battle, BattleResults r, BattleReport rep)
+        private static void GrantHardWonXp(SaveData s, BattleState battle, BattleResults r, BattleReport rep)
         {
             var heroes = battle.Units.Where(u => u.IsHero && !u.IsGuest).ToList();
             rep.XpEach = heroes.Count > 0 ? r.Xp : 0;
