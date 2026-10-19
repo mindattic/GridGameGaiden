@@ -101,7 +101,7 @@ namespace Gaiden.Tests
                 RecommendedLevel = stage.LevelOverride ?? 1,
                 Party = ContentAndSoakTests.StarterParty(db, stage.LevelOverride ?? 1),
             };
-            var s = BotRunner.Play(db, setup, new HeroBot(3), 300, (cmd, ev, st) => AssertInvariants(st));
+            var s = BotRunner.Play(db, setup, new HeroBot(3), 300, (cmd, ev, st) => { AssertInvariants(st); AssertEventInvariants(ev); });
             Assert.That(s.IsOver, Is.True, "generated encounter did not resolve within the action cap");
         }
     }

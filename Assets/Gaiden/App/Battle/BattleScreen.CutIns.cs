@@ -197,7 +197,7 @@ namespace Gaiden.App
             bool fromLeft = caster.IsHero;
             var card = ActionCard(caster, 560f, caster.Team, spellName, new Color(1f, 0.92f, 0.55f), out var portrait);
             var at = new Vector2(fromLeft ? 300f : 1170f - 300f, BoardTop + 520f);
-            var focus = new Vector2(BoardLeft, BoardTop) + BoardView.CenterOf(caster.Pos, caster.W, caster.H);
+            var focus = new Vector2(BoardLeft, BoardTop) + ViewCenter(caster);
             App.Audio.Sfx("dash", 0.8f, 0.85f);
             var veil = CutInVeil(0.38f);
             card.BringToFront();
@@ -226,13 +226,13 @@ namespace Gaiden.App
         {
             CutInsShown++;
             App.Audio.Sfx("dash", 0.8f, 1.15f);
-            var mid = attackers.Select(u => BoardView.CenterOf(u.Pos, u.W, u.H)).Aggregate(Vector2.zero, (x, y) => x + y) / attackers.Length + new Vector2(BoardLeft, BoardTop);
+            var mid = attackers.Select(ViewCenter).Aggregate(Vector2.zero, (x, y) => x + y) / attackers.Length + new Vector2(BoardLeft, BoardTop);
             App.StartCoroutine(CameraPunch(mid, 1.05f, Random.value < 0.5f ? -1.8f : 1.8f, 0.5f));
             var runs = new List<IEnumerator>();
             for (int i = 0; i < attackers.Length; i++)
             {
                 var u = attackers[i];
-                var c = BoardView.CenterOf(u.Pos, u.W, u.H) + new Vector2(BoardLeft, BoardTop);
+                var c = ViewCenter(u) + new Vector2(BoardLeft, BoardTop);
                 var card = ActionCard(u, 400f, team, chainCount > 1 ? $"CHAIN ×{chainCount}" : null, new Color(1f, 0.85f, 0.35f), out var portrait);
                 var at = new Vector2(Mathf.Clamp(c.x, 150f, 1170f - 150f), Mathf.Max(BoardTop + 230f, c.y - 260f));
                 float spin = (i == 0 ? -1f : 1f) * 20f;

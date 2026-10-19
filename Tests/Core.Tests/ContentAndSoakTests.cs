@@ -93,7 +93,7 @@ namespace Gaiden.Tests
                     int level = stage.IsTest ? 5 : System.Math.Max(1, index);
                     var setup = new BattleSetup { Stage = stage, Seed = seed * 7919 + index, UnlockedSlots = 5, RecommendedLevel = stage.IsTest ? 1 : index, Party = StarterParty(db, level) };
                     var bot = new HeroBot(seed, randomness);
-                    var s = BotRunner.Play(db, setup, bot, 300, (cmd, ev, st) => AssertInvariants(st));
+                    var s = BotRunner.Play(db, setup, bot, 300, (cmd, ev, st) => { AssertInvariants(st); AssertEventInvariants(ev); });
                     stageRuns++; total++;
                     if (s.Phase == BattlePhase.Victory) { stageWins++; wins++; }
                     if (!s.IsOver) stalls++;

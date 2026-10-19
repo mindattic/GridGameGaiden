@@ -179,8 +179,11 @@ namespace Gaiden.Core.Battle
             foreach (var x in p.SupportersA) if (!supporters.Contains(x)) supporters.Add(x);
             foreach (var x in p.SupportersB) if (!supporters.Contains(x)) supporters.Add(x);
             var formed = new PincerFormedEvent { Team = team, Attacker1 = p.A.Id, Attacker2 = p.B.Id, ChainIndex = chainIndex };
-            foreach (var o in p.Opponents) formed.Opponents.Add(o.Id);
-            foreach (var su in supporters) formed.Supporters.Add(su.Id);
+            // Snapshot the geometry now: by the time the view plays this back the state is the end of the whole
+            // command, and any member may have moved since (enemy turns, knockback, a later chain link — GG-T98).
+            formed.Attacker1At = UnitFootprint.Of(p.A); formed.Attacker2At = UnitFootprint.Of(p.B);
+            foreach (var o in p.Opponents) { formed.Opponents.Add(o.Id); formed.OpponentsAt.Add(UnitFootprint.Of(o)); }
+            foreach (var su in supporters) { formed.Supporters.Add(su.Id); formed.SupportersAt.Add(UnitFootprint.Of(su)); }
             Emit(formed);
 
             // Power Amplifier: a hero attacker standing on it strikes amplified and uses it up (§1.2.6).

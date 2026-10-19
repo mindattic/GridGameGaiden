@@ -237,8 +237,12 @@ namespace Gaiden.App
                 pv.Positions.TryGetValue(p.A.Id, out var a);
                 pv.Positions.TryGetValue(p.B.Id, out var b);
                 // Preview: the group outline and edge links the drop would make (no line across the art).
+                // The pincer's units belong to the preview's cloned state, so their positions are the drop's (GG-T98).
                 var group = new List<(Coord, int, int)> { (a, p.A.W, p.A.H), (b, p.B.W, p.B.H) };
-                foreach (var o in p.Opponents) group.Add((pv.Positions.TryGetValue(o.Id, out var op) ? op : o.Pos, o.W, o.H));
+                var oppAt = p.Opponents.Select(o => new UnitFootprint { UnitId = o.Id, At = pv.Positions.TryGetValue(o.Id, out var op) ? op : o.Pos, W = o.W, H = o.H }).ToList();
+                foreach (var o in oppAt) group.Add((o.At, o.W, o.H));
+                var geometryError = PincerGeometry.Error(new UnitFootprint { UnitId = p.A.Id, At = a, W = p.A.W, H = p.A.H }, new UnitFootprint { UnitId = p.B.Id, At = b, W = p.B.W, H = p.B.H }, oppAt);
+                if (geometryError != null && Debug.isDebugBuild) Debug.LogError($"[GG-T98] malformed preview pincer outline: {geometryError}");
                 board.Lines.Outline(BoardView.GroupRect(group), new Color(1f, 0.85f, 0.3f, 0.9f), 8f, 1f);
                 foreach (var (sup, partner) in p.SupportersA.Select(x => (x, a)).Concat(p.SupportersB.Select(x => (x, b))))
                 {

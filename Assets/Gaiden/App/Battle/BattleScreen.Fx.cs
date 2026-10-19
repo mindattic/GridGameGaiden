@@ -288,7 +288,7 @@ namespace Gaiden.App
                 if (k > 0.25f) board.Lines.Ring(at, 50f + 300f * (k - 0.25f) / 0.75f, new Color(1f, 0.6f, 0.4f, 1f - k), 12f);
                 foreach (var f in foes)
                 {
-                    var from = BoardView.CenterOf(f.Pos, f.W, f.H);
+                    var from = ViewCenter(f);
                     board.Lines.Add(from, Vector2.Lerp(from, at, Mathf.Min(1f, k * 1.6f)), new Color(1f, 0.35f, 0.25f, 0.85f * (1f - k * 0.5f)), 9f);
                 }
             });
@@ -458,7 +458,7 @@ namespace Gaiden.App
             }
             // 2b. Throw: a spinning arc to the target, then the glass shatters into a splash.
             var target = targets.FirstOrDefault(t => t != user) ?? targets[0];
-            Vector2 to = BoardView.CenterOf(target.Pos, target.W, target.H);
+            Vector2 to = ViewCenter(target);
             App.Audio.Sfx("whoosh");
             float travel = Mathf.Clamp(Vector2.Distance(above, to) / 1500f, 0.28f, 0.5f);
             yield return Tween.Run(travel, k =>
@@ -469,7 +469,7 @@ namespace Gaiden.App
             });
             bottle.RemoveFromHierarchy();
             App.Audio.Sfx("glass");
-            foreach (var t in targets) ImpactSplash(BoardView.CenterOf(t.Pos, t.W, t.H), liquid, 1.1f);
+            foreach (var t in targets) ImpactSplash(ViewCenter(t), liquid, 1.1f);
             if (!ReduceMotion) Sparks(to, 10, new Color(0.9f, 0.95f, 1f));
             yield return Tween.Wait(0.12f);
         }
@@ -480,8 +480,8 @@ namespace Gaiden.App
         private IEnumerator MeleeSkillVfx(Unit caster, Unit target)
         {
             if (!board.Units.TryGetValue(caster.Id, out var cv)) yield break;
-            var a = BoardView.CenterOf(caster.Pos, caster.W, caster.H);
-            var b = BoardView.CenterOf(target.Pos, target.W, target.H);
+            var a = ViewCenter(caster);
+            var b = ViewCenter(target);
             var dir = (b - a).normalized;
             float lunge = 46f * Fx + 8f;
             App.Audio.Sfx("dash", 0.8f);
@@ -509,7 +509,7 @@ namespace Gaiden.App
             if (!board.Units.TryGetValue(caster.Id, out var cv)) yield break;
             var buff = App.Content.TryBuff(a.ApplyBuff);
             var c = Art.HexColor(buff?.Color, new Color(1f, 0.8f, 0.4f));
-            var at = BoardView.CenterOf(caster.Pos, caster.W, caster.H);
+            var at = ViewCenter(caster);
             cv.SetGlow(c, 0.9f);
             yield return Tween.Run(0.22f, k => cv.Root.style.scale = new Scale(Vector2.one * (1f + 0.16f * Mathf.Sin(k * Mathf.PI * 0.5f))));
             if (buff != null && buff.OutgoingDamageMultiplier > 1f)
@@ -601,14 +601,14 @@ namespace Gaiden.App
             if (board.PickupViews.TryGetValue(e.PickupEntryId, out var v))
             {
                 var start = new Vector2(v.resolvedStyle.left, v.resolvedStyle.top);
-                var to = hero != null ? BoardView.CenterOf(hero.Pos, hero.W, hero.H) - new Vector2(BoardView.Tile * 0.28f, BoardView.Tile * 0.28f + 40f) : start;
+                var to = hero != null ? ViewCenter(hero) - new Vector2(BoardView.Tile * 0.28f, BoardView.Tile * 0.28f + 40f) : start;
                 yield return Tween.Run(0.18f, k => { v.style.left = Mathf.Lerp(start.x, to.x, k); v.style.top = Mathf.Lerp(start.y, to.y, k); v.style.scale = new Scale(Vector2.one * (1f + 0.4f * k)); });
                 v.RemoveFromHierarchy();
                 board.PickupViews.Remove(e.PickupEntryId);
             }
             if (hero != null)
             {
-                var at = BoardView.CenterOf(hero.Pos, hero.W, hero.H);
+                var at = ViewCenter(hero);
                 ImpactSplash(at, c, 0.9f);
                 Billboard($"{hero.Name}: {def?.Name ?? "Pickup"} — {def?.Description}", Art.UiIcon(def?.Icon), c);
                 yield return FloatText(hero.Id, def?.Name ?? "Pickup", c, 0.2f, 56);

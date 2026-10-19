@@ -17,8 +17,10 @@ namespace Gaiden.Core.Battle
     /// </summary>
     public sealed class BattleRecorder
     {
-        /// <summary>v2 (2026-10-12): added optional per-turn "skillLevel"/"perfectCommand" (BotSkillProfile demo mode).</summary>
-        public const int SchemaVersion = 2;
+        /// <summary>v2 (2026-10-12): added optional per-turn "skillLevel"/"perfectCommand" (BotSkillProfile demo mode).
+        /// v3 (2026-10-19, GG-T98): PincerFormed events carry formation-time footprints ("Attacker1At", "Attacker2At",
+        /// "OpponentsAt", "SupportersAt"); WaveStarted/ReinforcementsArrived carry "SpawnedAt".</summary>
+        public const int SchemaVersion = 3;
 
         private static readonly JsonSerializer Json = JsonSerializer.Create(new JsonSerializerSettings
         {

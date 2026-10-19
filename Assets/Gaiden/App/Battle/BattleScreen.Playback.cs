@@ -36,20 +36,24 @@ namespace Gaiden.App
                 // resolves later in this same command's event list (common: a drag-move can run a full
                 // enemy turn via AdvanceClock) is still at its true pre-move tile when its SteppedEvent
                 // plays, instead of already sitting at its destination and animating zero distance.
+                // Each unit lands where the prefix itself left it, never on its end-of-command State tile: a hero the
+                // drag moved can still be shoved later in the same command, and snapping it to its final tile here
+                // would put every later beat (pincer outline, lunges) in the wrong place (GG-T98).
                 var touched = new HashSet<int>();
+                var landed = new Dictionary<int, Coord>();
                 while (i < events.Count && (events[i] is ActionBeganEvent || events[i] is SteppedEvent || events[i] is DisplacedEvent || events[i] is StepBlockedEvent))
                 {
                     switch (events[i])
                     {
                         case ActionBeganEvent ab: touched.Add(ab.ActorId); break;
-                        case SteppedEvent se: touched.Add(se.UnitId); break;
-                        case DisplacedEvent de: touched.Add(de.UnitId); break;
+                        case SteppedEvent se: touched.Add(se.UnitId); landed[se.UnitId] = se.To; break;
+                        case DisplacedEvent de: touched.Add(de.UnitId); landed[de.UnitId] = de.To; break;
                         case StepBlockedEvent sb: touched.Add(sb.UnitId); break;
                     }
                     i++;
                 }
-                foreach (var u in State.Units)
-                    if (u.Alive && touched.Contains(u.Id) && board.Units.TryGetValue(u.Id, out var v)) { board.Place(v, u.Pos); }
+                foreach (var id in touched)
+                    if (board.Units.TryGetValue(id, out var v) && !v.Dead) board.Place(v, landed.TryGetValue(id, out var at) ? at : v.Tile);
             }
             for (; i < events.Count; i++)
             {
@@ -108,7 +112,7 @@ namespace Gaiden.App
                 case HealedEvent h: return HealAnim(h);
                 case DiedEvent d: EndGhost(d.UnitId, null); return DeathAnim(d);
                 case LootEvent l: return LootAnim(l);
-                case RemainsLeftEvent rl: return RemainsAnim(rl.RemainsId, false);
+                case RemainsLeftEvent rl: return RemainsAnim(rl.RemainsId, rl.At, false);
                 case GuestJoinedEvent gj: return GuestAnim(gj);
                 case RoseAgainEvent ra: return RiseAnim(ra);
                 case AmplifierSpawnedEvent asp: return AmpSpawnAnim(asp);
@@ -191,18 +195,29 @@ namespace Gaiden.App
             if (a == null || b == null) yield break;
             board.Lines.ClearLines();
             var color = p.Team == Team.Hero ? new Color(1f, 0.85f, 0.3f, 0.95f) : new Color(1f, 0.3f, 0.3f, 0.95f);
-            DodgeBillboard(new[] { a.Pos, b.Pos }.Concat(p.Opponents.Select(State.UnitById).Where(u => u != null).Select(u => u.Pos)));
+            // Every coordinate below is the event's formation-time snapshot. State is already the END of the command,
+            // so reading positions from it stretched the outline across the board whenever a member moved later in the
+            // same command (GG-T98: "a gold box ~3×3 tiles"). Views that drifted from the snapshot are put back on it.
+            var aAt = p.Attacker1At; var bAt = p.Attacker2At;
+            var oppAt = p.OpponentsAt;
+            var geometryError = p.GeometryError();
+            if (geometryError != null && Debug.isDebugBuild) Debug.LogError($"[GG-T98] malformed pincer outline: {geometryError} — {p}");
+            foreach (var fp in new[] { aAt, bAt }.Concat(oppAt))
+                if (board.Units.TryGetValue(fp.UnitId, out var fv) && !fv.Dead && fv.Tile != fp.At)
+                {
+                    if (Debug.isDebugBuild) Debug.LogWarning($"[GG-T98] view of unit {fp.UnitId} was on {fv.Tile}, pincer formed with it on {fp.At}");
+                    board.Place(fv, fp.At);
+                }
+            DodgeBillboard(new[] { aAt, bAt }.Concat(oppAt).SelectMany(FootprintTiles));
             // The group (Hero, foe…, Hero) gets an outline that draws itself around it; supporters link edge to edge.
-            var group = new List<(Coord, int, int)> { (a.Pos, a.W, a.H), (b.Pos, b.W, b.H) };
-            foreach (var oid in p.Opponents) if (State.UnitById(oid) is Unit o) group.Add((o.Pos, o.W, o.H));
+            var group = new List<(Coord, int, int)> { (aAt.At, aAt.W, aAt.H), (bAt.At, bAt.W, bAt.H) };
+            foreach (var o in oppAt) group.Add((o.At, o.W, o.H));
             var rect = BoardView.GroupRect(group);
             var links = new List<(Vector2, Vector2)>();
-            foreach (var sid in p.Supporters)
+            foreach (var s in p.SupportersAt)
             {
-                var s = State.UnitById(sid);
-                if (s == null) continue;
-                var partner = s.IsAdjacentTo(a) ? a : b;
-                links.Add(BoardView.EdgeLink(s.Pos, partner.Pos));
+                var partner = FootprintTiles(s).Any(t => t.IsCardinalNeighbor(aAt.At)) ? aAt : bAt;
+                links.Add(BoardView.EdgeLink(s.At, partner.At));
             }
             App.Audio.Sfx("pincer", 1f, 1f + 0.08f * (chainCount - 1));
             // The outline draws itself fully around the trapped line before anything else happens — a beat of
@@ -220,7 +235,7 @@ namespace Gaiden.App
             var supporters = p.Supporters.Select(State.UnitById).Where(x => x != null).ToList();
             if (supporters.Count > 0) Billboard("Support: " + string.Join(", ", supporters.Select(x => x.Name)), null, new Color(0.6f, 0.85f, 1f));
             ShowBanner(label);
-            var mid = (BoardView.CenterOf(a.Pos) + BoardView.CenterOf(b.Pos)) / 2f;
+            var mid = (BoardView.CenterOf(aAt.At) + BoardView.CenterOf(bAt.At)) / 2f;
             var f = board.Float(label, mid, color, 96);
             App.StartCoroutine(FloatAway(f, 0.7f));
             if (board.Units.TryGetValue(a.Id, out var av)) App.StartCoroutine(Tween.Pop(av.Root, 1.15f, 0.2f));
@@ -230,9 +245,9 @@ namespace Gaiden.App
             if (!CutInsEnabled || ReduceMotion) yield return Tween.Wait(0.32f);
             else if (chainCount == 1)
             {
-                yield return PincerCutIn(a, b, p.Team);
+                yield return PincerCutIn(a, b, p.Team, aAt.At, bAt.At);
             }
-            else yield return PopUpCards(new[] { a, b }, p.Team);
+            else yield return PopUpCards(new[] { a, b }, p.Team); // their views sit on the snapshot tiles (snapped above)
         }
 
         // ── Pincer cut-in (ported from GridGame2026 PortraitManager / Portrait2DInstance, US-145) ──
@@ -256,7 +271,7 @@ namespace Gaiden.App
         public void DemoCutIn()
         {
             var heroes = State.Units.Where(u => u.IsHero && u.Alive).Take(2).ToList();
-            if (heroes.Count == 2) App.StartCoroutine(PincerCutIn(heroes[0], heroes[1], Team.Hero));
+            if (heroes.Count == 2) App.StartCoroutine(PincerCutIn(heroes[0], heroes[1], Team.Hero, ViewTile(heroes[0]), ViewTile(heroes[1])));
         }
 
         /// <summary>Debug/automation: play the mid-wave surprise narrative beat (§14.8) on demand.</summary>
@@ -271,7 +286,8 @@ namespace Gaiden.App
             public float Distance; public float W, H; public float Seed;
         }
 
-        private IEnumerator PincerCutIn(Unit a, Unit b, Team team)
+        /// <param name="aAt">Where <paramref name="a"/> stood when the pincer formed (not its end-of-command State tile).</param>
+        private IEnumerator PincerCutIn(Unit a, Unit b, Team team, Coord aAt, Coord bAt)
         {
             CutInsShown++;
             var layer = new VisualElement { name = "cutin", pickingMode = PickingMode.Ignore };
@@ -287,8 +303,8 @@ namespace Gaiden.App
             App.Overlay.Add(layer);
 
             var origin = new Vector2(BoardLeft, BoardTop);
-            var mid = origin + (BoardView.CenterOf(a.Pos, a.W, a.H) + BoardView.CenterOf(b.Pos, b.W, b.H)) / 2f;
-            bool rowLine = a.Pos.Y == b.Pos.Y;
+            var mid = origin + (BoardView.CenterOf(aAt, a.W, a.H) + BoardView.CenterOf(bAt, b.W, b.H)) / 2f;
+            bool rowLine = aAt.Y == bAt.Y;
             const float StageW = 1170f, StageH = 2532f;
 
             // Entry pattern (old US-145): counter sweep, mirrored, same-side chase, staggered one-two.
@@ -441,11 +457,11 @@ namespace Gaiden.App
         {
             var a = State.UnitById(at.AttackerId); var t = State.UnitById(at.TargetId);
             if (a == null || t == null || !board.Units.TryGetValue(a.Id, out var av)) yield break;
-            Vector2 dir = (BoardView.CenterOf(t.Pos, t.W, t.H) - BoardView.CenterOf(a.Pos, a.W, a.H)).normalized;
+            Vector2 dir = (ViewCenter(t) - ViewCenter(a)).normalized;
             if (at.IsRanged)
             {
                 // A hexed bolt flies down the lane.
-                var from = BoardView.CenterOf(a.Pos, a.W, a.H); var to = BoardView.CenterOf(t.Pos, t.W, t.H);
+                var from = ViewCenter(a); var to = ViewCenter(t);
                 App.Audio.Sfx("magic", 0.7f);
                 yield return Tween.Run(0.22f, k => { board.Lines.ClearLines(); board.Lines.Dot(ProjectilePoint(ProjectileMotion.Twist, from, to, k), 22f, new Color(0.7f, 0.35f, 1f)); });
                 board.Lines.ClearLines();
@@ -600,7 +616,7 @@ namespace Gaiden.App
             var u = State.UnitById(e.UnitId);
             if (u == null) yield break;
             var v = board.Units.TryGetValue(u.Id, out var ex) ? ex : board.Add(u);
-            board.Place(v, u.Pos);
+            board.Place(v, e.At);
             v.SetHp(u.Hp, u.MaxHp);
             App.Audio.Sfx("pickup", 0.9f);
             Billboard($"{u.Name} joins the fight! Keep them alive to recruit them.", null, new Color(0.6f, 1f, 0.75f));
@@ -610,12 +626,12 @@ namespace Gaiden.App
         }
 
         /// <summary>Remains drop onto the fallen undead's tile with a thud (§14.5).</summary>
-        private IEnumerator RemainsAnim(int remainsId, bool quiet)
+        private IEnumerator RemainsAnim(int remainsId, Coord at, bool quiet)
         {
             var r = State.UnitById(remainsId);
             if (r == null) yield break;
             if (!board.Units.TryGetValue(r.Id, out var v)) v = board.Add(r);
-            board.Place(v, r.Pos);
+            board.Place(v, at);
             v.SetHp(r.Hp, r.MaxHp);
             SyncTimeline(null);
             if (!quiet) App.Audio.Sfx("shatter", 0.5f, 0.6f);
@@ -636,7 +652,7 @@ namespace Gaiden.App
             var u = State.UnitById(e.UnitId);
             if (u == null) yield break;
             var v = board.Units.TryGetValue(u.Id, out var existing) ? existing : board.Add(u);
-            board.Place(v, u.Pos);
+            board.Place(v, e.At);
             v.SetHp(u.Hp, u.MaxHp);
             SyncTimeline(null);
             App.Audio.Sfx("debuff", 0.9f, 0.8f);
@@ -651,7 +667,7 @@ namespace Gaiden.App
             var r = State.UnitById(e.EggId);
             if (r == null) yield break;
             if (!board.Units.TryGetValue(r.Id, out var v)) v = board.Add(r);
-            board.Place(v, r.Pos);
+            board.Place(v, e.At);
             v.SetHp(r.Hp, r.MaxHp);
             SyncTimeline(null);
             App.Audio.Sfx("pickup", 0.6f, 0.8f);
@@ -671,7 +687,7 @@ namespace Gaiden.App
             var u = State.UnitById(e.UnitId);
             if (u == null) yield break;
             var v = board.Units.TryGetValue(u.Id, out var existing) ? existing : board.Add(u);
-            board.Place(v, u.Pos);
+            board.Place(v, e.At);
             v.SetHp(u.Hp, u.MaxHp);
             SyncTimeline(null);
             App.Audio.Sfx("crit", 0.8f, 1.1f);
@@ -685,11 +701,13 @@ namespace Gaiden.App
         /// the first delayed entry a wave authored a line for — a held narrative beat announces the twist.</summary>
         private IEnumerator ReinforcementsAnim(ReinforcementsArrivedEvent ra)
         {
-            foreach (var id in ra.Spawned)
+            for (int si = 0; si < ra.Spawned.Count; si++)
             {
+                int id = ra.Spawned[si];
                 var u = State.UnitById(id);
                 if (u == null || board.Units.ContainsKey(id)) continue;
                 var v = board.Add(u);
+                if (si < ra.SpawnedAt.Count) board.Place(v, ra.SpawnedAt[si].At); // it may already have walked on this command
                 v.SetHp(u.Hp, u.MaxHp);
                 App.StartCoroutine(EntranceAnim(v, u.Def));
             }
@@ -875,6 +893,26 @@ namespace Gaiden.App
 
         /// <summary>A top-of-board window naming every spell, ability and combo as it happens; lines fade after 1.6 s.</summary>
         /// <summary>The billboard steps out of the way: when the action is in the top two rows it moves to the board's foot.</summary>
+        // ── Where a unit is NOW in playback (GG-T98) ──
+        // State is the end of the whole command by the time anything plays, so a beat must never read a unit's
+        // position from it: a unit that moved later in the same command (an enemy turn, knockback, a chain link)
+        // is already on its final tile there. The board view's UnitView.Tile advances one event at a time
+        // (StepAnim, Displaced, Teleport, spawns), so it is the position as of the beat being played.
+
+        private Coord ViewTile(Unit u) => board.Units.TryGetValue(u.Id, out var v) ? v.Tile : u.Pos;
+
+        private Vector2 ViewCenter(Unit u) =>
+            board.Units.TryGetValue(u.Id, out var v) ? BoardView.CenterOf(v.Tile, v.W, v.H) : BoardView.CenterOf(u.Pos, u.W, u.H);
+
+        private IEnumerable<Coord> ViewTiles(Unit u) => FootprintTiles(new UnitFootprint { UnitId = u.Id, At = ViewTile(u), W = u.W, H = u.H });
+
+        private static IEnumerable<Coord> FootprintTiles(UnitFootprint f)
+        {
+            for (int y = 0; y < Mathf.Max(1, f.H); y++)
+                for (int x = 0; x < Mathf.Max(1, f.W); x++)
+                    yield return new Coord(f.At.X + x, f.At.Y + y);
+        }
+
         private void DodgeBillboard(IEnumerable<Coord> tiles)
         {
             billboardLow = tiles != null && tiles.Any(t => t.Y <= 1);
@@ -1106,7 +1144,7 @@ namespace Gaiden.App
             Billboard($"{caster?.Name}: {what}{on}", Art.AbilityIcon(App.Content.TryAbility(cq.AbilityId)), caster != null && caster.IsHero ? Color.white : new Color(1f, 0.7f, 0.65f));
             AddGhost(cq);
             var tu = State.UnitById(cq.TargetUnitId);
-            DodgeBillboard(new[] { cq.TargetTile }.Concat(tu != null ? tu.Tiles() : Enumerable.Empty<Coord>()).Concat(cq.LineTiles ?? new List<Coord>()));
+            DodgeBillboard(new[] { cq.TargetTile }.Concat(tu != null ? ViewTiles(tu) : Enumerable.Empty<Coord>()).Concat(cq.LineTiles ?? new List<Coord>()));
             var castColor = CastColor(App.Content.TryAbility(cq.AbilityId), cq.AbilityId);
             if (caster != null) yield return Gather(caster, castColor);
             if (caster != null) { StartChannel(caster.Id, castColor); App.Audio.Sfx("channel", 0.7f); }
@@ -1128,7 +1166,7 @@ namespace Gaiden.App
         private IEnumerator AbilityAnim(AbilityResolvedEvent ar)
         {
             var a = BattleEngine.ResolveAbilityId(App.Content, ar.AbilityId);
-            DodgeBillboard(ar.Tiles.Concat(ar.Targets.Select(State.UnitById).Where(u => u != null).SelectMany(u => u.Tiles())));
+            DodgeBillboard(ar.Tiles.Concat(ar.Targets.Select(State.UnitById).Where(u => u != null).SelectMany(ViewTiles)));
             var caster = State.UnitById(ar.CasterId);
             var hit = ar.Targets.Select(State.UnitById).Where(u => u != null).Select(u => u.Name).Distinct().ToList();
             string who = hit.Count == 0 ? "" : hit.Count <= 2 ? " → " + string.Join(" & ", hit) : $" → {hit.Count} targets";
@@ -1158,21 +1196,21 @@ namespace Gaiden.App
                 yield return RallyVfx(caster, a);
             else if (caster != null && a != null && a.Motion != ProjectileMotion.None && targets.Count > 0)
             {
-                Vector2 from = BoardView.CenterOf(caster.Pos, caster.W, caster.H);
+                Vector2 from = ViewCenter(caster);
                 App.Audio.Sfx("cast", 0.7f);
                 yield return Tween.Run(a.Motion == ProjectileMotion.Strike ? 0.18f : 0.26f, k =>
                 {
                     board.Lines.ClearLines();
                     foreach (var t in targets)
                     {
-                        Vector2 to = BoardView.CenterOf(t.Pos, t.W, t.H);
+                        Vector2 to = ViewCenter(t);
                         var p = ProjectilePoint(a.Motion, from, to, k);
                         board.Lines.Dot(p, 26f, c);
                         board.Lines.Dot(ProjectilePoint(a.Motion, from, to, Mathf.Max(0f, k - 0.08f)), 16f, new Color(c.r, c.g, c.b, 0.5f));
                     }
                 });
                 board.Lines.ClearLines();
-                foreach (var t in targets) NamedImpactFlourish(a.ImpactVfx, BoardView.CenterOf(t.Pos, t.W, t.H), c);
+                foreach (var t in targets) NamedImpactFlourish(a.ImpactVfx, ViewCenter(t), c);
             }
             else yield return Tween.Wait(0.12f);
             App.StartCoroutine(ClearMarksLater(0.35f));
@@ -1188,7 +1226,7 @@ namespace Gaiden.App
         /// </summary>
         private IEnumerator SpellVfx(Unit caster, List<Unit> targets, AbilityDef a, Color c)
         {
-            Vector2 from = BoardView.CenterOf(caster.Pos, caster.W, caster.H);
+            Vector2 from = ViewCenter(caster);
             bool calm = ReduceMotion;
             board.Units.TryGetValue(caster.Id, out var cv);
             // 1. Drawing energy (a timed cast already drew it when it was queued).
@@ -1199,7 +1237,7 @@ namespace Gaiden.App
             board.Lines.Rings.Clear(); board.Lines.MarkDirtyRepaint();
             if (cv != null) cv.SetGlow(Color.white, 0f);
             // 3. One mote per target curves up and over to the space above it.
-            var ends = targets.ToDictionary(t => t.Id, t => BoardView.CenterOf(t.Pos, t.W, t.H) + new Vector2(0f, -BoardView.Tile * 0.85f));
+            var ends = targets.ToDictionary(t => t.Id, t => ViewCenter(t) + new Vector2(0f, -BoardView.Tile * 0.85f));
             var bends = targets.ToDictionary(t => t.Id, t => (Random.value < 0.5f ? -1f : 1f) * Random.Range(90f, 160f));
             float travel = calm ? 0.2f : Mathf.Clamp(Vector2.Distance(from, ends.Values.First()) / 1600f, 0.26f, 0.5f);
             // Each projectile is a glowing orb (bloom + white-hot core) leaving a comet tail of fading embers.
@@ -1236,7 +1274,7 @@ namespace Gaiden.App
             bool isHastenOnly = a.BaseDamage <= 0 && a.BaseHeal <= 0 && a.HastenU > 0f && a.ApplyBuff == null;
             foreach (var t in targets)
             {
-                var at = BoardView.CenterOf(t.Pos, t.W, t.H);
+                var at = ViewCenter(t);
                 if (a.IsScan) App.StartCoroutine(ScanBurst(at));
                 else if (isCleanse) App.StartCoroutine(CleanseBurst(at));
                 else if (isHastenOnly) App.StartCoroutine(HastenBurst(at));
@@ -1249,7 +1287,7 @@ namespace Gaiden.App
             if (a.BaseDamage <= 0 && !a.IsScan) App.Audio.Sfx("splash", 0.6f, 1.2f);
             foreach (var kv in ends) strikeFrom[kv.Key] = kv.Value;
             if (a.BaseHeal > 0 || (a.Filter == TargetFilter.AllyOnly && !isCleanse && !isHastenOnly && !a.IsScan))
-                foreach (var t in targets) App.StartCoroutine(HealBurst(BoardView.CenterOf(t.Pos, t.W, t.H)));
+                foreach (var t in targets) App.StartCoroutine(HealBurst(ViewCenter(t)));
         }
 
         /// <summary>Projectile curves (bible §6.1). Reduce Motion flattens everything to a straight line.</summary>
@@ -1378,11 +1416,13 @@ namespace Gaiden.App
 
         private IEnumerator WaveAnim(WaveStartedEvent wv)
         {
-            foreach (var id in wv.Spawned)
+            for (int si = 0; si < wv.Spawned.Count; si++)
             {
+                int id = wv.Spawned[si];
                 var u = State.UnitById(id);
                 if (u == null || board.Units.ContainsKey(id)) continue;
                 var v = board.Add(u);
+                if (si < wv.SpawnedAt.Count) board.Place(v, wv.SpawnedAt[si].At); // it may already have walked on this command
                 v.SetHp(u.Hp, u.MaxHp);
                 v.Root.style.opacity = 0;
                 App.StartCoroutine(Tween.Run(0.3f, k => { v.Root.style.opacity = k; v.Root.style.translate = new Translate(0, -80 * (1 - k)); }, Tween.EaseOut));
@@ -1525,7 +1565,7 @@ namespace Gaiden.App
         /// <summary>"Drawing energy": motes spiral into the caster while its frame glows in the spell colour.</summary>
         private IEnumerator Gather(Unit caster, Color c)
         {
-            Vector2 from = BoardView.CenterOf(caster.Pos, caster.W, caster.H);
+            Vector2 from = ViewCenter(caster);
             App.Audio.Sfx("cast", 0.5f);
             board.Units.TryGetValue(caster.Id, out var cv);
             cv?.SetGlow(c, 0.8f);

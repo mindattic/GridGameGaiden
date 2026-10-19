@@ -204,6 +204,7 @@ namespace Gaiden.Core.Battle
                 started.Spawned.Add(u.Id);
                 if (def.SnakeSegments > 0) GrowSnake(u, def.SnakeSegments, started.Spawned);
             }
+            foreach (var id in started.Spawned) if (S.UnitById(id) is Unit su) started.SpawnedAt.Add(UnitFootprint.Of(su));
             Emit(started);
         }
 
@@ -231,7 +232,12 @@ namespace Gaiden.Core.Battle
                     if (!string.IsNullOrEmpty(wave.SurpriseLine)) { speakerClassId = wave.SurpriseSpeaker; line = wave.SurpriseLine; }
                 }
             }
-            if (spawned != null) Emit(new ReinforcementsArrivedEvent { Wave = S.Wave, Spawned = spawned, SpeakerClassId = speakerClassId, Line = line });
+            if (spawned != null)
+            {
+                var arrived = new ReinforcementsArrivedEvent { Wave = S.Wave, Spawned = spawned, SpeakerClassId = speakerClassId, Line = line };
+                foreach (var id in spawned) if (S.UnitById(id) is Unit su) arrived.SpawnedAt.Add(UnitFootprint.Of(su));
+                Emit(arrived);
+            }
             S.PendingSpawns.RemoveAll(p => p.Consumed);
         }
 

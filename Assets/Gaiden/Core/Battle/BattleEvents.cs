@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Gaiden.Core.Content;
 
@@ -56,13 +57,69 @@ namespace Gaiden.Core.Battle
         public override string ToString() => $"Teleported {UnitId} {From}->{To}";
     }
 
+    /// <summary>
+    /// A unit's footprint (anchor tile + size) frozen at one moment of the event stream. Events that the view draws
+    /// geometry from carry these because the state the view holds is already the END of the command: a unit that
+    /// moved later in the same command (an enemy turn, knockback, a later chain link) is somewhere else by then (GG-T98).
+    /// </summary>
+    public struct UnitFootprint
+    {
+        public int UnitId; public Coord At; public int W; public int H;
+        public static UnitFootprint Of(Unit u) => new UnitFootprint { UnitId = u.Id, At = u.Pos, W = u.W, H = u.H };
+        public override string ToString() => $"{UnitId}@{At}{(W > 1 || H > 1 ? $" {W}x{H}" : "")}";
+    }
+
     public sealed class PincerFormedEvent : BattleEvent
     {
         public Team Team; public int Attacker1; public int Attacker2;
         public List<int> Opponents = new List<int>();
         public List<int> Supporters = new List<int>();
         public int ChainIndex;
+        /// <summary>Formation-time geometry (GG-T98): where each member stood the moment this pincer formed.
+        /// <see cref="OpponentsAt"/>/<see cref="SupportersAt"/> run parallel to <see cref="Opponents"/>/<see cref="Supporters"/>.</summary>
+        public UnitFootprint Attacker1At, Attacker2At;
+        public List<UnitFootprint> OpponentsAt = new List<UnitFootprint>();
+        public List<UnitFootprint> SupportersAt = new List<UnitFootprint>();
         public override string ToString() => $"Pincer {Team} {Attacker1}+{Attacker2} vs [{string.Join(",", Opponents)}] sup[{string.Join(",", Supporters)}] #{ChainIndex}";
+
+        /// <summary>Null when this pincer's formation geometry is a legal line; otherwise what's wrong with it.</summary>
+        public string GeometryError() => PincerGeometry.Error(Attacker1At, Attacker2At, OpponentsAt);
+    }
+
+    /// <summary>
+    /// The shape a pincer outline may take (GG-T98 guard). A pincer is two attackers in one row or column with every
+    /// tile between them covered by opponents, so the group is one tile thick across its axis — a 2×2 opponent may
+    /// widen it to its own size, nothing else can. A multi-tile box is always a geometry bug upstream.
+    /// </summary>
+    public static class PincerGeometry
+    {
+        public static string Error(UnitFootprint a, UnitFootprint b, IEnumerable<UnitFootprint> opponents)
+        {
+            if (a.At == b.At) return $"attackers share {a.At}";
+            bool row = a.At.Y == b.At.Y;
+            if (!row && a.At.X != b.At.X) return $"attackers {a.At} and {b.At} are not in one row or column";
+            int line = row ? a.At.Y : a.At.X;
+            int lo = row ? Math.Min(a.At.X, b.At.X) : Math.Min(a.At.Y, b.At.Y);
+            int hi = row ? Math.Max(a.At.X, b.At.X) : Math.Max(a.At.Y, b.At.Y);
+            int perpMin = line, perpMax = line, widest = 1, multiTile = 0, count = 0;
+            foreach (var o in opponents)
+            {
+                count++;
+                int along0 = row ? o.At.X : o.At.Y, alongSize = Math.Max(1, row ? o.W : o.H);
+                int perp0 = row ? o.At.Y : o.At.X, perpSize = Math.Max(1, row ? o.H : o.W);
+                if (along0 <= lo || along0 + alongSize - 1 >= hi) return $"opponent {o} is not strictly between {a.At} and {b.At}";
+                if (line < perp0 || line > perp0 + perpSize - 1) return $"opponent {o} does not cover the line {(row ? "row" : "column")} {line}";
+                perpMin = Math.Min(perpMin, perp0); perpMax = Math.Max(perpMax, perp0 + perpSize - 1);
+                widest = Math.Max(widest, perpSize);
+                if (perpSize > 1) multiTile++;
+            }
+            if (count == 0) return "no opponents";
+            int thickness = perpMax - perpMin + 1;
+            // Two big opponents straddling the line in opposite directions are the one legal way past one footprint.
+            int allowed = multiTile > 1 ? 2 * widest - 1 : widest;
+            if (thickness > allowed) return $"outline {thickness} tiles thick across the line (allowed {allowed})";
+            return null;
+        }
     }
 
     /// <summary>A chained pincer whose whole line already fell: the attackers spin in triumph (cosmetic, §13.1.1).</summary>
@@ -273,6 +330,8 @@ namespace Gaiden.Core.Battle
     public sealed class WaveStartedEvent : BattleEvent
     {
         public int Wave; public int TotalWaves; public List<int> Spawned = new List<int>();
+        /// <summary>Where each of <see cref="Spawned"/> arrived (parallel list, GG-T98) — it may walk on in the same command.</summary>
+        public List<UnitFootprint> SpawnedAt = new List<UnitFootprint>();
         public override string ToString() => $"WaveStarted {Wave + 1}/{TotalWaves} [{string.Join(",", Spawned)}]";
     }
 
@@ -348,6 +407,8 @@ namespace Gaiden.Core.Battle
     public sealed class ReinforcementsArrivedEvent : BattleEvent
     {
         public int Wave; public List<int> Spawned = new List<int>();
+        /// <summary>Where each of <see cref="Spawned"/> arrived (parallel list, GG-T98) — it may walk on in the same command.</summary>
+        public List<UnitFootprint> SpawnedAt = new List<UnitFootprint>();
         public string SpeakerClassId; public string Line;
         public override string ToString() => $"Reinforcements wave {Wave + 1} [{string.Join(",", Spawned)}]";
     }

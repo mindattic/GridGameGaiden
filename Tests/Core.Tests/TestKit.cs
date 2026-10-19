@@ -96,6 +96,20 @@ namespace Gaiden.Tests
 
         public static List<Coord> P(params (int x, int y)[] steps) => steps.Select(t => new Coord(t.x, t.y)).ToList();
 
+        /// <summary>Invariants on one command's event stream (GG-T98): every pincer's formation-time geometry is a legal
+        /// line — a single tile thick across its axis, except where a 2×2 foe widens it — and its snapshots line up with its ids.</summary>
+        public static void AssertEventInvariants(List<BattleEvent> events)
+        {
+            if (events == null) return;
+            foreach (var p in events.OfType<PincerFormedEvent>())
+            {
+                Assert.That(p.GeometryError(), Is.Null, $"{p}: {p.GeometryError()}");
+                Assert.That(p.OpponentsAt.Select(o => o.UnitId), Is.EqualTo(p.Opponents), $"{p}: opponent snapshots");
+                Assert.That(p.SupportersAt.Select(o => o.UnitId), Is.EqualTo(p.Supporters), $"{p}: supporter snapshots");
+                Assert.That(p.Attacker1At.UnitId == p.Attacker1 && p.Attacker2At.UnitId == p.Attacker2, Is.True, $"{p}: attacker snapshots");
+            }
+        }
+
         /// <summary>Structural invariants that must hold after every command.</summary>
         public static void AssertInvariants(BattleState s)
         {
