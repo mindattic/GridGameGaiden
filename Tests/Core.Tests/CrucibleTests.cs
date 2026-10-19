@@ -250,7 +250,10 @@ namespace Gaiden.Tests
         /// <summary>Bot soak: the bot fights whole Crucible runs end to end through the real Meta path (prepare →
         /// build → play → commit), across seeds and party strengths, with the battle invariants checked after every
         /// command. Every run must end (the climbing levels guarantee a wipe), clear at least the opening wave,
-        /// and bank its haul.</summary>
+        /// and bank its haul. GG-T123: the save's creation time is pinned — <c>Crucible.SeedFor</c> mixes it in, so a
+        /// fresh <c>DateTime.UtcNow</c> made every run a different gauntlet and the test flaky; and the stalls that
+        /// flakiness exposed (a lone hero facing a fleeing foe, a pack howling forever) are fixed in the rules, with
+        /// <see cref="Crucible_bot_soak_never_stalls_across_many_saves"/> sweeping many gauntlets for them.</summary>
         [TestCase(1, 1)]
         [TestCase(2, 3)]
         [TestCase(3, 6)]
@@ -259,6 +262,7 @@ namespace Gaiden.Tests
         {
             var c = FreshReal();
             var s = Progression.NewGame(c, "Soak");
+            s.CreatedUtc = SoakEpoch;
             s.HighestClearedStage = level - 1;
             foreach (var h in s.Roster) { h.TotalXp = Gaiden.Core.Rules.Formulas.TotalXpForLevel(level); }
             s.Crucible.Runs = seed;
@@ -287,6 +291,33 @@ namespace Gaiden.Tests
             Assert.That(s.Crucible.Best, Is.EqualTo(rep.CrucibleWaves));
             foreach (var id in s.Party) Assert.That(s.Hero(id).Hp, Is.EqualTo(0));
             Assert.That(s.HighestClearedStage, Is.EqualTo(level - 1));
+        }
+
+        private static readonly System.DateTime SoakEpoch = new System.DateTime(2026, 10, 19, 0, 0, 0, System.DateTimeKind.Utc);
+
+        /// <summary>GG-T123: many different gauntlets (one per save creation time), each fought by the bot to its end.
+        /// None may run past the action cap — a lone hero can't pincer, so before the fix a wounded foe fleeing the
+        /// last hero, or a wolf pack howling turn after turn without ever closing in, left the run endless.</summary>
+        [Test]
+        public void Crucible_bot_soak_never_stalls_across_many_saves()
+        {
+            var c = FreshReal();
+            var stalls = new List<string>();
+            foreach (var (seed, level) in new[] { (1, 1), (2, 3), (3, 6), (4, 10) })
+                for (int k = 0; k < 12; k++)
+                {
+                    var s = Progression.NewGame(c, "Soak");
+                    s.CreatedUtc = SoakEpoch.AddMinutes(37 * k + 1);
+                    s.HighestClearedStage = level - 1;
+                    foreach (var h in s.Roster) h.TotalXp = Gaiden.Core.Rules.Formulas.TotalXpForLevel(level);
+                    s.Crucible.Runs = seed;
+                    var st = Crucible.Prepare(c, s);
+                    var b = BotRunner.Play(c, BattleFactory.Build(c, s, st.Id, Crucible.SeedFor(s)), new HeroBot(seed), 6000);
+                    if (!b.IsOver || b.Phase != BattlePhase.Defeat)
+                        stalls.Add($"seed {seed} Lv {level} save {k}: {b.Phase} on wave {b.Wave + 1} after {b.Results.ActionsTaken} actions, " +
+                                   $"heroes [{string.Join(", ", b.LivingList(Team.Hero).Select(u => u.Def.Id))}] foes [{string.Join(", ", b.LivingList(Team.Enemy).Select(u => u.Def.Id))}]");
+                }
+            Assert.That(stalls, Is.Empty);
         }
     }
 }

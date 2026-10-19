@@ -126,15 +126,31 @@ namespace Gaiden.Core.Rules
 
         /// <summary>
         /// Last stand: an evasive brain (Commander, Trapper, Kiter, Medic) with no fighting ally left stops hanging back and
-        /// charges — the battle can't stall on a foe that only runs (found in the battle records, §22.6).
+        /// charges — the battle can't stall on a foe that only runs (found in the battle records, §22.6). The same holds
+        /// against a lone hero (GG-T123): one hero can't pincer, so nothing on the board has anything to keep away from, nor any reason to lie in wait (Ambusher).
         /// </summary>
         public static Brain EffectiveBrain(BattleState s, Unit e)
         {
             var b = e.Def.Brain;
+            if ((Evasive(b) || b == Brain.Ambusher) && LoneHero(s)) return Brain.Berserker; // nothing lies in wait for a lone hero either
             if (!Evasive(b)) return b;
             foreach (var a in s.Living(Team.Enemy))
                 if (a != e && !a.IsRemains && !Evasive(a.Def.Brain) && a.Def.Brain != Brain.Sentinel) return b;
             return Brain.Berserker;
+        }
+
+        /// <summary>
+        /// One hero left standing (§22.10, GG-T123). A pincer needs two heroes, so a lone hero can only hurt foes with its
+        /// bar; a foe that fled or hung back from it would stall the battle forever (a wounded Flying Monkey kiting the
+        /// last hero round the board was the Crucible soak's endless run). Against a lone hero no foe retreats when
+        /// wounded and every evasive brain makes its last stand, so the fight always closes: the hero wins with its
+        /// spells, items and skills, or falls.
+        /// </summary>
+        public static bool LoneHero(BattleState s)
+        {
+            int n = 0;
+            foreach (var h in s.Living(Team.Hero)) if (!h.IsRemains && ++n > 1) return false;
+            return n == 1;
         }
 
         private static float RetreatThreshold(Unit e)
@@ -237,7 +253,7 @@ namespace Gaiden.Core.Rules
             if (brain == Brain.Medic)
                 foreach (var a in s.Living(Team.Enemy)) if (a != enemy && !a.IsRemains && a.HpFraction < 0.9f && (patient == null || a.HpFraction < patient.HpFraction)) patient = a;
 
-            bool wounded = enemy.HpFraction < RetreatThreshold(enemy);
+            bool wounded = enemy.HpFraction < RetreatThreshold(enemy) && !LoneHero(s);
             bool seeksPincer = enemy.IsHumanoid && !enemy.IsMultiTile;
             var original = enemy.Pos;
             Coord best = enemy.Pos; float bestScore = float.NegativeInfinity;
@@ -327,12 +343,26 @@ namespace Gaiden.Core.Rules
                     foreach (var al in allies) if (al.HpFraction < 0.7f && (pick == null || al.HpFraction < pick.HpFraction)) pick = al;
                     if (pick == null) return null; // nobody needs mending: act normally instead
                 }
-                else
+                else if (ability.ApplyBuff != null)
                 {
                     var buff = s.Content.TryBuff(ability.ApplyBuff);
                     bool anyWithout = false;
                     foreach (var al in allies) if (buff == null || !al.HasBuff(buff.Id)) anyWithout = true;
                     if (!anyWithout) return null;
+                    pick = enemy;
+                }
+                else
+                {
+                    // A pure rush (Howl): only worth a turn when it hurries another ally that is already at a hero's
+                    // throat. A pack spread across the board used to howl turn after turn — each howl hastening only
+                    // the howler into its next howl — and never closed in (GG-T123's stalled Crucible soak).
+                    bool rushesAStriker = false;
+                    foreach (var al in allies)
+                    {
+                        if (al == enemy || al.IsRemains || Math.Max(Math.Abs(al.Pos.X - enemy.Pos.X), Math.Abs(al.Pos.Y - enemy.Pos.Y)) > ability.Radius) continue;
+                        foreach (var h in heroes) if (al.IsAdjacentTo(h) || (al.IsRanged && al.DistanceTo(h) <= al.Def.AttackRange)) rushesAStriker = true;
+                    }
+                    if (!rushesAStriker) return null;
                     pick = enemy;
                 }
                 return new ChargePlan { Target = pick, Ability = ability, Shape = ChargeShape.Single };

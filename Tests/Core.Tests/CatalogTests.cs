@@ -61,7 +61,11 @@ namespace Gaiden.Tests
             var stage = new StageDef { Id = "chg", IsTest = true, Waves = { new WaveDef { Enemies = { new SpawnDef { Class = caster.Id, Level = 1, X = 0, Y = 0 } } } } };
             var setup = new BattleSetup { Stage = stage, Seed = 5, UnlockedSlots = 2 };
             setup.Party.Add(new HeroSpec { ClassId = "paladin", Level = 20, Start = new Coord(5, 7) });
-            setup.Party.Add(new HeroSpec { ClassId = "cleric", Level = 20, Start = new Coord(0, 5) });
+            var ab = c.Abilities[abilityId];
+            // A pure rush (Howl) only goes out to hurry an ally already at a hero (GG-T123): give it one, in range.
+            bool rush = ab.Filter == TargetFilter.AllyOnly && ab.BaseHeal <= 0 && ab.ApplyBuff == null;
+            if (rush) stage.Waves[0].Enemies.Add(new SpawnDef { Class = caster.Id, Level = 1, X = 2, Y = 1 });
+            setup.Party.Add(new HeroSpec { ClassId = "cleric", Level = 20, Start = rush ? new Coord(3, 1) : new Coord(0, 5) });
             var s = BattleEngine.Create(c, setup, new List<BattleEvent>());
             // A healing charge only goes out when an ally needs it: wound the caster.
             if (c.Abilities[abilityId].BaseHeal > 0) { var me = s.Units.First(u => !u.IsHero); me.Hp = me.MaxHp / 3; }

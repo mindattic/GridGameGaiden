@@ -1331,7 +1331,7 @@ The −100 sandwich avoidance (two heroes directly on opposite sides) outweighs 
 | Forms own Humanoid pincer | +50 | Humanoid 1×1, not wounded |
 | Supports an ally's pincer | +25 | any enemy, not wounded |
 | Threat (target choice) | −(DamageDealt / max) × INT × 0.8 | smart enemies hunt the top damage-dealer |
-| Wounded retreat | below `RetreatHpThreshold` 0.30 | flees; flank-avoid still applies |
+| Wounded retreat | below `RetreatHpThreshold` 0.30 | flees; flank-avoid still applies; never against a lone hero (GG-T123, [§22.10](#2210-the-crucible)) |
 
 Constants live in `EnemyPlanner` and `BattleConfig.RetreatHpThreshold`.
 
@@ -1379,7 +1379,7 @@ Generic, data-driven mechanics (`ClassDef`), so each family's kit is content, no
 | On-hit | `OnHitBuff`, `OnHitChance` | a landed attack (melee, ranged, pincer) may inflict the buff |
 | Death burst | `DeathBurst` | on death, damages every adjacent hero ("self-destructs!") |
 | Passives | `Abilities` | `lifesteal` (heals half the damage dealt), `tough_hide` (physical blows land at 70%), `berserk` (+35% damage below half HP), `regenerate` (6% MaxHP at the end of its turn), `double_attack`, `counter_attack` |
-| Support charges | `ChargeAbility` with `Filter: AllyOnly` | Howl (allies in 2 tiles hasten 0.25u), Rally (allies gain Protection), Mend (heal the most wounded ally 30 — only when one is below 70%) |
+| Support charges | `ChargeAbility` with `Filter: AllyOnly` | Howl (allies in 2 tiles hasten 0.25u — only when another ally in range is already at a hero, GG-T123), Rally (allies gain Protection), Mend (heal the most wounded ally 30 — only when one is below 70%) |
 | Area charge | `ChargeAbility` with an area `Shape` | Poison Cloud: 3×3, 6 poison + Poisoned |
 | Traps | `Trap` | Poison Cloud (miasma), Shock Mine (10 lightning + Slowed), Caltrops (8), plus the trail traps Slime Trail / Mire (Slowed) and Quicksand (4 + Slowed) |
 
@@ -1733,6 +1733,11 @@ A quick, endless survival battle fought from camp **inside a normal saved campai
 - **Rewards — the exception to [§22.2](#222-failure-path-detail).** Unlike any other non-victory end, a Crucible wipe or retreat **keeps all the gold, drops and XP earned so far** (that is the point of the mode), then restores the party to full HP like a defeat. Commit rules in [§22.1](#221-per-transition-state-contract); AMENDMENTS 2026-10-19.
 - **Record.** `SaveData.Crucible` (`CrucibleSave`: `Best`, `Runs`, `TotalWaves`). Waves survived = waves fully cleared (the index of the wave the party fell or left on). The Camp row shows the best; a better run sets it, a worse one never lowers it.
 - **Presentation.** HUD reads "Crucible wave N" (no total); each wave's banner reads "Crucible wave N · Lv L" with a rising-pitch `crucible_wave` sting. Results: **CRUCIBLE**, "Survived N waves", "New best!" (with the `crucible_best` fanfare) or the standing best, then the whole haul (gold, XP each, items, bounty); **Continue** → camp, **Again ›** → the next run. Level-ups play first as after any battle.
+- **No endless stalemates** (*added 2026-10-19, GG-T123*). A run must always end by itself, for the bot and for a player alike. Two stalls were found by the bot soak and fixed in the rules (they apply to every battle, not only the Crucible):
+  - **A lone hero is never fled.** A pincer needs two heroes, so one hero left standing can hurt foes only with its bar. Against a lone hero (`EnemyPlanner.LoneHero`) no foe makes a wounded retreat and every evasive brain (Commander, Trapper, Kiter, Medic) makes its last stand and an Ambusher stops lying in wait (§14.6) — they close in, so the hero either wins with spells, items and skills or falls. (Before: a wounded Flying Monkey kited the last hero round the board forever; a Scorpion ambusher waited forever for a lone hero that never came within 2 tiles.)
+  - **Howl only hurries a striker.** A pure-haste support charge (Howl: no buff, no heal) is cast only when another ally in its square is already adjacent to a hero (or in a ranged foe's reach); otherwise the wolf moves. (Before: a scattered pack howled every turn, each howl hastening only the howler into its next howl, and never closed in.)
+  - **The bot keeps a lone hero productive** (`HeroBot`): it spends mana and items on damage freely (cost penalty cut), closes in on the foes to bring its bar to bear, and guards (Shield) rather than wandering when nothing is worth doing.
+  A player who would rather not finish a long fight still has **Leave the Crucible (keep all)**. *(Tests: `Bot_soak_over_a_crucible_run` — now deterministic, its save's creation time pinned since `Crucible.SeedFor` mixes it in — and `Crucible_bot_soak_never_stalls_across_many_saves`, 48 gauntlets fought to a wipe under the action cap.)*
 - Bounty kills count on any Crucible ending (it keeps every kill), unlike a stage's victory-only rule ([§22.4](#224-bounty-board)).
 - The first-battle tutorial never runs in the Crucible.
 - *(Tests: `CrucibleTests` — `Crucible_waves_escalate_one_family_at_a_time_from_the_party_level`, `Crucible_draws_only_families_the_save_has_met_or_reached`, `Crucible_is_deterministic_per_seed_and_per_save`, `Crucible_spawns_at_the_authored_level_even_on_new_game_plus`, `Crucible_cannot_start_mid_expedition_and_says_why`, `A_crucible_wipe_or_retreat_keeps_every_reward_and_restores_the_party`, `A_worse_run_never_lowers_the_best_record`, `A_crucible_run_never_touches_campaign_progress_unlocks_or_the_expedition`, `A_crucible_wipe_keeps_the_gear_wear_it_caused`, bot soak `Bot_soak_over_a_crucible_run`. Harness: `python tools/harness.py crucible [WAVES [RUN]]` — camp → Crucible → Enter → Auto → leave after WAVES (99 = fight to a wipe) → level-ups → results → camp, asserting the haul, XP, full HP, the record and the untouched campaign.)*

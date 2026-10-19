@@ -41,6 +41,7 @@ namespace Gaiden.Core.Bot
         private BattleCommand Decide(BattleState s, bool movesOnly)
         {
             var heroes = s.LivingList(Team.Hero);
+            bool lone = EnemyPlanner.LoneHero(s);
             var candidates = new List<(BattleCommand cmd, float score)>();
 
             foreach (var h in heroes)
@@ -89,7 +90,9 @@ namespace Gaiden.Core.Bot
                 if (score > best + 0.001f) { best = score; bestList.Clear(); bestList.Add(cmd); }
                 else if (Math.Abs(score - best) <= 0.001f) bestList.Add(cmd);
             }
-            if (!movesOnly && best < 0.5f && rng.Chance(0.2f)) return new ShieldCommand();
+            // A lone hero (GG-T123, §22.10) can't pincer: with no damage, pickup or heal worth taking it guards rather
+            // than wandering — foes no longer flee a lone hero (EnemyPlanner.LoneHero), so they come to its bar.
+            if (!movesOnly && best < 0.5f && (lone || rng.Chance(0.2f))) return new ShieldCommand();
             if (SkillLevel < 99.9f) return SkillWeightedPick(candidates, best);
             return bestList[rng.Range(0, bestList.Count)];
         }
@@ -142,6 +145,7 @@ namespace Gaiden.Core.Bot
         private float ScoreMove(BattleState s, MovePreview pv, Unit hero)
         {
             float score = 0f;
+            bool lone = EnemyPlanner.LoneHero(s);
             foreach (var p in pv.Pincers)
             {
                 foreach (var o in p.Opponents)
@@ -182,7 +186,7 @@ namespace Gaiden.Core.Bot
                     if (!pv.Positions.TryGetValue(e.Id, out var ep)) continue;
                     int d = Math.Abs(ep.X - at.X) + Math.Abs(ep.Y - at.Y);
                     if (d == 1 && hero.HpFraction < 0.35f) score -= 3f;
-                    score += 0.05f * (8 - Math.Min(8, d));
+                    score += (lone ? 0.15f : 0.05f) * (8 - Math.Min(8, d)); // a lone hero closes in to bring its bar to bear
                 }
             }
             return score + rng.NextFloat() * 0.01f;
@@ -251,8 +255,11 @@ namespace Gaiden.Core.Bot
                     if (a.BaseDamage > 0 || (a.ApplyBuff != null && s.Content.TryBuff(a.ApplyBuff)?.Kind == BuffKind.Debuff)) score -= 20f;
                 }
             }
-            if (a.Kind == AbilityKind.Spell) score -= a.Cost * 1.5f;
-            if (a.Kind == AbilityKind.Item) score -= 4f;
+            // A lone hero's bar is its only way to hurt anything (no pincers with one hero): spend mana and items on
+            // damage freely rather than hoarding them for a pincer that can never come (GG-T123).
+            bool lone = EnemyPlanner.LoneHero(s) && score > 0f && a.BaseDamage > 0;
+            if (a.Kind == AbilityKind.Spell) score -= a.Cost * (lone ? 0.5f : 1.5f);
+            if (a.Kind == AbilityKind.Item) score -= lone ? 1f : 4f;
             return score;
         }
     }
