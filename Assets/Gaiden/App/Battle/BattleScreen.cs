@@ -638,9 +638,11 @@ namespace Gaiden.App
             e.style.borderTopColor = e.style.borderBottomColor = e.style.borderLeftColor = e.style.borderRightColor = c;
         }
 
-        private void SyncOrbs()
+        /// <param name="upTo">Mid-playback (GG-T112): fill only this many slots, so orbs minted in one action light
+        /// their own slots one by one instead of all at once; -1 shows the bank as it is.</param>
+        private void SyncOrbs(int upTo = -1)
         {
-            int filled = State.Bank.Count;
+            int filled = upTo >= 0 ? Mathf.Min(upTo, State.Bank.Count) : State.Bank.Count;
             shownCharge = State.ManaCharge;
             if (orbViews.Count > 0 && !playing) SetChargeBubble(State.ManaCharge / (float)BattleConfig.ManaChargePerOrb);
             for (int i = 0; i < orbViews.Count; i++)
@@ -848,9 +850,12 @@ namespace Gaiden.App
         public bool CanCommand() => !playing && !ended && !State.IsOver && !dragging && !Paused;
 
         /// <summary>Dev/automation helper: add orbs to the bank (cheat — development builds only call this).</summary>
-        public void DevGiveMana(int n)
+        public void DevGiveMana(int n, int charge = -1)
         {
             State.Bank.Add(n);
+            // Dev only: a charge past one orb is allowed on purpose, so the next charge gain rolls several orbs at
+            // once (tools/harness.py orbs, GG-T112).
+            if (charge >= 0) State.ManaCharge = Mathf.Clamp(charge, 0, 10 * BattleConfig.ManaChargePerOrb);
             SyncOrbs();
             SyncBar();
         }
@@ -1082,6 +1087,9 @@ namespace Gaiden.App
         private int beatsAtPause;
         /// <summary>Beats that started while the menu was up (must stay 0; logged as an error when not).</summary>
         public int BeatsWhilePaused { get; private set; }
+        /// <summary>Bank slot each landed orb flew to, in playback order (last 24) — the automation proof that orbs
+        /// minted together fan into consecutive slots (GG-T112).</summary>
+        public readonly List<int> OrbSlotsFlown = new List<int>();
         /// <summary>Seconds of unpaused battle time; the playback watchdog measures against this, so a long pause
         /// can't make it fire on Resume.</summary>
         private float battleTime;

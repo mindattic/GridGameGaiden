@@ -247,6 +247,34 @@ namespace Gaiden.Tests
             Assert.That(ev.OfType<OrbMintedEvent>().Count(o => o.Reason == "pincer"), Is.EqualTo(charge.Amount / BattleConfig.ManaChargePerOrb)); // one per 100, not one per hero
         }
 
+        [Test] // GG-T112: several orbs minted by one action each carry their own slot, so the fly-in fans into consecutive slots
+        public void Orbs_minted_together_carry_consecutive_bank_slots()
+        {
+            var db = Mini();
+            var (s, _) = Battle(db, Stage(("goblin", 2, 3)), ("knight", 1, 3), ("cleric", 3, 4));
+            s.ManaCharge = BattleConfig.ManaChargePerOrb - 1; // a killing pincer (+120) now rolls over twice
+            int before = s.Bank.Count;
+            var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = Hero(s, "cleric").Id, Path = P((3, 3)) });
+            var landed = ev.OfType<OrbMintedEvent>().Where(o => o.Landed).ToList();
+            Assert.That(landed.Count, Is.GreaterThanOrEqualTo(2), "the setup must mint more than one orb in one action");
+            for (int i = 0; i < landed.Count; i++) Assert.That(landed[i].Slot, Is.EqualTo(before + i), $"orb {i} lands in its own slot");
+            Assert.That(landed.Last().Slot, Is.EqualTo(s.Bank.Count - 1));
+        }
+
+        [Test] // GG-T112: an orb that overflows a full bank has no slot
+        public void An_overflowing_orb_has_no_slot()
+        {
+            var db = Mini();
+            var (s, _) = Battle(db, Stage(("goblin", 2, 3)), ("knight", 1, 3), ("cleric", 3, 4));
+            s.Bank.Add(s.Bank.Capacity - 1 - s.Bank.Count); // one slot left
+            s.ManaCharge = BattleConfig.ManaChargePerOrb - 1;
+            var ev = BattleEngine.Apply(s, new MoveCommand { HeroId = Hero(s, "cleric").Id, Path = P((3, 3)) });
+            var minted = ev.OfType<OrbMintedEvent>().ToList();
+            Assert.That(minted.First().Landed && minted.First().Slot == s.Bank.Capacity - 1, Is.True);
+            Assert.That(minted.Skip(1).All(o => !o.Landed && o.Slot == -1), Is.True);
+            Assert.That(minted.Count, Is.GreaterThanOrEqualTo(2));
+        }
+
         [Test] // owner direction 2026-10-11: "more combos more xp and mana get generated" — chain depth already paid mana, now XP too
         public void A_kill_deeper_in_a_pincer_chain_earns_bonus_xp()
         {

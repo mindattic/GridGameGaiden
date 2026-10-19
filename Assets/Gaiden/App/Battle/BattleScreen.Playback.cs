@@ -1121,7 +1121,10 @@ namespace Gaiden.App
         {
             App.Audio.Sfx("orb", 0.7f, 1f + Random.Range(-0.05f, 0.1f));
             var src = State.UnitById(o.SourceUnitId);
-            int index = o.Landed ? State.Bank.Count - 1 : orbViews.Count - 1;
+            // GG-T112: the slot it landed in when it was minted, not the bank's final count — State is already the
+            // end of the action, so several orbs minted together used to all fly to the last slot.
+            int index = o.Landed ? (o.Slot >= 0 ? o.Slot : State.Bank.Count - 1) : orbViews.Count - 1;
+            if (o.Landed) { OrbSlotsFlown.Add(index); if (OrbSlotsFlown.Count > 24) OrbSlotsFlown.RemoveAt(0); }
             // Fly a small orb from the source to its slot in the line.
             var orb = new VisualElement { pickingMode = PickingMode.Ignore };
             orb.style.position = Position.Absolute;
@@ -1141,7 +1144,8 @@ namespace Gaiden.App
                 if (!o.Landed) orb.style.opacity = 1f - k;
             });
             orb.RemoveFromHierarchy();
-            SyncOrbs();
+            if (o.Landed && o.Slot >= 0) SyncOrbs(o.Slot + 1); // light up to this orb's slot; later orbs fill theirs
+            else SyncOrbs();
             if (o.Landed && index >= 0 && index < orbViews.Count) App.StartCoroutine(Tween.Pop(orbViews[index], 1.3f, 0.15f));
         }
 

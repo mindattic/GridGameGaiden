@@ -171,7 +171,10 @@ namespace Gaiden.Core.Battle
     public sealed class OrbMintedEvent : BattleEvent
     {
         public int SourceUnitId; public bool Landed; public string Reason;
-        public override string ToString() => $"Orb from {SourceUnitId} {(Landed ? "landed" : "overflow")} ({Reason})";
+        /// <summary>The bank slot this orb landed in (0-based), captured at mint time so several orbs minted in one
+        /// action fan into consecutive slots instead of all flying to the final count (GG-T112). -1 when it overflowed.</summary>
+        public int Slot = -1;
+        public override string ToString() => $"Orb from {SourceUnitId} {(Landed ? $"landed in slot {Slot}" : "overflow")} ({Reason})";
     }
 
     public sealed class OrbsSpentEvent : BattleEvent

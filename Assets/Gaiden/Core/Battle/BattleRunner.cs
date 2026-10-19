@@ -342,7 +342,7 @@ namespace Gaiden.Core.Battle
         private void MintOrb(int sourceId, string reason)
         {
             bool landed = S.Bank.Add(1) == 1;
-            Emit(new OrbMintedEvent { SourceUnitId = sourceId, Landed = landed, Reason = reason });
+            Emit(new OrbMintedEvent { SourceUnitId = sourceId, Landed = landed, Reason = reason, Slot = landed ? S.Bank.Count - 1 : -1 });
         }
 
         // ─────────────────────────────────────────────────────────────────────────────
