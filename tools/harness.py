@@ -120,9 +120,13 @@ def pick_party(ids=STARTING_PARTY, timeout=10.0):
     time.sleep(0.5)  # let the screen's fade-in finish before the first tap
     for cid in ids:
         name = f"tile-{cid}"
-        for _ in range(4):
+        for attempt in range(8):
             if call("state")["screen"] != "charselect" or call("style", name=name).get("opacity", 1) < 0.5:
                 break
+            if attempt in (3, 6):  # GG-T16/GG-T121 recovery: recreate the virtual mouse, wait out a focus steal
+                if not call("pick", x=10, y=10).get("focused", True):
+                    print(f"pick_party: player window unfocused while locking in {cid} (GG-T121), retrying")
+                call("resetinput"); time.sleep(1.0)
             call("scrollto", name=name); time.sleep(0.25)  # most of the grid starts below the fold
             call("click", name=name); time.sleep(0.35)
             if call("style", name=name).get("opacity", 1) < 0.5:

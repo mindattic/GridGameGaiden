@@ -112,7 +112,8 @@ def main():
         check("occupied slot asks to overwrite", until(lambda: has_text("Overwrite slot 1?"), 4.0))
         h.call("clicktext", text="Cancel"); time.sleep(0.4)
         h.call("back"); time.sleep(0.8)
-        h.call("clicktext", text="Continue")
+        # A synthetic tap can be dropped while the window lacks focus (GG-T121): retry the tap, not the assertion.
+        h._tap_until(lambda: h.call("clicktext", text="Continue"), lambda: until(lambda: h.call("state")["screen"] == "hub", 3.0), tries=3, wait=0.2)
         check("continue resumes the save", until(lambda: h.call("state")["screen"] == "hub"))
 
     with section('Adventure ordering'):
@@ -335,7 +336,7 @@ def main():
         h.call("battle", stage="greenvalley-02"); time.sleep(2.5)
         h.call("speed", x=3)
         h.call("autoplay", on=1)
-        for _ in range(120):
+        for _ in range(240):  # ~100 s typical at ×3 now (5 waves); 120 s left no margin on a loaded machine
             time.sleep(1.0)
             s = h.call("state")
             if s["screen"] != "battle":
