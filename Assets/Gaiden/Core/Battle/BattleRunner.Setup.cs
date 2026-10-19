@@ -25,7 +25,9 @@ namespace Gaiden.Core.Battle
             foreach (var spec in setup.Party)
             {
                 var start = spec.Start ?? DefaultHeroStarts[Math.Min(i, DefaultHeroStarts.Length - 1)];
-                if (S.UnitAt(start) != null) start = RandomFreeTile(1, 1, 4, BattleConfig.Rows - 1) ?? start;
+                // FreeForSpawn, not just UnitAt: a stage's Blocks (or an out-of-bounds Start) would otherwise
+                // drop a hero onto a solid/off-board tile it can never leave (GG-T70).
+                if (!S.FreeForSpawn(start)) start = RandomFreeTile(1, 1, 4, BattleConfig.Rows - 1) ?? start;
                 SpawnHero(spec, start, setup.UnlockedSlots);
                 i++;
             }

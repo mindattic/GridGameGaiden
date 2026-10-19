@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Gaiden.Core;
 using Gaiden.Core.Battle;
 using Gaiden.Core.Content;
 using Gaiden.Core.Rules;
@@ -178,6 +179,18 @@ namespace Gaiden.Tests
             Assert.That(s.Count(spare.Id), Is.EqualTo(0)); // not both a Broken fragment and a whole copy
             Assert.That(s.BrokenCount(spare.Id), Is.EqualTo(1));
             Assert.That(s.Count(main.Id), Is.EqualTo(0)); // still in hand, not also back in the bag
+        }
+
+        [Test] // GG-T70
+        public void A_hero_whose_start_tile_is_a_block_spawns_on_a_walkable_tile()
+        {
+            var c = Real; var s = Progression.NewGame(c, "BL");
+            var setup = BattleFactory.Build(c, s, c.CampaignStages()[0].Id, 3);
+            var start = new Coord(1, 6);
+            setup.Party[0].Start = start;
+            setup.Stage = new StageDef { Id = "_blocked", IsTest = true, Blocks = { start }, Waves = setup.Stage.Waves };
+            var st = BattleEngine.Create(c, setup, new List<BattleEvent>());
+            foreach (var h in st.Units.Where(u => u.IsHero)) Assert.That(st.Walkable(h.Pos), Is.True, $"{h} spawned on {h.Pos}");
         }
 
         [Test] // GG-T41
