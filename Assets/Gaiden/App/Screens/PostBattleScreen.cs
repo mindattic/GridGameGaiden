@@ -89,8 +89,11 @@ namespace Gaiden.App
                     Ui.MenuRow("Hard-won experience", $"+{report.XpEach} each", null, list).name = "defeat-xp";
             }
 
-            foreach (var g in report.GuestsLost)
-                Ui.MenuRow($"{c.Class(g).Name} fell in battle", "Lost forever", null, list).Q<Label>("label").AddToClassList("bad");
+            // A guest down at the end isn't lost (GG-T114) — they'll be met on this stage again.
+            foreach (var g in report.GuestsFell)
+                Ui.MenuRow($"{c.Class(g).Name} fell in battle", "Will return", null, list).Q<Label>("label").AddToClassList("dim");
+            foreach (var g in report.GuestsLost) // permadeath only (a future Ironman mode) — never in the normal game
+                Ui.MenuRow($"{c.Class(g).Name} fell in battle", "Gone for good", null, list).Q<Label>("label").AddToClassList("bad");
             var row = Ui.El("row", col);
             row.style.justifyContent = Justify.Center;
             if (!report.Victory)

@@ -52,7 +52,8 @@ namespace Gaiden.Meta
         public Dictionary<string, int> Caravan = new Dictionary<string, int>();
         /// <summary>Crafting station id ("blacksmith"/"alchemist") → accumulated XP (§24.6.1, GG-T35).</summary>
         public Dictionary<string, int> StationXp = new Dictionary<string, int>();
-        /// <summary>Guest allies who died in the battle they were met in — gone for good (§25.11).</summary>
+        /// <summary>Guest allies lost for good (§25.11) — only ever recorded or honored with <see cref="Permadeath"/> on
+        /// (a future Ironman mode); in the normal game it stays empty, and entries from older saves are ignored (GG-T114).</summary>
         public HashSet<string> LostGuests = new HashSet<string>();
         /// <summary>Recipe ids discovered early, before the crafting station reached their tier — by reading a
         /// recipe scroll or first-ever pickup of the recipe's rarest input (§24.6.2, GG-T36). A recipe whose

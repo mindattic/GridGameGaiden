@@ -350,10 +350,42 @@ namespace Gaiden.Tests
             Assert.That(s.Hero("dervish").SkillPoints, Is.EqualTo(Formulas.SkillPointsForLevelUp(1, guest.Level)));
         }
 
-        [Test]
-        public void A_guest_who_falls_is_lost_forever()
+        [Test] // GG-T114: a fallen guest is down, not lost — revive them and they still join
+        public void A_guest_revived_mid_battle_is_recruited()
         {
             var c = Real; var s = Progression.NewGame(c, "G2");
+            var setup = BattleFactory.Build(c, s, c.CampaignStages()[0].Id, 1);
+            setup.Stage = GuestStage("drifter");
+            var ev = new List<BattleEvent>();
+            var st = BattleEngine.Create(c, setup, ev);
+            var guest = st.Units.Single(u => u.IsGuest);
+            // The guest steps onto a trap at 1 HP and falls — through the engine, so the fall is announced.
+            guest.Hp = 1;
+            var trapAt = new Coord(guest.Pos.X, guest.Pos.Y - 1);
+            Assert.That(st.FreeForSpawn(trapAt), Is.True);
+            st.Traps.Add(new Trap { At = trapAt, TrapId = c.Traps.Values.First(x => x.Damage > 0).Id });
+            ev.AddRange(BattleEngine.Apply(st, new MoveCommand { HeroId = guest.Id, Path = { trapAt } }));
+            Assert.That(guest.Alive, Is.False);
+            var said = ev.OfType<AnnounceEvent>().Select(a => a.Text).ToList();
+            Assert.That(said, Does.Contain($"{guest.Name} has fallen!"));
+            Assert.That(said.Any(x => x.ToLowerInvariant().Contains("lost forever") || x.ToLowerInvariant().Contains("for good")), Is.False);
+            // A Revival Charm brings the guest back like any hero.
+            var hero = st.Units.First(u => u.IsHero && !u.IsGuest && u.Alive);
+            hero.Bar[0] = new AbilitySlot { ItemId = "revival_charm", Charges = 1, MaxCharges = 1 };
+            var revived = BattleEngine.Apply(st, new UseSlotCommand { HeroId = hero.Id, Slot = 0, Target = hero.Pos });
+            Assert.That(revived.OfType<RevivedEvent>().Any(r => r.UnitId == guest.Id), Is.True);
+            Assert.That(guest.Alive, Is.True);
+            st.Phase = BattlePhase.Victory;
+            var rep = BattleFactory.Commit(c, s, st);
+            Assert.That(rep.GuestsJoined, Does.Contain("drifter"));
+            Assert.That(rep.GuestsFell, Is.Empty);
+            Assert.That(s.Hero("drifter"), Is.Not.Null);
+        }
+
+        [Test] // GG-T114: down at the end = not lost; the guest turns up again and can still be recruited
+        public void A_guest_down_at_battle_end_can_still_be_recruited_later()
+        {
+            var c = Real; var s = Progression.NewGame(c, "G3");
             var setup = BattleFactory.Build(c, s, c.CampaignStages()[0].Id, 1);
             setup.Stage = GuestStage("drifter");
             var st = BattleEngine.Create(c, setup, new List<BattleEvent>());
@@ -361,13 +393,38 @@ namespace Gaiden.Tests
             guest.Hp = 0; guest.OnBoard = false;
             st.Phase = BattlePhase.Victory;
             var rep = BattleFactory.Commit(c, s, st);
-            Assert.That(rep.GuestsLost, Does.Contain("drifter"));
+            Assert.That(rep.GuestsFell, Does.Contain("drifter"));
+            Assert.That(rep.GuestsLost, Is.Empty);
             Assert.That(s.Hero("drifter"), Is.Null);
-            Assert.That(s.LostGuests, Does.Contain("drifter"));
+            Assert.That(s.LostGuests, Is.Empty);
+            // The offer stays open: the guest reappears on a replay, and this time standing at the end recruits them.
             var again = BattleFactory.Build(c, s, c.CampaignStages()[0].Id, 2);
             again.Stage = GuestStage("drifter");
-            Assert.That(BattleEngine.Create(c, again, new List<BattleEvent>()).Units.Any(u => u.IsGuest), Is.False);
-            Assert.That(Summon.Pool(c, s).Any(d => d.Id == "drifter"), Is.False);
+            Assert.That(again.ExcludedGuests, Does.Not.Contain("drifter"));
+            var st2 = BattleEngine.Create(c, again, new List<BattleEvent>());
+            Assert.That(st2.Units.Any(u => u.IsGuest && u.Def.Id == "drifter"), Is.True);
+            st2.Phase = BattlePhase.Victory;
+            Assert.That(BattleFactory.Commit(c, s, st2).GuestsJoined, Does.Contain("drifter"));
+            Assert.That(s.Hero("drifter"), Is.Not.Null);
+        }
+
+        [Test] // GG-T114: "no one dies permanently" — the one permanent-loss rule is off, and Ironman doesn't exist yet
+        public void Permadeath_is_off_by_default_and_old_lost_guests_come_back()
+        {
+            var c = Real; var s = Progression.NewGame(c, "G4");
+            Assert.That(Permadeath.Enabled(s), Is.False);
+            // A save from before GG-T114 that recorded a "lost forever" guest: nobody stays lost.
+            var poolId = c.Summon.Pool.First(id => s.Hero(id) == null && c.TryClass(id) != null);
+            s.LostGuests.Add("drifter");
+            s.LostGuests.Add(poolId);
+            Assert.That(Permadeath.IsLost(s, "drifter"), Is.False);
+            var setup = BattleFactory.Build(c, s, c.CampaignStages()[0].Id, 1);
+            Assert.That(setup.Permadeath, Is.False);
+            Assert.That(setup.ExcludedGuests, Does.Not.Contain("drifter"));
+            Assert.That(Summon.Pool(c, s).Any(d => d.Id == poolId), Is.True);
+            s.Gold = Summon.Price(c, s);
+            var r = Summon.Recruit(c, s, poolId);
+            Assert.That(r.Ok, Is.True, r.Message);
         }
 
         // ── Caravan upgrades (§25.12) ──

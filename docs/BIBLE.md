@@ -2018,11 +2018,15 @@ Every Camp screen follows the same skeleton — header (‹ back, title, gold), 
 Owner: "guest characters that you meet in battle that act as allies — you rescue them and get them to join you, unless they die in the fight, then you've lost them forever."
 
 - `WaveDef.Guests` places a hero class into a wave (`GuestJoinedEvent`, billboard "X joins the fight! Keep them alive to recruit them."). The guest is hero-team and **player-controlled** for that battle — drag it, pincer and support with it — at the stage's recommended level, with its class loadout. A green keyline and a GUEST tag mark it.
-- **Survive a victory** → the guest joins the roster (and the party if there's room) at its battle level; results: "X joins the caravan!".
-- **Fall at any point** → **lost forever**: `SaveData.LostGuests`; it never appears again and leaves the Summon Circle's pool; results: "X fell in battle — Lost forever".
-- Guests already recruited (or lost) are skipped (`BattleSetup.ExcludedGuests`). A guest still standing keeps the battle going if the party falls.
+**Amended 2026-10-19 (GG-T114, owner: "no one dies permanently, that's lame"):** a guest who falls is *down*, not lost.
+
+- **Standing at a victory** → the guest joins the roster (and the party if there's room) at its battle level; results: "X joins the caravan!". A guest who fell and was brought back (Revival Charm, revive spell) and is standing at the end counts.
+- **Falls mid-battle** → billboard "X has fallen!"; revivable like any hero (the Revival Charm picks up a fallen guest too).
+- **Down at battle's end** → **not lost**: nothing is recorded, the offer stays open and the guest turns up again when that stage is replayed; results: "X fell in battle — Will return".
+- Guests already recruited are skipped (`BattleSetup.ExcludedGuests`). A guest still standing keeps the battle going if the party falls.
+- Permanent loss exists only behind the single off-by-default rule `Permadeath.Enabled` (§29.1): with it on (a future Ironman mode) a guest down at the end goes into `SaveData.LostGuests`, is excluded from later battles and the Summon Circle's pool, and falls are announced "for good". In the normal game it is always off and any `LostGuests` entries from older saves are ignored — those guests come back.
 - Content: Dervish (Sandsea Reaches II), Drifter (Mireholt Fens II), Lancer (Frostmaw Caverns II), Machinist (first city ruin).
-- *(Tests: `A_guest_who_survives_a_victory_joins_the_roster`, `A_guest_who_falls_is_lost_forever`.)*
+- *(Tests: `A_guest_who_survives_a_victory_joins_the_roster`, `A_guest_revived_mid_battle_is_recruited`, `A_guest_down_at_battle_end_can_still_be_recruited_later`, `Permadeath_is_off_by_default_and_old_lost_guests_come_back`.)*
 
 ### 25.12 Caravan upgrades (added 2026-10-10, owner direction: "upgrades … a sense of progression")
 
@@ -2121,7 +2125,7 @@ There is no world map. Stage navigation is the Adventure list ([§22.3](#223-adv
 Resolve a question → write the answer into the right section → delete it here.
 
 ### 29.1 Macro loop / run structure
-1. **Permadeath / NG+** — defeat returns to Camp at full HP; is there ever a mode where it ends the run?
+1. **Permadeath / NG+** — **Answered 2026-10-19 (GG-T114, owner):** never in the normal game — "no one dies permanently, that's lame". Defeat returns to Camp at full HP; fallen heroes recover; a fallen guest returns (§25.11); recruits and dialogue-joined heroes are never removed. **Ironman** is a *planned, opt-in* mode ("leave the door open but not right now") and is **not built**: every "unit is lost" decision already routes through the one rule `Permadeath.Enabled` (`Gaiden.Meta`, always `false`; fed to battles as `BattleSetup.Permadeath`), so Ironman only has to switch that on. Still open: what else Ironman changes (fallen heroes too? one save slot?).
 2. **Tutorial / onboarding** — a guided first battle? Partly answered: Settings has "How to play" and the first two campaign stages show idle-time move hints (§9). A scripted tutorial is still open.
 
 ### 29.2 Timeline feel (new with the act-advanced clock)

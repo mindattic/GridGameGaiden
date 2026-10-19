@@ -168,6 +168,9 @@ namespace Gaiden.Meta
         public string NextStageId;
         // Guests (§25.11)
         public List<string> GuestsJoined = new List<string>();
+        /// <summary>Guests down at battle's end — not lost, they'll be met again (GG-T114).</summary>
+        public List<string> GuestsFell = new List<string>();
+        /// <summary>Guests lost for good — only ever filled with <see cref="Permadeath"/> on (never in the normal game).</summary>
         public List<string> GuestsLost = new List<string>();
         // Crucible (§22.10)
         public bool Crucible;
@@ -331,7 +334,8 @@ namespace Gaiden.Meta
                 StartOrbs = Expeditions.StartOrbs(c, s, stage.Id) + (int)CaravanUpgrades.Value(c, s, "mana_casks"),
             };
             foreach (var h in s.Roster) setup.ExcludedGuests.Add(h.ClassId);
-            foreach (var g in s.LostGuests) setup.ExcludedGuests.Add(g);
+            foreach (var g in s.LostGuests) if (Permadeath.IsLost(s, g)) setup.ExcludedGuests.Add(g);
+            setup.Permadeath = Permadeath.Enabled(s);
             foreach (var id in s.Party)
             {
                 var h = s.Hero(id);
@@ -434,10 +438,17 @@ namespace Gaiden.Meta
                 foreach (var id in s.Party) { var h = s.Hero(id); if (h != null) h.Hp = 0; } // defeat = retry at full (§22.2)
                 GrantHardWonXp(s, battle, r, rep);
             }
-            // Guests: alive at a victory → they join the caravan; fallen at any point → lost forever.
+            // Guests: standing at a victory (a revived guest counts) → they join the caravan. Down at the end → they're
+            // NOT lost (GG-T114): the offer stays open and they turn up again on that stage. Only permadeath — off in the
+            // normal game, the hook for a future Ironman mode — makes a fall permanent.
             foreach (var g in battle.Units.Where(u => u.IsGuest))
             {
-                if (!g.Alive) { s.LostGuests.Add(g.Def.Id); rep.GuestsLost.Add(g.Def.Id); continue; }
+                if (!g.Alive)
+                {
+                    if (Permadeath.Enabled(s)) { s.LostGuests.Add(g.Def.Id); rep.GuestsLost.Add(g.Def.Id); }
+                    else if (s.Hero(g.Def.Id) == null) rep.GuestsFell.Add(g.Def.Id);
+                    continue;
+                }
                 if (!rep.Victory || s.Hero(g.Def.Id) != null) continue;
                 var h = Progression.NewHero(c, g.Def.Id);
                 h.TotalXp = Formulas.TotalXpForLevel(g.Level);
@@ -1397,17 +1408,35 @@ namespace Gaiden.Meta
         }
     }
 
+    /// <summary>
+    /// The one rule for whether a unit can ever be lost for good (GG-T114). Owner rule: "no one dies permanently,
+    /// that's lame" — in the normal game nobody is ever lost; heroes, guests, recruits and dialogue-joined heroes fall,
+    /// get revived or recover, and come back. A planned opt-in Ironman mode will switch this on; every "unit is lost"
+    /// decision (the guest record in <see cref="SaveData.LostGuests"/>, the Summon Circle pool, the guest exclusion in
+    /// <c>BattleFactory.Build</c>, the battle's fall announcement via <c>BattleSetup.Permadeath</c>) reads it here,
+    /// so Ironman only has to change <see cref="Enabled"/>.
+    /// </summary>
+    public static class Permadeath
+    {
+        /// <summary>Always false today — no Ironman mode exists yet (BIBLE §29.1).</summary>
+        public static bool Enabled(SaveData s) => false;
+
+        /// <summary>Whether this class has been lost for good. Off → never, even for a save that recorded a loss
+        /// under the old "lost forever" guest rule: those guests come back.</summary>
+        public static bool IsLost(SaveData s, string classId) => Enabled(s) && s.LostGuests.Contains(classId);
+    }
+
     public static class Summon
     {
         public static int Price(ContentDb c, SaveData s) => c.Summon.BasePrice + c.Summon.PriceStep * s.Recruits;
 
         public static List<ClassDef> Pool(ContentDb c, SaveData s) =>
-            c.Summon.Pool.Where(id => !s.LostGuests.Contains(id)).Select(c.TryClass).Where(d => d != null).ToList();
+            c.Summon.Pool.Where(id => !Permadeath.IsLost(s, id)).Select(c.TryClass).Where(d => d != null).ToList();
 
         public static Result Recruit(ContentDb c, SaveData s, string classId)
         {
             if (!c.Summon.Pool.Contains(classId)) return Result.Fail("Not summonable");
-            if (s.LostGuests.Contains(classId)) return Result.Fail("Lost forever");
+            if (Permadeath.IsLost(s, classId)) return Result.Fail("Fell in battle for good");
             if (s.Hero(classId) != null) return Result.Fail("Already in your roster");
             int price = Price(c, s);
             if (s.Gold < price) return Result.Fail("Not enough gold");

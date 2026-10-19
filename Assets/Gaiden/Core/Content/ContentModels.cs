@@ -403,7 +403,7 @@ namespace Gaiden.Core.Content
     public sealed class WaveDef
     {
         public List<SpawnDef> Enemies = new List<SpawnDef>();
-        /// <summary>Guest allies met in this wave (§25.11): fight with you; survive and they join, fall and they're gone for good.</summary>
+        /// <summary>Guest allies met in this wave (§25.11): fight with you; standing at a victory (revived counts) and they join, down at the end and you'll meet them again (GG-T114).</summary>
         public List<SpawnDef> Guests = new List<SpawnDef>();
         /// <summary>Class id whose portrait/name show when this wave's first delayed reinforcement arrives (§14.8). Optional.</summary>
         public string SurpriseSpeaker;

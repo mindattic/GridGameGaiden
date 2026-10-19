@@ -468,3 +468,15 @@ updated: 2026-10-09
 - The bible's "no dialog system" ([§3](BIBLE.md), [§27](BIBLE.md)) is withdrawn: portrait dialogue with branching choices
   plays at story beats between battles and from Camp's Talk row ([BIBLE §27.1](BIBLE.md)). Still no world map and no
   cutscenes. *Why:* owner — the game is four kinds of screen: fighting, town, reading a crawl, or talking with people.
+
+## 2026-10-19 — Nobody is lost for good (owner direction, GG-T114)
+
+- Owner: "no one dies permanently, that's lame." The 2026-10-10 guest rule ("fall at any point → lost forever",
+  [BIBLE §25.11](BIBLE.md)) is withdrawn: a fallen guest is revivable and announced "X has fallen!"; standing at a victory
+  (including after a revive) recruits them; down at the end, the offer stays open and they reappear on that stage.
+  Older saves' `LostGuests` entries are ignored, so guests lost before this change come back.
+- **One permadeath rule, off.** Every "unit is lost" decision (guest record, battle exclusion, Summon Circle pool, the
+  fall announcement) reads `Permadeath.Enabled`, which is always `false`. *Why:* a future opt-in Ironman mode is planned
+  ([BIBLE §29.1](BIBLE.md)) and should only have to flip that one rule. Audit found no other permanent loss: defeated
+  heroes recover at full HP, heroes who fell in a victory return at 1 HP, recruits and dialogue-joined heroes are never
+  removed, and in-battle summons are per-battle by design.

@@ -435,7 +435,8 @@ namespace Gaiden.Core.Battle
             Emit(new DiedEvent { UnitId = u.Id, Team = u.Team, At = at });
             if (u.IsCorpse) { Announce("Cleared away", u.Id); return; }
             if (u.IsRemains) { Announce("Laid to rest", u.Id); return; }
-            if (u.IsGuest) Announce($"{u.Name} has fallen — lost forever", u.Id);
+            // A fallen guest is down, not gone (GG-T114): revive them and they can still be recruited.
+            if (u.IsGuest) Announce(permadeath ? $"{u.Name} has fallen for good" : $"{u.Name} has fallen!", u.Id);
             if (u.Team == Team.Enemy && !u.NoLoot) AwardLoot(u);
             if (u.Team == Team.Enemy) LeaveRemains(u, at);
             if (u.Team == Team.Enemy && !u.NoLoot && !u.IsRemains && !u.IsSnakeSegment) MaybeDropPickup(u, at, killer);

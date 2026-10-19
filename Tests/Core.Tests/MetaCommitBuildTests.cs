@@ -300,13 +300,13 @@ namespace Gaiden.Tests
         // ── Build ──
 
         [Test]
-        public void Build_excludes_roster_and_lost_guests_from_appearing_as_guests()
+        public void Build_excludes_roster_heroes_from_appearing_as_guests_but_never_a_fallen_guest()
         {
             var c = Real; var s = Progression.NewGame(c, "EX");
-            s.LostGuests.Add("drifter");
+            s.LostGuests.Add("drifter"); // an old save's "lost forever" guest — permadeath is off, so they come back (GG-T114)
             var setup = BattleFactory.Build(c, s, c.CampaignStages()[0].Id, 1);
             foreach (var h in s.Roster) Assert.That(setup.ExcludedGuests, Does.Contain(h.ClassId));
-            Assert.That(setup.ExcludedGuests, Does.Contain("drifter"));
+            Assert.That(setup.ExcludedGuests, Does.Not.Contain("drifter"));
         }
 
         [Test]

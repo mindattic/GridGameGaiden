@@ -54,8 +54,12 @@ namespace Gaiden.Core.Battle
         public int NewGamePlus;
         /// <summary>Orbs carried over from the previous battle of an expedition (§22.5).</summary>
         public int StartOrbs;
-        /// <summary>Guest classes that must not appear (already recruited, or lost forever).</summary>
+        /// <summary>Guest classes that must not appear (already recruited, or — only with permadeath on — lost).</summary>
         public HashSet<string> ExcludedGuests = new HashSet<string>();
+        /// <summary>Permadeath for this battle — set only from the meta layer's single rule (<c>Permadeath.Enabled</c>,
+        /// GG-T114), which is always off in the normal game; a planned opt-in Ironman mode is the only thing meant to
+        /// turn it on. Off: a fallen unit is just down (revivable, back next battle).</summary>
+        public bool Permadeath;
     }
 
     /// <summary>Totals the meta layer commits after the battle (XP, coins, drops, kills, bestiary).</summary>

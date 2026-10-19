@@ -15,10 +15,12 @@ namespace Gaiden.Core.Battle
 
         private HashSet<string> excludedGuests = new HashSet<string>();
         private int unlockedSlotsForGuests = 2;
+        private bool permadeath;
 
         public void Setup(BattleSetup setup)
         {
             excludedGuests = setup.ExcludedGuests ?? new HashSet<string>();
+            permadeath = setup.Permadeath;
             unlockedSlotsForGuests = setup.UnlockedSlots;
             carriedOrbs = Math.Max(0, setup.StartOrbs);
             int i = 0;
