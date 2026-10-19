@@ -180,6 +180,36 @@ namespace Gaiden.Tests
             }
         }
 
+        /// <summary>GG-T84: the Merchant sells the baseline, Common-tier, unenhanced weapons, armor and
+        /// relics fresh at full durability, so "buy replacements" is always possible at camp. Anything
+        /// rarer or enhanced (+N) stays drop/forge-only, and where the Forge can make a sold piece, forging
+        /// it (gold only — its materials come from field drops) stays meaningfully cheaper than buying.</summary>
+        [Test]
+        public void The_merchant_sells_fresh_baseline_gear_and_only_baseline_gear()
+        {
+            var c = Real;
+            var sold = Shop.Stock(c).Where(i => i.Type == ItemType.Equipment).ToList();
+            Assert.That(sold.Any(i => i.Slot == EquipmentSlot.Weapon), Is.True, "the Merchant sells no fresh weapon");
+            Assert.That(sold.Any(i => i.Slot == EquipmentSlot.Torso), Is.True, "the Merchant sells no fresh body armor");
+            Assert.That(sold.Any(i => i.Durability <= 0), Is.True, "the Merchant sells no relic");
+            var enhanced = new HashSet<string>(c.Recipes.Values.Where(r => r.BaseItem != null).Select(r => r.Result));
+            foreach (var item in sold)
+            {
+                Assert.That(item.Rarity, Is.EqualTo(ItemRarity.Common), $"{item.Id}: only Common gear should be vendor-sold");
+                Assert.That(enhanced.Contains(item.Id), Is.False, $"{item.Id}: an enhanced (+N) tier shouldn't be vendor-sold");
+                var forge = c.Recipes.Values.FirstOrDefault(r => r.Station == CraftStation.Forge && r.Result == item.Id && r.BaseItem == null);
+                if (forge != null)
+                    Assert.That(forge.Gold < item.BaseCost * 0.6f, Is.True, $"{item.Id}: forging ({forge.Gold}g) isn't meaningfully cheaper than buying ({item.BaseCost}g)");
+
+                var s = new SaveData { Gold = item.BaseCost };
+                var r2 = Shop.Buy(c, s, new Dictionary<string, int> { [item.Id] = 1 });
+                Assert.That(r2.Ok, Is.True, $"{item.Id}: {r2.Message}");
+                Assert.That(s.Count(item.Id), Is.EqualTo(1));
+                Assert.That(s.Worn.ContainsKey(item.Id), Is.False, $"{item.Id}: a bought piece must arrive factory-fresh, not worn");
+                Assert.That(Shop.MaxBuy(s, item), Is.EqualTo(0), $"{item.Id}: gear is one-per-bag");
+            }
+        }
+
         public static IEnumerable<object[]> PotencyRecipes() =>
             Real.Recipes.Values.Where(r => r.PotencyResult != null).Select(r => new object[] { r.Id });
         [TestCaseSource(nameof(PotencyRecipes))]
