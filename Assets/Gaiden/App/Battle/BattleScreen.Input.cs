@@ -123,8 +123,12 @@ namespace Gaiden.App
 
         private void OnPointerUp(PointerUpEvent evt)
         {
-            if (!pressing) return;
-            board.Root.ReleasePointer(evt.pointerId);
+            // Release first: when the drag timer auto-commits mid-drag (CommitDrag clears `pressing`), the
+            // finger/mouse is still captured — returning before this left board.Root holding the capture, so
+            // the next click anywhere (a slot, GUARD, the menu) was routed to the board instead (GG-T70).
+            bool wasPressing = pressing;
+            if (board.Root.HasPointerCapture(evt.pointerId)) board.Root.ReleasePointer(evt.pointerId);
+            if (!wasPressing) return;
             if (TargetingSlot >= 0)
             {
                 pressing = false;
