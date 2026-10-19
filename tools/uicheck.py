@@ -96,7 +96,7 @@ def main():
             h.pick_party()
         on_screen("new game lands at camp", "hub")
         check("camp music", h.call("music")["track"] == "MinstrelGuild")
-        for item in ["Adventure", "Items", "Status", "Equip", "Abilities", "Party", "Merchant", "Blacksmith", "Alchemist", "Inn", "Caravan", "Summon Circle", "Bounties", "Bestiary", "Settings"]:
+        for item in ["Adventure", "Items", "Status", "Equip", "Abilities", "Party", "Talk", "Merchant", "Blacksmith", "Alchemist", "Inn", "Caravan", "Summon Circle", "Bounties", "Bestiary", "Settings"]:
             if not has_text(item):
                 check(f"camp menu has {item}", False)
                 break
@@ -128,7 +128,20 @@ def main():
         if h.call("state")["screen"] == "crawl":
             check("story crawl plays on first entry", True)
             h.call("clicktext", text="Skip"); time.sleep(1.5)
-        check("battle screen", h.call("state")["screen"] == "battle")
+        # Story beat (§27.1, GG-T117): the sample merchant dialogue plays between the crawl and the battle.
+        if on_screen("story-beat dialogue plays before the first battle", "dialogue"):
+            names = h.call("names", prefix="dlg-")
+            check("dialogue shows a speaker portrait", "dlg-portrait-left" in names, str(names))
+            h._tap_until(lambda: h.call("click", name="dlg-skip"), lambda: until(lambda: "choice-0" in h.call("names", prefix="choice-"), 2.0), tries=3, wait=0.2)
+            choices = h.call("names", prefix="choice-")
+            check("dialogue offers branching choices", len(choices) >= 2, str(choices))
+            lines = sorted(n for n in h.call("names", prefix="dlg-line-"))
+            if len(lines) >= 2:
+                a, b = h.call("element", name=lines[-2]), h.call("element", name=lines[-1])
+                check("conversation boxes overlap like a stack", b["y"] < a["y"] + a["h"], f"{a} {b}")
+            h.shot("dialogue")
+            check("dialogue plays through to the battle", h.finish_dialogue())
+        check("battle screen", until(lambda: h.call("state")["screen"] == "battle", 6.0))
         time.sleep(1.0)
         check("first battle starts the guided tutorial", any(x.startswith("Tutorial 1/") for x in texts()))
         check("each lesson has an explanation and an example", has_text("Example:"))

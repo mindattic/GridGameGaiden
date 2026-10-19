@@ -9,7 +9,7 @@ namespace Gaiden.App.Automation
         public static readonly string[] All =
         {
             "title", "hub", "stages", "items", "status", "equip", "abilities", "party", "shop", "blacksmith",
-            "alchemist", "summon", "bounties", "crucible", "bestiary", "settings", "credits", "newgame", "load",
+            "alchemist", "talk", "summon", "bounties", "crucible", "bestiary", "settings", "credits", "newgame", "load",
         };
 
         public static bool TryGet(string id, out GameScreen screen)
@@ -36,6 +36,7 @@ namespace Gaiden.App.Automation
                 case "shop": screen = new ShopScreen(); break;
                 case "blacksmith": screen = new BlacksmithScreen(); break;
                 case "alchemist": screen = new AlchemistScreen(); break;
+                case "talk": screen = new TalkScreen(); break;
                 case "summon": screen = new SummonScreen(); break;
                 case "bounties": screen = new BountyScreen(); break;
                 case "crucible": screen = new CrucibleScreen(); break;

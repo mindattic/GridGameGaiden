@@ -118,6 +118,7 @@ namespace Gaiden.Meta
             s.HighestClearedStage = -1;
             s.ClearedStages.Clear();
             s.SeenCrawls.Clear();
+            s.SeenDialogues.Clear(); // story beats replay with the crawls; flags (joined NPCs) carry over
             return Result.Success($"New Game+ {s.NewGamePlus} — enemies grow stronger");
         }
 
@@ -1412,13 +1413,23 @@ namespace Gaiden.Meta
             if (s.Gold < price) return Result.Fail("Not enough gold");
             s.Gold -= price;
             s.Recruits++;
+            Join(c, s, classId);
+            return Result.Success($"{c.Class(classId).Name} joins you!");
+        }
+
+        /// <summary>Adds a hero to the roster (and the party, if there's room) at the roster's average experience —
+        /// shared by the Summon Circle and dialogue's RecruitHero effect (GG-T117). No-op if already owned.</summary>
+        public static HeroSave Join(ContentDb c, SaveData s, string classId)
+        {
+            var existing = s.Hero(classId);
+            if (existing != null) return existing;
             var h = Progression.NewHero(c, classId);
             int avg = s.Roster.Count == 0 ? 0 : (int)s.Roster.Average(x => x.TotalXp);
             h.TotalXp = avg; // recruits arrive at the roster's average experience
             h.SkillPoints += Formulas.SkillPointsForLevelUp(1, Progression.Level(h));
             s.Roster.Add(h);
             if (s.Party.Count < Progression.MaxPartySize) s.Party.Add(h.ClassId);
-            return Result.Success($"{c.Class(classId).Name} joins you!");
+            return h;
         }
     }
 

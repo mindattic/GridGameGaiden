@@ -46,7 +46,7 @@ GridGame Gaiden is **NOT**:
 - **Not a grid-puzzle** — no match-3 piece-color matching; tile state is "who's standing there".
 - **Not free-form movement** — one tile at a time, cardinal only, no pathfinding or diagonals.
 - **Not a stat-spreadsheet** — if a player needs a wiki to build, the design failed.
-- **No dialog system, no world map.** The only narrative is a skippable per-theme text crawl ([§27](#27-story-crawl-no-dialog)); stage navigation is the Adventure list ([§28](#28-no-overworld)).
+- **No world map.** Narrative is a skippable per-theme text crawl ([§27](#27-story-crawl-no-dialog)) plus portrait dialogue at story beats between battles and from Camp's Talk row ([§27.1](#271-dialogue-gg-t117)); stage navigation is the Adventure list ([§28](#28-no-overworld)). **Amended 2026-10-19 (owner, GG-T117):** "no dialog system" withdrawn.
 
 ## 4. Architecture canon {#GG-§4}
 
@@ -2100,7 +2100,17 @@ One UI-only camera (`cullingMask = 0`, black clear); the board is UI Toolkit, so
 
 `StoryCrawlScreen`: the theme name (Cinzel) and its `campaign.json` `Crawl` text scroll upward at 95 design-px/s over a dimmed theme backdrop; **Skip ›** or a tap anywhere ends it and replaces it with the battle. It plays on the **first** launch of any stage in a theme — from Adventure or from the results screen's "Next stage ›" (both go through `StageLauncher.Launch`); the theme is recorded in `SaveData.SeenCrawls` (and saved) when the crawl starts. **Amended 2026-10-09** (timing by scroll speed instead of a 26 s duration). Writers edit `campaign.json` only.
 
-No dialog system: no character dialogue, no branching, no cutscenes. This is scoped to the overworld/story layer — the in-battle "surprise" reinforcement beat ([§14.8](#148-reinforcements-and-eggs-added-2026-10-12-owner-direction)) is a lightweight one-line announcement card, not a dialogue/narrative system, and doesn't change this.
+~~No dialog system: no character dialogue, no branching, no cutscenes.~~ **Amended 2026-10-19 (owner, GG-T117):** character dialogue now exists ([§27.1](#271-dialogue-gg-t117)); there are still no cutscenes. The in-battle "surprise" reinforcement beat ([§14.8](#148-reinforcements-and-eggs-added-2026-10-12-owner-direction)) stays a lightweight one-line announcement card.
+
+### 27.1 Dialogue (GG-T117)
+
+- **Content:** `dialogues.json` — a list of `DialogueDef` (id, `Title`, `Trigger`, optional `Conditions`, `Once`, `Backdrop`, `Speakers`, `Start`, `Nodes`). A speaker is a class (its name and portrait), `"$lead"` (the first party member), `"$with"` (the party member a Talk is with), or a `Name` + `Portrait` (`Resources/Portraits/<id>`). A node is a speaker and a line, then either `Next` (null ends it) or `Choices` (label, `Next`, `Conditions`, `Effects`); a node may carry `Effects` applied on arrival.
+- **Vocabulary (the save's, not a script):** conditions `FlagSet`, `FlagNotSet`, `HasItem`, `GoldAtLeast`, `PartyHas`, `RosterHas`, `RosterLacks`, `NpcJoined`; effects `SetFlag`, `ClearFlag`, `GrantGold` (negative = pay, never below 0), `GrantItem`, `RecruitHero` (joins like a Summon Circle recruit, free; no-op if owned), `JoinNpc` (sets the flag `npc:<id>`, which `ClearFlag` can't touch; NPCs: blacksmith, alchemist, enchantress, merchant, innkeeper). Nothing removes a hero — nobody dies permanently. Flags live in `SaveData.Flags`; finished dialogues in `SaveData.SeenDialogues` (cleared by New Game+, like `SeenCrawls`).
+- **Validation (`ContentLoader.Validate`, same severity as a dangling class id):** unknown speakers, classes, items, NPCs, themes, stages or node ids; a missing portrait (the app and dotnet tests pass a portrait lookup); a node unreachable from the start; a node with both `Next` and `Choices`; a choice list with no unconditional choice (so a player can never be stranded).
+- **Engine:** `Gaiden.Meta.DialogueRunner` walks nodes, offers the choices whose conditions hold, applies effects, and marks the dialogue seen when it ends (dotnet-tested, `DialogueTests`).
+- **Triggers:** story beats — `ThemeStart` (theme id) and `StageCleared` (stage id) — play once, in file order, through `StageLauncher.Launch`: after the theme's crawl, before the battle. Never on a Test Mode save. **Talk** — Camp's Talk row (`TalkScreen`) lists the party and every joined NPC; each offers its own `Talk` dialogue (`"party"`, a hero class id, or `"npc:<id>"`), unseen ones first and marked **New!**; Talk dialogues repeat unless `Once`.
+- **Screen (`DialogueScreen`):** the speakers' portraits overlap across the top — the one talking slides in full-bright and in front, the other dims and shrinks behind; the conversation stacks below as overlapping boxes that slide in from the speaker's side, older ones dimmed, the newest typing out; the choices (or **Next ›**) sit at the bottom. A tap finishes the line or advances; **Skip ›** rushes to the next choice — choices are never skipped. Effects toast as they land. `-demo` plays it through on its own.
+- Sample content only (lorem ipsum, the placeholder convention): a merchant met at the start of Green Valley (every branch ends with him joining), a short beat after Green Valley I, a Talk with the merchant (hires a sellsword for 300 G) and a generic party chat. The real story is GG-T120.
 
 ## 28. No Overworld
 

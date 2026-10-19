@@ -37,6 +37,11 @@ namespace Gaiden.Meta
         public int HighestClearedStage = -1;
         public HashSet<string> ClearedStages = new HashSet<string>();
         public HashSet<string> SeenCrawls = new HashSet<string>();
+        /// <summary>Story flags set by dialogue (§27.1, GG-T117) — the same idea as SeenCrawls. A joined Camp NPC
+        /// is the flag "npc:&lt;id&gt;" (JoinNpc), which ClearFlag can't touch.</summary>
+        public HashSet<string> Flags = new HashSet<string>();
+        /// <summary>Dialogue ids played to the end: story beats never replay; Talk dialogues marked Once don't either.</summary>
+        public HashSet<string> SeenDialogues = new HashSet<string>();
         public string LastStage;
 
         public List<HeroSave> Roster = new List<HeroSave>();
@@ -246,6 +251,8 @@ namespace Gaiden.Meta
             s.Settings ??= new SettingsSave();
             s.StationXp ??= new Dictionary<string, int>();
             s.DiscoveredRecipes ??= new HashSet<string>();
+            s.Flags ??= new HashSet<string>();
+            s.SeenDialogues ??= new HashSet<string>();
             foreach (var h in s.Roster) while (h.Bar.Count < 5) h.Bar.Add(null);
             if (s.Version < 3)
             {

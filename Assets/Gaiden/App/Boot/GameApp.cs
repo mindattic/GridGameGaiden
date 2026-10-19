@@ -89,7 +89,7 @@ namespace Gaiden.App
         private ContentDb LoadContent()
         {
             var db = ContentLoader.Load(name => Resources.Load<TextAsset>("Content/" + name)?.text);
-            ContentProblems = ContentLoader.Validate(db);
+            ContentProblems = ContentLoader.Validate(db, id => Art.Exists("Portraits/" + id));
             foreach (var p in ContentProblems) Debug.LogWarning("[Content] " + p);
             Debug.Log($"[GameApp] content: {db.Classes.Count} classes, {db.Abilities.Count} abilities, {db.Items.Count} items, {db.Stages.Count} stages");
             return db;

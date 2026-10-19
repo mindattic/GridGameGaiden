@@ -462,3 +462,9 @@ updated: 2026-10-09
   and announcing "No room!" afterwards.
 - A party member with no free start tile anywhere (only possible on a stage walled with blocks) sits the battle out
   off the board instead of being stacked on the taken start tile.
+
+## 2026-10-19 — Dialogue engine (owner direction, GG-T117)
+
+- The bible's "no dialog system" ([§3](BIBLE.md), [§27](BIBLE.md)) is withdrawn: portrait dialogue with branching choices
+  plays at story beats between battles and from Camp's Talk row ([BIBLE §27.1](BIBLE.md)). Still no world map and no
+  cutscenes. *Why:* owner — the game is four kinds of screen: fighting, town, reading a crawl, or talking with people.

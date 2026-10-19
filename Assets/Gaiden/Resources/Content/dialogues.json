@@ -1,0 +1,103 @@
+[
+  {
+    "Id": "greenvalley_road_merchant",
+    "Title": "A merchant on the road",
+    "Trigger": { "Kind": "ThemeStart", "Id": "greenvalley" },
+    "Speakers": [
+      { "Id": "merchant", "Name": "Wandering Merchant", "Portrait": "courier" },
+      { "Id": "lead", "Class": "$lead" }
+    ],
+    "Nodes": [
+      { "Id": "hail", "Speaker": "merchant", "Text": "Lorem ipsum dolor sit amet, travelers! Consectetur adipiscing elit, sed do eiusmod tempor?", "Next": "reply" },
+      { "Id": "reply", "Speaker": "lead", "Text": "Ut enim ad minim veniam. Quis nostrud exercitation ullamco laboris.", "Next": "ask" },
+      {
+        "Id": "ask", "Speaker": "merchant", "Text": "Duis aute irure dolor in reprehenderit. May I ride along with your caravan?",
+        "Choices": [
+          { "Label": "Welcome aboard.", "Next": "joined", "Effects": [ { "Type": "JoinNpc", "Id": "merchant" } ] },
+          {
+            "Label": "First, sell us a map. (20 G)", "Next": "map",
+            "Conditions": [ { "Type": "GoldAtLeast", "Amount": 20 } ],
+            "Effects": [ { "Type": "GrantGold", "Amount": -20 }, { "Type": "SetFlag", "Id": "bought_map" } ]
+          },
+          { "Label": "We travel alone.", "Next": "snubbed", "Effects": [ { "Type": "SetFlag", "Id": "merchant_snubbed" } ] }
+        ]
+      },
+      {
+        "Id": "map", "Speaker": "merchant", "Text": "Excepteur sint occaecat! Sunt in culpa, and a tonic for luck.",
+        "Effects": [ { "Type": "GrantItem", "Id": "healing_potion_basic", "Amount": 1 } ],
+        "Choices": [
+          { "Label": "Then ride with us.", "Next": "joined", "Effects": [ { "Type": "JoinNpc", "Id": "merchant" } ] },
+          { "Label": "Safe travels.", "Next": "snubbed", "Effects": [ { "Type": "SetFlag", "Id": "merchant_snubbed" } ] }
+        ]
+      },
+      { "Id": "snubbed", "Speaker": "merchant", "Text": "Nulla pariatur. I will follow a few wagons back all the same.", "Effects": [ { "Type": "JoinNpc", "Id": "merchant" } ] },
+      { "Id": "joined", "Speaker": "merchant", "Text": "Velit esse cillum dolore! Find me at camp when you need supplies." }
+    ]
+  },
+  {
+    "Id": "greenvalley_after_first",
+    "Title": "After the first battle",
+    "Trigger": { "Kind": "StageCleared", "Id": "greenvalley-01" },
+    "Conditions": [ { "Type": "NpcJoined", "Id": "merchant" } ],
+    "Speakers": [
+      { "Id": "lead", "Class": "$lead" },
+      { "Id": "merchant", "Name": "Wandering Merchant", "Portrait": "courier" }
+    ],
+    "Nodes": [
+      { "Id": "one", "Speaker": "lead", "Text": "Lorem ipsum, the road is clear. Sed ut perspiciatis unde omnis.", "Next": "two" },
+      { "Id": "two", "Speaker": "merchant", "Text": "Iste natus error sit voluptatem. Onward, then!" }
+    ]
+  },
+  {
+    "Id": "camp_merchant_chat",
+    "Title": "Chat with the merchant",
+    "Trigger": { "Kind": "Talk", "Id": "npc:merchant" },
+    "Speakers": [
+      { "Id": "merchant", "Name": "Wandering Merchant", "Portrait": "courier" }
+    ],
+    "Nodes": [
+      {
+        "Id": "greet", "Speaker": "merchant", "Text": "Lorem ipsum! Accusantium doloremque laudantium. What can I do for you?",
+        "Choices": [
+          { "Label": "About that map...", "Next": "map", "Conditions": [ { "Type": "FlagSet", "Id": "bought_map" } ] },
+          {
+            "Label": "Sorry we turned you away.", "Next": "forgiven",
+            "Conditions": [ { "Type": "FlagSet", "Id": "merchant_snubbed" } ],
+            "Effects": [ { "Type": "ClearFlag", "Id": "merchant_snubbed" } ]
+          },
+          {
+            "Label": "Can your guard join us? (300 G)", "Next": "hired",
+            "Conditions": [ { "Type": "GoldAtLeast", "Amount": 300 }, { "Type": "RosterLacks", "Id": "sellsword" } ],
+            "Effects": [ { "Type": "GrantGold", "Amount": -300 }, { "Type": "RecruitHero", "Id": "sellsword" } ]
+          },
+          { "Label": "Just passing by.", "Next": "bye" }
+        ]
+      },
+      { "Id": "map", "Speaker": "merchant", "Text": "Totam rem aperiam: eaque ipsa quae ab illo inventore veritatis.", "Next": "greet" },
+      { "Id": "forgiven", "Speaker": "merchant", "Text": "Nemo enim ipsam voluptatem. All is forgiven, friend." },
+      { "Id": "hired", "Speaker": "merchant", "Text": "Quia voluptas sit! Treat my sellsword well." },
+      { "Id": "bye", "Speaker": "merchant", "Text": "Neque porro quisquam est. Safe roads." }
+    ]
+  },
+  {
+    "Id": "camp_party_chat",
+    "Title": "Chat",
+    "Trigger": { "Kind": "Talk", "Id": "party" },
+    "Speakers": [
+      { "Id": "hero", "Class": "$with" }
+    ],
+    "Nodes": [
+      {
+        "Id": "open", "Speaker": "hero", "Text": "Lorem ipsum dolor sit amet. Qui dolorem ipsum quia dolor?",
+        "Choices": [
+          { "Label": "How are you holding up?", "Next": "holding" },
+          { "Label": "What do you make of the merchant?", "Next": "merchant", "Conditions": [ { "Type": "NpcJoined", "Id": "merchant" } ] },
+          { "Label": "Rest well.", "Next": "rest" }
+        ]
+      },
+      { "Id": "holding", "Speaker": "hero", "Text": "Consectetur, adipisci velit. Sed quia non numquam eius modi tempora.", "Next": "open" },
+      { "Id": "merchant", "Speaker": "hero", "Text": "Ut labore et dolore magnam aliquam. Quaerat voluptatem, I'd say." },
+      { "Id": "rest", "Speaker": "hero", "Text": "Ut enim ad minima veniam. You too." }
+    ]
+  }
+]

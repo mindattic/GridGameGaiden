@@ -22,6 +22,9 @@ namespace Gaiden.Core.Content
         public SummonDef Summon = new SummonDef();
         public readonly Dictionary<string, CaravanUpgradeDef> Caravan = new Dictionary<string, CaravanUpgradeDef>(StringComparer.OrdinalIgnoreCase);
         public readonly Dictionary<string, SkillTreeDef> SkillTrees = new Dictionary<string, SkillTreeDef>(StringComparer.OrdinalIgnoreCase);
+        /// <summary>dialogues.json in file order (§27.1, GG-T117) — the first matching beat wins, so order matters.</summary>
+        public readonly List<DialogueDef> DialogueOrder = new List<DialogueDef>();
+        public readonly Dictionary<string, DialogueDef> Dialogues = new Dictionary<string, DialogueDef>(StringComparer.OrdinalIgnoreCase);
 
         public ClassDef Class(string id) => Get(Classes, id, "class");
         public AbilityDef Ability(string id) => Get(Abilities, id, "ability");

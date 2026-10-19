@@ -462,6 +462,9 @@ namespace Gaiden.App
             Item("Equip", () => new EquipScreen(s.Party.FirstOrDefault()));
             Item("Abilities", () => new AbilitiesScreen(s.Party.FirstOrDefault()));
             Item("Party", () => new PartyScreen());
+            // Talk (§27.1, GG-T117): chat with party members and joined Camp NPCs.
+            int newTalks = DialogueRunner.TalkPartners(s).Count(p => { var t = DialogueRunner.TalkTopic(c, s, p); return t != null && !s.SeenDialogues.Contains(t.Id); });
+            Item("Talk", () => new TalkScreen(), newTalks > 0 ? $"{newTalks} new" : "");
             Item("Merchant", () => new ShopScreen());
             Item("Blacksmith", () => new BlacksmithScreen());
             Item("Alchemist", () => new AlchemistScreen());
@@ -600,7 +603,8 @@ namespace Gaiden.App
         private void Launch(StageDef st, int index) => StageLauncher.Launch(st.Id, false);
     }
 
-    /// <summary>The one way into a battle: plays the theme's story crawl on first entry (§27), then the stage.</summary>
+    /// <summary>The one way into a battle: plays the theme's story crawl on first entry (§27), then any pending story-beat
+    /// dialogue (§27.1), then the stage.</summary>
     public static class StageLauncher
     {
         public static void Launch(string stageId, bool replaceCurrent)
@@ -614,6 +618,9 @@ namespace Gaiden.App
             }
             var theme = app.Content.ThemeOf(stageId);
             GameScreen next = new BattleScreen(stageId);
+            // Story beat between battles (§27.1, GG-T117): plays after the crawl, before the battle, once per save.
+            var beat = DialogueRunner.PendingBeat(app.Content, app.Save, stageId);
+            if (beat != null) next = new DialogueScreen(beat, null, next, theme?.Id);
             if (theme != null && !string.IsNullOrEmpty(theme.Crawl) && app.Save != null && !app.Save.SeenCrawls.Contains(theme.Id))
             {
                 app.Save.SeenCrawls.Add(theme.Id);

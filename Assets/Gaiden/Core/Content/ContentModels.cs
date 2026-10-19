@@ -548,4 +548,99 @@ namespace Gaiden.Core.Content
         public string Description;
         public List<SkillNodeDef> Nodes = new List<SkillNodeDef>();
     }
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // Dialogue (§27.1, GG-T117): dialogues.json. The engine (Gaiden.Meta.DialogueRunner) is a data
+    // interpreter over these shapes; conditions and effects are the save's own vocabulary, not a script.
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    /// <summary>When a dialogue plays. Story beats (ThemeStart, StageCleared) play once, between battles,
+    /// from StageLauncher; Talk dialogues are picked from Camp's Talk row and may repeat unless <see cref="DialogueDef.Once"/>.</summary>
+    public enum DialogueTriggerKind { ThemeStart, StageCleared, Talk }
+
+    public sealed class DialogueTrigger
+    {
+        public DialogueTriggerKind Kind;
+        /// <summary>ThemeStart: the theme id. StageCleared: the stage id. Talk: who it's with — a hero class id,
+        /// "party" (any party member; speaker class "$with" is them) or "npc:&lt;id&gt;" (a joined Camp NPC).</summary>
+        public string Id;
+    }
+
+    public enum DialogueConditionType { FlagSet, FlagNotSet, HasItem, GoldAtLeast, PartyHas, RosterHas, RosterLacks, NpcJoined }
+
+    public sealed class DialogueCondition
+    {
+        public DialogueConditionType Type;
+        /// <summary>Flag / item / class / NPC id, by type.</summary>
+        public string Id;
+        /// <summary>HasItem count (default 1) or GoldAtLeast amount.</summary>
+        public int Amount;
+    }
+
+    /// <summary>Nothing here can remove a hero for good (owner rule: nobody dies permanently).</summary>
+    public enum DialogueEffectType { SetFlag, ClearFlag, GrantGold, GrantItem, RecruitHero, JoinNpc }
+
+    public sealed class DialogueEffect
+    {
+        public DialogueEffectType Type;
+        public string Id;
+        /// <summary>GrantGold amount (negative = pay) or GrantItem count (default 1).</summary>
+        public int Amount;
+    }
+
+    public sealed class DialogueSpeaker
+    {
+        public string Id;
+        /// <summary>A class id (its name and portrait), or "$lead" (the first party member) or "$with" (the
+        /// party member a Talk dialogue is with).</summary>
+        public string Class;
+        /// <summary>Display name; defaults to the class's name.</summary>
+        public string Name;
+        /// <summary>Portrait id (Resources/Portraits/&lt;id&gt;); defaults to the class id.</summary>
+        public string Portrait;
+    }
+
+    public sealed class DialogueChoice
+    {
+        public string Label;
+        /// <summary>Node id to go to; null ends the dialogue.</summary>
+        public string Next;
+        /// <summary>All must hold for the choice to be offered.</summary>
+        public List<DialogueCondition> Conditions = new List<DialogueCondition>();
+        public List<DialogueEffect> Effects = new List<DialogueEffect>();
+    }
+
+    public sealed class DialogueNode
+    {
+        public string Id;
+        /// <summary>A <see cref="DialogueSpeaker.Id"/> of this dialogue.</summary>
+        public string Speaker;
+        public string Text;
+        /// <summary>Auto-advance target when there are no choices; null ends the dialogue.</summary>
+        public string Next;
+        public List<DialogueChoice> Choices = new List<DialogueChoice>();
+        /// <summary>Applied when the node is reached.</summary>
+        public List<DialogueEffect> Effects = new List<DialogueEffect>();
+    }
+
+    public sealed class DialogueDef
+    {
+        /// <summary>Camp NPC ids a JoinNpc effect / NpcJoined condition / "npc:" Talk may name (GG-T119 gates services on them).</summary>
+        public static readonly string[] Npcs = { "blacksmith", "alchemist", "enchantress", "merchant", "innkeeper" };
+
+        public string Id;
+        /// <summary>Talk row label (Talk dialogues); also a debugging name.</summary>
+        public string Title;
+        public DialogueTrigger Trigger = new DialogueTrigger();
+        /// <summary>All must hold for the dialogue to be offered.</summary>
+        public List<DialogueCondition> Conditions = new List<DialogueCondition>();
+        /// <summary>Talk only: play once, then never offer again (story beats always play once).</summary>
+        public bool Once;
+        /// <summary>Backdrop theme id (defaults to the trigger's theme, else the camp's).</summary>
+        public string Backdrop;
+        public List<DialogueSpeaker> Speakers = new List<DialogueSpeaker>();
+        /// <summary>First node id; defaults to the first node.</summary>
+        public string Start;
+        public List<DialogueNode> Nodes = new List<DialogueNode>();
+    }
 }

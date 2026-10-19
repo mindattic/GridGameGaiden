@@ -136,6 +136,38 @@ def pick_party(ids=STARTING_PARTY, timeout=10.0):
     return _wait_screen("hub", timeout)
 
 
+def finish_dialogue(timeout=40.0):
+    """Plays through a DialogueScreen (§27.1, GG-T117) the way a hurried player would: Skip › to the next
+    choice, take the last choice offered (by content convention the way out, so a conversation that loops
+    back to its menu still ends), repeat until the screen leaves. Taps can drop on an unfocused window
+    (GG-T121), so it just keeps tapping until the screen changes or the timeout runs out."""
+    end = time.time() + timeout
+    while time.time() < end:
+        if call("state")["screen"] != "dialogue":
+            return True
+        choices = sorted(call("names", prefix="choice-"))
+        if choices:
+            call("click", name=choices[-1])
+        else:
+            call("click", name="dlg-skip")
+        time.sleep(0.7)
+    return False
+
+
+def through_story(files=None, wait=1.5):
+    """After launching a stage: skips the theme's story crawl (§27) and plays any story-beat dialogue
+    (§27.1) so the caller lands on the battle."""
+    if call("state")["screen"] == "crawl":
+        if files is not None:
+            files.append(shot("04-crawl"))
+        call("clicktext", text="Skip"); time.sleep(wait)
+    if call("state")["screen"] == "dialogue":
+        if files is not None:
+            time.sleep(0.8); files.append(shot("04-dialogue"))
+        finish_dialogue()
+        time.sleep(wait)
+
+
 def smoke(run="smoke"):
     launch(run, fresh=True)  # fresh: an occupied Slot 1 would stop at the overwrite confirm instead
     _wait_screen("title")
@@ -149,10 +181,7 @@ def smoke(run="smoke"):
     call("clicktext", text="Adventure"); time.sleep(0.8)
     files.append(shot("03-stages"))
     call("clicktext", text="Green Valley I"); time.sleep(1.5)
-    st = call("state")
-    if st["screen"] == "crawl":
-        files.append(shot("04-crawl"))
-        call("clicktext", text="Skip"); time.sleep(1.5)
+    through_story(files)
     files.append(shot("05-battle"))
     call("autoplay", on=1)
     for i in range(40):
@@ -175,7 +204,7 @@ def sweep(run="sweep"):
     time.sleep(1)
     report = {}
     for screen in ["hub", "stages", "items", "status", "equip", "abilities", "party", "shop", "blacksmith",
-                   "alchemist", "summon", "bounties", "crucible", "bestiary", "settings", "credits"]:
+                   "alchemist", "talk", "summon", "bounties", "crucible", "bestiary", "settings", "credits"]:
         call("goto", screen=screen)
         time.sleep(0.9)
         shot(f"sweep-{screen}")
@@ -234,8 +263,7 @@ def campaign(run="campaign", stages=6, speed=3, extra=(), max_loss_retries=3):
     call("speed", x=speed)
     call("clicktext", text="Adventure"); time.sleep(0.8)
     call("clicktext", text="Green Valley I"); time.sleep(1.2)
-    if call("state")["screen"] == "crawl":
-        call("clicktext", text="Skip"); time.sleep(1.2)
+    through_story(wait=1.2)
     results = []
     for n in range(stages):
         outcome, st = _play_battle(f"stage{n}-mid")
@@ -303,8 +331,7 @@ def campaign(run="campaign", stages=6, speed=3, extra=(), max_loss_retries=3):
         else:
             print(f"stage{n}: click retries exhausted, screen still postbattle — stopping run")
             break
-        if call("state")["screen"] == "crawl":
-            call("clicktext", text="Skip"); time.sleep(1.2)
+        through_story(wait=1.2)
     logs = call("logs")
     print(json.dumps(results, indent=1))
     print("errors:", [l[:300] for l in logs if l.startswith(("Error", "Exception")) and "first mouse" not in l])
