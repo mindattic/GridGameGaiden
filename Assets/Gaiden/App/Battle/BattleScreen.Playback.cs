@@ -29,46 +29,62 @@ namespace Gaiden.App
             playStarted = Time.unscaledTime;
             chainCount = 0;
             int i = 0;
+            // The drag already showed the hero's walk live: the hero follows the finger and ApplyPreview slid every
+            // displaced actor to where the whole walk leaves it. So the walk's own moves (the hero's steps, actors it
+            // displaced) are not replayed; only their side effects are (traps, pickups, Sleep breaking). Every token
+            // the walk touched is snapped to where the walk — not the whole command — leaves it: an enemy that moves
+            // again later in this command (a drag can run a full enemy turn via AdvanceClock) starts that move from
+            // its true post-walk tile, and no token is ever drawn on a tile another one holds at that moment, which a
+            // partial replay (hero mid-walk, displaced actors already at their preview tiles) used to do (GG-T97).
+            int walkHero = -1, walkEnd = 0;
+            var walkAt = new Dictionary<int, Coord>();
             if (skipMovePrefix)
             {
-                // The drag already showed these steps live; only replay their side effects. Snap only the
-                // units this prefix actually moved — not every alive unit — so an enemy whose own turn
-                // resolves later in this same command's event list (common: a drag-move can run a full
-                // enemy turn via AdvanceClock) is still at its true pre-move tile when its SteppedEvent
-                // plays, instead of already sitting at its destination and animating zero distance.
-                // Each unit lands where the prefix itself left it, never on its end-of-command State tile: a hero the
-                // drag moved can still be shoved later in the same command, and snapping it to its final tile here
-                // would put every later beat (pincer outline, lunges) in the wrong place (GG-T98).
                 var touched = new HashSet<int>();
-                var landed = new Dictionary<int, Coord>();
-                while (i < events.Count && (events[i] is ActionBeganEvent || events[i] is SteppedEvent || events[i] is DisplacedEvent || events[i] is StepBlockedEvent))
+                for (walkEnd = 0; walkEnd < events.Count && !EndsWalk(events[walkEnd]); walkEnd++)
                 {
-                    switch (events[i])
+                    switch (events[walkEnd])
                     {
-                        case ActionBeganEvent ab: touched.Add(ab.ActorId); break;
-                        case SteppedEvent se: touched.Add(se.UnitId); landed[se.UnitId] = se.To; break;
-                        case DisplacedEvent de: touched.Add(de.UnitId); landed[de.UnitId] = de.To; break;
+                        case ActionBeganEvent ab when walkHero < 0: walkHero = ab.ActorId; touched.Add(ab.ActorId); break;
+                        case SteppedEvent se when se.UnitId == walkHero: walkAt[se.UnitId] = se.To; break;
+                        case DisplacedEvent de when de.ByUnitId == walkHero: touched.Add(de.UnitId); walkAt[de.UnitId] = de.To; break;
                         case StepBlockedEvent sb: touched.Add(sb.UnitId); break;
                     }
-                    i++;
                 }
                 foreach (var id in touched)
-                    if (board.Units.TryGetValue(id, out var v) && !v.Dead) board.Place(v, landed.TryGetValue(id, out var at) ? at : v.Tile);
+                    if (board.Units.TryGetValue(id, out var v) && !v.Dead) board.Place(v, walkAt.TryGetValue(id, out var at) ? at : v.Tile);
             }
             for (; i < events.Count; i++)
             {
+                // Within the already-shown walk, its moves are no-ops (their tokens already stand at the walk's end).
+                bool shownLive = i < walkEnd && ((events[i] is SteppedEvent ws && ws.UnitId == walkHero) || (events[i] is DisplacedEvent wd && wd.ByUnitId == walkHero) || events[i] is StepBlockedEvent);
+                if (shownLive) continue;
                 IEnumerator anim = null;
                 try { anim = Animate(events[i]); }
                 catch (System.Exception e) { Debug.LogException(e); }
                 if (anim != null) yield return Safe(anim);
+                // GG-T97: once a beat ends no two tokens may be drawn on one tile. The one legitimate in-between is a
+                // swap still finishing — the stepper has arrived and its partner's DisplacedEvent (or the amplifier's
+                // shove) is the very next beat — so the check waits for that beat.
+                bool swapPending = i + 1 < events.Count && (events[i + 1] is DisplacedEvent || events[i + 1] is AmplifierMovedEvent);
+                if (!swapPending) BoardAudit.Beat(AuditTokens(false), events[i]);
             }
             board.Lines.ClearLines();
             PruneGhosts();
             pendingItemUser = -1; pendingItemId = null;
+            // Before the safety-net snap: did playback leave every token where the state says it stands? A miss here
+            // means a beat was skipped or played out of order (the snap below would hide it as a jump).
+            BoardAudit.Settled(AuditTokens(true));
             SyncAll();
+            BoardAudit.Synced(AuditTokens(true, rendered: true));
             playing = false;
             if (State.IsOver && !ended) yield return EndBattle();
         }
+
+        /// <summary>The first event after a hero's walk (MoveCommand's WalkPath): pincers, the clock, or the end of the action.</summary>
+        private static bool EndsWalk(BattleEvent e) =>
+            e is PincerFormedEvent || e is RespiteEvent || e is TimelineAdvancedEvent || e is TurnStartedEvent
+            || e is WaveClearedEvent || e is BattleEndedEvent || e is PlayerControlEvent || e is AbilityRefusedEvent;
 
         private float Fx => ReduceMotion ? 0f : 1f;
 
@@ -162,9 +178,54 @@ namespace Gaiden.App
                 case BattleEndedEvent be: lastEnded = be; ShowBanner(be.Victory ? "VICTORY!" : be.Escaped ? "ESCAPED" : "DEFEAT"); App.Audio.Sfx(be.Victory ? "victory" : be.Escaped ? "dash" : "defeat"); return Tween.Wait(1.0f);
                 case RevivedEvent rv: return ReviveAnim(rv);
                 case PlayerControlEvent _: FlushTallies(); ShowBanner(""); SyncAll(); return null;
-                case TileConflictEvent tc: Debug.LogError($"[BattleRunner] {tc} — stage {State.Stage.Id}, wave {State.Wave}, clock {State.Clock}"); return null;
+                case TileConflictEvent tc:
+                    // The engine's last-resort net fired (GG-T97): a root-cause bug. Loud in every build's log; in a
+                    // dev build also on screen, and counted in /state so the harness fails on it.
+                    Debug.LogError($"[BattleRunner] {tc} — stage {State.Stage.Id}, wave {State.Wave}, clock {State.Clock}");
+                    BoardAudit.Conflict(tc.ToString());
+                    if (Debug.isDebugBuild) ShowBanner("TILE CONFLICT — see log");
+                    return null;
             }
             return null;
+        }
+
+        /// <summary>
+        /// GG-T97, the view half of "two actors never share a tile": the tiles the board currently draws tokens on.
+        /// Always checks that no two live tokens overlap; with <paramref name="againstState"/> also that every living
+        /// unit is drawn exactly where it stands (and nothing fallen is still drawn); with <paramref name="rendered"/>
+        /// that each token's actual on-screen position is its tile (no tween left mid-way).
+        /// </summary>
+        public List<string> AuditTokens(bool againstState, bool rendered = false)
+        {
+            var problems = new List<string>();
+            var drawn = new Dictionary<Coord, int>();
+            foreach (var kv in board.Units)
+            {
+                var v = kv.Value;
+                if (v.Dead) continue;
+                for (int dy = 0; dy < v.H; dy++)
+                    for (int dx = 0; dx < v.W; dx++)
+                    {
+                        var t = new Coord(v.Tile.X + dx, v.Tile.Y + dy);
+                        if (drawn.TryGetValue(t, out var other)) problems.Add($"tokens {other} and {kv.Key} both drawn on {t}");
+                        else drawn[t] = kv.Key;
+                    }
+                if (rendered)
+                {
+                    var want = BoardView.PosOf(v.Tile);
+                    float left = v.Root.style.left.value.value, top = v.Root.style.top.value.value;
+                    if (Mathf.Abs(left - want.x) > 0.5f || Mathf.Abs(top - want.y) > 0.5f) problems.Add($"token {kv.Key} rendered at ({left:0},{top:0}), not on its tile {v.Tile}");
+                }
+            }
+            if (againstState)
+                foreach (var u in State.Units)
+                {
+                    bool live = board.Units.TryGetValue(u.Id, out var v) && !v.Dead;
+                    if (u.Alive && !live) problems.Add($"{u} stands on {u.Pos} but isn't drawn");
+                    else if (!u.Alive && live) problems.Add($"{u} has fallen but is still drawn on {v.Tile}");
+                    else if (u.Alive && v.Tile != u.Pos) problems.Add($"{u} drawn on {v.Tile} but stands on {u.Pos}");
+                }
+            return problems;
         }
 
         // ── Individual beats ──────────────────────────────────────────────────────

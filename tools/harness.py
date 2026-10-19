@@ -4,6 +4,7 @@ Self-play harness: launches the development player with the automation endpoint 
     python tools/harness.py smoke            # title → new game → hub → battle (autoplay) → results
     python tools/harness.py sweep            # screenshot + layout-audit every menu screen
     python tools/harness.py clips N          # generate N random-stage/random-wave battle clips
+    python tools/harness.py boardaudit N     # GG-T97: N autoplayed battles; fail if two tokens are ever drawn on one tile
     python tools/harness.py durability       # GG-T39: last-strike weapon badge + drag-preview shatter warning
     python tools/harness.py crucible [WAVES [RUN]]  # GG-T95: camp -> Crucible -> Auto -> leave after WAVES (99 = fight to a wipe) -> results -> camp
     python tools/harness.py stress HOURS     # unattended soak test (GG-T21); default 4h
@@ -309,7 +310,7 @@ def campaign(run="campaign", stages=6, speed=3, extra=(), max_loss_retries=3):
     print("errors:", [l[:300] for l in logs if l.startswith(("Error", "Exception")) and "first mouse" not in l])
 
 
-def battle_clips(run="clips", count=10, speed=3, timeout=240, capture=True):
+def battle_clips(run="clips", count=10, speed=3, timeout=240, capture=True, relaunch=True):
     """Generates many short, independent battle clips via the randombattle endpoint: a random real
     stage + a random wave from it (one enemy family per clip, per the house wave convention), at that
     stage's real recommended level. No UI clicks are involved in the loop at all (ResetTo tears down
@@ -323,7 +324,8 @@ def battle_clips(run="clips", count=10, speed=3, timeout=240, capture=True):
     that before calling this, and back to false afterward, then rebuild so the committed state matches."""
     extra = ("-capture-config", os.path.join(os.path.dirname(EXE), "GridGameGaiden_Data",
                                               "StreamingAssets", "capture.json")) if capture else ()
-    launch(run, extra=extra)
+    if relaunch:
+        launch(run, extra=extra)
     call("speed", x=speed)
     clips = []
     for n in range(count):
@@ -359,6 +361,27 @@ def battle_clips(run="clips", count=10, speed=3, timeout=240, capture=True):
     print(json.dumps(clips, indent=1))
     print("errors:", [l[:300] for l in logs if l.startswith(("Error", "Exception")) and "first mouse" not in l])
     return clips
+
+
+def board_audit(run="boardaudit", count=12, speed=4, timeout=300):
+    """GG-T97: plays `count` random real battles on autoplay (randombattle, no capture) and fails unless the drawn
+    board stayed honest the whole time: after every beat no two tokens on one tile, after every action every token
+    on exactly its unit's State tile (before the SyncAll safety net could hide a miss), and the engine's last-resort
+    tile-conflict net never fired. Reads BoardAudit through the boardaudit endpoint. Returns True when clean."""
+    launch(run)
+    call("boardaudit", reset=1)
+    clips = battle_clips(run=run, count=count, speed=speed, timeout=timeout, capture=False, relaunch=False)
+    audit = call("boardaudit")["audit"]
+    print(json.dumps({"battles": len(clips), "audit": audit}, indent=1))
+    bad = audit["beat_overlaps"] + audit["settle_drift"] + audit["synced"] + audit["tile_conflicts"]
+    if audit["actions"] == 0:
+        print("FAIL: no actions were audited")
+        return False
+    if bad:
+        print(f"FAIL: {bad} board audit problem(s)")
+        return False
+    print(f"OK: {audit['actions']} actions / {audit['beats']} beats, every token on its own tile")
+    return True
 
 
 def durability(run="durability"):
@@ -737,6 +760,8 @@ if __name__ == "__main__":
         sweep(sys.argv[2] if len(sys.argv) > 2 else "sweep")
     elif cmd == "clips":
         battle_clips(count=int(sys.argv[2]) if len(sys.argv) > 2 else 10)
+    elif cmd == "boardaudit":
+        sys.exit(0 if board_audit(count=int(sys.argv[2]) if len(sys.argv) > 2 else 12) else 1)
     elif cmd == "durability":
         durability()
     elif cmd == "crucible":

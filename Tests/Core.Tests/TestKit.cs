@@ -120,11 +120,14 @@ namespace Gaiden.Tests
                 if (!u.Alive) continue;
                 foreach (var t in u.Tiles())
                 {
-                    Assert.That(BattleState.InBounds(t), Is.True, $"{u} out of bounds at {t}");
+                    Assert.That(s.Walkable(t), Is.True, $"{u} out of bounds or on a block at {t}");
                     Assert.That(seen.ContainsKey(t), Is.False, $"Two units on {t}: {u.Id} and {(seen.ContainsKey(t) ? seen[t] : -1)}");
                     seen[t] = u.Id;
                 }
             }
+            // A movable tile (the Power Amplifier) occupies its tile like an actor: never under a unit (GG-T97).
+            foreach (var m in s.Movables)
+                Assert.That(seen.ContainsKey(m.Pos), Is.False, $"Movable at {m.Pos} under unit {(seen.ContainsKey(m.Pos) ? seen[m.Pos] : -1)}");
             Assert.That(s.Bank.Count, Is.InRange(0, s.Bank.Capacity));
             foreach (var e in s.Timeline)
             {

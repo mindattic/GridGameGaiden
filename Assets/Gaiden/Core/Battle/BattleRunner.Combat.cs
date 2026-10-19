@@ -103,17 +103,18 @@ namespace Gaiden.Core.Battle
                 }
                 var from = hero.Pos;
                 var pushed = S.MovableAt(next);
-                hero.Pos = next;
+                // The occupant (or movable) of the entered tile swaps into the tile just left — the only tile this
+                // step frees, so the pair can never land on a third actor (§1.1, GG-T97).
+                if (!Relocate(hero, next, o => o == occ, movablesYield: true))
+                {
+                    Emit(new StepBlockedEvent { UnitId = hero.Id, At = next, Reason = "occupied" });
+                    return false;
+                }
                 Emit(new SteppedEvent { UnitId = hero.Id, From = from, To = next });
                 taken.Add(next);
-                if (pushed != null)
+                if (pushed != null) MoveMovable(pushed, from, hero);
+                if (occ != null && Relocate(occ, from))
                 {
-                    pushed.Pos = from; // a movable tile swaps into the tile just left, like any displaced actor
-                    Emit(new AmplifierMovedEvent { From = next, To = from, ByUnitId = hero.Id });
-                }
-                if (occ != null)
-                {
-                    occ.Pos = from;
                     Emit(new DisplacedEvent { UnitId = occ.Id, From = next, To = from, ByUnitId = hero.Id });
                     if (!PreviewOnly && BreaksOnMove(occ)) RemoveBuffsWhere(occ, b => b.Def.BreaksOnMove, "moved");
                     if (!PreviewOnly) TriggerTrap(occ);
@@ -379,12 +380,10 @@ namespace Gaiden.Core.Battle
                 if (S.MovableAt(next) is MovableTile mv)
                 {
                     var beyond = next + dir;
-                    if (!S.FreeForSpawn(beyond)) { Damage(t, BattleConfig.KnockbackCrashDamage, caster, HitKind.Normal, DamageType.Physical, "Crash!", canPush: false); return; }
-                    mv.Pos = beyond;
-                    Emit(new AmplifierMovedEvent { From = next, To = beyond, ByUnitId = t.Id });
+                    if (!S.FreeForSpawn(beyond) || !MoveMovable(mv, beyond, t)) { Damage(t, BattleConfig.KnockbackCrashDamage, caster, HitKind.Normal, DamageType.Physical, "Crash!", canPush: false); return; }
                 }
                 var from = t.Pos;
-                t.Pos = next;
+                if (!Relocate(t, next)) return;
                 Emit(new DisplacedEvent { UnitId = t.Id, From = from, To = next, ByUnitId = caster.Id });
                 if (t.IsHero) TriggerTrap(t);
             }

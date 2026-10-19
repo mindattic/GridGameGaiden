@@ -828,4 +828,61 @@ namespace Gaiden.App
             }
         }
     }
+
+    /// <summary>
+    /// GG-T97: running tally of the board's drawn tokens against the rule "two actors never share a tile once a slide is
+    /// over". BattleScreen feeds it after every beat (tokens unique), as playback settles (tokens match the state, before
+    /// the safety-net snap hides a miss) and after that snap (must always be clean). AutomationServer serves it at
+    /// /state → board_audit, and tools/harness.py boardaudit fails a run on any nonzero count.
+    /// </summary>
+    public static class BoardAudit
+    {
+        public static int Actions, Beats, BeatOverlaps, SettleDrift, SyncedProblems, TileConflicts;
+        public static readonly List<string> Recent = new List<string>();
+
+        public static void Beat(List<string> problems, BattleEvent after)
+        {
+            Beats++;
+            if (problems.Count == 0) return;
+            BeatOverlaps++;
+            Note("beat after " + after, problems);
+        }
+
+        public static void Settled(List<string> problems)
+        {
+            Actions++;
+            if (problems.Count == 0) return;
+            SettleDrift++;
+            Note("playback settle", problems);
+        }
+
+        public static void Synced(List<string> problems)
+        {
+            if (problems.Count == 0) return;
+            SyncedProblems++;
+            Note("after sync", problems);
+        }
+
+        public static void Conflict(string what)
+        {
+            TileConflicts++;
+            Note("engine", new List<string> { what });
+        }
+
+        private static void Note(string where, List<string> problems)
+        {
+            var line = "[BoardAudit] " + where + ": " + string.Join("; ", problems);
+            Debug.LogError(line);
+            Recent.Add(line.Length > 400 ? line.Substring(0, 400) : line);
+            while (Recent.Count > 20) Recent.RemoveAt(0);
+        }
+
+        public static void Reset()
+        {
+            Actions = Beats = BeatOverlaps = SettleDrift = SyncedProblems = TileConflicts = 0;
+            Recent.Clear();
+        }
+
+        public static object Snapshot() => new { actions = Actions, beats = Beats, beat_overlaps = BeatOverlaps, settle_drift = SettleDrift, synced = SyncedProblems, tile_conflicts = TileConflicts, recent = Recent.ToArray() };
+    }
 }

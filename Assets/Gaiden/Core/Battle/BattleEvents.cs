@@ -41,14 +41,22 @@ namespace Gaiden.Core.Battle
     }
 
     /// <summary>
-    /// Defense in depth (two units must never share a tile): the engine caught one anyway after
+    /// Last-resort net (two actors must never share a tile, GG-T97): the engine caught one anyway after
     /// <see cref="Command"/>, so it's a bug upstream — this is the diagnostic marker; the board
-    /// self-heals in the same beat via the accompanying <see cref="DisplacedEvent"/>.
+    /// self-heals in the same beat via the accompanying <see cref="DisplacedEvent"/> (or
+    /// <see cref="AmplifierMovedEvent"/>). Under <see cref="BattleEngine.StrictTiles"/> it throws instead.
+    /// <see cref="OtherUnitId"/> is -1 when the other occupant is a movable tile (the Power Amplifier).
     /// </summary>
     public sealed class TileConflictEvent : BattleEvent
     {
         public int UnitId; public int OtherUnitId; public Coord At; public string Command;
-        public override string ToString() => $"TileConflict {UnitId} vs {OtherUnitId} at {At} (after {Command})";
+        public override string ToString() => $"TileConflict {UnitId} vs {(OtherUnitId < 0 ? "amplifier" : OtherUnitId.ToString())} at {At} (after {Command})";
+    }
+
+    /// <summary>Thrown instead of self-healing when <see cref="BattleEngine.StrictTiles"/> is on (tests, soak, GG-T97).</summary>
+    public sealed class TileConflictException : System.Exception
+    {
+        public TileConflictException(string message) : base(message) { }
     }
 
     public sealed class TeleportedEvent : BattleEvent

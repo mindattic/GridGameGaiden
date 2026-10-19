@@ -90,7 +90,7 @@ namespace Gaiden.Core.Battle
                 var spot = target == null ? null : EnemyPlanner.SurfaceBeside(S, enemy, target);
                 if (spot == null) return false;
                 var from = enemy.Pos;
-                enemy.Pos = spot.Value;
+                if (!Relocate(enemy, spot.Value)) return false;
                 Emit(new TeleportedEvent { UnitId = enemy.Id, From = from, To = spot.Value });
                 Announce(burrow ? $"{enemy.Name} bursts up from below!" : $"{enemy.Name} blinks beside {target.Name}!", enemy.Id);
                 EnemyAttack(enemy);
@@ -105,8 +105,8 @@ namespace Gaiden.Core.Battle
         private bool LeapEnemy(Unit enemy, Coord dest)
         {
             var from = enemy.Pos;
-            if (from.Manhattan(dest) != 2 || S.UnitAt(dest) != null || !S.Walkable(dest)) return false;
-            enemy.Pos = dest;
+            if (from.Manhattan(dest) != 2 || enemy.IsMultiTile || !FootprintOpen(enemy, dest)) return false; // never onto a unit or a movable
+            if (!Relocate(enemy, dest)) return false;
             Emit(new SteppedEvent { UnitId = enemy.Id, From = from, To = dest });
             LeaveTrail(enemy, from);
             return true;
@@ -144,19 +144,23 @@ namespace Gaiden.Core.Battle
         {
             var def = C.TryClass(layer.Def.LaysEgg);
             if (def == null) return;
+            // Beside the layer's whole footprint, on a tile a spawn may take (no unit, movable or trap) — otherwise
+            // SpawnEnemy would quietly fall back to a random tile across the board (GG-T97).
+            int ew = Math.Max(1, def.Footprint?.W ?? 1), eh = Math.Max(1, def.Footprint?.H ?? 1);
             var spots = new List<Coord>();
-            foreach (var d in Coord.Cardinals)
-            {
-                var c = layer.Pos + d;
-                if (S.FreeForSpawn(c)) spots.Add(c);
-            }
+            foreach (var t in layer.Tiles())
+                foreach (var d in Coord.Cardinals)
+                {
+                    var c = t + d;
+                    if (!layer.Occupies(c) && !spots.Contains(c) && FootprintFree(c, ew, eh)) spots.Add(c);
+                }
             if (spots.Count == 0) return;
             var at = spots[S.Rng.Range(0, spots.Count)];
             var egg = SpawnEnemy(def, layer.Level, at.X, at.Y);
             if (egg == null) return;
             egg.RisesAs = layer.Def.Id;
             egg.RisesLevel = layer.Level;
-            Emit(new EggLaidEvent { EggId = egg.Id, FromUnitId = layer.Id, At = at });
+            Emit(new EggLaidEvent { EggId = egg.Id, FromUnitId = layer.Id, At = egg.Pos });
             Announce($"{layer.Name} lays an egg!", layer.Id);
         }
 
@@ -263,7 +267,11 @@ namespace Gaiden.Core.Battle
                         if (!occ.IsHero) return false;
                         shoves.Add((occ, VacatedTile(enemy, from, delta, entered)));
                     }
-                enemy.Pos = dest;
+                // Each shoved hero (and movable) takes the tile the body vacates on its own lane: one entered tile per
+                // lane, one vacated tile per lane, so no two of them can ever be sent to the same tile (GG-T97).
+                var shoved = new HashSet<Unit>();
+                foreach (var sh in shoves) shoved.Add(sh.hero);
+                if (!Relocate(enemy, dest, shoved.Contains, movablesYield: true)) return false;
                 Emit(new SteppedEvent { UnitId = enemy.Id, From = from, To = dest });
                 foreach (var mv in S.Movables.ToArray())
                     if (enemy.Occupies(mv.Pos) && !OccupiedBefore(enemy, from, mv.Pos))
@@ -271,7 +279,7 @@ namespace Gaiden.Core.Battle
                 foreach (var (hero, to) in shoves)
                 {
                     var hf = hero.Pos;
-                    hero.Pos = to;
+                    if (!Relocate(hero, to)) continue;
                     Emit(new DisplacedEvent { UnitId = hero.Id, From = hf, To = to, ByUnitId = enemy.Id });
                     if (BreaksOnMove(hero)) RemoveBuffsWhere(hero, b => b.Def.BreaksOnMove, "moved");
                     TriggerTrap(hero);
@@ -280,22 +288,34 @@ namespace Gaiden.Core.Battle
             }
 
             if (S.UnitAt(dest) != null || !S.Walkable(dest)) return false;
-            enemy.Pos = dest;
+            var pushedTile = S.MovableAt(dest);
+            if (!Relocate(enemy, dest, movablesYield: true)) return false;
             Emit(new SteppedEvent { UnitId = enemy.Id, From = from, To = dest });
-            if (S.MovableAt(dest) is MovableTile pushedTile) ShoveMovable(pushedTile, from, enemy); // pushed like an actor: into the tile just left
+            // A movable is pushed like an actor, into the tile just left - for a snake, the tile its tail just left,
+            // since the body slides into every tile the head vacates (GG-T97: it used to land under segment 1).
+            var vacated = enemy.SnakeHeadId == enemy.Id ? FollowSnake(enemy, from) : from;
+            if (pushedTile != null) ShoveMovable(pushedTile, vacated, enemy);
             LeaveTrail(enemy, from);
-
-            if (enemy.SnakeHeadId == enemy.Id) FollowSnake(enemy, from);
             return true;
         }
 
         /// <summary>A movable tile is displaced like an actor: it takes the tile its pusher just left (§1.1.2).</summary>
         private void ShoveMovable(MovableTile mv, Coord to, Unit by)
         {
-            var from = mv.Pos;
-            if (!S.Walkable(to) || from == to) return;
-            mv.Pos = to;
-            Emit(new AmplifierMovedEvent { From = from, To = to, ByUnitId = by?.Id ?? -1 });
+            if (MoveMovable(mv, to, by)) return;
+            // Nowhere legal on its lane (shouldn't happen - the vacated tile is always free): never leave it under a
+            // unit; it slides to the nearest free tile instead.
+            Coord? best = null; int bestD = int.MaxValue;
+            for (int y = 0; y < BattleConfig.Rows; y++)
+                for (int x = 0; x < BattleConfig.Cols; x++)
+                {
+                    var c = new Coord(x, y);
+                    if (!S.FreeForSpawn(c)) continue;
+                    int d = c.Manhattan(mv.Pos);
+                    if (d < bestD) { bestD = d; best = c; }
+                }
+            if (best != null) MoveMovable(mv, best.Value, by);
+            else S.Movables.Remove(mv);
         }
 
         private static bool OccupiedBefore(Unit u, Coord anchor, Coord c) =>
@@ -310,7 +330,8 @@ namespace Gaiden.Core.Battle
             return new Coord(entered.X, from.Y + u.H - 1);
         }
 
-        private void FollowSnake(Unit head, Coord headFrom)
+        /// <summary>Body segments slide into the tile ahead of them; returns the last tile vacated (the tail's old tile).</summary>
+        private Coord FollowSnake(Unit head, Coord headFrom)
         {
             var members = new List<Unit>();
             foreach (var u in S.Units)
@@ -320,11 +341,11 @@ namespace Gaiden.Core.Battle
             foreach (var m in members)
             {
                 var prev = m.Pos;
-                if (S.UnitAt(trail) != null && S.UnitAt(trail) != m) break;
-                m.Pos = trail;
+                if (!FootprintOpen(m, trail) || !Relocate(m, trail)) break;
                 Emit(new SteppedEvent { UnitId = m.Id, From = prev, To = trail });
                 trail = prev;
             }
+            return trail;
         }
 
         /// <summary>Humanoid enemies resolve any pincer they're part of; otherwise melee the adjacent hero their personality picks.</summary>

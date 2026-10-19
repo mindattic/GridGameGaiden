@@ -28,6 +28,13 @@ namespace Gaiden.Core.Battle
             EquipmentSlot.Head, EquipmentSlot.Torso, EquipmentSlot.Legs, EquipmentSlot.Gloves, EquipmentSlot.Boots,
         };
 
+        /// <summary>
+        /// GG-T97 strict board mode: any moment two actors share a tile (unit/unit, unit/movable, or anything off the
+        /// walkable board) throws <see cref="TileConflictException"/> instead of the release build's last-resort
+        /// self-heal. The test suite turns it on for every test (and the bot soak); a shipped game leaves it off.
+        /// </summary>
+        public static bool StrictTiles;
+
         public static BattleState Create(ContentDb content, BattleSetup setup, List<BattleEvent> events)
         {
             var r = new BattleRunner(new BattleState
@@ -40,6 +47,7 @@ namespace Gaiden.Core.Battle
                 Blocks = new HashSet<Coord>(setup.Stage?.Blocks ?? new List<Coord>()),
             }, events);
             r.Setup(setup);
+            r.EnforceTileInvariant("Setup");
             return r.S;
         }
 

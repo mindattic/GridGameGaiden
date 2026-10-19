@@ -147,6 +147,11 @@ namespace Gaiden.App.Automation
             {
                 case "ping": return new { ok = true, screen = app.Router.Current?.Id };
                 case "state": return StateDump();
+                case "boardaudit":
+                    // GG-T97: drawn-token audit totals (see BoardAudit); ?reset=1 zeroes them first.
+                    if (q["reset"] == "1") BoardAudit.Reset();
+                    if (q["now"] == "1" && app.Router.Current is BattleScreen ab && !ab.Busy) return new { audit = BoardAudit.Snapshot(), now = ab.AuditTokens(true, rendered: true) };
+                    return new { audit = BoardAudit.Snapshot() };
                 case "logs":
                     lock (logs) { var copy = logs.ToList(); if (q["clear"] == "1") logs.Clear(); return copy; }
                 case "record":
@@ -418,7 +423,7 @@ namespace Gaiden.App.Automation
                     if (app.Router.Current is BattleScreen dcs) { int caster = dcs.DevQueueCast((int)F(q["target"]), q["ability"], (int)F(q["ticks"], 30)); return new { ok = caster >= 0, caster }; }
                     return new { error = "not in battle" };
                 case "devamp":
-                    if (app.Router.Current is BattleScreen dab) { dab.State.Amplifier = new Coord((int)F(q["x"]), (int)F(q["y"])); dab.SyncAll(); dab.Feed(BattleScreen.AmpSpawnedFeed, BattleScreen.AmpFeedColor); return new { ok = true }; }
+                    if (app.Router.Current is BattleScreen dab) { var ampAt = new Coord((int)F(q["x"]), (int)F(q["y"])); if (!dab.State.FreeForSpawn(ampAt)) return new { error = "tile not free" }; dab.State.Amplifier = ampAt; dab.SyncAll(); dab.Feed(BattleScreen.AmpSpawnedFeed, BattleScreen.AmpFeedColor); return new { ok = true }; }
                     return new { error = "not in battle" };
                 case "democaster":
                     if (app.Router.Current is BattleScreen democ) { democ.DemoCaster(); return new { ok = true }; }
@@ -634,6 +639,7 @@ namespace Gaiden.App.Automation
                 ["stack"] = app.Router.Stack.Select(s => s.Id).ToList(),
                 ["screen_size"] = new[] { Screen.width, Screen.height },
                 ["fps"] = Mathf.Round(1f / Mathf.Max(0.0001f, Time.smoothDeltaTime)),
+                ["board_audit"] = BoardAudit.Snapshot(),
             };
             if (app.Save != null)
                 dump["save"] = new { app.Save.Gold, app.Save.HighestClearedStage, party = app.Save.Party, inventory = app.Save.Inventory, levels = app.Save.Roster.ToDictionary(h => h.ClassId, Progression.Level), xp = app.Save.Roster.ToDictionary(h => h.ClassId, h => h.TotalXp), hp = app.Save.Roster.ToDictionary(h => h.ClassId, h => h.Hp), crucible = new { app.Save.Crucible.Best, app.Save.Crucible.Runs, app.Save.Crucible.TotalWaves }, expedition = app.Save.Expedition?.ThemeId };

@@ -210,6 +210,10 @@ namespace Gaiden.Core.Battle
 
         public bool IsOver => Phase != BattlePhase.PlayerInput;
 
+        /// <summary>Per-battle override of <see cref="BattleEngine.StrictTiles"/> (null = follow it) — lets one test
+        /// exercise the release self-heal while the rest of the suite runs strict (GG-T97).</summary>
+        public bool? StrictTilesOverride;
+
         public Unit UnitById(int id)
         {
             foreach (var u in Units) if (u.Id == id) return u;

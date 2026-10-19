@@ -55,6 +55,7 @@ namespace Gaiden.Core.Battle
                 default: acted = false; break;
             }
             if (!acted) return;
+            CheckTilesStrict(cmd.GetType().Name);
 
             S.Results.ActionsTaken++;
             CheckEnd();
@@ -69,14 +70,86 @@ namespace Gaiden.Core.Battle
             S.Results.TicksElapsed = (int)S.Clock;
         }
 
+        // ─────────────────────────────────────────────────────────────────────────────
+        // Occupancy (§1.1, GG-T97): two actors never share a tile once a slide is over. Every position write in the
+        // engine goes through Relocate / MoveMovable / AddUnit below, which refuse a footprint that isn't open; the
+        // invariant check after every command is only a last-resort net (it throws under BattleEngine.StrictTiles).
+        // ─────────────────────────────────────────────────────────────────────────────
+
         /// <summary>
-        /// Defense in depth: two units must never occupy the same tile (bible invariant, asserted after every
-        /// command in the soak tests). If one ever slips through anyway, don't ship a broken board — nudge the
-        /// more recently spawned/moved unit to the nearest free tile with a visible step, and emit a diagnostic
-        /// event so the App layer can log it loudly. This never fires on a healthy board; if it fires, the root
-        /// cause is still a bug worth finding — this just stops it from ever being visible to a player.
+        /// Is every tile of <paramref name="u"/>'s footprint, anchored at <paramref name="anchor"/>, on the walkable board
+        /// and free of every other living unit and of movable tiles? <paramref name="yields"/> names units this same step
+        /// moves out of the way (a swap partner, heroes a 2×2 shoves); <paramref name="movablesYield"/> is true when the
+        /// mover shoves any movable it lands on. Dead units (OnBoard false) never count — they're off the board.
         /// </summary>
-        private void EnforceTileInvariant(string lastCommand)
+        private bool FootprintOpen(Unit u, Coord anchor, Func<Unit, bool> yields = null, bool movablesYield = false)
+        {
+            for (int dy = 0; dy < u.H; dy++)
+                for (int dx = 0; dx < u.W; dx++)
+                {
+                    var t = new Coord(anchor.X + dx, anchor.Y + dy);
+                    if (!S.Walkable(t)) return false;
+                    foreach (var o in S.Units)
+                        if (o != u && o.Alive && o.Occupies(t) && (yields == null || !yields(o))) return false;
+                    if (!movablesYield && S.MovableAt(t) != null) return false;
+                }
+            return true;
+        }
+
+        /// <summary>
+        /// The single chokepoint for moving a unit on the board. Refuses (false, nothing moves) when the destination
+        /// footprint isn't open — under <see cref="BattleEngine.StrictTiles"/> that's a bug and it throws.
+        /// </summary>
+        private bool Relocate(Unit u, Coord to, Func<Unit, bool> yields = null, bool movablesYield = false)
+        {
+            if (!FootprintOpen(u, to, yields, movablesYield))
+            {
+                Violation($"{u} can't move {u.Pos}->{to}: footprint not free");
+                return false;
+            }
+            u.Pos = to;
+            return true;
+        }
+
+        /// <summary>The chokepoint for a movable tile (§1.1.2): it may only land on a walkable tile nobody stands on.</summary>
+        private bool MoveMovable(MovableTile m, Coord to, Unit by)
+        {
+            var from = m.Pos;
+            if (from == to) return true;
+            var other = S.MovableAt(to);
+            if (!S.Walkable(to) || S.UnitAt(to) != null || (other != null && other != m))
+            {
+                Violation($"movable at {from} can't be pushed to {to}");
+                return false;
+            }
+            m.Pos = to;
+            Emit(new AmplifierMovedEvent { From = from, To = to, ByUnitId = by?.Id ?? -1 });
+            return true;
+        }
+
+        /// <summary>The chokepoint for putting a new unit on the board (spawns, waves, reinforcements, eggs, remains, guests).</summary>
+        private bool AddUnit(Unit u)
+        {
+            if (u.OnBoard && !FootprintOpen(u, u.Pos))
+            {
+                Violation($"{u} can't appear at {u.Pos}: footprint not free");
+                return false;
+            }
+            S.Units.Add(u);
+            return true;
+        }
+
+        private bool Strict => S.StrictTilesOverride ?? BattleEngine.StrictTiles;
+
+        /// <summary>A position write that would have broken the board. Strict mode throws; release refuses the write.</summary>
+        private void Violation(string what)
+        {
+            if (Strict && !PreviewOnly)
+                throw new TileConflictException(what + " (stage " + S.Stage?.Id + ", wave " + S.Wave + ", clock " + S.Clock + ")");
+        }
+
+        /// <summary>The first tile two actors share (or an actor off the walkable board), or null on a healthy board.</summary>
+        private (Unit mover, Unit stays, MovableTile movable, Coord at)? FindTileConflict()
         {
             var seen = new Dictionary<Coord, Unit>();
             foreach (var u in S.Units)
@@ -84,20 +157,65 @@ namespace Gaiden.Core.Battle
                 if (!u.Alive) continue;
                 foreach (var t in u.Tiles())
                 {
+                    if (!S.Walkable(t)) return (u, null, null, t);
                     if (!seen.TryGetValue(t, out var other)) { seen[t] = u; continue; }
                     var mover = u.Id > other.Id ? u : other;
-                    var stays = mover == u ? other : u;
-                    var from = mover.Pos;
-                    var free = RandomFreeTile(mover.W, mover.H, 0, BattleConfig.Rows - 1);
-                    Emit(new TileConflictEvent { UnitId = mover.Id, OtherUnitId = stays.Id, At = t, Command = lastCommand });
-                    if (free != null)
-                    {
-                        mover.Pos = free.Value;
-                        Emit(new DisplacedEvent { UnitId = mover.Id, From = from, To = free.Value, ByUnitId = stays.Id });
-                    }
-                    return; // one conflict per command is already an exceptional event; re-scan next command
+                    return (mover, mover == u ? other : u, null, t);
                 }
             }
+            var movableTiles = new HashSet<Coord>();
+            foreach (var m in S.Movables)
+            {
+                seen.TryGetValue(m.Pos, out var under);
+                if (under != null || !S.Walkable(m.Pos) || !movableTiles.Add(m.Pos)) return (under, null, m, m.Pos);
+            }
+            return null;
+        }
+
+        /// <summary>Strict mode only: check the board at an inner boundary (after an enemy turn, a cast, a reinforcement).</summary>
+        private void CheckTilesStrict(string context)
+        {
+            if (!Strict || PreviewOnly) return;
+            var c = FindTileConflict();
+            if (c != null) throw new TileConflictException(Describe(c.Value, context));
+        }
+
+        private string Describe((Unit mover, Unit stays, MovableTile movable, Coord at) c, string context) =>
+            "Tile conflict at " + c.at + " after " + context + ": " + (c.mover?.ToString() ?? "-") + " vs "
+            + (c.movable != null ? "movable" : c.stays?.ToString() ?? "off-board")
+            + " (stage " + S.Stage?.Id + ", wave " + S.Wave + ", clock " + S.Clock + ")";
+
+        /// <summary>
+        /// Last-resort net, run after every command: two actors must never share a tile (bible §1.1/§6). Every
+        /// position write already goes through the chokepoints above, so this never fires on a healthy engine. Under
+        /// <see cref="BattleEngine.StrictTiles"/> (tests, soak) a conflict throws so the root cause is found; in a
+        /// release build it nudges the newer unit (or the movable) to a free tile with a visible step and emits a
+        /// <see cref="TileConflictEvent"/> that the App logs loudly.
+        /// </summary>
+        internal void EnforceTileInvariant(string lastCommand)
+        {
+            var found = FindTileConflict();
+            if (found == null) return;
+            var c = found.Value;
+            if (Strict) throw new TileConflictException(Describe(c, lastCommand));
+            if (c.movable != null)
+            {
+                Emit(new TileConflictEvent { UnitId = c.mover?.Id ?? -1, OtherUnitId = -1, At = c.at, Command = lastCommand });
+                var spot = RandomFreeTile(1, 1, 0, BattleConfig.Rows - 1);
+                if (spot != null) MoveMovable(c.movable, spot.Value, null);
+                else S.Movables.Remove(c.movable);
+                return;
+            }
+            var mover = c.mover;
+            var from = mover.Pos;
+            var free = RandomFreeTile(mover.W, mover.H, 0, BattleConfig.Rows - 1);
+            Emit(new TileConflictEvent { UnitId = mover.Id, OtherUnitId = c.stays?.Id ?? -1, At = c.at, Command = lastCommand });
+            if (free != null)
+            {
+                mover.Pos = free.Value;
+                Emit(new DisplacedEvent { UnitId = mover.Id, From = from, To = free.Value, ByUnitId = c.stays?.Id ?? -1 });
+            }
+            // One conflict per command is already an exceptional event; the next command re-scans.
         }
 
         // ─────────────────────────────────────────────────────────────────────────────

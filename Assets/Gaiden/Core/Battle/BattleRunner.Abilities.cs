@@ -81,6 +81,7 @@ namespace Gaiden.Core.Battle
             Coord anchor = a.Mode == TargetMode.Auto ? TargetResolver.AutoAnchor(hero) : cmd.Target;
             if (a.Mode != TargetMode.Auto && !TargetResolver.IsValidPick(S, a, hero, anchor)) return Refuse(hero, "No target");
             if (a.Revives && !S.Units.Exists(u => u.IsHero && !u.Alive && u.Hp <= 0)) return Refuse(hero, "Nobody to revive");
+            if (a.Revives && ReviveSpot(hero) == null) return Refuse(hero, "No room!");
             if (!a.IsTeleport && !a.Revives && !a.Escape && a.GrantsOrbs <= 0 && TargetResolver.Collect(S, a, hero, anchor).Count == 0 && a.Mode == TargetMode.Auto)
                 return Refuse(hero, "No target");
 
@@ -163,9 +164,9 @@ namespace Gaiden.Core.Battle
         {
             if (a.IsTeleport)
             {
-                if (!S.FreeForSpawn(anchor)) { Announce("Blocked", caster.Id); return; }
+                // The whole footprint must land on open tiles — never onto a unit, a movable, a block or off the board.
                 var from = caster.Pos;
-                caster.Pos = anchor;
+                if (!FootprintOpen(caster, anchor) || !Relocate(caster, anchor)) { Announce("Blocked", caster.Id); return; }
                 Emit(new AbilityResolvedEvent { CasterId = caster.Id, AbilityId = a.Id, Anchor = anchor, Tiles = { anchor } });
                 Emit(new TeleportedEvent { UnitId = caster.Id, From = from, To = anchor });
                 TriggerTrap(caster);
@@ -301,10 +302,13 @@ namespace Gaiden.Core.Battle
         }
 
         /// <summary>Revival Charm: the first fallen hero returns on the free tile nearest the user.</summary>
-        private void Revive(Unit user, int hp)
+        /// <summary>
+        /// Where a Revival Charm would bring the fallen hero back: the free tile (no unit, movable, block or trap)
+        /// nearest the user — never the tile it fell on if anyone stands there now. Null = the board is full, and the
+        /// charm is refused before it's spent (GG-T97).
+        /// </summary>
+        private Coord? ReviveSpot(Unit user)
         {
-            var fallen = S.Units.Find(u => u.IsHero && !u.Alive && u.Hp <= 0);
-            if (fallen == null) { Announce("Nobody to revive"); return; }
             Coord? spot = null; int best = int.MaxValue;
             for (int y = 0; y < BattleConfig.Rows; y++)
                 for (int x = 0; x < BattleConfig.Cols; x++)
@@ -314,8 +318,15 @@ namespace Gaiden.Core.Battle
                     int d = c.Manhattan(user.Pos);
                     if (d < best) { best = d; spot = c; }
                 }
-            if (spot == null) { Announce("No room!"); return; }
-            fallen.Pos = spot.Value;
+            return spot;
+        }
+
+        private void Revive(Unit user, int hp)
+        {
+            var fallen = S.Units.Find(u => u.IsHero && !u.Alive && u.Hp <= 0);
+            if (fallen == null) { Announce("Nobody to revive"); return; }
+            var spot = ReviveSpot(user);
+            if (spot == null || !Relocate(fallen, spot.Value)) { Announce("No room!"); return; }
             fallen.OnBoard = true;
             fallen.Hp = Math.Min(fallen.MaxHp, Math.Max(1, hp));
             Emit(new RevivedEvent { UnitId = fallen.Id, At = fallen.Pos, Hp = fallen.Hp });

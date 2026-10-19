@@ -51,7 +51,7 @@ namespace Gaiden.Core.Battle
             S.Clock++;
             ticksSinceReport++;
 
-            ResolvePendingSpawns();
+            if (S.PendingSpawns.Count > 0) { ResolvePendingSpawns(); CheckTilesStrict("reinforcements"); }
             if (S.IsOver) return;
 
             foreach (var e in S.Timeline)
@@ -86,12 +86,12 @@ namespace Gaiden.Core.Battle
                 }
                 if (next == null) break;
                 ReportAdvance();
-                if (next.Kind == TimelineKind.Cast) ResolveCast(next);
+                if (next.Kind == TimelineKind.Cast) { ResolveCast(next); CheckTilesStrict("cast " + next.AbilityId); }
                 else
                 {
                     next.Ip = 0;
                     var owner = S.UnitById(next.OwnerId);
-                    if (owner != null && owner.Alive) { RunEnemyTurn(owner); enemyTurnResolved = true; }
+                    if (owner != null && owner.Alive) { RunEnemyTurn(owner); enemyTurnResolved = true; CheckTilesStrict("turn of " + owner); }
                 }
             }
         }

@@ -24,10 +24,12 @@ namespace Gaiden.Core.Battle
             int i = 0;
             foreach (var spec in setup.Party)
             {
-                var start = spec.Start ?? DefaultHeroStarts[Math.Min(i, DefaultHeroStarts.Length - 1)];
+                Coord? start = spec.Start ?? DefaultHeroStarts[Math.Min(i, DefaultHeroStarts.Length - 1)];
                 // FreeForSpawn, not just UnitAt: a stage's Blocks (or an out-of-bounds Start) would otherwise
-                // drop a hero onto a solid/off-board tile it can never leave (GG-T70).
-                if (!S.FreeForSpawn(start)) start = RandomFreeTile(1, 1, 4, BattleConfig.Rows - 1) ?? start;
+                // drop a hero onto a solid/off-board tile it can never leave (GG-T70). A taken start falls back to a
+                // free tile in the party's half, then anywhere; a board with no free tile at all (only possible on a
+                // stage walled with blocks) seats the hero out of the battle rather than stacking it on someone (GG-T97).
+                if (!S.FreeForSpawn(start.Value)) start = RandomFreeTile(1, 1, 4, BattleConfig.Rows - 1) ?? RandomFreeTile(1, 1, 0, BattleConfig.Rows - 1);
                 SpawnHero(spec, start, setup.UnlockedSlots);
                 i++;
             }
@@ -51,16 +53,18 @@ namespace Gaiden.Core.Battle
                 foreach (var u in S.Units) if (u.Alive && u.IsHero && u.Def.Id == def.Id) already = true;
                 if (already) continue;
                 var at = new Coord(g.X, g.Y);
-                if (!S.FreeForSpawn(at)) { var free = RandomFreeTile(1, 1, 3, BattleConfig.Rows - 1); if (free == null) continue; at = free.Value; }
+                if (!S.FreeForSpawn(at)) { var free = RandomFreeTile(1, 1, 3, BattleConfig.Rows - 1) ?? RandomFreeTile(1, 1, 0, BattleConfig.Rows - 1); if (free == null) continue; at = free.Value; }
                 var spec = new HeroSpec { ClassId = def.Id, Level = Math.Max(g.Level, S.RecommendedLevel), Bar = new List<string>(def.DefaultLoadout) };
                 var unit = SpawnHero(spec, at, unlockedSlotsForGuests);
+                if (!unit.OnBoard) continue;
                 unit.IsGuest = true;
                 Emit(new GuestJoinedEvent { UnitId = unit.Id, At = at });
                 Announce($"{unit.Name} joins the fight!", unit.Id);
             }
         }
 
-        private Unit SpawnHero(HeroSpec spec, Coord at, int unlockedSlots)
+        /// <param name="at">Null = no free tile anywhere: the hero is built (so its gear still round-trips) but sits out off the board.</param>
+        private Unit SpawnHero(HeroSpec spec, Coord? at, int unlockedSlots)
         {
             var def = C.Class(spec.ClassId);
             var u = new Unit
@@ -69,7 +73,8 @@ namespace Gaiden.Core.Battle
                 Def = def,
                 Team = Team.Hero,
                 Level = Math.Max(1, spec.Level),
-                Pos = at,
+                Pos = at ?? new Coord(0, 0),
+                OnBoard = at.HasValue,
                 UnlockedSlots = Math.Max(0, Math.Min(MaxSlots, unlockedSlots)),
             };
             u.LevelStats = Formulas.StatsAtLevel(def, u.Level);
@@ -125,7 +130,7 @@ namespace Gaiden.Core.Battle
                 string entry = s < spec.Bar.Count ? spec.Bar[s] : null;
                 u.Bar.Add(MakeSlot(entry, spec));
             }
-            S.Units.Add(u);
+            if (!AddUnit(u)) { u.OnBoard = false; S.Units.Add(u); }
             return u;
         }
 
@@ -199,6 +204,8 @@ namespace Gaiden.Core.Battle
                 var def = C.TryClass(sp.Class);
                 if (def == null) continue;
                 int level = S.Stage.IsTest ? sp.Level : Math.Max(sp.Level, S.RecommendedLevel) + S.NewGamePlus * BattleConfig.NgPlusLevelStep;
+                // No room anywhere for this footprint: a wave's opening spawn is skipped (the board was just cleared,
+                // so this only happens on a stage packed with blocks) — never stacked on another actor (GG-T97).
                 var u = SpawnEnemy(def, level, sp.X, sp.Y);
                 if (u == null) continue;
                 started.Spawned.Add(u.Id);
@@ -217,12 +224,21 @@ namespace Gaiden.Core.Battle
             foreach (var pending in S.PendingSpawns)
             {
                 if (pending.Consumed || pending.Wave != S.Wave || S.Clock < pending.TriggerClock) continue;
-                pending.Consumed = true;
                 var def = C.TryClass(pending.Spawn.Class);
-                if (def == null) continue;
+                if (def == null) { pending.Consumed = true; continue; }
                 int level = S.Stage.IsTest ? pending.Spawn.Level : Math.Max(pending.Spawn.Level, S.RecommendedLevel) + S.NewGamePlus * BattleConfig.NgPlusLevelStep;
                 var u = SpawnEnemy(def, level, pending.Spawn.X, pending.Spawn.Y);
-                if (u == null) continue;
+                if (u == null)
+                {
+                    // A full board (GG-T97): the reinforcement waits and retries every tick until a tile frees up,
+                    // never landing on an occupied one. If nothing else on the enemy side is left to make room (or
+                    // to hold the wave open), it gives up so the wave can still end.
+                    bool othersHoldWave = false;
+                    foreach (var e in S.Units) if (e.Alive && e.Team == Team.Enemy && !e.IsCorpse) othersHoldWave = true;
+                    if (!othersHoldWave) pending.Consumed = true;
+                    continue;
+                }
+                pending.Consumed = true;
                 spawned ??= new List<int>();
                 spawned.Add(u.Id);
                 if (def.SnakeSegments > 0) GrowSnake(u, def.SnakeSegments, spawned);
@@ -262,7 +278,7 @@ namespace Gaiden.Core.Battle
             u.MaxHp = Formulas.MaxHp(u.Effective, u.Level);
             u.Hp = u.MaxHp;
             if (def.ArmorPlate > 0) u.PlateHp = u.PlateMax = (int)Math.Round(def.ArmorPlate * (1f + BattleConfig.PlatePerLevel * (u.Level - 1)));
-            S.Units.Add(u);
+            if (!AddUnit(u)) return null;
             if (u.PlateMax > 0) FaceTarget(u, false);
             S.Timeline.Add(new TimelineEntry
             {
@@ -302,7 +318,7 @@ namespace Gaiden.Core.Battle
                     LevelStats = head.LevelStats.Clone(),
                 };
                 seg.MaxHp = seg.Hp = Math.Max(1, head.MaxHp / 2);
-                S.Units.Add(seg);
+                if (!AddUnit(seg)) break;
                 spawned.Add(seg.Id);
                 prev = next.Value;
             }

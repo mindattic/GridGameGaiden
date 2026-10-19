@@ -448,3 +448,17 @@ updated: 2026-10-09
   `A_crucible_run_never_touches_campaign_progress_unlocks_or_the_expedition`.)*
 - Bounty kills count in the Crucible (on any ending), unlike §22.4's victory-only rule for stages — same
   reasoning: every kill in the Crucible is kept.
+
+## 2026-10-19 — One actor per tile, every path (owner direction, GG-T97)
+
+- Owner: "there can never be two actors occupying the same tile after sliding is over." The 2026-10-11 self-heal
+  (`EnforceTileInvariant`) stays only as a release-build last resort; every position write now goes through one
+  chokepoint (`Relocate` / `MoveMovable` / `AddUnit`) and the test suite runs with `BattleEngine.StrictTiles`, which
+  throws instead of healing. Rule and per-path guarantee: [BIBLE §1.1.3](BIBLE.md).
+- **Delayed reinforcements wait for room** (§14.8 said nothing about a full board; the code silently dropped the
+  spawn): a reinforcement with no free footprint stays queued and retries every tick, giving up only when no other
+  enemy is left to free a tile, so the wave can still end.
+- **A Revival Charm with nowhere to land is refused before it's spent** ("No room!"), instead of consuming the charm
+  and announcing "No room!" afterwards.
+- A party member with no free start tile anywhere (only possible on a stage walled with blocks) sits the battle out
+  off the board instead of being stacked on the taken start tile.
