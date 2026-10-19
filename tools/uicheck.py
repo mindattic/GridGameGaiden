@@ -4,10 +4,16 @@ UI verification gate: drives the real development player through the screens and
 
     python tools/uicheck.py
 """
+import contextlib
 import json
 import os
 import sys
 import time
+import traceback
+
+# The report prints arrows/dashes; a cp1252 Windows console would otherwise crash on the first one.
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import harness as h  # noqa: E402
@@ -40,6 +46,30 @@ def until(pred, timeout=6.0, step=0.25):
     return False
 
 
+@contextlib.contextmanager
+def section(name):
+    """One crash-isolated stretch of checks: an exception (an unexpected screen, a missing element, a
+    dead endpoint) records a clean FAIL for this section instead of killing the run, so the report
+    still lists every later check and the script still writes report.json (GG-T110)."""
+    try:
+        yield
+    except Exception as ex:
+        tb = traceback.extract_tb(ex.__traceback__)
+        where = f"uicheck.py:{tb[-1].lineno}" if tb else ""
+        try:
+            scr = h.call("state", timeout=5).get("screen")
+        except Exception:
+            scr = "?"
+        check(f"{name} (section ran to completion)", False, f"{type(ex).__name__}: {ex} at {where}, screen={scr}")
+
+
+def on_screen(name, screen, timeout=6.0):
+    """Waits for `screen` and records a check either way; a wrong screen is a FAIL, not a crash."""
+    ok = until(lambda: h.call("state")["screen"] == screen, timeout)
+    check(name, ok, "" if ok else f"expected '{screen}', on '{h.call('state').get('screen')}'")
+    return ok
+
+
 def wait_idle(ms=300):
     return h.call("wait", ms=ms)
 
@@ -51,322 +81,330 @@ def battle_state():
 def main():
     art = h.launch("uicheck", fresh=True)
 
-    # ── Title / save slots ─────────────────────────────────────────────────
-    check("title shows New Game", has_text("New Game"))
-    check("title music", h.call("music")["track"] == "TellerOfTheTales")
-    h.call("clicktext", text="New Game"); time.sleep(0.8)
-    check("slot screen lists 3 slots", sum(1 for t in texts() if t.startswith("Slot ")) == 3)
-    h.call("clicktext", text="Slot 1")
-    until(lambda: h.call("state")["screen"] == "hub")
-    st = h.call("state")
-    check("new game lands at camp", st["screen"] == "hub", st["screen"])
-    check("camp music", h.call("music")["track"] == "MinstrelGuild")
-    for item in ["Adventure", "Items", "Status", "Equip", "Abilities", "Party", "Merchant", "Blacksmith", "Alchemist", "Inn", "Caravan", "Summon Circle", "Bounties", "Bestiary", "Settings"]:
-        if not has_text(item):
-            check(f"camp menu has {item}", False)
-            break
-    else:
-        check("camp menu has every command", True)
-    cards = [h.call("element", name=n) for n in h.call("names", prefix="camp-hero-")]
-    win = h.call("element", name="camp-party")
-    check("camp party is a 2-column grid with room for six", len(cards) >= 3 and all(c["w"] < win["w"] * 0.55 for c in cards)
-          and win["h"] < 700, f"{len(cards)} cards, window {win}")
-
-    # Overwrite confirm on an occupied slot
-    h.call("clicktext", text="Save & Quit"); until(lambda: has_text("New Game"))
-    h.call("clicktext", text="New Game"); until(lambda: has_text("Slot 1"))
-    h.call("clicktext", text="Slot 1")
-    check("occupied slot asks to overwrite", until(lambda: has_text("Overwrite slot 1?"), 4.0))
-    h.call("clicktext", text="Cancel"); time.sleep(0.4)
-    h.call("back"); time.sleep(0.8)
-    h.call("clicktext", text="Continue")
-    check("continue resumes the save", until(lambda: h.call("state")["screen"] == "hub"))
-
-    # ── Adventure ordering ─────────────────────────────────────────────────
-    h.call("clicktext", text="Adventure"); time.sleep(0.8)
-    t = texts()
-    check("adventure lists the first stage", any("Green Valley I" in x for x in t))
-    check("adventure groups battles into expeditions", any("Green Valley Expedition" in x for x in t), str(t[:8]))
-    check("locked stages collapse into one teaser", any("more stages ahead" in x for x in t))
-    h.call("clicktext", text="Green Valley I"); time.sleep(1.5)
-    if h.call("state")["screen"] == "crawl":
-        check("story crawl plays on first entry", True)
-        h.call("clicktext", text="Skip"); time.sleep(1.5)
-    check("battle screen", h.call("state")["screen"] == "battle")
-    time.sleep(1.0)
-    check("first battle starts the guided tutorial", any(x.startswith("Tutorial 1/") for x in texts()))
-    check("each lesson has an explanation and an example", has_text("Example:"))
-    time.sleep(1.0)
-    check("tutorial shows the suggested move right away", (h.call("banner")["text"] or "").startswith(("Hint", "Tip")))
-
-    check("battle music", h.call("music")["track"] == "Crusade")
-
-    # ── HUD ────────────────────────────────────────────────────────────────
-    names = h.call("names", prefix="")
-    for el in ["board", "abilitybar", "orbs", "shield", "menu", "feed"]:
-        check(f"HUD element {el}", el in names)
-    check("timeline icons present", any(n.startswith("tl-") for n in names))
-    check("enemy turn icons are pixel-art sprites", "px" in names, "no 'px' sprite under the timeline icons")
-    b = battle_state()
-    enemies = [u for u in b["units"] if u["team"] == "Enemy"]
-    check("no turn-number badges on the board (the timeline shows turn order)", not any(x.strip().isdigit() for x in texts()), str([x for x in texts() if x.strip().isdigit()]))
-    track = h.call("element", name="timeline-track")
-    icon = next((h.call("element", name=n) for n in names if n.startswith("tl-")), {})
-    tcy = track.get("y", 0) + track.get("h", 0) / 2
-    check("timeline track is thin", 0 < track.get("h", 99) <= 8, str(track))
-    check("turn icons sit centred on the timeline line",
-          all(abs(h.call("element", name=n)["y"] + h.call("element", name=n)["h"] / 2 - tcy) < 6 for n in names if n.startswith("tl-")), f"track={track} icon={icon}")
-    fps = h.call("state")["fps"]
-    check("frame rate ≥ 50", fps >= 50, f"fps={fps}")
-
-    # ── Actor panel hides unscanned enemy HP ──────────────────────────────
-    e = enemies[0]
-    h.call("tap", x=h.tile(e["x"], e["y"])[0], y=h.tile(e["x"], e["y"])[1]); time.sleep(0.4)
-    check("tapping an enemy shows it with hidden HP", has_text("???"))
-    check("enemy card describes its kit", has_text("leaves a Slime Trail") or has_text("Leaves a Slime Trail"), str([x for x in texts()][-6:]))
-
-    # ── Drag preview + pincer banner (bot's best move), then commit ───────
-    sug = h.call("suggest")
-    if isinstance(sug, dict) and sug.get("path"):
-        pts = [h.tile(*sug["from"])] + [h.tile(x, y) for x, y in sug["path"]]
-        h.call("cues", clear=1)
-        h.call("drag", path=";".join(f"{x},{y}" for x, y in pts), step=0.1, hold=1)
-        time.sleep(0.3)
-        banner = h.call("banner")["text"] or ""
-        if sug["pincers"] > 0:
-            check("pincer preview banner while holding", "PINCER" in banner, banner)
-        if sug["moved"]:
-            m = sug["moved"][0]
-            el = h.call("element", name=f"unit-{m['id']}")
-            tx, ty = h.tile(m["x"], m["y"])
-            ok = abs(el["x"] + el["w"] / 2 - tx) < 40 and abs(el["y"] + el["h"] / 2 - ty) < 40
-            check("displaced unit slides to its preview tile while holding", ok, json.dumps(el))
-        h.shot("drag-hold")
-        h.call("release")
-        st = wait_idle(400)["battle"]
-        check("drop commits one action", st["results"]["ActionsTaken"] == 1, str(st["results"]))
-        if sug["pincers"] > 0:
-            check("a pincer names itself on the billboard", has_text("Pincer") or has_text("Chain"), str(texts()[:12]))
-        tut = [x for x in texts() if x.startswith("Tutorial ")]
-        check("the tutorial advances after the first move", any(x.startswith(("Tutorial 2/", "Tutorial 3/", "Tutorial 4/")) for x in tut), f"tutorial texts={tut} panel={[x for x in texts()][-8:]}")
-        h.call("click", name="tutorial-skip"); time.sleep(0.4)
-        check("tutorial can be skipped", not any(x.startswith("Tutorial ") for x in texts()))
-        cues = h.call("cues")
-        check("pick-up and every step are voiced", "pickup" in cues and cues.count("move") >= len(sug["path"]), ",".join(cues[:20]))
-        if sug["pincers"] > 0:
-            check("a pincer plays the close-up cut-in", st.get("cutins", 0) >= 1, str(st.get("cutins")))
-            check("pincer and hits are voiced", "pincer" in cues and any(c in cues for c in ("hit", "crit", "miss")), ",".join(cues[:30]))
-    # Every cue the game can play resolves to a bundled clip (no silent events).
-    else:
-        check("bot suggested a move", False, str(sug))
-
-    # ── Pincer close-up: portraits on screen mid-sweep, camera pushed in, then all restored ──
-    h.call("democutin"); time.sleep(0.5)
-    names = h.call("names")
-    portraits = [n for n in names if str(n).startswith("cutin-")] if isinstance(names, list) else []
-    check("cut-in shows both attackers' portraits", len(portraits) == 2, str(portraits))
-    h.shot("cutin")
-    time.sleep(1.4)
-    names = h.call("names")
-    check("cut-in cleans up after itself", isinstance(names, list) and not any(str(n).startswith("cutin") for n in names))
-
-    # ── Targeting + ability card + cancel ─────────────────────────────────
-    h.call("givemana", n=8)
-    b = battle_state()
-    hero = next(u for u in b["units"] if u["team"] == "Hero")
-    hx, hy = h.tile(hero["x"], hero["y"])
-    h.call("tap", x=hx, y=hy); time.sleep(0.3)
-    slot0 = (25 + 108, 450 + 1440 + 20 + 98)
-    h.call("tap", x=slot0[0], y=slot0[1]); time.sleep(0.5)
-    st = battle_state()
-    if st["targeting"] == 0:
-        check("slot tap enters targeting", True)
-        check("ability card shows while targeting (or the confirm card for a self skill)", has_text("Tap a highlighted tile") or st.get("confirming"))
-        h.shot("targeting")
-        h.call("tap", x=slot0[0], y=slot0[1]); time.sleep(0.4)
-        check("re-tapping the slot cancels", battle_state()["targeting"] == -1)
-    else:
-        check("slot tap enters targeting (or auto-casts)", st["results"]["ActionsTaken"] >= 2, str(st["targeting"]))
-
-    # ── Select → confirm → act (owner direction 2026-10-11) ───────────────
-    b = battle_state()
-    acted = b["results"]["ActionsTaken"]
-    h.call("tap", x=hx, y=hy); time.sleep(0.3)
-    h.call("tap", x=slot0[0], y=slot0[1]); time.sleep(0.4)
-    if not battle_state().get("confirming"):
-        # a pick ability: aim at the first legal enemy/ally tile by trying each unit
-        for u in battle_state()["units"]:
-            h.call("tap", x=h.tile(u["x"], u["y"])[0], y=h.tile(u["x"], u["y"])[1]); time.sleep(0.3)
-            if battle_state().get("confirming"):
+    with section('Title / save slots'):
+        check("title shows New Game", has_text("New Game"))
+        check("title music", h.call("music")["track"] == "TellerOfTheTales")
+        h.call("clicktext", text="New Game"); time.sleep(0.8)
+        check("slot screen lists 3 slots", sum(1 for t in texts() if t.startswith("Slot ")) == 3)
+        h.call("clicktext", text="Slot 1")
+        # New Game opens the party pick first (CharacterSelectScreen, since 43fd442); lock in the
+        # fixed starting five through the real UI so every later check sees the same squad.
+        if on_screen("new game opens the party select", "charselect"):
+            h.shot("charselect")
+            h.pick_party()
+        on_screen("new game lands at camp", "hub")
+        check("camp music", h.call("music")["track"] == "MinstrelGuild")
+        for item in ["Adventure", "Items", "Status", "Equip", "Abilities", "Party", "Merchant", "Blacksmith", "Alchemist", "Inn", "Caravan", "Summon Circle", "Bounties", "Bestiary", "Settings"]:
+            if not has_text(item):
+                check(f"camp menu has {item}", False)
                 break
-    st = battle_state()
-    check("a pick waits for confirmation (nothing spent yet)", st.get("confirming") and st["results"]["ActionsTaken"] == acted, str(st.get("confirming")))
-    names = h.call("names")
-    check("the confirm card offers Cast/Use/Go and Cancel", isinstance(names, list) and "confirm-action" in names and "confirm-cancel" in names)
-    h.shot("confirm-card")
-    h.call("click", name="confirm-cancel"); time.sleep(0.4)
-    check("Cancel backs out without acting", battle_state()["targeting"] == -1 and battle_state()["results"]["ActionsTaken"] == acted)
-    h.call("tap", x=hx, y=hy); time.sleep(0.3)
-    h.call("tap", x=slot0[0], y=slot0[1]); time.sleep(0.4)
-    if not battle_state().get("confirming"):
-        for u in battle_state()["units"]:
-            h.call("tap", x=h.tile(u["x"], u["y"])[0], y=h.tile(u["x"], u["y"])[1]); time.sleep(0.3)
-            if battle_state().get("confirming"):
-                break
-    h.call("click", name="confirm-action"); h.call("wait", ms=500)
-    cues = h.call("cues")
-    check("Confirm acts, with a confirmation chime", battle_state()["results"]["ActionsTaken"] == acted + 1 and "ui.confirm" in cues, str(battle_state()["results"]["ActionsTaken"]))
-    check("every press is voiced (press tick)", "ui.press" in cues)
+        else:
+            check("camp menu has every command", True)
+        cards = [h.call("element", name=n) for n in h.call("names", prefix="camp-hero-")]
+        win = h.call("element", name="camp-party")
+        check("camp party is a 2-column grid with room for six", len(cards) >= 3 and all(c["w"] < win["w"] * 0.55 for c in cards)
+              and win["h"] < 700, f"{len(cards)} cards, window {win}")
 
-    # ── Generic mana orbs: filled vs empty slots read at a glance ─────────
-    h.call("givemana", n=0)  # forces an orb resync
-    bank = battle_state()["bank"]
-    have = int(bank.split("/")[0])
-    filled = h.call("style", name="orb0")["tint"]
-    empty = h.call("style", name=f"orb{min(have, 11)}")["tint"] if have < 12 else filled
-    check("orb line shows the bank count in one orb color", have >= 1 and (have >= 12 or filled != empty), f"{bank} {filled} vs {empty}")
+        # Overwrite confirm on an occupied slot
+        h.call("clicktext", text="Save & Quit"); until(lambda: has_text("New Game"))
+        h.call("clicktext", text="New Game"); until(lambda: has_text("Slot 1"))
+        h.call("clicktext", text="Slot 1")
+        check("occupied slot asks to overwrite", until(lambda: has_text("Overwrite slot 1?"), 4.0))
+        h.call("clicktext", text="Cancel"); time.sleep(0.4)
+        h.call("back"); time.sleep(0.8)
+        h.call("clicktext", text="Continue")
+        check("continue resumes the save", until(lambda: h.call("state")["screen"] == "hub"))
 
-    # ── Buff pips with timer ring (US-155/156) ───────────────────────────
-    b = battle_state()
-    target = next(u for u in b["units"] if u["team"] == "Enemy")
-    h.call("buff", unit=target["Id"], id="burning")
-    st = h.call("style", name=f"buffs-{target['Id']}")
-    check("buff shows as a pip on the unit", st.get("children", 0) >= 1, str(st))
-
-    # ── Why isn't it moving? Freeze badge on the tile and on its timeline circle ──
-    h.call("buff", unit=target["Id"], id="frozen"); time.sleep(0.3)
-    tl = h.call("names", prefix="tl-status-")
-    check("frozen enemy shows a status badge on its timeline circle", len(tl) >= 1, str(tl))
-    st = h.call("style", name=f"buffs-{target['Id']}")
-    check("statuses share one slot on the tile", st.get("children", 0) == 1, str(st))
-    seen = set()
-    for _ in range(4):
-        seen.add(h.call("style", name=f"statuspip-{target['Id']}").get("key")); time.sleep(0.65)
-    check("the status slot flashes through every buff/debuff", len(seen - {None}) >= 2, str(seen))
-    names_now = h.call("names", prefix="statuspip-")
-    check("status pips are pixel icons (flame, snowflake…)", any(h.call("style", name=n).get("children", 0) >= 1 for n in names_now), str(names_now))
-    disc = h.call("style", name=next((n for n in h.call("names", prefix="tl-") if n[3:].isdigit()), "tl-1"))
-    check("timeline circles are opaque (the line never shows through)", disc.get("background", "").upper().endswith("FF"), str(disc))
-
-    # ── Power Amplifier marker ──
-    h.call("devamp", x=0, y=4); time.sleep(0.3)
-    amp = h.call("element", name="amplifier")
-    tx, ty = h.tile(0, 4)
-    check("the Power Amplifier shows on its tile", amp.get("w", 0) > 0 and abs(amp["x"] + amp["w"] / 2 - tx) < 30 and abs(amp["y"] + amp["h"] / 2 - ty) < 30, str(amp))
-    h.shot("amplifier")
-
-    # ── Pending spell: countdown ring on the caster, spell chip on the target, cycling when several ──
-    hero = next(u for u in battle_state()["units"] if u["team"] == "Hero")
-    r = h.call("devcast", target=hero["Id"], ability="charge_ice", ticks=40); time.sleep(0.4)
-    caster = r.get("caster", -1)
-    ring = h.call("element", name=f"castring-{caster}")
-    chip = h.call("element", name=f"castchip-{hero['Id']}")
-    check("a pending spell rings its caster and marks its target", ring.get("w", 0) > 0 and chip.get("w", 0) > 0, f"{r} {ring} {chip}")
-    check("casts are not drawn on the timeline", not any(n.startswith("tl-") and n[3:].isdigit() and h.call("element", name=n).get("w", 0) == 60 for n in h.call("names", prefix="tl-")))
-    h.call("devcast", target=hero["Id"], ability="charge_fireball", ticks=60); time.sleep(0.2)
-    seen = set()
-    for _ in range(5):
-        seen.add(h.call("style", name=f"castchip-{hero['Id']}")["border"]); time.sleep(0.5)
-    check("two pending spells on one unit cycle their colours", len(seen) >= 2, str(seen))
-    h.shot("castring")
-
-    # ── Long-press tooltip ────────────────────────────────────────────────
-    wait_idle(200)
-    h.call("press", x=slot0[0], y=slot0[1], ms=700)
-    time.sleep(0.2)
-    check("long-press shows the ability card", any(("Instant" in x) or ("Charges" in x) or ("Skill" in x) or ("Item" in x) for x in texts()))
-    h.call("release"); time.sleep(0.3)
-
-    # ── Pause menu ────────────────────────────────────────────────────────
-    h.call("click", name="menu"); time.sleep(0.5)
-    t = texts()
-    check("pause menu has Resume / Auto battle / Retreat", all(any(k in x for x in t) for k in ("Resume", "Auto battle", "Retreat")))
-    h.call("clicktext", text="Resume"); time.sleep(0.3)
-
-    # ── Idle hint (first battles) ─────────────────────────────────────────
-    wait_idle(200)
-    time.sleep(6.0)
-    banner = h.call("banner")["text"] or ""
-    check("idle hint appears", banner.startswith("Hint") or banner.startswith("Tip"), banner)
-    h.shot("hint")
-
-    # ── Settings toggles don't break the battle ───────────────────────────
-    for key in ("colorblind", "reducemotion"):
-        h.call("setting", key=key, value=1)
-    # The first battle is a 20-wave gauntlet now; finish a short one (Green Valley II) to reach the results screen.
-    h.call("back"); time.sleep(0.6)
-    if h.call("state")["screen"] == "battle":
-        h.call("clicktext", text="Resume"); time.sleep(0.3)
-    h.call("battle", stage="greenvalley-02"); time.sleep(2.5)
-    h.call("speed", x=3)
-    h.call("autoplay", on=1)
-    for _ in range(120):
+    with section('Adventure ordering'):
+        h.call("clicktext", text="Adventure"); time.sleep(0.8)
+        t = texts()
+        check("adventure lists the first stage", any("Green Valley I" in x for x in t))
+        check("adventure groups battles into expeditions", any("Green Valley Expedition" in x for x in t), str(t[:8]))
+        check("locked stages collapse into one teaser", any("more stages ahead" in x for x in t))
+        h.call("clicktext", text="Green Valley I"); time.sleep(1.5)
+        if h.call("state")["screen"] == "crawl":
+            check("story crawl plays on first entry", True)
+            h.call("clicktext", text="Skip"); time.sleep(1.5)
+        check("battle screen", h.call("state")["screen"] == "battle")
         time.sleep(1.0)
-        s = h.call("state")
-        if s["screen"] != "battle":
-            break
-    check("battle finishes with colorblind + reduce motion + ×3 speed", h.call("state")["screen"] == "postbattle")
-    check("results music", h.call("music")["track"] in ("HeroicAge", "Heartbreaking"))
-    h.shot("results")
-    h.call("setting", key="colorblind", value=0)
-    h.call("setting", key="reducemotion", value=0)
+        check("first battle starts the guided tutorial", any(x.startswith("Tutorial 1/") for x in texts()))
+        check("each lesson has an explanation and an example", has_text("Example:"))
+        time.sleep(1.0)
+        check("tutorial shows the suggested move right away", (h.call("banner")["text"] or "").startswith(("Hint", "Tip")))
 
-    # ── Letterbox ─────────────────────────────────────────────────────────
-    h.call("resize", w=1280, h=720); time.sleep(1.2)
-    sb = h.call("stagebounds")
-    aspect = sb["w"] / sb["h"]
-    centered = abs((sb["x"] + sb["w"] / 2) - sb["screen"][0] / 2) < 4
-    check("wide window letterboxes (aspect kept, centered)", abs(aspect - 1170 / 2532) < 0.01 and centered, json.dumps(sb))
-    h.shot("letterbox-wide")
-    h.call("resize", w=585, h=1266); time.sleep(1.0)
+        check("battle music", h.call("music")["track"] == "Crusade")
 
-    # ── Boss styling (US-196): purple frame on the 2×2 Cyclops ───────────
-    h.call("back"); time.sleep(0.4)
-    h.call("clicktext", text="Continue"); time.sleep(1.0)
-    h.call("battle", stage="cave-02"); time.sleep(2.0)
-    b = battle_state()
-    boss = next((u for u in b["units"] if u["cls"].startswith("cyclops")), None)
-    if boss is None:
-        for _ in range(30):  # the cyclops may arrive in a later wave: autoplay until it appears
-            h.call("autoplay", on=1); time.sleep(1.0)
-            b = battle_state() or {}
-            boss = next((u for u in b.get("units", []) if u["cls"].startswith("cyclops")), None)
-            if boss or not b: break
-        h.call("autoplay", on=0)
-    blocks = h.call("names", prefix="block-")
-    check("physical blocks draw on cave stages", len(blocks) >= 2, str(blocks))
-    if boss:
-        fr = h.call("child_style", name=f"unit-{boss['Id']}", index=1)
-        kl = h.call("child_style", name=f"unit-{boss['Id']}", index=1, child=1)
-        check("unit frame uses the menu portrait frame (white border)", fr.get("border", "").upper().startswith("#ECEEFF"), str(fr))
-        check("2×2 boss gets the purple boss keyline", kl.get("border", "").upper().startswith("#DB66FF"), str(kl))
-        h.shot("boss")
-    else:
-        check("2×2 boss appears in Frostmaw Caverns II", False)
+    with section('HUD'):
+        names = h.call("names", prefix="")
+        for el in ["board", "abilitybar", "orbs", "shield", "menu", "feed"]:
+            check(f"HUD element {el}", el in names)
+        check("timeline icons present", any(n.startswith("tl-") for n in names))
+        check("enemy turn icons are pixel-art sprites", "px" in names, "no 'px' sprite under the timeline icons")
+        b = battle_state()
+        enemies = [u for u in b["units"] if u["team"] == "Enemy"]
+        check("no turn-number badges on the board (the timeline shows turn order)", not any(x.strip().isdigit() for x in texts()), str([x for x in texts() if x.strip().isdigit()]))
+        track = h.call("element", name="timeline-track")
+        icon = next((h.call("element", name=n) for n in names if n.startswith("tl-")), {})
+        tcy = track.get("y", 0) + track.get("h", 0) / 2
+        check("timeline track is thin", 0 < track.get("h", 99) <= 8, str(track))
+        check("turn icons sit centred on the timeline line",
+              all(abs(h.call("element", name=n)["y"] + h.call("element", name=n)["h"] / 2 - tcy) < 6 for n in names if n.startswith("tl-")), f"track={track} icon={icon}")
+        fps = h.call("state")["fps"]
+        check("frame rate ≥ 50", fps >= 50, f"fps={fps}")
 
-    # ── Build settings (US-329) ───────────────────────────────────────────
-    ps = open(os.path.join(h.ROOT, "ProjectSettings", "ProjectSettings.asset"), encoding="utf-8").read()
-    ver = open(os.path.join(h.ROOT, "version.txt"), encoding="utf-8").read().strip()
-    check("portrait orientation, no splash, version from version.txt",
-          "defaultScreenOrientation: 0" in ps and "m_ShowUnitySplashScreen: 0" in ps and f"bundleVersion: {ver}" in ps)
+    with section('Actor panel hides unscanned enemy HP'):
+        e = enemies[0]
+        h.call("tap", x=h.tile(e["x"], e["y"])[0], y=h.tile(e["x"], e["y"])[1]); time.sleep(0.4)
+        check("tapping an enemy shows it with hidden HP", has_text("???"))
+        check("enemy card describes its kit", has_text("leaves a Slime Trail") or has_text("Leaves a Slime Trail"), str([x for x in texts()][-6:]))
 
-    logs = h.call("logs")
-    errs = [l for l in logs if l.startswith(("Error", "Exception", "Assert")) and "first mouse position" not in l]
-    check("no errors or exceptions logged", not errs, " | ".join(e[:160] for e in errs[:5]))
+    with section("Drag preview + pincer banner (bot's best move), then commit"):
+        sug = h.call("suggest")
+        if isinstance(sug, dict) and sug.get("path"):
+            pts = [h.tile(*sug["from"])] + [h.tile(x, y) for x, y in sug["path"]]
+            h.call("cues", clear=1)
+            h.call("drag", path=";".join(f"{x},{y}" for x, y in pts), step=0.1, hold=1)
+            time.sleep(0.3)
+            banner = h.call("banner")["text"] or ""
+            if sug["pincers"] > 0:
+                check("pincer preview banner while holding", "PINCER" in banner, banner)
+            if sug["moved"]:
+                m = sug["moved"][0]
+                el = h.call("element", name=f"unit-{m['id']}")
+                tx, ty = h.tile(m["x"], m["y"])
+                ok = abs(el["x"] + el["w"] / 2 - tx) < 40 and abs(el["y"] + el["h"] / 2 - ty) < 40
+                check("displaced unit slides to its preview tile while holding", ok, json.dumps(el))
+            h.shot("drag-hold")
+            h.call("release")
+            st = wait_idle(400)["battle"]
+            check("drop commits one action", st["results"]["ActionsTaken"] == 1, str(st["results"]))
+            if sug["pincers"] > 0:
+                check("a pincer names itself on the billboard", has_text("Pincer") or has_text("Chain"), str(texts()[:12]))
+            tut = [x for x in texts() if x.startswith("Tutorial ")]
+            check("the tutorial advances after the first move", any(x.startswith(("Tutorial 2/", "Tutorial 3/", "Tutorial 4/")) for x in tut), f"tutorial texts={tut} panel={[x for x in texts()][-8:]}")
+            h.call("click", name="tutorial-skip"); time.sleep(0.4)
+            check("tutorial can be skipped", not any(x.startswith("Tutorial ") for x in texts()))
+            cues = h.call("cues")
+            check("pick-up and every step are voiced", "pickup" in cues and cues.count("move") >= len(sug["path"]), ",".join(cues[:20]))
+            if sug["pincers"] > 0:
+                check("a pincer plays the close-up cut-in", st.get("cutins", 0) >= 1, str(st.get("cutins")))
+                check("pincer and hits are voiced", "pincer" in cues and any(c in cues for c in ("hit", "crit", "miss")), ",".join(cues[:30]))
+        # Every cue the game can play resolves to a bundled clip (no silent events).
+        else:
+            check("bot suggested a move", False, str(sug))
 
-    # ── Safe area (US-287): simulate a 120 px notch + 80 px home bar on a 585×1266 window ─────
-    try:
-        h.call("quit", timeout=3)
-    except Exception:
-        pass
-    time.sleep(1.5)
-    h.launch("uicheck-safearea", fresh=True, extra=("-safeArea", "120,80"))
-    until(lambda: h.call("element", name="screens").get("w", 0) > 0)
-    el = h.call("element", name="screens")
-    # 120 screen px at 585 px wide = 240 design px; the stage fills the window exactly.
-    check("safe-area insets push content below the notch and above the home bar",
-          abs(el.get("y", -1) - 240) < 6 and abs((2532 - (el.get("y", 0) + el.get("h", 0))) - 160) < 6, str(el))
-    h.shot("safearea-title")
+    with section('Pincer close-up: portraits on screen mid-sweep, camera pushed in, then all restored'):
+        h.call("democutin"); time.sleep(0.5)
+        names = h.call("names")
+        portraits = [n for n in names if str(n).startswith("cutin-")] if isinstance(names, list) else []
+        check("cut-in shows both attackers' portraits", len(portraits) == 2, str(portraits))
+        h.shot("cutin")
+        time.sleep(1.4)
+        names = h.call("names")
+        check("cut-in cleans up after itself", isinstance(names, list) and not any(str(n).startswith("cutin") for n in names))
+
+    with section('Targeting + ability card + cancel'):
+        h.call("givemana", n=8)
+        b = battle_state()
+        hero = next(u for u in b["units"] if u["team"] == "Hero")
+        hx, hy = h.tile(hero["x"], hero["y"])
+        h.call("tap", x=hx, y=hy); time.sleep(0.3)
+        slot0 = (25 + 108, 450 + 1440 + 20 + 98)
+        h.call("tap", x=slot0[0], y=slot0[1]); time.sleep(0.5)
+        st = battle_state()
+        if st["targeting"] == 0:
+            check("slot tap enters targeting", True)
+            check("ability card shows while targeting (or the confirm card for a self skill)", has_text("Tap a highlighted tile") or st.get("confirming"))
+            h.shot("targeting")
+            h.call("tap", x=slot0[0], y=slot0[1]); time.sleep(0.4)
+            check("re-tapping the slot cancels", battle_state()["targeting"] == -1)
+        else:
+            check("slot tap enters targeting (or auto-casts)", st["results"]["ActionsTaken"] >= 2, str(st["targeting"]))
+
+    with section('Select → confirm → act (owner direction 2026-10-11)'):
+        b = battle_state()
+        acted = b["results"]["ActionsTaken"]
+        h.call("tap", x=hx, y=hy); time.sleep(0.3)
+        h.call("tap", x=slot0[0], y=slot0[1]); time.sleep(0.4)
+        if not battle_state().get("confirming"):
+            # a pick ability: aim at the first legal enemy/ally tile by trying each unit
+            for u in battle_state()["units"]:
+                h.call("tap", x=h.tile(u["x"], u["y"])[0], y=h.tile(u["x"], u["y"])[1]); time.sleep(0.3)
+                if battle_state().get("confirming"):
+                    break
+        st = battle_state()
+        check("a pick waits for confirmation (nothing spent yet)", st.get("confirming") and st["results"]["ActionsTaken"] == acted, str(st.get("confirming")))
+        names = h.call("names")
+        check("the confirm card offers Cast/Use/Go and Cancel", isinstance(names, list) and "confirm-action" in names and "confirm-cancel" in names)
+        h.shot("confirm-card")
+        h.call("click", name="confirm-cancel"); time.sleep(0.4)
+        check("Cancel backs out without acting", battle_state()["targeting"] == -1 and battle_state()["results"]["ActionsTaken"] == acted)
+        h.call("tap", x=hx, y=hy); time.sleep(0.3)
+        h.call("tap", x=slot0[0], y=slot0[1]); time.sleep(0.4)
+        if not battle_state().get("confirming"):
+            for u in battle_state()["units"]:
+                h.call("tap", x=h.tile(u["x"], u["y"])[0], y=h.tile(u["x"], u["y"])[1]); time.sleep(0.3)
+                if battle_state().get("confirming"):
+                    break
+        h.call("click", name="confirm-action"); h.call("wait", ms=500)
+        cues = h.call("cues")
+        check("Confirm acts, with a confirmation chime", battle_state()["results"]["ActionsTaken"] == acted + 1 and "ui.confirm" in cues, str(battle_state()["results"]["ActionsTaken"]))
+        check("every press is voiced (press tick)", "ui.press" in cues)
+
+    with section('Generic mana orbs: filled vs empty slots read at a glance'):
+        h.call("givemana", n=0)  # forces an orb resync
+        bank = battle_state()["bank"]
+        have = int(bank.split("/")[0])
+        filled = h.call("style", name="orb0")["tint"]
+        empty = h.call("style", name=f"orb{min(have, 11)}")["tint"] if have < 12 else filled
+        check("orb line shows the bank count in one orb color", have >= 1 and (have >= 12 or filled != empty), f"{bank} {filled} vs {empty}")
+
+    with section('Buff pips with timer ring (US-155/156)'):
+        b = battle_state()
+        target = next(u for u in b["units"] if u["team"] == "Enemy")
+        h.call("buff", unit=target["Id"], id="burning")
+        st = h.call("style", name=f"buffs-{target['Id']}")
+        check("buff shows as a pip on the unit", st.get("children", 0) >= 1, str(st))
+
+    with section("Why isn't it moving? Freeze badge on the tile and on its timeline circle"):
+        h.call("buff", unit=target["Id"], id="frozen"); time.sleep(0.3)
+        tl = h.call("names", prefix="tl-status-")
+        check("frozen enemy shows a status badge on its timeline circle", len(tl) >= 1, str(tl))
+        st = h.call("style", name=f"buffs-{target['Id']}")
+        check("statuses share one slot on the tile", st.get("children", 0) == 1, str(st))
+        seen = set()
+        for _ in range(4):
+            seen.add(h.call("style", name=f"statuspip-{target['Id']}").get("key")); time.sleep(0.65)
+        check("the status slot flashes through every buff/debuff", len(seen - {None}) >= 2, str(seen))
+        names_now = h.call("names", prefix="statuspip-")
+        check("status pips are pixel icons (flame, snowflake…)", any(h.call("style", name=n).get("children", 0) >= 1 for n in names_now), str(names_now))
+        disc = h.call("style", name=next((n for n in h.call("names", prefix="tl-") if n[3:].isdigit()), "tl-1"))
+        check("timeline circles are opaque (the line never shows through)", disc.get("background", "").upper().endswith("FF"), str(disc))
+
+    with section('Power Amplifier marker'):
+        h.call("devamp", x=0, y=4); time.sleep(0.3)
+        amp = h.call("element", name="amplifier")
+        tx, ty = h.tile(0, 4)
+        check("the Power Amplifier shows on its tile", amp.get("w", 0) > 0 and abs(amp["x"] + amp["w"] / 2 - tx) < 30 and abs(amp["y"] + amp["h"] / 2 - ty) < 30, str(amp))
+        h.shot("amplifier")
+        probs = [p for p in h.call("layout").get("problems", []) if "Power Amplifier" in p]
+        check("the amplifier's feed line fits the combat feed", not probs, " | ".join(probs))
+
+    with section('Pending spell: countdown ring on the caster, spell chip on the target, cycling when several'):
+        hero = next(u for u in battle_state()["units"] if u["team"] == "Hero")
+        r = h.call("devcast", target=hero["Id"], ability="charge_ice", ticks=40); time.sleep(0.4)
+        caster = r.get("caster", -1)
+        ring = h.call("element", name=f"castring-{caster}")
+        chip = h.call("element", name=f"castchip-{hero['Id']}")
+        check("a pending spell rings its caster and marks its target", ring.get("w", 0) > 0 and chip.get("w", 0) > 0, f"{r} {ring} {chip}")
+        check("casts are not drawn on the timeline", not any(n.startswith("tl-") and n[3:].isdigit() and h.call("element", name=n).get("w", 0) == 60 for n in h.call("names", prefix="tl-")))
+        h.call("devcast", target=hero["Id"], ability="charge_fireball", ticks=60); time.sleep(0.2)
+        seen = set()
+        for _ in range(5):
+            seen.add(h.call("style", name=f"castchip-{hero['Id']}")["border"]); time.sleep(0.5)
+        check("two pending spells on one unit cycle their colours", len(seen) >= 2, str(seen))
+        h.shot("castring")
+
+    with section('Long-press tooltip'):
+        wait_idle(200)
+        h.call("press", x=slot0[0], y=slot0[1], ms=700)
+        time.sleep(0.2)
+        check("long-press shows the ability card", any(("Instant" in x) or ("Charges" in x) or ("Skill" in x) or ("Item" in x) for x in texts()))
+        h.call("release"); time.sleep(0.3)
+
+    with section('Pause menu'):
+        h.call("click", name="menu"); time.sleep(0.5)
+        t = texts()
+        check("pause menu has Resume / Auto battle / Retreat", all(any(k in x for x in t) for k in ("Resume", "Auto battle", "Retreat")))
+        h.call("clicktext", text="Resume"); time.sleep(0.3)
+
+    with section('Idle hint (first battles)'):
+        wait_idle(200)
+        time.sleep(6.0)
+        banner = h.call("banner")["text"] or ""
+        check("idle hint appears", banner.startswith("Hint") or banner.startswith("Tip"), banner)
+        h.shot("hint")
+
+    with section("Settings toggles don't break the battle"):
+        for key in ("colorblind", "reducemotion"):
+            h.call("setting", key=key, value=1)
+        # The first battle is a 20-wave gauntlet now; finish a short one (Green Valley II) to reach the results screen.
+        h.call("back"); time.sleep(0.6)
+        if h.call("state")["screen"] == "battle":
+            h.call("clicktext", text="Resume"); time.sleep(0.3)
+        h.call("battle", stage="greenvalley-02"); time.sleep(2.5)
+        h.call("speed", x=3)
+        h.call("autoplay", on=1)
+        for _ in range(120):
+            time.sleep(1.0)
+            s = h.call("state")
+            if s["screen"] != "battle":
+                break
+        # A win that levels a hero shows LevelUpScreen (one "Skip" per hero) before the results.
+        until(lambda: h.call("state")["screen"] in ("levelup", "postbattle"), 4.0)
+        h._skip_levelups(h.call("state"))
+        on_screen("battle finishes with colorblind + reduce motion + ×3 speed", "postbattle")
+        check("results music", h.call("music")["track"] in ("HeroicAge", "Heartbreaking"))
+        h.shot("results")
+        h.call("setting", key="colorblind", value=0)
+        h.call("setting", key="reducemotion", value=0)
+
+    with section('Letterbox'):
+        h.call("resize", w=1280, h=720); time.sleep(1.2)
+        sb = h.call("stagebounds")
+        aspect = sb["w"] / sb["h"]
+        centered = abs((sb["x"] + sb["w"] / 2) - sb["screen"][0] / 2) < 4
+        check("wide window letterboxes (aspect kept, centered)", abs(aspect - 1170 / 2532) < 0.01 and centered, json.dumps(sb))
+        h.shot("letterbox-wide")
+        h.call("resize", w=585, h=1266); time.sleep(1.0)
+
+    with section('Boss styling (US-196): purple frame on the 2×2 Cyclops'):
+        h.call("back"); time.sleep(0.4)
+        h.call("clicktext", text="Continue"); time.sleep(1.0)
+        h.call("battle", stage="cave-02"); time.sleep(2.0)
+        b = battle_state()
+        boss = next((u for u in b["units"] if u["cls"].startswith("cyclops")), None)
+        if boss is None:
+            for _ in range(30):  # the cyclops may arrive in a later wave: autoplay until it appears
+                h.call("autoplay", on=1); time.sleep(1.0)
+                b = battle_state() or {}
+                boss = next((u for u in b.get("units", []) if u["cls"].startswith("cyclops")), None)
+                if boss or not b: break
+            h.call("autoplay", on=0)
+        blocks = h.call("names", prefix="block-")
+        check("physical blocks draw on cave stages", len(blocks) >= 2, str(blocks))
+        if boss:
+            fr = h.call("child_style", name=f"unit-{boss['Id']}", index=1)
+            kl = h.call("child_style", name=f"unit-{boss['Id']}", index=1, child=1)
+            check("unit frame uses the menu portrait frame (white border)", fr.get("border", "").upper().startswith("#ECEEFF"), str(fr))
+            check("2×2 boss gets the purple boss keyline", kl.get("border", "").upper().startswith("#DB66FF"), str(kl))
+            h.shot("boss")
+        else:
+            check("2×2 boss appears in Frostmaw Caverns II", False)
+
+    with section('Build settings (US-329)'):
+        ps = open(os.path.join(h.ROOT, "ProjectSettings", "ProjectSettings.asset"), encoding="utf-8").read()
+        ver = open(os.path.join(h.ROOT, "version.txt"), encoding="utf-8").read().strip()
+        check("portrait orientation, no splash, version from version.txt",
+              "defaultScreenOrientation: 0" in ps and "m_ShowUnitySplashScreen: 0" in ps and f"bundleVersion: {ver}" in ps)
+
+        logs = h.call("logs")
+        errs = [l for l in logs if l.startswith(("Error", "Exception", "Assert")) and "first mouse position" not in l]
+        check("no errors or exceptions logged", not errs, " | ".join(e[:160] for e in errs[:5]))
+
+    with section('Safe area (US-287): simulate a 120 px notch + 80 px home bar on a 585×1266 window'):
+        try:
+            h.call("quit", timeout=3)
+        except Exception:
+            pass
+        time.sleep(1.5)
+        h.launch("uicheck-safearea", fresh=True, extra=("-safeArea", "120,80"))
+        until(lambda: h.call("element", name="screens").get("w", 0) > 0)
+        el = h.call("element", name="screens")
+        # 120 screen px at 585 px wide = 240 design px; the stage fills the window exactly.
+        check("safe-area insets push content below the notch and above the home bar",
+              abs(el.get("y", -1) - 240) < 6 and abs((2532 - (el.get("y", 0) + el.get("h", 0))) - 160) < 6, str(el))
+        h.shot("safearea-title")
 
     passed = sum(1 for r in results if r["ok"])
     report = {"passed": passed, "failed": len(results) - passed, "results": results}

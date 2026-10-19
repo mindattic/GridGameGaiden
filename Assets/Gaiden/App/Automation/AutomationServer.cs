@@ -174,6 +174,18 @@ namespace Gaiden.App.Automation
                     StartCoroutine(Tap(c.x, c.y, reply));
                     return Pending;
                 }
+                case "scrollto":
+                {
+                    // Scrolls the nearest ScrollView ancestor until the named element is in view, so a
+                    // following click lands on it rather than on whatever sits at its off-viewport
+                    // coordinates (GG-T110: most of the party-select grid starts below the fold).
+                    var e = app.Stage.Q(q["name"]);
+                    if (e == null) return new { error = $"no element named '{q["name"]}'" };
+                    var sv = e.GetFirstAncestorOfType<ScrollView>();
+                    if (sv == null) return new { ok = true, scrolled = false };
+                    sv.ScrollTo(e);
+                    return new { ok = true, scrolled = true };
+                }
                 case "clicktext":
                 {
                     var target = q["text"];
@@ -406,7 +418,7 @@ namespace Gaiden.App.Automation
                     if (app.Router.Current is BattleScreen dcs) { int caster = dcs.DevQueueCast((int)F(q["target"]), q["ability"], (int)F(q["ticks"], 30)); return new { ok = caster >= 0, caster }; }
                     return new { error = "not in battle" };
                 case "devamp":
-                    if (app.Router.Current is BattleScreen dab) { dab.State.Amplifier = new Coord((int)F(q["x"]), (int)F(q["y"])); dab.SyncAll(); return new { ok = true }; }
+                    if (app.Router.Current is BattleScreen dab) { dab.State.Amplifier = new Coord((int)F(q["x"]), (int)F(q["y"])); dab.SyncAll(); dab.Feed(BattleScreen.AmpSpawnedFeed, BattleScreen.AmpFeedColor); return new { ok = true }; }
                     return new { error = "not in battle" };
                 case "democaster":
                     if (app.Router.Current is BattleScreen democ) { democ.DemoCaster(); return new { ok = true }; }

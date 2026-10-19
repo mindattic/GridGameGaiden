@@ -94,11 +94,52 @@ def drag_tiles(*tiles, step=0.12):
     return call("drag", path=pts, step=step)
 
 
+STARTING_PARTY = ("paladin", "barbarian", "cleric", "redmage", "engineer")  # Meta.Progression.StartingRoster
+
+
+def _wait_screen(screen, timeout=6.0):
+    end = time.time() + timeout
+    while time.time() < end:
+        try:
+            if call("state")["screen"] == screen:
+                return True
+        except Exception:
+            pass
+        time.sleep(0.25)
+    return False
+
+
+def pick_party(ids=STARTING_PARTY, timeout=10.0):
+    """Drives the New Game party-select screen (CharacterSelectScreen, id "charselect") through the real
+    UI: tap a hero's tile to preview it, tap it again to lock it in, five times. Picks the fixed starting
+    five by default so every run gets the same squad the old fixed-roster New Game gave. Taps can be
+    dropped while the player window isn't focused (GG-T121), so each lock-in is verified (a locked tile
+    dims to 0.25 opacity) and retried. Returns True once the screen has left for the camp hub."""
+    if not _wait_screen("charselect", timeout):
+        return False
+    time.sleep(0.5)  # let the screen's fade-in finish before the first tap
+    for cid in ids:
+        name = f"tile-{cid}"
+        for _ in range(4):
+            if call("state")["screen"] != "charselect" or call("style", name=name).get("opacity", 1) < 0.5:
+                break
+            call("scrollto", name=name); time.sleep(0.25)  # most of the grid starts below the fold
+            call("click", name=name); time.sleep(0.35)
+            if call("style", name=name).get("opacity", 1) < 0.5:
+                break  # a stale highlight from a dropped tap means the first tap already locked it in
+            call("click", name=name); time.sleep(0.45)
+    return _wait_screen("hub", timeout)
+
+
 def smoke(run="smoke"):
-    launch(run)
+    launch(run, fresh=True)  # fresh: an occupied Slot 1 would stop at the overwrite confirm instead
+    _wait_screen("title")
+    time.sleep(0.6)  # the title's fade-in swallows a tap sent the moment the server answers
     files = [shot("01-title")]
-    call("clicktext", text="New Game"); time.sleep(0.8)
-    call("clicktext", text="Slot 1"); time.sleep(1.2)
+    _tap_until(lambda: call("clicktext", text="New Game"), lambda: any("Slot 1" in t for t in call("texts")), tries=4)
+    _tap_until(lambda: call("clicktext", text="Slot 1"), lambda: call("state")["screen"] == "charselect", tries=4, wait=1.0)
+    files.append(shot("02-charselect"))
+    pick_party()
     files.append(shot("02-hub"))
     call("clicktext", text="Adventure"); time.sleep(0.8)
     files.append(shot("03-stages"))

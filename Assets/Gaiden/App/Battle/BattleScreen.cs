@@ -1357,6 +1357,7 @@ namespace Gaiden.App
             var l = Ui.Text(text, "tiny shadow", feed);
             l.style.color = color;
             l.style.fontSize = 30;
+            l.style.whiteSpace = WhiteSpace.Normal; // a long line wraps inside the 640px feed instead of spilling over the board (GG-T110)
             while (feed.childCount > 3) feed.RemoveAt(0);
             App.StartCoroutine(FeedFade(l));
         }

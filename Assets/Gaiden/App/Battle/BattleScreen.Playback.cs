@@ -801,11 +801,16 @@ namespace Gaiden.App
             veil.RemoveFromHierarchy();
         }
 
+        /// <summary>The feed line for a spawned amplifier; the dev <c>devamp</c> endpoint posts it too, so
+        /// uicheck's layout audit covers the real text (GG-T110).</summary>
+        public const string AmpSpawnedFeed = "Power Amplifier appeared — pincer on its tile";
+        public static readonly Color AmpFeedColor = new Color(1f, 0.85f, 0.4f);
+
         private IEnumerator AmpSpawnAnim(AmplifierSpawnedEvent e)
         {
             board.SyncAmplifier(e.At);
             App.Audio.Sfx("orb", 0.8f, 0.7f);
-            Feed("A Power Amplifier appeared — pincer from its tile", new Color(1f, 0.85f, 0.4f));
+            Feed(AmpSpawnedFeed, AmpFeedColor);
             yield return Tween.Pop(board.Amp, 1.6f, 0.3f);
         }
 
