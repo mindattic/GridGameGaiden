@@ -371,12 +371,20 @@ namespace Gaiden.Meta
                     // Wounds carry; a hero who fell revives at 1 HP; a level-up refreshes to full.
                     h.Hp = after > before ? 0 : (u.Alive ? (u.Hp >= u.MaxHp ? 0 : u.Hp) : 1);
                     r.BrokenWeapons.TryGetValue(u.Def.Id, out var shatteredWeapons);
-                    if (r.FinalWeapon.TryGetValue(u.Def.Id, out var finalWeapon) && finalWeapon != h.WeaponId && finalWeapon != null)
+                    var finalWeapon = r.FinalWeapon.TryGetValue(u.Def.Id, out var fw) ? fw : u.WeaponId;
+                    // Bag bookkeeping by conservation: hand-before + bar-before = hand-after + bar-after + shattered,
+                    // and bar weapons live in the bag, so the bag changes by (hand-before − hand-after − shattered).
+                    // The old pairwise rule (old weapon back unless it shattered, new one out) missed a bar weapon
+                    // that was swapped in and then shattered while the original was re-equipped from the bar: that
+                    // copy became a Broken fragment *and* stayed whole in the bag — a duplicate (GG-T70).
+                    var bagDelta = new Dictionary<string, int>();
+                    void Delta(string id, int n) { if (id == null) return; bagDelta.TryGetValue(id, out var v); bagDelta[id] = v + n; }
+                    if (finalWeapon != h.WeaponId) { Delta(h.WeaponId, +1); Delta(finalWeapon, -1); }
+                    if (shatteredWeapons != null) foreach (var id in shatteredWeapons) Delta(id, -1);
+                    foreach (var kv in bagDelta) if (kv.Value != 0) s.AddItem(kv.Key, kv.Value);
+                    if (finalWeapon != h.WeaponId && finalWeapon != null)
                     {
-                        // A bar swap: the old weapon goes back to the bag, the new one leaves it — unless the
-                        // old one shattered first, in which case it already became a Broken fragment below (GG-T41).
-                        if (h.WeaponId != null && (shatteredWeapons == null || !shatteredWeapons.Contains(h.WeaponId))) s.AddItem(h.WeaponId, 1);
-                        s.AddItem(finalWeapon, -1);
+                        // A bar swap: the hand now holds the bar's weapon (bag already settled above).
                         h.WeaponId = finalWeapon;
                         h.WeaponRepairs = 0;
                         h.WeaponMastery = 1f; // bar backups always enter at factory spec (§24.5), never Masterwork

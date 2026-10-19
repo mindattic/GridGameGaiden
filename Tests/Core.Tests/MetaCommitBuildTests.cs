@@ -155,6 +155,31 @@ namespace Gaiden.Tests
             Assert.That(s.Count(backup.Id), Is.EqualTo(0)); // the backup left the bag onto the hero
         }
 
+        [Test] // GG-T70
+        public void A_bar_weapon_that_was_swapped_in_and_shattered_does_not_stay_whole_in_the_bag()
+        {
+            var c = Real; var s = Progression.NewGame(c, "SW2");
+            var hero = s.Hero(s.Party[0]);
+            var weapons = c.Items.Values.Where(i => i.Slot == EquipmentSlot.Weapon && i.Type == ItemType.Equipment && i.Durability > 0).Take(2).ToList();
+            var main = weapons[0];
+            var spare = weapons[1];
+            hero.WeaponId = main.Id;
+            hero.WeaponDurability = main.Durability;
+            s.AddItem(spare.Id, 1);
+
+            var st = DirectWin(c, s, c.CampaignStages()[0].Id);
+            // Swapped to the spare, the spare shattered, and the main weapon auto-equipped back from the bar.
+            st.Results.BrokenWeapons[hero.ClassId] = new List<string> { spare.Id };
+            st.Results.FinalWeapon[hero.ClassId] = main.Id;
+            st.Results.WeaponDurability[hero.ClassId] = main.Durability;
+            BattleFactory.Commit(c, s, st);
+
+            Assert.That(hero.WeaponId, Is.EqualTo(main.Id));
+            Assert.That(s.Count(spare.Id), Is.EqualTo(0)); // not both a Broken fragment and a whole copy
+            Assert.That(s.BrokenCount(spare.Id), Is.EqualTo(1));
+            Assert.That(s.Count(main.Id), Is.EqualTo(0)); // still in hand, not also back in the bag
+        }
+
         [Test] // GG-T41
         public void Broken_fragments_cannot_be_equipped_and_salvaging_one_grants_materials_and_blacksmith_xp()
         {
