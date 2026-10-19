@@ -114,7 +114,17 @@ namespace Gaiden.App
         protected override void Build(VisualElement root)
         {
             var initial = new List<BattleEvent>();
-            if (State == null)
+            // Build runs again on this same instance when the player backs out of "How to play" (the router
+            // re-mounts the screen). Every per-build view cache must start empty, or the HUD keeps writing to
+            // the previous build's detached elements (every slot read "Locked", orbs empty, timeline icons
+            // gone, coin label blank) — and the once-per-battle work (tutorial, opening playback, capture
+            // event) must not run a second time (GG-T70).
+            bool firstBuild = State == null;
+            slotViews.Clear();
+            orbViews.Clear();
+            timelineIconViews.Clear();
+            shownCoins = -1;
+            if (firstBuild)
             {
                 var setup = setupOverride ?? BattleFactory.Build(App.Content, App.Save, stageId, Environment.TickCount);
                 State = BattleEngine.Create(App.Content, setup, initial);
@@ -191,8 +201,9 @@ namespace Gaiden.App
 
             foreach (var u in State.Units) if (u.Alive) board.Add(u);
             SelectedHeroId = State.Units.FirstOrDefault(u => u.IsHero && u.Alive)?.Id ?? -1;
-            if (setupOverride == null && App.Save != null && !App.Save.TutorialDone && App.Save.HighestClearedStage < 0 && !CommandLine.Has("-autobattle") && !DemoMode.Active && !TestMode.Active) TutorialStep = 0;
+            if (firstBuild && setupOverride == null && App.Save != null && !App.Save.TutorialDone && App.Save.HighestClearedStage < 0 && !CommandLine.Has("-autobattle") && !DemoMode.Active && !TestMode.Active) TutorialStep = 0;
             SyncAll();
+            if (!firstBuild) return;
             App.StartCoroutine(Play(initial, false));
             if (CommandLine.Has("-autobattle") || DemoMode.Active || TestMode.Active) AutoPlay = true;
             CaptureUnity.Raise("battle-start", new CaptureData { ["stage"] = State.Stage.Id });
