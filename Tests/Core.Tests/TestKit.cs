@@ -111,6 +111,24 @@ namespace Gaiden.Tests
         }
 
         /// <summary>Structural invariants that must hold after every command.</summary>
+        /// <summary>At most one board item (a pickup or a movable tile) per tile, ever, all on the walkable board (§1.1.3, GG-T129).</summary>
+        public static void AssertItemsApart(BattleState s)
+        {
+            var items = new Dictionary<Coord, string>();
+            foreach (var m in s.Movables)
+            {
+                Assert.That(s.Walkable(m.Pos), Is.True, $"movable off the board at {m.Pos}");
+                Assert.That(items.ContainsKey(m.Pos), Is.False, $"two items on {m.Pos}: {(items.TryGetValue(m.Pos, out var o) ? o : null)} and a movable");
+                items[m.Pos] = "movable";
+            }
+            foreach (var p in s.Pickups)
+            {
+                Assert.That(s.Walkable(p.At), Is.True, $"pickup {p.Id} off the board at {p.At}");
+                Assert.That(items.ContainsKey(p.At), Is.False, $"two items on {p.At}: {(items.TryGetValue(p.At, out var o) ? o : null)} and pickup {p.Id}");
+                items[p.At] = "pickup " + p.Id;
+            }
+        }
+
         public static void AssertInvariants(BattleState s)
         {
             var seen = new Dictionary<Coord, int>();
@@ -128,6 +146,7 @@ namespace Gaiden.Tests
             // A movable tile (the Power Amplifier) occupies its tile like an actor: never under a unit (GG-T97).
             foreach (var m in s.Movables)
                 Assert.That(seen.ContainsKey(m.Pos), Is.False, $"Movable at {m.Pos} under unit {(seen.ContainsKey(m.Pos) ? seen[m.Pos] : -1)}");
+            AssertItemsApart(s);
             Assert.That(s.Bank.Count, Is.InRange(0, s.Bank.Capacity));
             foreach (var e in s.Timeline)
             {

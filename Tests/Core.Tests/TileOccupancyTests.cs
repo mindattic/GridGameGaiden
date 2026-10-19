@@ -31,6 +31,14 @@ namespace Gaiden.Tests
                     if (!keep.Contains(new Coord(x, y))) st.Blocks.Add(new Coord(x, y));
         }
 
+        /// <summary>Lays a long-lived pickup on a tile by hand (as a fallen enemy would).</summary>
+        private static Pickup Drop(BattleState s, int x, int y)
+        {
+            var p = new Pickup { Id = s.NextPickupId++, PickupId = "pk", At = new Coord(x, y), ActionsLeft = 999 };
+            s.Pickups.Add(p);
+            return p;
+        }
+
         private static void AssertBoardClean(BattleState s)
         {
             var seen = new Dictionary<Coord, Unit>();
@@ -43,6 +51,7 @@ namespace Gaiden.Tests
                 }
             foreach (var m in s.Movables)
                 Assert.That(seen.ContainsKey(m.Pos), Is.False, $"movable under {(seen.TryGetValue(m.Pos, out var o) ? o : null)} at {m.Pos}");
+            AssertItemsApart(s);
         }
 
         // ── The net itself ──
@@ -114,6 +123,7 @@ namespace Gaiden.Tests
         [TestCase("block")]
         [TestCase("amp-then-block")]
         [TestCase("amp-free")]
+        [TestCase("amp-then-pickup")]
         public void Knockback_into_anything_never_lands_on_it(string into)
         {
             var db = Mini();
@@ -124,8 +134,16 @@ namespace Gaiden.Tests
             var tank = s.Units.First(u => u.Alive && u.Pos == new Coord(2, 3));
             if (into == "edge") { tank.Pos = new Coord(2, 0); k.Pos = new Coord(2, 1); }
             if (into.StartsWith("amp")) s.Amplifier = new Coord(2, 2);
+            if (into == "amp-then-pickup") Drop(s, 2, 1);
             BattleEngine.Apply(s, new UseSlotCommand { HeroId = k.Id, Slot = 0, Target = tank.Pos });
             AssertBoardClean(s);
+            if (into == "amp-then-pickup")
+            {
+                // A pickup behind the amplifier stops it like a wall: the tank crashes, nothing stacks (GG-T129).
+                Assert.That(s.Amplifier, Is.EqualTo(new Coord(2, 2)));
+                Assert.That(s.PickupAt(new Coord(2, 1)), Is.Not.Null);
+                if (tank.Alive) Assert.That(tank.Pos, Is.EqualTo(new Coord(2, 3)));
+            }
             if (into == "amp-free" && tank.Alive) { Assert.That(tank.Pos, Is.EqualTo(new Coord(2, 1))); Assert.That(s.Amplifier, Is.EqualTo(new Coord(2, 0))); }
             if (into == "amp-then-block" && tank.Alive) { Assert.That(tank.Pos, Is.EqualTo(new Coord(2, 3))); Assert.That(s.Amplifier, Is.EqualTo(new Coord(2, 2))); }
         }
@@ -386,6 +404,133 @@ namespace Gaiden.Tests
             Assert.That(s.Results.ActionsTaken, Is.EqualTo(actions));
             Assert.That(cleric.Alive, Is.False);
             AssertBoardClean(s);
+        }
+
+        // ── Board items: at most one pickup or movable per tile, ever (§1.1.3, GG-T129) ──
+
+        [Test]
+        public void The_amplifier_never_spawns_on_a_pickup()
+        {
+            var db = Mini();
+            var st = Stage(("tank", 0, 0));
+            OnlyOpen(st, (0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0));
+            var (s, _) = Battle(db, st, ("knight", 1, 0), ("cleric", 2, 0));
+            Drop(s, 3, 0); Drop(s, 4, 0);
+            int spawned = 0;
+            for (int i = 0; i < 80 && !s.IsOver; i++)
+            {
+                foreach (var h in s.Units.Where(u => u.IsHero && u.Alive)) h.Hp = h.MaxHp;
+                foreach (var p in s.Pickups) p.ActionsLeft = 999;
+                var ev = BattleEngine.Apply(s, new ShieldCommand());
+                AssertBoardClean(s);
+                if (ev.OfType<AmplifierSpawnedEvent>().Any())
+                {
+                    spawned++;
+                    Assert.That(s.Amplifier, Is.EqualTo(new Coord(5, 0)), "the only open tile without a pickup");
+                    s.Amplifier = null;
+                }
+            }
+            Assert.That(spawned, Is.GreaterThan(0), "the luck roll came up at least once");
+            // With a pickup on the last open tile too there's nowhere item-free: no amplifier, no stack.
+            Drop(s, 5, 0);
+            for (int i = 0; i < 40 && !s.IsOver; i++)
+            {
+                foreach (var h in s.Units.Where(u => u.IsHero && u.Alive)) h.Hp = h.MaxHp;
+                foreach (var p in s.Pickups) p.ActionsLeft = 999;
+                BattleEngine.Apply(s, new ShieldCommand());
+                AssertBoardClean(s);
+                Assert.That(s.Amplifier, Is.Null);
+            }
+        }
+
+        [Test]
+        public void An_enemy_leaving_a_pickup_shoves_the_amplifier_aside_never_onto_it()
+        {
+            var db = Mini();
+            var (s, _) = Battle(db, Stage(("wolf", 2, 3)), ("knight", 2, 6), ("cleric", 5, 7));
+            var wolf = Enemy(s, "wolf");
+            var under = Drop(s, 2, 3); // the wolf stands on a pickup (pickups don't block, §13.3.1)
+            s.Amplifier = new Coord(2, 4);
+            s.TurnEntryOf(wolf.Id).Ip = 999;
+            var ev = BattleEngine.Apply(s, new ShieldCommand());
+            AssertBoardClean(s);
+            Assert.That(wolf.Pos, Is.Not.EqualTo(new Coord(2, 3)), "the wolf walked off its pickup");
+            Assert.That(ev.OfType<AmplifierMovedEvent>().Any(), Is.True, "it shoved the amplifier on its way");
+            Assert.That(s.Pickups, Does.Contain(under), "the pickup stays where it lies");
+            Assert.That(s.Amplifier, Is.Not.Null);
+            Assert.That(s.Amplifier, Is.Not.EqualTo(new Coord(2, 3)));
+        }
+
+        [Test]
+        public void A_hero_swapping_with_the_amplifier_never_sends_it_onto_a_pickup()
+        {
+            var db = Mini();
+            var (s, _) = Battle(db, Stage(("tank", 5, 0)), ("knight", 0, 3), ("cleric", 5, 7));
+            var knight = Hero(s, "knight");
+            Drop(s, 0, 3); // a pickup under the knight (never happens in play — heroes collect on entry — the worst case)
+            s.Amplifier = new Coord(1, 3);
+            BattleEngine.Apply(s, new MoveCommand { HeroId = knight.Id, Path = P((1, 3)) });
+            AssertBoardClean(s);
+            Assert.That(knight.Pos, Is.EqualTo(new Coord(1, 3)));
+            Assert.That(s.Amplifier, Is.Not.Null);
+            Assert.That(s.Amplifier, Is.Not.EqualTo(new Coord(0, 3)));
+        }
+
+        [Test]
+        public void Release_mode_heals_two_pickups_on_one_tile_by_fading_the_newer()
+        {
+            var db = Mini();
+            var (s, _) = Battle(db, Stage(("tank", 0, 0)), ("knight", 3, 6), ("cleric", 5, 7));
+            s.StrictTilesOverride = false;
+            var older = Drop(s, 2, 2);
+            var newer = Drop(s, 2, 2);
+            var ev = BattleEngine.Apply(s, new ShieldCommand());
+            Assert.That(ev.OfType<TileConflictEvent>().Count(), Is.EqualTo(1));
+            Assert.That(ev.OfType<PickupExpiredEvent>().Any(e => e.PickupEntryId == newer.Id), Is.True, "the view drops its token");
+            Assert.That(s.Pickups, Does.Contain(older));
+            AssertBoardClean(s);
+        }
+
+        [Test]
+        public void Strict_mode_throws_on_a_pickup_under_the_amplifier()
+        {
+            var db = Mini();
+            var (s, _) = Battle(db, Stage(("tank", 0, 0)), ("knight", 3, 6), ("cleric", 5, 7));
+            s.Amplifier = new Coord(2, 2);
+            Drop(s, 2, 2);
+            Assert.Throws<TileConflictException>(() => BattleEngine.Apply(s, new ShieldCommand()));
+        }
+
+        /// <summary>
+        /// A long strict soak over the real stages that counts what it exercised: enemies drop pickups, the amplifier
+        /// spawns and gets shoved, and after every command no tile ever holds two items (the strict engine also throws
+        /// at every inner boundary).
+        /// </summary>
+        [Test]
+        public void Strict_soak_with_drops_and_amplifier_shoves_never_stacks_items()
+        {
+            var db = Real;
+            int drops = 0, ampSpawns = 0, ampShoves = 0;
+            var stages = Real.StageOrder;
+            for (int i = 0; i < stages.Count; i += 3)
+                for (int seed = 1; seed <= 6; seed++)
+                {
+                    var stage = stages[i];
+                    int level = stage.IsTest ? 5 : System.Math.Max(1, i + 1);
+                    var setup = new BattleSetup { Stage = stage, Seed = seed * 7919 + i, UnlockedSlots = 5, RecommendedLevel = stage.IsTest ? 1 : i + 1, Party = ContentAndSoakTests.StarterParty(db, level) };
+                    BotRunner.Play(db, setup, new HeroBot(seed, 0.6f), 1500, (cmd, ev, st) =>
+                    {
+                        drops += ev.OfType<PickupDroppedEvent>().Count();
+                        ampSpawns += ev.OfType<AmplifierSpawnedEvent>().Count();
+                        ampShoves += ev.OfType<AmplifierMovedEvent>().Count();
+                        Assert.That(ev.OfType<TileConflictEvent>().Any(), Is.False);
+                        AssertItemsApart(st);
+                    });
+                }
+            TestContext.Out.WriteLine($"drops {drops}, amplifier spawns {ampSpawns}, shoves {ampShoves}");
+            Assert.That(drops, Is.GreaterThan(0));
+            Assert.That(ampSpawns, Is.GreaterThan(0));
+            Assert.That(ampShoves, Is.GreaterThan(0));
         }
 
         // ── The bot soak, strict, long and wide ──

@@ -234,7 +234,37 @@ namespace Gaiden.App
                     else if (!u.Alive && live) problems.Add($"{u} has fallen but is still drawn on {v.Tile}");
                     else if (u.Alive && v.Tile != u.Pos) problems.Add($"{u} drawn on {v.Tile} but stands on {u.Pos}");
                 }
+            AuditItemTokens(problems, againstState);
             return problems;
+        }
+
+        /// <summary>
+        /// GG-T129, the view half of "at most one board item per tile, ever" (§1.1.3): no two item tokens (pickups, the
+        /// Power Amplifier) drawn on one tile, and with <paramref name="againstState"/> no stale token — every drawn
+        /// pickup is still on the board where the state has it, every pickup in the state is drawn, and the amplifier
+        /// is drawn exactly where (and only while) it stands.
+        /// </summary>
+        private void AuditItemTokens(List<string> problems, bool againstState)
+        {
+            var items = new Dictionary<Coord, string>();
+            void Drawn(Coord at, string what)
+            {
+                if (items.TryGetValue(at, out var other)) problems.Add($"items {other} and {what} both drawn on {at}");
+                else items[at] = what;
+            }
+            foreach (var kv in board.PickupViews)
+                if (kv.Value.userData is Coord pat) Drawn(pat, "pickup " + kv.Key);
+            if (board.AmpTile.HasValue) Drawn(board.AmpTile.Value, "amplifier");
+            if (!againstState) return;
+            foreach (var kv in board.PickupViews)
+            {
+                var p = State.Pickups.FirstOrDefault(x => x.Id == kv.Key);
+                if (p == null) problems.Add($"pickup {kv.Key} is gone but its token is still drawn");
+                else if (kv.Value.userData is Coord pat && pat != p.At) problems.Add($"pickup {kv.Key} drawn on {pat} but lies on {p.At}");
+            }
+            foreach (var p in State.Pickups)
+                if (!board.PickupViews.ContainsKey(p.Id)) problems.Add($"pickup {p.Id} lies on {p.At} but isn't drawn");
+            if (board.AmpTile != State.Amplifier) problems.Add($"amplifier drawn on {board.AmpTile?.ToString() ?? "nothing"} but stands on {State.Amplifier?.ToString() ?? "nothing"}");
         }
 
         // ── Individual beats ──────────────────────────────────────────────────────

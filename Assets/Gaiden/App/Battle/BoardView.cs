@@ -488,6 +488,8 @@ namespace Gaiden.App
         // ── Power Amplifier marker (§1.2.6): a pulsing gold diamond on its tile ──
         private VisualElement amp;
         public VisualElement Amp => amp;
+        /// <summary>The tile the amplifier token is drawn on (null while hidden) — for BoardAudit (GG-T129).</summary>
+        public Coord? AmpTile { get; private set; }
 
         public void SyncAmplifier(Coord? at)
         {
@@ -514,6 +516,7 @@ namespace Gaiden.App
                     amp.style.scale = new Scale(new Vector2(k, k));
                 }).Every(33);
             }
+            AmpTile = at;
             amp.style.display = at.HasValue ? DisplayStyle.Flex : DisplayStyle.None;
             if (at.HasValue) PlaceAmp(CenterOf(at.Value));
         }
@@ -616,6 +619,7 @@ namespace Gaiden.App
                 disc.style.translate = new Translate(0, -8f * Mathf.Abs(Mathf.Sin(t)));
                 glow.style.opacity = 0.65f + 0.35f * Mathf.Sin(t * 1.3f);
             }).Every(33);
+            root.userData = p.At; // pickups never move: the tile its token is drawn on (BoardAudit, GG-T129)
             MarkLayer.Add(root);
             PickupViews[p.Id] = root;
             return root;

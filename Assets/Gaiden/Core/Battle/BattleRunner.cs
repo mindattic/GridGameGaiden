@@ -111,13 +111,14 @@ namespace Gaiden.Core.Battle
             return true;
         }
 
-        /// <summary>The chokepoint for a movable tile (§1.1.2): it may only land on a walkable tile nobody stands on.</summary>
+        /// <summary>The chokepoint for a movable tile (§1.1.2): it may only land on a walkable tile nobody stands on that
+        /// holds no other item (§1.1.3, GG-T129: never onto a pickup or another movable).</summary>
         private bool MoveMovable(MovableTile m, Coord to, Unit by)
         {
             var from = m.Pos;
             if (from == to) return true;
             var other = S.MovableAt(to);
-            if (!S.Walkable(to) || S.UnitAt(to) != null || (other != null && other != m))
+            if (!S.Walkable(to) || S.UnitAt(to) != null || (other != null && other != m) || PickupBlocksMovable(to))
             {
                 Violation($"movable at {from} can't be pushed to {to}");
                 return false;
@@ -125,6 +126,30 @@ namespace Gaiden.Core.Battle
             m.Pos = to;
             Emit(new AmplifierMovedEvent { From = from, To = to, ByUnitId = by?.Id ?? -1 });
             return true;
+        }
+
+        /// <summary>
+        /// Does a pickup on <paramref name="c"/> keep a movable off it (§1.1.3)? Always, except in a hero-path preview:
+        /// there pickups aren't collected, so the tiles the walk already crossed still list pickups that the real move
+        /// will have picked up before the amplifier is shoved back onto them.
+        /// </summary>
+        private bool PickupBlocksMovable(Coord c) => !PreviewOnly && S.PickupAt(c) != null;
+
+        /// <summary>The nearest tile a movable may land on (walkable, nobody there, no item), or null on a full board.</summary>
+        private Coord? NearestMovableSpot(MovableTile m, Coord near)
+        {
+            Coord? best = null; int bestD = int.MaxValue;
+            for (int y = 0; y < BattleConfig.Rows; y++)
+                for (int x = 0; x < BattleConfig.Cols; x++)
+                {
+                    var c = new Coord(x, y);
+                    if (!S.Walkable(c) || S.UnitAt(c) != null || PickupBlocksMovable(c)) continue;
+                    var other = S.MovableAt(c);
+                    if (other != null && other != m) continue;
+                    int d = c.Manhattan(near);
+                    if (d < bestD) { bestD = d; best = c; }
+                }
+            return best;
         }
 
         /// <summary>The chokepoint for putting a new unit on the board (spawns, waves, reinforcements, eggs, remains, guests).</summary>
@@ -148,8 +173,12 @@ namespace Gaiden.Core.Battle
                 throw new TileConflictException(what + " (stage " + S.Stage?.Id + ", wave " + S.Wave + ", clock " + S.Clock + ")");
         }
 
-        /// <summary>The first tile two actors share (or an actor off the walkable board), or null on a healthy board.</summary>
-        private (Unit mover, Unit stays, MovableTile movable, Coord at)? FindTileConflict()
+        /// <summary>
+        /// The first tile two actors share (or an actor off the walkable board), or two board items share (§1.1.3,
+        /// GG-T129: a pickup on a pickup or under a movable, or a pickup off the walkable board), or null on a healthy
+        /// board. A unit standing on a pickup is fine — pickups don't block (§13.3.1).
+        /// </summary>
+        private (Unit mover, Unit stays, MovableTile movable, Pickup pickup, Coord at)? FindTileConflict()
         {
             var seen = new Dictionary<Coord, Unit>();
             foreach (var u in S.Units)
@@ -157,17 +186,21 @@ namespace Gaiden.Core.Battle
                 if (!u.Alive) continue;
                 foreach (var t in u.Tiles())
                 {
-                    if (!S.Walkable(t)) return (u, null, null, t);
+                    if (!S.Walkable(t)) return (u, null, null, null, t);
                     if (!seen.TryGetValue(t, out var other)) { seen[t] = u; continue; }
                     var mover = u.Id > other.Id ? u : other;
-                    return (mover, mover == u ? other : u, null, t);
+                    return (mover, mover == u ? other : u, null, null, t);
                 }
             }
-            var movableTiles = new HashSet<Coord>();
+            var itemTiles = new HashSet<Coord>();
             foreach (var m in S.Movables)
             {
                 seen.TryGetValue(m.Pos, out var under);
-                if (under != null || !S.Walkable(m.Pos) || !movableTiles.Add(m.Pos)) return (under, null, m, m.Pos);
+                if (under != null || !S.Walkable(m.Pos) || !itemTiles.Add(m.Pos)) return (under, null, m, null, m.Pos);
+            }
+            foreach (var p in S.Pickups)
+            {
+                if (!S.Walkable(p.At) || !itemTiles.Add(p.At)) return (null, null, S.MovableAt(p.At), p, p.At);
             }
             return null;
         }
@@ -180,9 +213,11 @@ namespace Gaiden.Core.Battle
             if (c != null) throw new TileConflictException(Describe(c.Value, context));
         }
 
-        private string Describe((Unit mover, Unit stays, MovableTile movable, Coord at) c, string context) =>
-            "Tile conflict at " + c.at + " after " + context + ": " + (c.mover?.ToString() ?? "-") + " vs "
-            + (c.movable != null ? "movable" : c.stays?.ToString() ?? "off-board")
+        private string Describe((Unit mover, Unit stays, MovableTile movable, Pickup pickup, Coord at) c, string context) =>
+            "Tile conflict at " + c.at + " after " + context + ": "
+            + (c.pickup != null
+                ? "pickup " + c.pickup.Id + " (" + c.pickup.PickupId + ") vs " + (c.movable != null ? "movable" : S.Walkable(c.at) ? "another pickup" : "off-board")
+                : (c.mover?.ToString() ?? "-") + " vs " + (c.movable != null ? "movable" : c.stays?.ToString() ?? "off-board"))
             + " (stage " + S.Stage?.Id + ", wave " + S.Wave + ", clock " + S.Clock + ")";
 
         /// <summary>
@@ -198,11 +233,19 @@ namespace Gaiden.Core.Battle
             if (found == null) return;
             var c = found.Value;
             if (Strict) throw new TileConflictException(Describe(c, lastCommand));
+            if (c.pickup != null && c.movable == null)
+            {
+                // Two pickups on one tile (or one off the board): the newer one fades, so only one token is ever drawn.
+                Emit(new TileConflictEvent { UnitId = -1, OtherUnitId = -1, At = c.at, Command = lastCommand });
+                S.Pickups.Remove(c.pickup);
+                Emit(new PickupExpiredEvent { PickupEntryId = c.pickup.Id, PickupId = c.pickup.PickupId, At = c.pickup.At });
+                return;
+            }
             if (c.movable != null)
             {
                 Emit(new TileConflictEvent { UnitId = c.mover?.Id ?? -1, OtherUnitId = -1, At = c.at, Command = lastCommand });
-                var spot = RandomFreeTile(1, 1, 0, BattleConfig.Rows - 1);
-                if (spot != null) MoveMovable(c.movable, spot.Value, null);
+                var spot = NearestMovableSpot(c.movable, c.at);
+                if (spot != null && spot.Value != c.movable.Pos) MoveMovable(c.movable, spot.Value, null);
                 else S.Movables.Remove(c.movable);
                 return;
             }
@@ -244,7 +287,7 @@ namespace Gaiden.Core.Battle
                 for (int x = 0; x < BattleConfig.Cols; x++)
                 {
                     var c = new Coord(x, y);
-                    if (S.FreeForSpawn(c) && S.TrapAt(c) == null) free.Add(c);
+                    if (S.FreeForItem(c)) free.Add(c); // never onto a pickup (§1.1.3, GG-T129)
                 }
             if (free.Count == 0) return;
             var at = free[S.Rng.Range(0, free.Count)];
@@ -468,8 +511,7 @@ namespace Gaiden.Core.Battle
             Emit(new PickupDroppedEvent { PickupEntryId = p.Id, PickupId = def.Id, At = p.At, FromUnitId = fallen.Id });
         }
 
-        private bool PickupSpotFree(Coord c) =>
-            S.Walkable(c) && S.UnitAt(c) == null && S.MovableAt(c) == null && S.TrapAt(c) == null && S.PickupAt(c) == null;
+        private bool PickupSpotFree(Coord c) => S.FreeForItem(c);
 
         /// <summary>A hero entered a tile: collect what lies there.</summary>
         private void CollectPickup(Unit hero)

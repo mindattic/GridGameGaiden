@@ -198,6 +198,13 @@ namespace Gaiden.Core.Battle
 
         /// <summary>Free for something new to appear (spawn, reinforcement, trap, teleport landing): walkable, no unit, no movable tile.</summary>
         public bool FreeForSpawn(Coord c) => Walkable(c) && UnitAt(c) == null && MovableAt(c) == null;
+
+        /// <summary>No board item on the tile: no pickup and no movable tile (§1.1.3, GG-T129 — at most one item per tile, ever).</summary>
+        public bool ItemFree(Coord c) => PickupAt(c) == null && MovableAt(c) == null;
+
+        /// <summary>Free for a new board item to appear (a pickup drop, the Power Amplifier): walkable, nobody standing
+        /// there, no trap, and no other item (§1.1.3, GG-T129). Every item placement goes through this one check.</summary>
+        public bool FreeForItem(Coord c) => Walkable(c) && UnitAt(c) == null && TrapAt(c) == null && ItemFree(c);
         public ManaBank Bank = new ManaBank();
         /// <summary>Progress toward the next orb, 0..ManaChargePerOrb-1 (§3.1.9).</summary>
         public int ManaCharge;

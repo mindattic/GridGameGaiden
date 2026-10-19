@@ -4,7 +4,7 @@ Self-play harness: launches the development player with the automation endpoint 
     python tools/harness.py smoke            # title → new game → hub → battle (autoplay) → results
     python tools/harness.py sweep            # screenshot + layout-audit every menu screen
     python tools/harness.py clips N          # generate N random-stage/random-wave battle clips
-    python tools/harness.py boardaudit N     # GG-T97: N autoplayed battles; fail if two tokens are ever drawn on one tile
+    python tools/harness.py boardaudit N     # GG-T97/T129: N autoplayed battles; fail if two tokens (or two items) are ever drawn on one tile
     python tools/harness.py pause            # GG-T126: pause mid-chain freezes playback (two identical frames), resume finishes it
     python tools/harness.py outline          # GG-T128: frame-record a pincer; the outline must ride the camera twist/shake
     python tools/harness.py durability       # GG-T39: last-strike weapon badge + drag-preview shatter warning
@@ -396,7 +396,9 @@ def board_audit(run="boardaudit", count=12, speed=4, timeout=300):
     """GG-T97: plays `count` random real battles on autoplay (randombattle, no capture) and fails unless the drawn
     board stayed honest the whole time: after every beat no two tokens on one tile, after every action every token
     on exactly its unit's State tile (before the SyncAll safety net could hide a miss), and the engine's last-resort
-    tile-conflict net never fired. Reads BoardAudit through the boardaudit endpoint. Returns True when clean."""
+    tile-conflict net never fired. GG-T129 adds board items: no two item tokens (pickups, the Power Amplifier) ever
+    drawn on one tile, and no stale item token (every drawn pickup/amplifier matches the State). Reads BoardAudit
+    through the boardaudit endpoint. Returns True when clean."""
     launch(run)
     call("boardaudit", reset=1)
     clips = battle_clips(run=run, count=count, speed=speed, timeout=timeout, capture=False, relaunch=False)
@@ -409,7 +411,7 @@ def board_audit(run="boardaudit", count=12, speed=4, timeout=300):
     if bad:
         print(f"FAIL: {bad} board audit problem(s)")
         return False
-    print(f"OK: {audit['actions']} actions / {audit['beats']} beats, every token on its own tile")
+    print(f"OK: {audit['actions']} actions / {audit['beats']} beats, every token and item on its own tile")
     return True
 
 

@@ -299,21 +299,16 @@ namespace Gaiden.Core.Battle
             return true;
         }
 
-        /// <summary>A movable tile is displaced like an actor: it takes the tile its pusher just left (§1.1.2).</summary>
+        /// <summary>
+        /// A movable tile is displaced like an actor: it takes the tile its pusher just left (§1.1.2). That tile can
+        /// hold a pickup (an enemy may stand on one, §13.3.1), and two items never share a tile (§1.1.3, GG-T129), so
+        /// then the movable slides on to the nearest open, item-free tile instead — the pickup stays where it lies.
+        /// </summary>
         private void ShoveMovable(MovableTile mv, Coord to, Unit by)
         {
-            if (MoveMovable(mv, to, by)) return;
-            // Nowhere legal on its lane (shouldn't happen - the vacated tile is always free): never leave it under a
-            // unit; it slides to the nearest free tile instead.
-            Coord? best = null; int bestD = int.MaxValue;
-            for (int y = 0; y < BattleConfig.Rows; y++)
-                for (int x = 0; x < BattleConfig.Cols; x++)
-                {
-                    var c = new Coord(x, y);
-                    if (!S.FreeForSpawn(c)) continue;
-                    int d = c.Manhattan(mv.Pos);
-                    if (d < bestD) { bestD = d; best = c; }
-                }
+            if (!PickupBlocksMovable(to) && MoveMovable(mv, to, by)) return;
+            // Its own lane is taken by a pickup (or, a bug, by a unit): never leave it under a unit or on another item.
+            var best = NearestMovableSpot(mv, to);
             if (best != null) MoveMovable(mv, best.Value, by);
             else S.Movables.Remove(mv);
         }
