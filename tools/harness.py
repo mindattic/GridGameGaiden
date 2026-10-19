@@ -115,34 +115,30 @@ def _wait_screen(screen, timeout=6.0):
 def pick_party(ids=STARTING_PARTY, timeout=10.0):
     """Drives the New Game party-select screen (CharacterSelectScreen, id "charselect") through the real
     UI: tap a hero's tile to preview it, tap it again to lock it in, five times. Picks the fixed starting
-    five by default so every run gets the same squad the old fixed-roster New Game gave. Taps can be
-    dropped while the player window isn't focused (GG-T121), so each lock-in is verified (a locked tile
-    dims to 0.25 opacity) and retried. Returns True once the screen has left for the camp hub."""
+    five by default so every run gets the same squad the old fixed-roster New Game gave. Each lock-in is
+    verified (a locked tile dims to 0.25 opacity); a tap that doesn't land fails the pick instead of being
+    retried blindly. Returns True once the screen has left for the camp hub."""
     if not _wait_screen("charselect", timeout):
         return False
     time.sleep(0.5)  # let the screen's fade-in finish before the first tap
     for cid in ids:
         name = f"tile-{cid}"
-        for attempt in range(8):
-            if call("state")["screen"] != "charselect" or call("style", name=name).get("opacity", 1) < 0.5:
-                break
-            if attempt in (3, 6):  # GG-T16/GG-T121 recovery: recreate the virtual mouse, wait out a focus steal
-                if not call("pick", x=10, y=10).get("focused", True):
-                    print(f"pick_party: player window unfocused while locking in {cid} (GG-T121), retrying")
-                call("resetinput"); time.sleep(1.0)
-            call("scrollto", name=name); time.sleep(0.25)  # most of the grid starts below the fold
-            call("click", name=name); time.sleep(0.35)
-            if call("style", name=name).get("opacity", 1) < 0.5:
-                break  # a stale highlight from a dropped tap means the first tap already locked it in
-            call("click", name=name); time.sleep(0.45)
+        call("scrollto", name=name); time.sleep(0.25)  # most of the grid starts below the fold
+        for tap in ("preview", "lock in"):
+            r = call("click", name=name); time.sleep(0.4)
+            if _tap_failed(r):
+                print(f"pick_party: {tap} tap on {cid} didn't land: {r}")
+                return False
+        if call("state")["screen"] == "charselect" and call("style", name=name).get("opacity", 1) >= 0.5:
+            print(f"pick_party: {cid} wasn't locked in after preview + lock-in taps")
+            return False
     return _wait_screen("hub", timeout)
 
 
 def finish_dialogue(timeout=40.0):
     """Plays through a DialogueScreen (§27.1, GG-T117) the way a hurried player would: Skip › to the next
     choice, take the last choice offered (by content convention the way out, so a conversation that loops
-    back to its menu still ends), repeat until the screen leaves. Taps can drop on an unfocused window
-    (GG-T121), so it just keeps tapping until the screen changes or the timeout runs out."""
+    back to its menu still ends), repeat until the screen leaves or the timeout runs out."""
     end = time.time() + timeout
     while time.time() < end:
         if call("state")["screen"] != "dialogue":
@@ -176,7 +172,7 @@ def smoke(run="smoke"):
     time.sleep(0.6)  # the title's fade-in swallows a tap sent the moment the server answers
     files = [shot("01-title")]
     _tap_until(lambda: call("clicktext", text="New Game"), lambda: any("Slot 1" in t for t in call("texts")), tries=4)
-    _tap_until(lambda: call("clicktext", text="Slot 1"), lambda: call("state")["screen"] == "charselect", tries=4, wait=1.0)
+    _tap_until(lambda: call("clicktext", text="Slot 1"), lambda: call("state")["screen"] == "charselect", tries=4)
     files.append(shot("02-charselect"))
     pick_party()
     files.append(shot("02-hub"))
@@ -319,12 +315,8 @@ def campaign(run="campaign", stages=6, speed=3, extra=(), max_loss_retries=3):
         # depth rather than ripped out, since it's cheap and a real human-facing path could still leave
         # some other UI element in a dead state we haven't found yet.
         for attempt in range(5):
-            if attempt == 3:  # GG-T16 recovery: try recreating the virtual mouse device before giving up
-                print(f"stage{n}: resetting automation input device before final retries")
-                call("resetinput")
-                time.sleep(0.5)
             r = call("click", name="next")
-            if isinstance(r, dict) and r.get("error"):
+            if _tap_failed(r):
                 call("clicktext", text="Continue")
             time.sleep(1.5)
             if call("state")["screen"] != "postbattle":
@@ -451,10 +443,10 @@ def pause_check(run="pause", speed=1, timeout=240):
     if caught is None:
         print("FAIL: never caught playback mid-pincer")
         return False
-    for _ in range(8):  # GG-T121: a synthetic tap can drop on an unfocused window
-        call("click", name="menu"); time.sleep(0.3)
-        if call("state")["battle"]["paused"]:
-            break
+    r = call("click", name="menu"); time.sleep(0.3)
+    if _tap_failed(r):
+        print(f"FAIL: the pause button tap didn't land: {r}")
+        return False
     s1 = call("state")["battle"]
     a = shot("paused-a")
     time.sleep(2.0)
@@ -737,14 +729,28 @@ def testmode(run="testmode", cycles=4, timeout_per_cycle=600):
     print("\n".join(sorted(shots_for.values())))
     return all(checks.values())
 
-def _tap_until(tap, done, tries=8, wait=0.8):
-    """Taps until `done()` holds. A synthetic tap is occasionally dropped (the player window losing focus to
-    another agent's window on a shared desktop is the usual suspect), so a flow that must advance retries the
-    tap rather than failing the run. Returns how many taps it took (0 = never got there)."""
+def _tap_failed(r):
+    """A tap/click reply that says it didn't land: the element isn't there yet, the point hit nothing (or a
+    screen-transition fade), or the events never reached the panel (GG-T121: replies are honest now)."""
+    return isinstance(r, dict) and (r.get("ok") is False or "error" in r)
+
+
+def _tap_until(tap, done, tries=8, wait=4.0):
+    """Taps, then waits up to `wait` seconds for `done()`. Since GG-T121 automation taps go straight into the
+    UI Toolkit panel (no OS focus involved) and say when they miss, a tap is only repeated when its reply
+    reports it didn't land (e.g. the target screen is still fading in) — never blindly. Returns how many taps
+    it took (0 = never got there)."""
     for i in range(tries):
-        tap(); time.sleep(wait)
-        if done():
-            return i + 1
+        if _tap_failed(tap()):
+            time.sleep(0.3)
+            continue
+        end = time.time() + wait
+        while True:
+            if done():
+                return i + 1
+            if time.time() >= end:
+                return 0
+            time.sleep(0.1)
     return 0
 
 
@@ -765,7 +771,7 @@ def crucible(run="crucible", leave_after=3, speed=4, timeout=600):
     out["camp_row_before"] = [t for t in texts() if t in ("Crucible", "Endless waves") or t.startswith("Best:")]
     out["taps"]["camp->crucible"] = _tap_until(lambda: call("clicktext", text="Crucible"), lambda: screen() == "crucible")
     shot("02-crucible-screen")
-    out["taps"]["enter"] = _tap_until(lambda: call("click", name="crucible-enter"), lambda: screen() == "battle", wait=1.5)
+    out["taps"]["enter"] = _tap_until(lambda: call("click", name="crucible-enter"), lambda: screen() == "battle", wait=6.0)
     call("speed", x=speed)
     call("autoplay", on=1)
     t0 = time.time(); ended_by = "timeout"; last_wave = -1
@@ -791,7 +797,7 @@ def crucible(run="crucible", leave_after=3, speed=4, timeout=600):
             shot("04-pause-menu")
             out["taps"]["leave-row"] = _tap_until(lambda: call("clicktext", text="Leave the Crucible"), lambda: any(t.startswith("Leave the Crucible after") for t in texts()))
             shot("05-leave-confirm")
-            out["taps"]["leave-confirm"] = _tap_until(lambda: call("clicktext", text="Leave"), lambda: screen() != "battle", wait=1.5)
+            out["taps"]["leave-confirm"] = _tap_until(lambda: call("clicktext", text="Leave"), lambda: screen() != "battle", wait=6.0)
             ended_by = "left"
             break
     out["ended_by"] = ended_by
@@ -809,7 +815,7 @@ def crucible(run="crucible", leave_after=3, speed=4, timeout=600):
     shot("07-results")
     out["results_texts"] = texts()[:40]
     after = call("state")["save"]
-    out["taps"]["continue"] = _tap_until(lambda: call("click", name="continue"), lambda: screen() == "hub", wait=1.2)
+    out["taps"]["continue"] = _tap_until(lambda: call("click", name="continue"), lambda: screen() == "hub", wait=6.0)
     out["back_at"] = screen()
     shot("08-camp-after")
     out["after"] = {k: after[k] for k in ("Gold", "inventory", "xp", "hp", "crucible", "HighestClearedStage", "expedition")}
@@ -824,9 +830,7 @@ def crucible(run="crucible", leave_after=3, speed=4, timeout=600):
         "camp_row_after": [t for t in texts() if t == "Crucible" or t.startswith("Best:")],
         "crucible_cues": sorted({c for c in call("cues") if c.startswith("crucible")}),
     }
-    # A dropped tap (0 in "taps") is almost always the window losing focus to another player on a shared
-    # desktop: UI Toolkit ignores pointer input while unfocused, and `pick` reports it.
-    out["focused_at_end"] = call("pick", x=0, y=0).get("focused")
+    # GG-T121: taps no longer depend on window focus, so 0 in "taps" is a real game-side problem.
     logs = call("logs")
     out["errors"] = [l[:300] for l in logs if l.startswith(("Error", "Exception"))]
     print(json.dumps(out, indent=1))

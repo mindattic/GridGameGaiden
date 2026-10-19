@@ -14,17 +14,25 @@ using Gaiden.Core.Content;
 using Gaiden.Meta;
 using Newtonsoft.Json;
 using UnityEngine;
-using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.LowLevel;
 using UnityEngine.UIElements;
 
 namespace Gaiden.App.Automation
 {
     /// <summary>
     /// Development-build-only remote control so the game can be played and inspected by a script:
-    /// a localhost HTTP endpoint (start the player with <c>-automation 7777</c>). Input is injected
-    /// through the Input System's real mouse device, so taps and drags travel the same path a
-    /// player's do. Coordinates are design pixels (1170×2532, origin top-left).
+    /// a localhost HTTP endpoint (start the player with <c>-automation 7777</c>). Coordinates are
+    /// design pixels (1170×2532, origin top-left).
+    /// <para>
+    /// Input (GG-T121): taps, drags and presses are dispatched straight into the UI Toolkit panel as
+    /// pointer events — the same PointerDown/Move/Up (and the ClickEvent the panel synthesizes from them)
+    /// that real input becomes, reaching the same handlers — rather than through an Input System virtual
+    /// mouse. On desktop UI Toolkit's default event system drops all device input while the window is
+    /// unfocused, so the old virtual-mouse path silently lost every tap whenever another player window on
+    /// a shared desktop held focus, while still replying ok:true. The panel path doesn't care about OS
+    /// focus, and every pointer reply now says what it hit: a tap that lands on nothing (off the stage, the
+    /// bare stage background or a screen-transition fade) or whose events never reach the panel replies
+    /// ok:false with an error.
+    /// </para>
     /// </summary>
     public sealed class AutomationServer : MonoBehaviour
     {
@@ -33,8 +41,12 @@ namespace Gaiden.App.Automation
         private readonly ConcurrentQueue<Action> mainThread = new ConcurrentQueue<Action>();
         private readonly List<string> logs = new List<string>();
         private string artifacts;
-        private Mouse mouse;
         private bool holdDrag;
+        // Delivery receipts: a trickle-down listener on the panel root records each synthetic pointer
+        // event as it is actually dispatched, so a reply can say whether (and where) it arrived.
+        private EventBase sentEvent;
+        private VisualElement sentTarget;
+        private bool sentArrived;
         private Application.LogCallback logHandler;
 
         public static void TryStart(GameApp app)
@@ -56,8 +68,13 @@ namespace Gaiden.App.Automation
             };
             Application.logMessageReceivedThreaded += logHandler;
             Debug.developerConsoleEnabled = false;
-            mouse = InputSystem.AddDevice<Mouse>("AutomationMouse");
-            InputSystem.QueueStateEvent(mouse, new MouseState { position = new Vector2(1, 1) });
+            // The automation player must keep ticking (coroutines, tweens, layout) while another window
+            // has focus; ProjectSettings already says so, this keeps it true whatever the build settings.
+            Application.runInBackground = true;
+            var root = GameApp.I.Document.rootVisualElement;
+            root.RegisterCallback<PointerDownEvent>(Receipt, TrickleDown.TrickleDown);
+            root.RegisterCallback<PointerMoveEvent>(Receipt, TrickleDown.TrickleDown);
+            root.RegisterCallback<PointerUpEvent>(Receipt, TrickleDown.TrickleDown);
             listener = new HttpListener();
             listener.Prefixes.Add($"http://127.0.0.1:{port}/");
             listener.Start();
@@ -204,35 +221,21 @@ namespace Gaiden.App.Automation
                 }
                 case "pick":
                 {
-                    // Diagnostics for a tap that replies ok:true but does nothing (GG-T16/GG-T95): what UI Toolkit
-                    // would hit at a design point, whether the virtual mouse is live, and whether the window has
-                    // focus — on desktop, UI Toolkit drops pointer input while it doesn't (another agent's player
-                    // window grabbing focus on a shared desktop is the usual cause).
-                    var stage = app.Stage;
-                    var panelPoint = stage.worldBound.position + new Vector2(F(q["x"]), F(q["y"])) * (stage.worldBound.width / GameApp.DesignWidth);
-                    var hit = stage.panel?.Pick(panelPoint);
+                    // Diagnostics for a tap that does nothing (GG-T16/GG-T95): what UI Toolkit would hit at a
+                    // design point and whether the window has focus. Since GG-T121 automation input no longer
+                    // depends on focus (it goes straight into the panel), but `focused` still tells a real
+                    // player's dropped clicks apart from a game-side problem.
+                    var panelPoint = ToPanel(F(q["x"]), F(q["y"]));
+                    var hit = app.Stage.panel?.Pick(panelPoint);
                     var chain = new List<string>();
                     for (var e = hit; e != null; e = e.parent) chain.Add($"{e.GetType().Name}#{e.name}.{string.Join(".", e.GetClasses())}");
                     return new
                     {
-                        chain, focused = Application.isFocused, mouseEnabled = mouse != null && mouse.enabled, mouseAdded = mouse != null && mouse.added,
-                        screen = new[] { Screen.width, Screen.height }, pointer = mouse != null ? mouse.position.ReadValue().ToString() : null,
+                        chain, focused = Application.isFocused, hitsNothing = HitsNothing(hit), delivery = "panel",
+                        screen = new[] { Screen.width, Screen.height }, panelPoint = panelPoint.ToString(),
                     };
                 }
                 case "back": app.Router.Back(); return new { ok = true };
-                case "resetinput":
-                    // GG-T16 recovery: click()/clicktext() have been seen going silently unresponsive
-                    // (ok:true, plausible coordinates, but the tap never registers) after a long-running
-                    // session's worth of automation traffic, with no error anywhere to react to. Not
-                    // root-caused — this gives a harness that detects the stuck pattern (screen doesn't
-                    // advance after a click) a cheap recovery to try before resorting to a full process
-                    // restart: tear down and recreate the virtual mouse device, in case some InputSystem-
-                    // side state (not UI Toolkit's, since a fresh device still shares the same panel) has
-                    // gone stale.
-                    if (mouse != null) { InputSystem.RemoveDevice(mouse); }
-                    mouse = InputSystem.AddDevice<Mouse>("AutomationMouse");
-                    InputSystem.QueueStateEvent(mouse, new MouseState { position = new Vector2(1, 1) });
-                    return new { ok = true };
                 case "wait":
                     StartCoroutine(WaitIdle(F(q["ms"], 0) / 1000f, reply));
                     return Pending;
@@ -470,9 +473,11 @@ namespace Gaiden.App.Automation
                     StartCoroutine(Press(F(q["x"]), F(q["y"]), F(q["ms"], 600) / 1000f, reply));
                     return Pending;
                 case "release":
-                    MouseTo(lastHeld, false);
-                    StartCoroutine(Frames(3, () => reply(new { ok = true })));
+                {
+                    var up = Send(lastHeld, PointerPhase.Up);
+                    StartCoroutine(Frames(3, () => reply(up.Arrived ? (object)new { ok = true, target = up.Target } : new { ok = false, error = "release not delivered to the panel" })));
                     return Pending;
+                }
                 case "stagebounds":
                 {
                     var sb = app.Stage.worldBound;
@@ -488,16 +493,26 @@ namespace Gaiden.App.Automation
             return new { error = "unknown endpoint " + path };
         }
 
-        // ── Input injection ──────────────────────────────────────────────────────
+        // ── Input injection (GG-T121: straight into the panel, independent of OS focus) ──
 
-        /// <summary>Design pixels → screen pixels (Input System: origin bottom-left).</summary>
-        private Vector2 ToScreen(float dx, float dy)
+        private enum PointerPhase { Move, Down, Up }
+
+        /// <summary>What one synthetic pointer event did: whether it reached the panel's dispatcher and what it targeted.</summary>
+        private struct Delivery
         {
-            var root = GameApp.I.Document.rootVisualElement;
+            public bool Arrived;
+            public string Target;
+            public bool HitsNothing;
+        }
+
+        private bool pointerDown;
+        private Vector2 lastHeld;
+
+        /// <summary>Design pixels → panel coordinates (the stage's own space scaled into the panel, origin top-left).</summary>
+        private Vector2 ToPanel(float dx, float dy)
+        {
             var stage = GameApp.I.Stage;
-            var panelPoint = stage.worldBound.position + new Vector2(dx, dy) * (stage.worldBound.width / GameApp.DesignWidth);
-            float scale = Screen.width / Mathf.Max(1f, root.worldBound.width);
-            return new Vector2(panelPoint.x * scale, Screen.height - panelPoint.y * scale);
+            return stage.worldBound.position + new Vector2(dx, dy) * (stage.worldBound.width / GameApp.DesignWidth);
         }
 
         private Vector2 DesignPoint(Vector2 panelPoint)
@@ -507,21 +522,82 @@ namespace Gaiden.App.Automation
             return (panelPoint - stage.worldBound.position) * k;
         }
 
-        private void MouseTo(Vector2 screen, bool down)
+        /// <summary>
+        /// Nothing tappable under the point: off the panel, only the app's own scaffolding (root, letterbox,
+        /// stage, the screens container) — every screen and widget lives below those — or the router's
+        /// screen-transition fade, which swallows input while a screen is changing.
+        /// </summary>
+        private static bool HitsNothing(VisualElement hit)
         {
-            InputSystem.QueueStateEvent(mouse, new MouseState { position = screen, buttons = (ushort)(down ? 1 : 0) });
+            if (hit == null) return true;
+            var app = GameApp.I;
+            return hit == app.Document.rootVisualElement || hit == app.Stage || hit == app.Stage.parent
+                   || hit.name == "screens" || hit.name == "fade" || !app.Stage.Contains(hit);
+        }
+
+        private static string Describe(VisualElement e) => e == null ? null : $"{e.GetType().Name}#{e.name}";
+
+        private void Receipt(EventBase e)
+        {
+            if (e != sentEvent) return;
+            sentArrived = true;
+            sentTarget = e.target as VisualElement;
+        }
+
+        /// <summary>
+        /// Dispatches one mouse-type pointer event at a panel point through the panel's own event dispatcher —
+        /// the same picking, pointer capture and ClickEvent synthesis real input goes through — and reports
+        /// whether it arrived. Built from an IMGUI mouse Event, the way UI Toolkit's own event system builds them.
+        /// </summary>
+        private Delivery Send(Vector2 panelPoint, PointerPhase phase)
+        {
+            var panel = GameApp.I.Document.rootVisualElement.panel;
+            var hit = panel?.Pick(panelPoint);
+            var d = new Delivery { HitsNothing = HitsNothing(hit) };
+            if (panel == null) return d;
+            var type = phase == PointerPhase.Down ? EventType.MouseDown : phase == PointerPhase.Up ? EventType.MouseUp : pointerDown ? EventType.MouseDrag : EventType.MouseMove;
+            var ev = new Event
+            {
+                type = type, mousePosition = panelPoint, button = 0, clickCount = phase == PointerPhase.Move ? 0 : 1,
+                modifiers = EventModifiers.None, pointerType = UnityEngine.PointerType.Mouse,
+            };
+            EventBase evt = phase == PointerPhase.Down ? PointerDownEvent.GetPooled(ev)
+                          : phase == PointerPhase.Up ? (EventBase)PointerUpEvent.GetPooled(ev)
+                          : PointerMoveEvent.GetPooled(ev);
+            sentEvent = evt; sentArrived = false; sentTarget = null;
+            try { panel.visualTree.SendEvent(evt); }
+            finally
+            {
+                // A pointer captured by an element (a Button between its press and release, the board during a
+                // drag) gets its events straight at that element, so they may never pass the root listener —
+                // but the dispatcher still gave the event a target. No receipt and no target = not delivered.
+                d.Arrived = sentArrived || evt.target != null;
+                d.Target = Describe(sentTarget ?? evt.target as VisualElement);
+                sentEvent = null;
+                evt.Dispose();
+            }
+            if (phase == PointerPhase.Down) pointerDown = true;
+            else if (phase == PointerPhase.Up) pointerDown = false;
+            return d;
+        }
+
+        private static object TapFailure(Delivery down, Delivery up, float x, float y)
+        {
+            if (down.HitsNothing)
+                return new { ok = false, error = $"tap at ({x:0},{y:0}) hit nothing (off the stage, or only the stage background or a screen-transition fade is there)", x, y, target = down.Target };
+            if (!down.Arrived || !up.Arrived)
+                return new { ok = false, error = $"tap at ({x:0},{y:0}) not delivered to the panel (down={down.Arrived}, up={up.Arrived})", x, y };
+            return null;
         }
 
         private IEnumerator Tap(float x, float y, Action<object> reply)
         {
-            var p = ToScreen(x, y);
-            MouseTo(p, false); yield return null;
-            MouseTo(p, true); yield return null; yield return null;
-            MouseTo(p, false); yield return null; yield return null;
-            reply(new { ok = true, x, y });
+            var p = ToPanel(x, y);
+            Send(p, PointerPhase.Move); yield return null;
+            var down = Send(p, PointerPhase.Down); yield return null; yield return null;
+            var up = Send(p, PointerPhase.Up); yield return null; yield return null;
+            reply(TapFailure(down, up, x, y) ?? new { ok = true, x, y, target = down.Target });
         }
-
-        private Vector2 lastHeld;
 
         private static bool Opaque(VisualElement e)
         {
@@ -534,19 +610,30 @@ namespace Gaiden.App.Automation
         /// <summary>Press and hold at a design point for a while, then reply (button stays down until `release`).</summary>
         private IEnumerator Press(float x, float y, float seconds, Action<object> reply)
         {
-            var p = ToScreen(x, y);
+            var p = ToPanel(x, y);
             lastHeld = p;
-            MouseTo(p, false); yield return null;
-            MouseTo(p, true);
+            Send(p, PointerPhase.Move); yield return null;
+            var down = Send(p, PointerPhase.Down);
+            if (down.HitsNothing) { reply(new { ok = false, error = $"press at ({x:0},{y:0}) hit nothing", target = down.Target }); yield break; }
+            if (!down.Arrived) { reply(new { ok = false, error = "press not delivered to the panel" }); yield break; }
             yield return new WaitForSecondsRealtime(seconds);
-            reply(new { ok = true });
+            reply(new { ok = true, target = down.Target });
         }
 
         private IEnumerator Drag(List<Vector2> pts, float stepSeconds, Action<object> reply)
         {
-            if (pts.Count == 0) { reply(new { error = "empty path" }); yield break; }
-            MouseTo(ToScreen(pts[0].x, pts[0].y), false); yield return null;
-            MouseTo(ToScreen(pts[0].x, pts[0].y), true); yield return null;
+            if (pts.Count == 0) { reply(new { ok = false, error = "empty path" }); yield break; }
+            var start = ToPanel(pts[0].x, pts[0].y);
+            Send(start, PointerPhase.Move); yield return null;
+            var down = Send(start, PointerPhase.Down); yield return null;
+            if (!down.Arrived || down.HitsNothing)
+            {
+                Send(start, PointerPhase.Up);
+                holdDrag = false;
+                reply(new { ok = false, error = down.HitsNothing ? $"drag start ({pts[0].x:0},{pts[0].y:0}) hit nothing" : "drag not delivered to the panel", target = down.Target });
+                yield break;
+            }
+            int lost = 0;
             for (int i = 1; i < pts.Count; i++)
             {
                 var a = pts[i - 1]; var b = pts[i];
@@ -554,17 +641,18 @@ namespace Gaiden.App.Automation
                 for (int k = 1; k <= n; k++)
                 {
                     var p = Vector2.Lerp(a, b, k / (float)n);
-                    MouseTo(ToScreen(p.x, p.y), true);
+                    if (!Send(ToPanel(p.x, p.y), PointerPhase.Move).Arrived) lost++;
                     yield return new WaitForSecondsRealtime(stepSeconds / n);
                 }
             }
             var last = pts[pts.Count - 1];
             yield return null;
-            lastHeld = ToScreen(last.x, last.y);
-            if (holdDrag) { holdDrag = false; reply(new { ok = true, held = true }); yield break; }
-            MouseTo(ToScreen(last.x, last.y), false);
+            lastHeld = ToPanel(last.x, last.y);
+            if (lost > 0) { Send(lastHeld, PointerPhase.Up); holdDrag = false; reply(new { ok = false, error = $"{lost} drag moves not delivered to the panel" }); yield break; }
+            if (holdDrag) { holdDrag = false; reply(new { ok = true, held = true, target = down.Target }); yield break; }
+            var up = Send(lastHeld, PointerPhase.Up);
             yield return null; yield return null;
-            reply(new { ok = true, points = pts.Count });
+            reply(up.Arrived ? (object)new { ok = true, points = pts.Count, target = down.Target } : new { ok = false, error = "drag release not delivered to the panel" });
         }
 
         private IEnumerator WaitIdle(float minSeconds, Action<object> reply)

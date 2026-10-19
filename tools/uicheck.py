@@ -85,7 +85,8 @@ def main():
         check("title shows New Game", until(lambda: has_text("New Game")))
         check("title music", h.call("music")["track"] == "TellerOfTheTales")
         time.sleep(0.6)  # the title's fade-in swallows a tap sent the moment it mounts
-        # Taps can be dropped (title fade-in, or a focus steal — GG-T121): retry the tap, never the assertion.
+        # A tap sent while the title is still fading in reports it hit the fade (GG-T121): _tap_until repeats
+        # only such a failed tap, never the assertion.
         h._tap_until(lambda: h.call("clicktext", text="New Game"), lambda: until(lambda: has_text("Slot 1"), 1.5), tries=3, wait=0.2)
         check("slot screen lists 3 slots", sum(1 for t in texts() if t.startswith("Slot ")) == 3)
         h._tap_until(lambda: h.call("clicktext", text="Slot 1"), lambda: until(lambda: h.call("state")["screen"] == "charselect", 2.0), tries=3, wait=0.2)
@@ -114,7 +115,6 @@ def main():
         check("occupied slot asks to overwrite", until(lambda: has_text("Overwrite slot 1?"), 4.0))
         h.call("clicktext", text="Cancel"); time.sleep(0.4)
         h.call("back"); time.sleep(0.8)
-        # A synthetic tap can be dropped while the window lacks focus (GG-T121): retry the tap, not the assertion.
         h._tap_until(lambda: h.call("clicktext", text="Continue"), lambda: until(lambda: h.call("state")["screen"] == "hub", 3.0), tries=3, wait=0.2)
         check("continue resumes the save", until(lambda: h.call("state")["screen"] == "hub"))
 
