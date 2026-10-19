@@ -526,15 +526,54 @@ namespace Gaiden.App
             var du = State.UnitById(d.UnitId);
             if (du != null) Feed($"★ {du.Name} is defeated", du.IsHero ? new Color(1f, 0.45f, 0.4f) : new Color(1f, 0.85f, 0.4f));
             App.Audio.Sfx("death");
-            yield return Tween.Run(0.3f, k =>
-            {
-                v.Root.style.opacity = 1 - k;
-                v.Root.style.scale = new Scale(Vector2.one * (1f - 0.4f * k));
-                v.Root.style.rotate = new Rotate(Fx * 12f * k);
-            });
+            // GridGame2026's death-portrait dissolve (GG-T96): the token goes at once and the unit's whole,
+            // uncropped artwork takes its place over the board, shuddering, shrinking and fading on its own —
+            // playback carries straight on (loot burst, the next kill in the chain) while it plays out.
+            if (du != null) App.StartCoroutine(DeathDissolve(du, v));
             v.Root.RemoveFromHierarchy();
-            v.Root.style.rotate = new Rotate(0);
             v.Dead = true;
+            yield return Tween.Wait(0.12f);
+        }
+
+        // Tuned from GridGame2026's per-frame Portrait3D dissolve at 60 fps: alpha 196/255 minus 1% a frame
+        // (about 1.3 s), scale ×0.99 a frame, jittering up to ±1/12 tile around its start point.
+        private const float DissolveStartAlpha = 196f / 255f;
+        private const float DissolveSeconds = DissolveStartAlpha / 0.6f;
+        private const float DissolveShrinkPerSecond = 0.6f; // -ln(0.99) × 60 = 0.603
+
+        /// <summary>The fallen unit's full portrait, centred on its footprint and well over a tile so the whole art reads.</summary>
+        private IEnumerator DeathDissolve(Unit u, UnitView v)
+        {
+            string classId = u.IsCorpse && u.CorpseOf != null ? u.CorpseOf : u.Def?.Id;
+            if (string.IsNullOrEmpty(classId) || !Art.Exists("Portraits/" + classId)) yield break;
+            var tex = Art.Portrait(classId);
+            float aspect = tex.height > 0 ? (float)tex.width / tex.height : 1f;
+            float box = BoardView.Tile * (2f + Mathf.Max(v.W, v.H));
+            float w = aspect >= 1f ? box : box * aspect, h = aspect >= 1f ? box / aspect : box;
+            var centre = BoardView.CenterOf(v.Tile, v.W, v.H);
+            var el = new VisualElement { name = "dissolve-" + u.Id, pickingMode = PickingMode.Ignore };
+            el.style.position = Position.Absolute;
+            el.style.width = w; el.style.height = h;
+            // Centred on the footprint, but nudged back inside the board at its edges so the whole art
+            // still reads instead of sliding under the HUD and banners (a top-row kill otherwise lost half).
+            float boardW = BoardView.Tile * BattleConfig.Cols, boardH = BoardView.Tile * BattleConfig.Rows;
+            el.style.left = w < boardW ? Mathf.Clamp(centre.x - w / 2f, 0f, boardW - w) : centre.x - w / 2f;
+            el.style.top = h < boardH ? Mathf.Clamp(centre.y - h / 2f, 0f, boardH - h) : centre.y - h / 2f;
+            el.style.backgroundImage = new StyleBackground(tex);
+            el.style.opacity = DissolveStartAlpha;
+            // Beneath the floating numbers and coin burst on the fx layer, above every token, mark and line.
+            board.FxLayer.Insert(0, el);
+            float jitter = BoardView.Tile / 12f;
+            yield return Tween.Run(DissolveSeconds, k =>
+            {
+                float t = k * DissolveSeconds;
+                el.style.opacity = Mathf.Max(0f, DissolveStartAlpha - 0.6f * t);
+                el.style.scale = new Scale(Vector2.one * Mathf.Exp(-DissolveShrinkPerSecond * t));
+                el.style.translate = ReduceMotion || k >= 1f
+                    ? new Translate(0, 0)
+                    : new Translate(Random.Range(-jitter, jitter), Random.Range(-jitter, jitter));
+            });
+            el.RemoveFromHierarchy();
         }
 
         private IEnumerator LootAnim(LootEvent l)

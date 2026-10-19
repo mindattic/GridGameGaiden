@@ -415,3 +415,19 @@ updated: 2026-10-09
   changed this round is the (unaffected) potion restock loop, XP rates, skill-point rates, reagent drop chances and
   shop prices were left as-is; a real retune of skill-point income/spend belongs with GG-T50, once there's a sink
   to tune it against.
+
+## 2026-10-19 — Death-portrait dissolve restored (owner, GG-T96)
+
+- **Reverts a silent drop.** GridGame2026 answered every death with `PortraitManager.Dissolve`: the actor
+  hid and its full portrait sprite, at 196/255 alpha, shook around the tile while shrinking ×0.99 and
+  fading 1% a frame. Gaiden never ported it; its `DeathAnim` only faded, shrank and spun the board token
+  for 0.3 s, so the uncropped enemy art was never seen in battle. Owner 2026-10-19: "the only way to see
+  the complete artwork of these enemies... a quintessential reward for killing an enemy" — and, the same
+  day, "only supposed to show the portrait as a single image, not the entire actor prefab tile". Restored
+  as a single image of the bare portrait on the board's fx layer (§6.2), non-blocking like the original.
+- **Deviations from the original, each deliberate:** the motion is time-based (same curves as 60 fps,
+  scaled by Battle speed) rather than per-frame; it starts at 196/255 as the ticket specifies (the
+  original `DissolveRoutine` actually reset alpha to 1 on its first frame and ran ≈1.7 s); near a board
+  edge the portrait is nudged inside the board instead of hanging under the HUD; Reduce Motion drops the
+  jitter but keeps the fade. The old token fade/shrink/spin is gone (the token just disappears).
+
