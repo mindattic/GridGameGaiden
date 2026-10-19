@@ -120,31 +120,47 @@ namespace Gaiden.App
                     st.style.left = x;
                 }
             }).Every(16);
-            App.Overlay.Add(root);
-            // board.Lines also lives on Overlay now (BattleScreen.Build, GG-T65) so the pincer outline
-            // stays visible; re-assert it as the topmost sibling each time a card joins after it.
-            board.Lines.BringToFront();
+            // Inside the board, under the pincer outline (GG-T65/GG-T128): the card rides the camera with the board
+            // and never covers the outline.
+            cutInLayer.Add(root);
             return root;
         }
 
-        /// <summary>Dim the stage behind a cut-in so the eye goes to it; returns the veil to fade out.</summary>
+        /// <summary>
+        /// Dim the stage behind a cut-in so the eye goes to it; returns the veil to fade out. The veil sits in the
+        /// board's cut-in layer, under the card (oversized, so a camera twist never bares a corner); a second sheet
+        /// at the end of the HUD dims the ability bar, orbs and actor panel, which draw after the board.
+        /// </summary>
         private VisualElement CutInVeil(float alpha)
         {
-            var veil = new VisualElement { name = "cutin-veil", pickingMode = PickingMode.Ignore };
-            veil.style.position = Position.Absolute;
-            veil.style.left = veil.style.top = veil.style.right = veil.style.bottom = 0;
-            veil.style.backgroundColor = new Color(0.01f, 0.01f, 0.05f, 1f);
-            veil.style.opacity = 0f;
-            App.Overlay.Add(veil);
-            App.StartCoroutine(Tween.Run(0.1f, k => veil.style.opacity = alpha * k));
+            VisualElement Sheet(VisualElement parent, float top, float pad)
+            {
+                var e = new VisualElement { name = "cutin-veil", pickingMode = PickingMode.Ignore };
+                e.style.position = Position.Absolute;
+                e.style.left = e.style.right = e.style.bottom = -pad; e.style.top = top - pad;
+                e.style.backgroundColor = new Color(0.01f, 0.01f, 0.05f, 1f);
+                e.style.opacity = 0f;
+                parent.Add(e);
+                return e;
+            }
+            var veil = Sheet(cutInLayer, 0f, 400f);
+            veil.userData = Sheet(shake, BoardTop + BoardView.Tile * BattleConfig.Rows, 0f);
+            App.StartCoroutine(Tween.Run(0.1f, k => SetVeil(veil, alpha * k)));
             return veil;
+        }
+
+        private static void SetVeil(VisualElement veil, float a)
+        {
+            veil.style.opacity = a;
+            if (veil.userData is VisualElement lower) lower.style.opacity = a;
         }
 
         private IEnumerator LiftVeil(VisualElement veil)
         {
             float a0 = veil.resolvedStyle.opacity;
-            yield return Tween.Run(0.15f, k => veil.style.opacity = a0 * (1f - k));
+            yield return Tween.Run(0.15f, k => SetVeil(veil, a0 * (1f - k)));
             veil.RemoveFromHierarchy();
+            (veil.userData as VisualElement)?.RemoveFromHierarchy();
         }
 
         /// <summary>Twist-zoom in (oversized, tilted, flashing white) → snap with a shake → hold → whip out.</summary>

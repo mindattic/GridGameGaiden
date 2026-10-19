@@ -6,6 +6,7 @@ Self-play harness: launches the development player with the automation endpoint 
     python tools/harness.py clips N          # generate N random-stage/random-wave battle clips
     python tools/harness.py boardaudit N     # GG-T97: N autoplayed battles; fail if two tokens are ever drawn on one tile
     python tools/harness.py pause            # GG-T126: pause mid-chain freezes playback (two identical frames), resume finishes it
+    python tools/harness.py outline          # GG-T128: frame-record a pincer; the outline must ride the camera twist/shake
     python tools/harness.py durability       # GG-T39: last-strike weapon badge + drag-preview shatter warning
     python tools/harness.py crucible [WAVES [RUN]]  # GG-T95: camp -> Crucible -> Auto -> leave after WAVES (99 = fight to a wipe) -> results -> camp
     python tools/harness.py stress HOURS     # unattended soak test (GG-T21); default 4h
@@ -498,6 +499,32 @@ def pause_check(run="pause", speed=1, timeout=240):
     return all(checks.values())
 
 
+def outline_frames(run="outline", speed=1, frames=48, every=3, timeout=240):
+    """GG-T128: the pincer outline lives inside the board again, so it rides every camera twist/zoom/drift and
+    screen shake. Autoplays random battles until a pincer's outline is drawn, then frame-records the pincer
+    (camera twist, shake, cut-in cards) into artifacts/<run>/pincer/f###.png for review: the outline must hug
+    its tiles in every frame and no cut-in card may cover it. Returns the frame directory, or None."""
+    launch(run)
+    call("speed", x=speed)
+    t0 = time.time()
+    while time.time() - t0 < timeout:
+        call("randombattle"); time.sleep(1.0)
+        call("autoplay", on=1)
+        t1 = time.time()
+        while time.time() - t1 < 90:
+            st = call("state")
+            b = st.get("battle")
+            if st["screen"] != "battle" or b is None:
+                break
+            if b["busy"] and b["chain"] >= 1 and b["lines"] > 0:
+                rec = call("record", name="pincer", frames=frames, every=every, step=1 / 30)
+                print(json.dumps(rec))
+                return rec.get("dir")
+            time.sleep(0.03)
+    print("FAIL: never caught a pincer outline")
+    return None
+
+
 def durability(run="durability"):
     """GG-T39: forces the bot's suggested hero to its weapon's last-strike durability (1) mid-battle,
     then verifies the battle card shows the cracked-weapon badge and the next drag preview (the same
@@ -878,6 +905,8 @@ if __name__ == "__main__":
         sys.exit(0 if board_audit(count=int(sys.argv[2]) if len(sys.argv) > 2 else 12) else 1)
     elif cmd == "durability":
         durability()
+    elif cmd == "outline":
+        sys.exit(0 if outline_frames() else 1)
     elif cmd == "pause":
         sys.exit(0 if pause_check() else 1)
     elif cmd == "crucible":

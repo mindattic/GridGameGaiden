@@ -61,6 +61,8 @@ namespace Gaiden.App
         private Label banner, waveLabel, coinLabel, timerLabel;
         private VisualElement shake;
         private VisualElement boardHost;
+        /// <summary>Stage-sized layer inside the board, under board.Lines, that holds cut-in cards (GG-T128).</summary>
+        private VisualElement cutInLayer;
         private bool playing;
         private bool ended;
         private HeroBot autoBot;
@@ -98,12 +100,10 @@ namespace Gaiden.App
         public BattleScreen(string stageId) { this.stageId = stageId; }
         public BattleScreen(BattleSetup setup) { setupOverride = setup; stageId = setup.Stage.Id; }
 
-        /// <summary>board.Lines and a still-open pause veil both live on the global Overlay (see Build/OpenMenu),
-        /// which outlives this screen's own root — remove them explicitly so neither lingers on top of
-        /// whatever screen comes next.</summary>
+        /// <summary>A still-open pause veil lives on the global Overlay (see OpenMenu), which outlives this screen's
+        /// own root — remove it explicitly so it doesn't linger on top of whatever screen comes next.</summary>
         public override void OnHidden()
         {
-            board?.Lines.RemoveFromHierarchy();
             if (pauseVeil != null) { pauseVeil.RemoveFromHierarchy(); pauseVeil = null; ResumeBattle(); }
             // The billboard lives on the Overlay too; without this, each battle left one behind (lines from the
             // last ~1.6 s showing over the PostBattle screen) and they piled up battle after battle (GG-T70).
@@ -172,17 +172,18 @@ namespace Gaiden.App
             boardHost.style.left = BoardLeft; boardHost.style.top = BoardTop;
             board = new BoardView(boardHost, State.Stage.Theme);
             board.Root.pickingMode = PickingMode.Position;
-            // Reparent the pincer-outline/line layer onto the global Overlay (where cut-in cards live) and
-            // above it — Overlay renders over the whole screen tree (GameApp.cs), so a SupporterPop/ActionCard
-            // popping in during a pincer resolve was drawing over part of the outline and making a correctly
-            // 1-wide pincer line read as a broken/wider box (GG-T65). ActionCard() keeps it on top as cards
-            // are added; OnHidden removes it so it doesn't leak into the next screen.
-            board.Lines.RemoveFromHierarchy();
-            board.Lines.style.left = BoardLeft; board.Lines.style.top = BoardTop;
-            board.Lines.style.right = StyleKeyword.Auto; board.Lines.style.bottom = StyleKeyword.Auto;
-            board.Lines.style.width = BoardView.Tile * BattleConfig.Cols;
-            board.Lines.style.height = BoardView.Tile * BattleConfig.Rows;
-            App.Overlay.Add(board.Lines);
+            // The pincer outline (board.Lines) stays inside the board, so it inherits every camera twist, zoom,
+            // drift and screen shake and always hugs its tiles (GG-T128). Cut-in cards (ActionCard: SupporterPop,
+            // chain pop-ups, caster slides) live in a stage-sized layer inside the board too, just BELOW the lines,
+            // so a card popping in during a pincer never covers the outline (GG-T65's need), and both sit in this
+            // screen's own tree, under the global Overlay, so nothing of the battle can draw over Pause (GG-T126).
+            // Board order: tiles, units, marks, fx, cut-in cards, lines.
+            cutInLayer = new VisualElement { name = "card-layer", pickingMode = PickingMode.Ignore };
+            cutInLayer.style.position = Position.Absolute;
+            cutInLayer.style.left = -BoardLeft; cutInLayer.style.top = -BoardTop;
+            cutInLayer.style.width = GameApp.DesignWidth; cutInLayer.style.height = GameApp.DesignHeight;
+            board.Root.Add(cutInLayer);
+            board.Lines.BringToFront();
             board.Root.RegisterCallback<PointerDownEvent>(OnPointerDown);
             board.Root.RegisterCallback<PointerMoveEvent>(OnPointerMove);
             board.Root.RegisterCallback<PointerUpEvent>(OnPointerUp);
@@ -1104,8 +1105,8 @@ namespace Gaiden.App
             App.Audio.HoldSfx(false);
         }
 
-        /// <summary>The pause veil must be the last child of the Overlay, above board.Lines, cut-ins, the billboard,
-        /// coin and orb flights — everything playback adds there or BringToFront()s (GG-T126).</summary>
+        /// <summary>The pause veil must be the last child of the Overlay, above the full-screen pincer cut-in, the
+        /// billboard, coin and orb flights — everything playback adds there or BringToFront()s (GG-T126).</summary>
         /// <summary>Automation: the open pause veil is the topmost Overlay child (nothing of the battle draws over it).</summary>
         public bool PauseOnTop => pauseVeil != null && pauseVeil.parent != null && pauseVeil.parent.IndexOf(pauseVeil) == pauseVeil.parent.childCount - 1;
 
@@ -1132,10 +1133,7 @@ namespace Gaiden.App
             closePause = Close;
             Ui.MenuRow("Resume", "", Close, w);
             Ui.MenuRow(AutoPlay ? "Auto battle: ON" : "Auto battle: OFF", "", () => { AutoPlay = !AutoPlay; Close(); }, w);
-            // Push (unlike Pop/Replace/ResetTo) never calls OnHidden, so board.Lines would otherwise keep
-            // rendering on the global Overlay above the pushed SettingsScreen until the player backs out;
-            // returning here always re-Builds a fresh BoardView (and Lines) regardless, so just drop it now.
-            Ui.MenuRow("How to play", "", () => { Close(); board.Lines.RemoveFromHierarchy(); App.Router.Push(new SettingsScreen()); }, w);
+            Ui.MenuRow("How to play", "", () => { Close(); App.Router.Push(new SettingsScreen()); }, w);
             int retreatPct = (int)(BattleConfig.RetreatKeepFraction * 100);
             if (InCrucible)
                 Ui.MenuRow("Leave the Crucible", "(keep all)", () => { Close();
