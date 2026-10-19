@@ -321,13 +321,13 @@ namespace Gaiden.Tests
         }
 
         [Test] // US-102 refusal half
-        public void Phoenix_down_is_refused_when_nobody_has_fallen()
+        public void Revival_charm_is_refused_when_nobody_has_fallen()
         {
             var db = Mini();
-            db.Items["phoenix"] = new ItemDef { Id = "phoenix", Name = "Phoenix Down", Type = ItemType.Consumable, Revives = true, BaseHealing = 30 };
+            db.Items["revival_charm"] = new ItemDef { Id = "revival_charm", Name = "Revival Charm", Type = ItemType.Consumable, Revives = true, BaseHealing = 30 };
             var (s, _) = Battle(db, Stage(("tank", 0, 0)), ("knight", 5, 7), ("cleric", 4, 7));
             var k = Hero(s, "knight");
-            k.Bar[0] = new AbilitySlot { ItemId = "phoenix", Charges = 1, MaxCharges = 1 };
+            k.Bar[0] = new AbilitySlot { ItemId = "revival_charm", Charges = 1, MaxCharges = 1 };
             var ev = BattleEngine.Apply(s, new UseSlotCommand { HeroId = k.Id, Slot = 0, Target = k.Pos });
             Assert.That(ev.Any(e => e is AbilityRefusedEvent), Is.True);
             Assert.That(k.Bar[0].Charges, Is.EqualTo(1));

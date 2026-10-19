@@ -37,6 +37,6 @@
     "TargetClass": "vampire",
     "Kills": 1,
     "RewardGold": 2000,
-    "RewardItem": "phoenix_down"
+    "RewardItem": "revival_charm"
   }
 ]

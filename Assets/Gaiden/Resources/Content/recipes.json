@@ -310,7 +310,7 @@
     "Tier": 2
   },
   {
-    "Id": "recipe_phoenix_down",
+    "Id": "recipe_revival_charm",
     "Station": "Alchemy",
     "Inputs": [
       {
@@ -328,7 +328,7 @@
     ],
     "Gold": 180,
     "BaseItem": null,
-    "Result": "phoenix_down",
+    "Result": "revival_charm",
     "ResultCount": 1,
     "Tier": 3
   },

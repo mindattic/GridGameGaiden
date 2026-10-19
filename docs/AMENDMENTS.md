@@ -105,7 +105,7 @@ updated: 2026-10-09
   keeps wounds.** *Why:* level-ups feel like a reward; escape is a cost.
 - **Consumed items are deducted at commit on every outcome** (victory, defeat, retreat, escape).
 - **Potion = single-ally heal (PickActor)**; damage items hit one enemy with a bonus vs a tag; new
-  item knobs: GrantsOrbs (Ether), CuresBuff/CuresAll, Revives (Phoenix Down), Escape (Smoke Bomb),
+  item knobs: GrantsOrbs (Ether), CuresBuff/CuresAll, Revives (Revival Charm), Escape (Smoke Bomb),
   OutOfBattleOnly (Tent). *Why:* every consumable in content now does something.
 - **Double Attack / Counter Attack are passives** (`AbilityKind.Passive` on enemy classes): second
   pincer strike at ½; adjacent counter at ½, no chains.
@@ -376,11 +376,11 @@ updated: 2026-10-09
 
 - "every healing/cure consumable the Merchant/Alchemist sells gets an Alchemy recipe made purely from field drops,
   and the brewed version is meaningfully cheaper than buying." Every Alchemy brew already existed for these items
-  (§24.6) — the gap was that only Healing Potion was `SoldByVendor`. Hi-Potion, X-Potion, Phoenix Down, Antidote,
+  (§24.6) — the gap was that only Healing Potion was `SoldByVendor`. Hi-Potion, X-Potion, Revival Charm, Antidote,
   Eye Drops, Remedy and Tent are now sold too (§25.1), so there's an actual convenient-vs-efficient choice instead
   of brew-or-nothing.
 - "raise shop potion prices … so gathering and mixing your own is the efficient path while buying stays the
-  convenient one." Shop prices for X-Potion (250→500), Phoenix Down (300→450), Remedy (150→250) and Tent (200→300)
+  convenient one." Shop prices for X-Potion (250→500), Revival Charm (300→450), Remedy (150→250) and Tent (200→300)
   rose so every one of the eight brews before per-unit gold cost sits at 2.5–5× cheaper than its shop price;
   Hi-Potion/Antidote/Eye Drops/Healing Potion already cleared that bar unchanged. Recipe gold costs, tiers and
   reagents (§24.6.1) were left untouched. *(Test:

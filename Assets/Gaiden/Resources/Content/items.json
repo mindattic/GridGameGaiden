@@ -273,8 +273,8 @@
     "GrantsOrbs": 6
   },
   {
-    "Id": "phoenix_down",
-    "Name": "Phoenix Down",
+    "Id": "revival_charm",
+    "Name": "Revival Charm",
     "Description": "Revives a fallen ally with partial HP.",
     "Type": "Consumable",
     "Rarity": "Rare",

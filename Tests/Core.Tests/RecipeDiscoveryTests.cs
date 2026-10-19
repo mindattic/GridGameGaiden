@@ -51,7 +51,7 @@ namespace Gaiden.Tests
         {
             var c = Real;
             var s = Progression.NewGame(c, "Disco3");
-            var recipe = c.Recipe("recipe_phoenix_down"); // rarest input: mat_ghost_ectoplasm (Epic)
+            var recipe = c.Recipe("recipe_revival_charm"); // rarest input: mat_ghost_ectoplasm (Epic)
             var rarest = RecipeDiscovery.RarestInput(c, recipe);
             Assert.That(rarest.Id, Is.EqualTo("mat_ghost_ectoplasm"));
             Assert.That(RecipeDiscovery.IsDiscovered(s, recipe), Is.False);

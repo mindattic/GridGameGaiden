@@ -300,7 +300,7 @@ namespace Gaiden.Core.Battle
             slot.WeaponDurability = outgoingDurability;
         }
 
-        /// <summary>Phoenix Down: the first fallen hero returns on the free tile nearest the user.</summary>
+        /// <summary>Revival Charm: the first fallen hero returns on the free tile nearest the user.</summary>
         private void Revive(Unit user, int hp)
         {
             var fallen = S.Units.Find(u => u.IsHero && !u.Alive && u.Hp <= 0);
