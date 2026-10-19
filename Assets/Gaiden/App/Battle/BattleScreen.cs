@@ -1113,7 +1113,10 @@ namespace Gaiden.App
             // Retreating while an event list is still animating would tear down this screen out from under
             // coroutines that `App` (the persistent singleton, not this screen) is still running for it —
             // they'd keep playing sfx/vfx into whatever screen comes next. Same Busy gate as CanCommand().
-            if (playing) return;
+            // The Confirm dialog outlives the pause menu, so it can be answered after the battle already ended
+            // (autoplay or the last playback finishing behind it): EndBattle has set `ended` and is about to
+            // Commit — retreating then would overwrite Victory/Defeat and Commit the battle twice (GG-T70).
+            if (playing || ended || State.IsOver) return;
             ended = true;
             SaveRecord();
             if (App.Save != null && setupOverride == null)
