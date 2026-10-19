@@ -98,9 +98,15 @@ namespace Gaiden.App
         public BattleScreen(string stageId) { this.stageId = stageId; }
         public BattleScreen(BattleSetup setup) { setupOverride = setup; stageId = setup.Stage.Id; }
 
-        /// <summary>board.Lines lives on the global Overlay (see Build), which outlives this screen's own
-        /// root — remove it explicitly so it doesn't linger on top of whatever screen comes next.</summary>
-        public override void OnHidden() => board?.Lines.RemoveFromHierarchy();
+        /// <summary>board.Lines and a still-open pause veil both live on the global Overlay (see Build/OpenMenu),
+        /// which outlives this screen's own root — remove them explicitly so neither lingers on top of
+        /// whatever screen comes next.</summary>
+        public override void OnHidden()
+        {
+            board?.Lines.RemoveFromHierarchy();
+            pauseVeil?.RemoveFromHierarchy();
+            pauseVeil = null;
+        }
 
         private bool Colorblind => App.Save?.Settings.ColorblindMode ?? false;
         private bool ReduceMotion => App.Save?.Settings.ReduceMotion ?? false;
@@ -1041,19 +1047,28 @@ namespace Gaiden.App
             return false;
         }
 
+        private VisualElement pauseVeil;
+
         private void OpenMenu()
         {
-            if (ended) return;
+            // Escape/Back re-fires OnBack unconditionally (it doesn't know a veil is already up) — without
+            // this guard, repeated presses before "Resume" stack another full veil on the global Overlay
+            // each time, the same stale-overlay risk the board.Lines/Confirm.DismissStale comments warn about.
+            if (ended || pauseVeil != null) return;
             var overlay = App.Overlay;
-            var veil = Ui.El("fill veil col center", overlay);
+            var veil = pauseVeil = Ui.El("fill veil col center", overlay);
             veil.pickingMode = PickingMode.Position;
             var w = Ui.Window("Paused", veil);
             w.style.width = 800;
-            Ui.MenuRow("Resume", "", () => veil.RemoveFromHierarchy(), w);
-            Ui.MenuRow(AutoPlay ? "Auto battle: ON" : "Auto battle: OFF", "", () => { AutoPlay = !AutoPlay; veil.RemoveFromHierarchy(); }, w);
-            Ui.MenuRow("How to play", "", () => { veil.RemoveFromHierarchy(); App.Router.Push(new SettingsScreen()); }, w);
+            void Close() { veil.RemoveFromHierarchy(); pauseVeil = null; }
+            Ui.MenuRow("Resume", "", Close, w);
+            Ui.MenuRow(AutoPlay ? "Auto battle: ON" : "Auto battle: OFF", "", () => { AutoPlay = !AutoPlay; Close(); }, w);
+            // Push (unlike Pop/Replace/ResetTo) never calls OnHidden, so board.Lines would otherwise keep
+            // rendering on the global Overlay above the pushed SettingsScreen until the player backs out;
+            // returning here always re-Builds a fresh BoardView (and Lines) regardless, so just drop it now.
+            Ui.MenuRow("How to play", "", () => { Close(); board.Lines.RemoveFromHierarchy(); App.Router.Push(new SettingsScreen()); }, w);
             int retreatPct = (int)(BattleConfig.RetreatKeepFraction * 100);
-            Ui.MenuRow("Retreat", $"(keep {retreatPct}%)", () => { veil.RemoveFromHierarchy();
+            Ui.MenuRow("Retreat", $"(keep {retreatPct}%)", () => { Close();
                 Confirm.Show($"Retreat from battle? You'll keep {retreatPct}% of this fight's gold and loot — safer than risking a wipe.", "Retreat", Retreat); }, w);
             Ui.Select(w[1]);
         }

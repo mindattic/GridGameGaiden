@@ -24,6 +24,7 @@ namespace Gaiden.App
         private Coroutine running;
         private VisualElement portraitRow, xpGauge, statColumn;
         private Label levelLabel;
+        private bool skipHandlerBound;
 
         public LevelUpScreen(BattleReport report, string stageId) { this.report = report; this.stageId = stageId; }
         public override string Id => "levelup";
@@ -68,7 +69,10 @@ namespace Gaiden.App
             statColumn = Ui.El("col", col);
             statColumn.style.marginTop = 24;
 
-            root.RegisterCallback<ClickEvent>(_ => Skip());
+            // Root is reused across Refresh() calls (one per hero that leveled up) — Root.Clear() drops
+            // child elements but not callbacks registered on Root itself, so this must only ever bind once
+            // or each additional hero stacks another handler and a single tap fires Skip() that many times.
+            if (!skipHandlerBound) { root.RegisterCallback<ClickEvent>(_ => Skip()); skipHandlerBound = true; }
             var skip = Ui.Button("Skip ›", Skip, "btn--small", root);
             skip.style.position = Position.Absolute; skip.style.right = 30; skip.style.bottom = 40;
 

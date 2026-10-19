@@ -564,9 +564,17 @@ namespace Gaiden.App.Automation
                 {
                     yield return new WaitForEndOfFrame();
                     if (i % every != 0) continue;
-                    var tex = ScreenCapture.CaptureScreenshotAsTexture();
-                    File.WriteAllBytes(Path.Combine(dir, $"f{written++:000}.png"), tex.EncodeToPNG());
-                    Destroy(tex);
+                    // An unhandled exception here (e.g. disk I/O) would otherwise kill this coroutine
+                    // silently — Handle()'s try/catch can't see it, since it's on a different thread
+                    // waiting on `done` — leaving the HTTP caller hanging for the full 120s timeout
+                    // instead of getting an immediate error. (A yield-return can't live inside a
+                    // try/catch, only try/finally, hence this inner try nested one level in.)
+                    Texture2D tex = null;
+                    Exception captureError = null;
+                    try { tex = ScreenCapture.CaptureScreenshotAsTexture(); File.WriteAllBytes(Path.Combine(dir, $"f{written++:000}.png"), tex.EncodeToPNG()); }
+                    catch (Exception e) { captureError = e; }
+                    finally { if (tex != null) Destroy(tex); }
+                    if (captureError != null) { reply(new { error = captureError.Message, dir, written }); yield break; }
                 }
             }
             finally { Tween.FixedStep = 0f; }
@@ -577,9 +585,12 @@ namespace Gaiden.App.Automation
         {
             yield return new WaitForEndOfFrame();
             var file = Path.Combine(artifacts, name.EndsWith(".png") ? name : name + ".png");
-            var tex = ScreenCapture.CaptureScreenshotAsTexture();
-            File.WriteAllBytes(file, tex.EncodeToPNG());
-            Destroy(tex);
+            Texture2D tex = null;
+            // Same reasoning as Record(): without this, a disk I/O failure here would silently kill the
+            // coroutine and leave the HTTP caller hanging for the full 120s timeout instead of an immediate error.
+            try { tex = ScreenCapture.CaptureScreenshotAsTexture(); File.WriteAllBytes(file, tex.EncodeToPNG()); }
+            catch (Exception e) { reply(new { error = e.Message }); yield break; }
+            finally { if (tex != null) Destroy(tex); }
             reply(new { file });
         }
 

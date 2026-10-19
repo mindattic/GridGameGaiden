@@ -57,8 +57,14 @@ namespace Gaiden.Core.Content
 
         public ThemeDef ThemeOf(string stageId)
         {
+            // Stages/Validate both key stage ids case-insensitively (StringComparer.OrdinalIgnoreCase) —
+            // List<string>.Contains here was ordinal-exact, so a theme's stage id differing only in case
+            // from its StageDef.Id passed Validate but silently resolved to no theme (test/standalone stage
+            // tracking: no expedition progress, no carried orbs, no post-battle bookkeeping for that stage).
+            if (stageId == null) return null;
             foreach (var t in Campaign.Themes)
-                if (t.Stages.Contains(stageId)) return t;
+                foreach (var s in t.Stages)
+                    if (string.Equals(s, stageId, StringComparison.OrdinalIgnoreCase)) return t;
             return null;
         }
     }

@@ -310,7 +310,7 @@ namespace Gaiden.Core.Battle
                 for (int x = 0; x < BattleConfig.Cols; x++)
                 {
                     var c = new Coord(x, y);
-                    if (S.UnitAt(c) != null || S.TrapAt(c) != null) continue;
+                    if (!S.FreeForSpawn(c) || S.TrapAt(c) != null) continue;
                     int d = c.Manhattan(user.Pos);
                     if (d < best) { best = d; spot = c; }
                 }

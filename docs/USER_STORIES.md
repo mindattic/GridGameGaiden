@@ -482,3 +482,4 @@ Open design questions that gate future stories live in [BIBLE §29](BIBLE.md#29-
 | GG-T89 | 2026-10-17 | feature | closed | Expand equip screen from Weapon+Armor+Relic1-3 to 11 named slots (Head/Torso/Legs/Gloves/Boots armor, Necklace/Earring/Ring jewelry) and add Forge recipes for the new armor pieces | LoadoutAndProgressionTests.Equip_fills_each_armor_slot_independently |
 | GG-T90 | 2026-10-17 | chore | closed | Add repo-owned /deploy override and /run skill with Desktop-shortcut helper | — |
 | GG-T91 | 2026-10-18 | chore | closed | Rename Phoenix Down to Revival Charm across content, icon, docs and tests (copyright) | — |
+| GG-T92 | 2026-10-18 | fix | closed | Fix latent bugs from an interrupted bughunt sweep: automation screenshot timeout, pause-menu overlay leaks, level-up click handler stacking, revive spawn-tile check, armor-break resist divide-by-zero, theme/stage matching, camp potion stock cap | — |

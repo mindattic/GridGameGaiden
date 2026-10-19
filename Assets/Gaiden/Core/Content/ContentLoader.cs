@@ -135,9 +135,17 @@ namespace Gaiden.Core.Content
                     foreach (var g in w.Guests) NeedClass(g.Class, $"stage {s.Id} guest");
                     NeedClass(w.SurpriseSpeaker, $"stage {s.Id} surprise speaker");
                 }
+            // ContentDb.ThemeOf resolves a stage id to the *first* theme that lists it — a stage accidentally
+            // listed in two themes would silently belong to the wrong one there (expedition tracking,
+            // carried orbs) with no error here to catch it, so every stage id must be theme-unique.
+            var stageThemeOwner = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             foreach (var t in db.Campaign.Themes)
                 foreach (var s in t.Stages)
+                {
                     if (!db.Stages.ContainsKey(s)) p.Add($"theme {t.Id}: unknown stage '{s}'");
+                    else if (stageThemeOwner.TryGetValue(s, out var owner)) p.Add($"theme {t.Id}: stage '{s}' already belongs to theme '{owner}'");
+                    else stageThemeOwner[s] = t.Id;
+                }
             foreach (var t in db.Traps.Values) NeedBuff(t.ApplyBuff, $"trap {t.Id}");
             foreach (var pk in db.Pickups.Values)
             {

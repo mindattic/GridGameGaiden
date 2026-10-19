@@ -106,7 +106,7 @@ namespace Gaiden.Meta
             // (GG-T44), so brew first and only fall back to buying once the reagents run dry.
             var potion = c.TryItem("healing_potion_basic");
             var brew = c.Recipes.Values.FirstOrDefault(r => r.Station == CraftStation.Alchemy && r.Result == "healing_potion_basic");
-            while (potion != null && s.Count(potion.Id) < 6)
+            while (potion != null && s.Count(potion.Id) < System.Math.Min(6, potion.MaxStack))
             {
                 if (brew != null && Crafting.IsUnlocked(s, brew) && Crafting.HasInputs(s, brew) && s.Gold >= brew.Gold)
                     Note(Crafting.Craft(c, s, brew));

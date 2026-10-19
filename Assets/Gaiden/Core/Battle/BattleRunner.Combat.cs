@@ -418,7 +418,13 @@ namespace Gaiden.Core.Battle
                 {
                     hero.GearStats = hero.GearStats + armor.Stats * -piece.Mastery;
                     foreach (var kv in armor.Resistances)
-                        if (hero.GearResist.TryGetValue(kv.Key, out var cur) && kv.Value != 0f) hero.GearResist[kv.Key] = cur / kv.Value;
+                    {
+                        if (!hero.GearResist.TryGetValue(kv.Key, out var cur)) continue;
+                        // A piece granting 0 resistance (full immunity) can't be divided back out exactly —
+                        // once it breaks, its own contribution simply reverts to neutral (owner direction:
+                        // broken armor should leave 1x effectiveness, not a permanent 0x/immune stuck value).
+                        hero.GearResist[kv.Key] = kv.Value != 0f ? cur / kv.Value : 1f;
+                    }
                 }
                 Emit(new ArmorBrokenEvent { UnitId = hero.Id, ArmorId = piece.ItemId });
                 Announce($"{armor?.Name ?? "Armor"} broken!", hero.Id);
