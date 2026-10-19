@@ -25,10 +25,13 @@ namespace Gaiden.Meta
     public static class Progression
     {
         /// <summary>
-        /// The starting party (owner 2026-10-11: "add a fourth and fifth hero … a 5 player team seems about right for max"):
-        /// Tank, Striker, Healer, Mage, Support — one of each role.
+        /// The default starting party. Owner 2026-10-11 made it five ("a 5 player team seems about right for max");
+        /// owner 2026-10-19 (GG-T118) shrank the start to a small party — Tank, Striker, Healer — with the rest of
+        /// the five joining at story beats (dialogue JoinHero), on top of rescued guests and the Summon Circle.
         /// </summary>
-        public static readonly string[] StartingRoster = { "paladin", "barbarian", "cleric", "redmage", "engineer" };
+        public static readonly string[] StartingRoster = { "paladin", "barbarian", "cleric" };
+        /// <summary>Heroes a new game starts with (character select locks in this many; GG-T118).</summary>
+        public const int StartingPartySize = 3;
         public const int StartingGold = 200;
         public const int MaxPartySize = 5;
         public const int MaxBarSlots = 5;
@@ -41,7 +44,7 @@ namespace Gaiden.Meta
 
         public static SaveData NewGame(ContentDb c, string name) => NewGame(c, name, StartingRoster);
 
-        /// <summary>A custom party (e.g. from the character-select screen) in place of the fixed starting five.</summary>
+        /// <summary>A custom party (e.g. from the character-select screen) in place of the default <see cref="StartingRoster"/>.</summary>
         public static SaveData NewGame(ContentDb c, string name, IReadOnlyList<string> party)
         {
             var s = new SaveData { Name = string.IsNullOrWhiteSpace(name) ? "Lightbearer" : name.Trim(), Gold = StartingGold };
@@ -1467,6 +1470,29 @@ namespace Gaiden.Meta
             if (s.Party.Count < Progression.MaxPartySize) s.Party.Add(h.ClassId);
             return h;
         }
+
+        /// <summary>Who a story JoinHero (GG-T118) brings into a save: <paramref name="preferred"/> if it's a hero the
+        /// player doesn't have; else an unowned hero of <paramref name="role"/>; else one of a role the roster lacks
+        /// (<see cref="StoryRoleOrder"/>); else anyone unowned — or null once every hero is owned. The fallbacks skip
+        /// the Summon Circle's pool and the stages' guests so those stay worth having; deterministic (name order) so
+        /// a beat's speaker and its joiner always agree. <paramref name="exclude"/> holds heroes already promised to
+        /// earlier JoinHero effects of the same dialogue.</summary>
+        public static string StoryPick(ContentDb c, SaveData s, string preferred, string role, ICollection<string> exclude = null)
+        {
+            bool Free(ClassDef d) => d != null && d.Team == Team.Hero && s.Hero(d.Id) == null && !Permadeath.IsLost(s, d.Id) && (exclude == null || !exclude.Contains(d.Id));
+            if (preferred != null && Free(c.TryClass(preferred))) return preferred;
+            var guests = new HashSet<string>(c.Stages.Values.SelectMany(st => st.Waves).SelectMany(w => w.Guests).Select(g => g.Class));
+            var pool = c.Classes.Values.Where(d => Free(d) && !c.Summon.Pool.Contains(d.Id) && !guests.Contains(d.Id))
+                .OrderBy(d => d.Name, StringComparer.OrdinalIgnoreCase).ThenBy(d => d.Id, StringComparer.Ordinal).ToList();
+            if (role != null && pool.FirstOrDefault(d => d.Role == role) is ClassDef byRole) return byRole.Id;
+            var have = new HashSet<string>(s.Roster.Select(h => c.TryClass(h.ClassId)?.Role).Where(r => r != null));
+            foreach (var r in StoryRoleOrder)
+                if (!have.Contains(r) && pool.FirstOrDefault(d => d.Role == r) is ClassDef missing) return missing.Id;
+            return pool.FirstOrDefault()?.Id;
+        }
+
+        /// <summary>The order a JoinHero with no usable class or role fills gaps in the roster.</summary>
+        public static readonly string[] StoryRoleOrder = { "Healer", "Tank", "Mage", "Support", "Striker", "Ranged" };
     }
 
     // ─────────────────────────────────────────────────────────────────────────────

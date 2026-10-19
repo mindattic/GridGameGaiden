@@ -683,7 +683,7 @@ namespace Gaiden.Tests
         public void Recruits_arrive_at_roster_average_xp()
         {
             var c = Real;
-            var save = Progression.NewGame(c, "R");
+            var save = Progression.NewGame(c, "R", new[] { "paladin", "barbarian", "cleric", "redmage", "engineer" });
             foreach (var h in save.Roster) h.TotalXp = 300;
             save.Gold = 10000;
             var pick = Summon.Pool(c, save).First();

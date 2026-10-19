@@ -21,9 +21,11 @@ namespace Gaiden.Tests
         private sealed class Row { public int Runs, Wins, Actions, HpPct; }
 
         private Dictionary<string, Row> Campaign(float randomness, int seed, int maxAttemptsPerStage, out bool finished, bool manageCamp = false) =>
-            Campaign(randomness, seed, maxAttemptsPerStage, out finished, out _, manageCamp, Progression.StartingRoster);
+            Campaign(randomness, seed, maxAttemptsPerStage, out finished, out _, manageCamp, Progression.StartingRoster, true);
 
-        private Dictionary<string, Row> Campaign(float randomness, int seed, int maxAttemptsPerStage, out bool finished, out SaveData save, bool manageCamp, IReadOnlyList<string> startingParty)
+        /// <param name="story">Play each stage's pending story beats first (headless, first choice) so the story
+        /// recruits join the small starting party the way they do in the game (GG-T118).</param>
+        private Dictionary<string, Row> Campaign(float randomness, int seed, int maxAttemptsPerStage, out bool finished, out SaveData save, bool manageCamp, IReadOnlyList<string> startingParty, bool story)
         {
             var c = Real;
             var s = save = Progression.NewGame(c, "Sim", startingParty);
@@ -36,6 +38,7 @@ namespace Gaiden.Tests
                 bool cleared = false;
                 for (int attempt = 0; attempt < maxAttemptsPerStage && !cleared; attempt++)
                 {
+                    if (story) DialogueRunner.PlayPendingBeatsHeadless(c, s, stage.Id);
                     if (manageCamp) CampRoutine.Run(c, s);
                     else if (Inn.Cost(c, s) > 0 && Inn.Cost(c, s) <= s.Gold) Inn.Rest(c, s);
                     var setup = BattleFactory.Build(c, s, stage.Id, battleSeed++);
@@ -52,25 +55,32 @@ namespace Gaiden.Tests
             }
             return rows;
         }
-        /// <summary>The trio start (GG-T87) begins two short of <see cref="Progression.MaxPartySize"/> so the
-        /// camp routine's Summon Circle step has an open party slot to fill — a full five-hero start (every
-        /// real new game) never opens one, so recruiting would otherwise never enter the loop.</summary>
-        [TestCase(0.0f, "greedy", false, 5)]
-        [TestCase(0.5f, "casual", false, 5)]
-        [TestCase(0.85f, "button-masher", false, 5)]
-        [TestCase(0.0f, "greedy+camp", true, 5)]
-        [TestCase(0.5f, "casual+camp", true, 5)]
-        [TestCase(0.0f, "greedy+camp trio-start", true, 3)]
-        public void Campaign_pacing_table(float randomness, string label, bool manageCamp, int startingHeroes)
+        /// <summary>The pre-GG-T118 starting five (the default trio plus the two story recruits' preferred classes) —
+        /// the baseline the small-start rows are balanced against.</summary>
+        private static readonly string[] FiveStart = Progression.StartingRoster.Concat(new[] { "redmage", "engineer" }).ToArray();
+
+        /// <summary>Every real new game starts small (GG-T118) and grows at story beats, so the default rows play
+        /// the trio with story recruits. "no-story" keeps the trio short (GG-T87's trio-start row) so the camp
+        /// routine's Summon Circle step always has an open slot to fill; "five-start" is the old full-party start,
+        /// kept as the yardstick for the early-stage rebalance.</summary>
+        [TestCase(0.0f, "greedy", false, 3, true)]
+        [TestCase(0.5f, "casual", false, 3, true)]
+        [TestCase(0.85f, "button-masher", false, 3, true)]
+        [TestCase(0.0f, "greedy+camp", true, 3, true)]
+        [TestCase(0.5f, "casual+camp", true, 3, true)]
+        [TestCase(0.0f, "greedy+camp trio no-story", true, 3, false)]
+        [TestCase(0.0f, "greedy five-start (pre-GG-T118)", false, 5, false)]
+        public void Campaign_pacing_table(float randomness, string label, bool manageCamp, int startingHeroes, bool story)
         {
             var total = new Dictionary<string, Row>();
-            int finishedRuns = 0, recruits = 0, bountiesClaimed = 0;
+            int finishedRuns = 0, recruits = 0, bountiesClaimed = 0, roster = 0;
             const int seeds = 4;
-            var party = Progression.StartingRoster.Take(startingHeroes).ToList();
+            var party = FiveStart.Take(startingHeroes).ToList();
             for (int seed = 1; seed <= seeds; seed++)
             {
-                var rows = Campaign(randomness, seed, 4, out bool finished, out var save, manageCamp, party);
+                var rows = Campaign(randomness, seed, 4, out bool finished, out var save, manageCamp, party, story);
                 recruits += save.Recruits;
+                roster += save.Roster.Count;
                 bountiesClaimed += save.Bounty.Claimed.Count;
                 if (finished) finishedRuns++;
                 foreach (var kv in rows)
@@ -80,7 +90,7 @@ namespace Gaiden.Tests
                 }
             }
             var sb = new StringBuilder();
-            sb.AppendLine($"=== {label} bot (randomness {randomness}) — campaign finished {finishedRuns}/{seeds} — recruits {recruits}, bounties claimed {bountiesClaimed} ===");
+            sb.AppendLine($"=== {label} bot (randomness {randomness}) — campaign finished {finishedRuns}/{seeds} — summon recruits {recruits}, roster at the end {roster / (float)seeds:F1}, bounties claimed {bountiesClaimed} ===");
             sb.AppendLine("stage                  win%   actions   hp-left%");
             foreach (var kv in total)
                 sb.AppendLine($"{kv.Key,-22} {100 * kv.Value.Wins / kv.Value.Runs,4}%   {kv.Value.Actions / (float)kv.Value.Runs,7:F1}   {kv.Value.HpPct / kv.Value.Runs,6}%");
@@ -90,7 +100,7 @@ namespace Gaiden.Tests
             // Summon Circle as part of organic progression, not just leave them untouched.
             // (Only a run that finishes is guaranteed to pass a contract's last target — a bot that stalls early may not.)
             if (manageCamp && finishedRuns > 0) Assert.That(bountiesClaimed > 0, Is.True, "the camp routine never claimed a bounty over a played-out campaign");
-            if (manageCamp && startingHeroes < Progression.MaxPartySize) Assert.That(recruits > 0, Is.True, "the camp routine never recruited into an open party slot");
+            if (manageCamp && !story && startingHeroes < Progression.MaxPartySize) Assert.That(recruits > 0, Is.True, "the camp routine never recruited into an open party slot");
         }
     }
 }

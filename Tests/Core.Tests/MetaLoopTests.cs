@@ -19,8 +19,8 @@ namespace Gaiden.Tests
         public void New_game_has_starting_trio_gold_and_loadouts()
         {
             var s = Progression.NewGame(Real, "Test");
-            Assert.That(s.Party, Is.EqualTo(new[] { "paladin", "barbarian", "cleric", "redmage", "engineer" })); // one of each role
-            Assert.That(s.Party.Select(id => Real.Classes[id].Role), Is.EqualTo(new[] { "Tank", "Striker", "Healer", "Mage", "Support" }));
+            Assert.That(s.Party, Is.EqualTo(new[] { "paladin", "barbarian", "cleric" })); // a small start; the rest join at story beats (GG-T118)
+            Assert.That(s.Party.Select(id => Real.Classes[id].Role), Is.EqualTo(new[] { "Tank", "Striker", "Healer" }));
             Assert.That(s.Gold, Is.EqualTo(Progression.StartingGold));
             foreach (var h in s.Roster) Assert.That(h.Bar.Any(e => e != null), Is.True);
             Assert.That(Progression.UnlockedSlots(s), Is.EqualTo(Progression.MaxBarSlots)); // every slot open from the start (2026-10-11)
@@ -333,7 +333,7 @@ namespace Gaiden.Tests
         [Test]
         public void A_guest_who_survives_a_victory_joins_the_roster()
         {
-            var c = Real; var s = Progression.NewGame(c, "G1");
+            var c = Real; var s = Progression.NewGame(c, "G1", new[] { "paladin", "barbarian", "cleric", "redmage", "engineer" });
             var setup = BattleFactory.Build(c, s, c.CampaignStages()[0].Id, 1);
             setup.Stage = GuestStage("dervish");
             var ev = new List<BattleEvent>();

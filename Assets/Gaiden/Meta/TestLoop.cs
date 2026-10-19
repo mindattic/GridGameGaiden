@@ -24,8 +24,9 @@ namespace Gaiden.Meta
         /// <summary>Losses in a row on the highest unlocked expedition before stepping back one theme to grind.</summary>
         public const int LossesBeforeStepBack = 3;
 
-        /// <summary>A throwaway save (the app keeps it on slot -1, which Persist never writes): the fixed
-        /// starting party, the tutorial marked done and every story crawl marked seen.</summary>
+        /// <summary>A throwaway save (the app keeps it on slot -1, which Persist never writes): the default small
+        /// starting party (GG-T118; story recruits join headlessly in <see cref="TestCycle.Begin"/>), the tutorial
+        /// marked done and every story crawl marked seen.</summary>
         public static SaveData NewSave(ContentDb c)
         {
             var s = Progression.NewGame(c, SaveName);
@@ -92,11 +93,15 @@ namespace Gaiden.Meta
         public Dictionary<string, int> Materials = new Dictionary<string, int>();
         public int GoldBeforeCamp, GoldAfterCamp;
         public List<string> Camp = new List<string>();
+        /// <summary>What the story beats before this stage did — Test Mode shows no story, but its recruits still
+        /// join (GG-T118: the small starting party grows at story beats), so the beats are played headlessly.</summary>
+        public List<string> Story = new List<string>();
 
         public static TestCycle Begin(ContentDb c, SaveData s, string stageId, int number)
         {
+            var story = DialogueRunner.PlayPendingBeatsHeadless(c, s, stageId);
             var (min, max) = TestLoop.EnemyLevels(c, s, stageId);
-            return new TestCycle { Number = number, StageId = stageId, StageName = c.Stage(stageId).Name, PartyLevel = Progression.PartyLevel(s), EnemyMin = min, EnemyMax = max };
+            return new TestCycle { Number = number, StageId = stageId, StageName = c.Stage(stageId).Name, PartyLevel = Progression.PartyLevel(s), EnemyMin = min, EnemyMax = max, Story = story };
         }
 
         public void Battle(ContentDb c, SaveData s, BattleReport r)
@@ -123,7 +128,8 @@ namespace Gaiden.Meta
             string enemy = EnemyMin == EnemyMax ? $"{EnemyMax}" : $"{EnemyMin}-{EnemyMax}";
             string mats = Materials.Count == 0 ? "none" : string.Join(", ", Materials.Select(kv => $"{kv.Key}x{kv.Value}"));
             string camp = Camp.Count == 0 ? "nothing to do" : string.Join("; ", Camp);
-            return $"[TestMode] cycle {Number} | stage {StageId} ({StageName}) | party Lv {PartyLevel}->{PartyLevelAfter} | enemy Lv {enemy} | {Result} | " +
+            string story = Story.Count == 0 ? "" : $"story: {string.Join("; ", Story)} | ";
+            return $"[TestMode] cycle {Number} | stage {StageId} ({StageName}) | {story}party Lv {PartyLevel}->{PartyLevelAfter} | enemy Lv {enemy} | {Result} | " +
                    $"+{r.XpEach} XP each | +{r.Gold} gold | mats {mats} | camp gold {GoldBeforeCamp}->{GoldAfterCamp}: {camp}";
         }
     }

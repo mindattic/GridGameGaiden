@@ -91,11 +91,13 @@ def main():
         check("slot screen lists 3 slots", sum(1 for t in texts() if t.startswith("Slot ")) == 3)
         h._tap_until(lambda: h.call("clicktext", text="Slot 1"), lambda: until(lambda: h.call("state")["screen"] == "charselect", 2.0), tries=3, wait=0.2)
         # New Game opens the party pick first (CharacterSelectScreen, since 43fd442); lock in the
-        # fixed starting five through the real UI so every later check sees the same squad.
+        # default small starting party (GG-T118) through the real UI so every later check sees the same squad.
         if on_screen("new game opens the party select", "charselect"):
             h.shot("charselect")
             h.pick_party()
         on_screen("new game lands at camp", "hub")
+        party = (h.call("state").get("save") or {}).get("party") or []
+        check("new game starts with the small party (GG-T118)", len(party) == len(h.STARTING_PARTY), str(party))
         check("camp music", h.call("music")["track"] == "MinstrelGuild")
         for item in ["Adventure", "Items", "Status", "Equip", "Abilities", "Party", "Talk", "Merchant", "Blacksmith", "Alchemist", "Inn", "Caravan", "Summon Circle", "Bounties", "Bestiary", "Settings"]:
             if not has_text(item):

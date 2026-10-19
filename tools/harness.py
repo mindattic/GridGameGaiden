@@ -97,7 +97,7 @@ def drag_tiles(*tiles, step=0.12):
     return call("drag", path=pts, step=step)
 
 
-STARTING_PARTY = ("paladin", "barbarian", "cleric", "redmage", "engineer")  # Meta.Progression.StartingRoster
+STARTING_PARTY = ("paladin", "barbarian", "cleric")  # Meta.Progression.StartingRoster (StartingPartySize, GG-T118)
 
 
 def _wait_screen(screen, timeout=6.0):
@@ -114,8 +114,9 @@ def _wait_screen(screen, timeout=6.0):
 
 def pick_party(ids=STARTING_PARTY, timeout=10.0):
     """Drives the New Game party-select screen (CharacterSelectScreen, id "charselect") through the real
-    UI: tap a hero's tile to preview it, tap it again to lock it in, five times. Picks the fixed starting
-    five by default so every run gets the same squad the old fixed-roster New Game gave. Each lock-in is
+    UI: tap a hero's tile to preview it, tap it again to lock it in, once per starting hero. Picks the default
+    small starting party (GG-T118: three; the rest join at story beats) so every run gets the same squad the
+    2-arg Progression.NewGame gives. Each lock-in is
     verified (a locked tile dims to 0.25 opacity); a tap that doesn't land fails the pick instead of being
     retried blindly. Returns True once the screen has left for the camp hub."""
     if not _wait_screen("charselect", timeout):
@@ -329,6 +330,61 @@ def campaign(run="campaign", stages=6, speed=3, extra=(), max_loss_retries=3):
     logs = call("logs")
     print(json.dumps(results, indent=1))
     print("errors:", [l[:300] for l in logs if l.startswith(("Error", "Exception")) and "first mouse" not in l])
+
+
+def story_recruits(run="recruits", speed=3):
+    """GG-T118: a new game starts small and grows at story beats. Picks the starting three through the real
+    party select, clears Green Valley I on autoplay, then launches the next battle and checks that the
+    story-recruit dialogue plays first — the joining hero speaking with their own portrait — and that the
+    party is four once it ends. Screenshots: charselect, hub, the recruit dialogue, the next battle."""
+    launch(run, fresh=True)
+    _wait_screen("title"); time.sleep(0.6)
+    ok = {}
+    _tap_until(lambda: call("clicktext", text="New Game"), lambda: any("Slot 1" in t for t in call("texts")), tries=4)
+    _tap_until(lambda: call("clicktext", text="Slot 1"), lambda: call("state")["screen"] == "charselect", tries=4, wait=1.0)
+    shot("01-charselect")
+    ok["charselect_hint"] = any("more heroes join" in t for t in call("texts"))
+    pick_party()
+    shot("02-hub")
+    party0 = list(call("state").get("save", {}).get("party") or [])
+    ok["starts_with_three"] = party0 == list(STARTING_PARTY)
+    call("speed", x=speed)
+    call("clicktext", text="Adventure"); time.sleep(0.8)
+    call("clicktext", text="Green Valley I"); time.sleep(1.5)
+    through_story()
+    outcome, st = _play_battle("03-gv1-mid")
+    time.sleep(1.2)
+    st = _skip_levelups(call("state"))
+    ok["gv1_won"] = outcome == "ended" and (call("state").get("save") or {}).get("HighestClearedStage", -1) >= 0
+    for attempt in range(5):
+        r = call("click", name="next")
+        if isinstance(r, dict) and r.get("error"):
+            call("clicktext", text="Continue")
+        time.sleep(1.5)
+        if call("state")["screen"] != "postbattle":
+            break
+        if attempt == 2:
+            call("resetinput"); time.sleep(0.5)
+    if call("state")["screen"] == "crawl":
+        call("clicktext", text="Skip"); time.sleep(1.5)
+    ok["recruit_beat_plays"] = _wait_screen("dialogue", 6.0)
+    texts = []
+    if ok["recruit_beat_plays"]:
+        time.sleep(1.0)
+        shot("04-recruit-dialogue")
+        texts = call("texts")
+        ok["recruit_has_portrait"] = any(n.startswith("dlg-portrait") for n in call("names", prefix="dlg-portrait"))
+        finish_dialogue()
+        time.sleep(1.5)
+    while call("state")["screen"] == "dialogue":  # the merchant's after-battle chat may follow on a later launch
+        finish_dialogue(); time.sleep(1.0)
+    party1 = list(call("state").get("save", {}).get("party") or [])
+    ok["party_grew_to_four"] = len(party1) == len(party0) + 1 and party1[:len(party0)] == party0
+    shot("05-next-battle")
+    logs = call("logs")
+    errors = [l[:300] for l in logs if l.startswith(("Error", "Exception")) and "first mouse" not in l]
+    print(json.dumps({"checks": ok, "party_before": party0, "party_after": party1, "dialogue_text": texts[:12], "errors": errors}, indent=1))
+    return all(ok.values()) and not errors
 
 
 def battle_clips(run="clips", count=10, speed=3, timeout=240, capture=True, relaunch=True):
@@ -983,6 +1039,8 @@ if __name__ == "__main__":
         bestiary_drops(sys.argv[2] if len(sys.argv) > 2 else "bestiary")
     elif cmd == "stress":
         stress(hours=float(sys.argv[2]) if len(sys.argv) > 2 else 4.0)
+    elif cmd == "recruits":
+        sys.exit(0 if story_recruits() else 1)
     elif cmd == "testmode":
         sys.exit(0 if testmode(cycles=int(sys.argv[2]) if len(sys.argv) > 2 else 4) else 1)
     elif cmd == "shot":

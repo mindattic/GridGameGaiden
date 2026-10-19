@@ -31,8 +31,10 @@ namespace Gaiden.Tests
             var s = Progression.NewGame(Real, "PL");
             Assert.That(Progression.PartyLevel(s), Is.EqualTo(1));
             SetPartyLevel(s, 6);
-            s.Hero(s.Party[0]).TotalXp = Formulas.TotalXpForLevel(11); // one hero at 11, four at 6 → 7
-            Assert.That(Progression.PartyLevel(s), Is.EqualTo(7));
+            s.Hero(s.Party[0]).TotalXp = Formulas.TotalXpForLevel(11); // one hero at 11, two at 6 → 7.67 → 8
+            Assert.That(Progression.PartyLevel(s), Is.EqualTo(8));
+            s.Hero(s.Party[0]).TotalXp = Formulas.TotalXpForLevel(7); // 7, 6, 6 → 6.33 → 6
+            Assert.That(Progression.PartyLevel(s), Is.EqualTo(6));
         }
 
         [Test]

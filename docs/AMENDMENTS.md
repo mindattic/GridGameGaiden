@@ -480,3 +480,16 @@ updated: 2026-10-09
   ([BIBLE §29.1](BIBLE.md)) and should only have to flip that one rule. Audit found no other permanent loss: defeated
   heroes recover at full HP, heroes who fell in a victory return at 1 HP, recruits and dialogue-joined heroes are never
   removed, and in-battle summons are per-battle by design.
+
+## 2026-10-19 — Small starting party, story recruits (owner direction, GG-T118)
+
+- **A new game starts with three heroes, not five** ([BIBLE §25.14–§25.15](BIBLE.md), [§25.17](BIBLE.md)). The party
+  cap stays five; the rest join at story beats through a new dialogue effect, `JoinHero`, which always brings a hero
+  the player doesn't have yet (named class, else the same role, else a missing role), on top of guest allies and the
+  Summon Circle. *Why:* owner — the party should grow along the road instead of arriving complete.
+- **Green Valley I lightened for the trio** ([BIBLE §22.7](BIBLE.md)): one reinforcing soldier instead of two, and a
+  level-4 finale instead of level 5. *Why:* the casual bot's win rate there fell from 66% to 30% with three heroes;
+  later stages already match the five-hero start because the fourth and fifth heroes join before Green Valley II and
+  at Sandsea Reaches.
+- **The bots play story beats headlessly** (Test Mode, `BalanceReport`): they still never show story, but the beats'
+  effects apply, so the story recruits join their parties too.

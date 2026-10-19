@@ -512,7 +512,7 @@ namespace Gaiden.Tests
         [Test]
         public void CampRoutine_recruits_into_an_open_party_slot_when_affordable()
         {
-            var c = Real; var s = Progression.NewGame(c, "CRSummon", Progression.StartingRoster.Take(3).ToList());
+            var c = Real; var s = Progression.NewGame(c, "CRSummon"); // the small start leaves slots open (GG-T118)
             s.Gold = Summon.Price(c, s);
             CampRoutine.Run(c, s);
             Assert.That(s.Recruits, Is.EqualTo(1));
@@ -523,7 +523,7 @@ namespace Gaiden.Tests
         [Test]
         public void CampRoutine_does_not_recruit_with_a_full_party()
         {
-            var c = Real; var s = Progression.NewGame(c, "CRSummonFull");
+            var c = Real; var s = Progression.NewGame(c, "CRSummonFull", new[] { "paladin", "barbarian", "cleric", "redmage", "engineer" });
             s.Gold = 100000;
             CampRoutine.Run(c, s);
             Assert.That(s.Recruits, Is.EqualTo(0));

@@ -105,13 +105,6 @@
             "X": -1,
             "Y": -1,
             "DelayTicks": 240
-          },
-          {
-            "Class": "soldier01",
-            "Level": 2,
-            "X": -1,
-            "Y": -1,
-            "DelayTicks": 240
           }
         ],
         "SurpriseSpeaker": "captain",
@@ -121,19 +114,19 @@
         "Enemies": [
           {
             "Class": "captain",
-            "Level": 5,
+            "Level": 4,
             "X": -1,
             "Y": -1
           },
           {
             "Class": "soldier02",
-            "Level": 5,
+            "Level": 4,
             "X": -1,
             "Y": -1
           },
           {
             "Class": "soldier03",
-            "Level": 5,
+            "Level": 4,
             "X": -1,
             "Y": -1
           }

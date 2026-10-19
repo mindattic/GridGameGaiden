@@ -151,9 +151,8 @@ namespace Gaiden.Core.Content
                 NeedBuff(pk.ApplyBuff, $"pickup {pk.Id}");
                 if (pk.Weight <= 0) p.Add($"pickup {pk.Id}: weight must be positive");
             }
-            var roles = new HashSet<string> { "Tank", "Healer", "Mage", "Striker", "Support", "Ranged" };
             foreach (var c in db.Classes.Values)
-                if (c.Team == Team.Hero && (c.Role == null || !roles.Contains(c.Role))) p.Add($"class {c.Id}: hero needs a Role (Tank/Healer/Mage/Striker/Support/Ranged), has '{c.Role}'");
+                if (c.Team == Team.Hero && (c.Role == null || !HeroRoles.Contains(c.Role))) p.Add($"class {c.Id}: hero needs a Role (Tank/Healer/Mage/Striker/Support/Ranged), has '{c.Role}'");
             foreach (var b in db.Bounties.Values) { NeedClass(b.TargetClass, $"bounty {b.Id}"); NeedItem(b.RewardItem, $"bounty {b.Id}"); }
             foreach (var c in db.Summon.Pool) NeedClass(c, "summon pool");
             foreach (var e in db.Enchants.Values) NeedItem(e.Essence, $"enchant {e.Id}");
@@ -213,6 +212,9 @@ namespace Gaiden.Core.Content
 
         public const string NpcFlagPrefix = "npc:";
 
+        /// <summary>Every hero Role a class (or a dialogue's JoinHero) may name.</summary>
+        public static readonly HashSet<string> HeroRoles = new HashSet<string> { "Tank", "Healer", "Mage", "Striker", "Support", "Ranged" };
+
         /// <summary>One dialogue (§27.1, GG-T117): every reference resolves, every node is reachable from the start,
         /// and every choice list has a way out that no condition can hide — same severity as a dangling class id.</summary>
         private static void ValidateDialogue(ContentDb db, DialogueDef d, Func<string, bool> portraitExists, List<string> p)
@@ -236,6 +238,8 @@ namespace Gaiden.Core.Content
                     break;
             }
             bool talkWithHero = trigger.Kind == DialogueTriggerKind.Talk && trigger.Id != null && !trigger.Id.StartsWith(NpcFlagPrefix);
+            bool joinsHero = false;
+            foreach (var e in d.AllEffects()) joinsHero |= e?.Type == DialogueEffectType.JoinHero;
 
             void Cond(DialogueCondition c, string where)
             {
@@ -276,6 +280,11 @@ namespace Gaiden.Core.Content
                         if (!IsHero(e.Id)) p.Add($"{where}: RecruitHero needs a hero class, has '{e.Id}'"); break;
                     case DialogueEffectType.JoinNpc:
                         if (!IsNpc(e.Id)) p.Add($"{where}: unknown NPC '{e.Id}'"); break;
+                    case DialogueEffectType.JoinHero:
+                        if (e.Id == null && e.Role == null) p.Add($"{where}: JoinHero needs a hero class Id, a Role, or both");
+                        if (e.Id != null && !IsHero(e.Id)) p.Add($"{where}: JoinHero needs a hero class, has '{e.Id}'");
+                        if (e.Role != null && !HeroRoles.Contains(e.Role)) p.Add($"{where}: JoinHero has unknown Role '{e.Role}'");
+                        break;
                 }
             }
             foreach (var c in d.Conditions) Cond(c, w);
@@ -287,6 +296,7 @@ namespace Gaiden.Core.Content
                 if (!speakers.Add(s.Id)) p.Add($"{w}: duplicate speaker '{s.Id}'");
                 if (s.Class == "$lead") { }
                 else if (s.Class == "$with") { if (!talkWithHero) p.Add($"{w} speaker {s.Id}: \"$with\" only fits a Talk with a party member"); }
+                else if (s.Class == "$recruit") { if (!joinsHero) p.Add($"{w} speaker {s.Id}: \"$recruit\" needs a JoinHero effect in this dialogue"); }
                 else if (s.Class != null) { if (db.TryClass(s.Class) == null) p.Add($"{w} speaker {s.Id}: unknown class '{s.Class}'"); }
                 else if (string.IsNullOrEmpty(s.Portrait) || string.IsNullOrEmpty(s.Name)) p.Add($"{w} speaker {s.Id}: needs a Class, or a Name and a Portrait");
                 var portrait = s.Portrait ?? (s.Class != null && !s.Class.StartsWith("$") ? s.Class : null);

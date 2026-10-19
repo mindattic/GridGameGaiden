@@ -35,6 +35,27 @@
     ]
   },
   {
+    "Id": "greenvalley_recruit_mage",
+    "Title": "A caster on the road",
+    "Trigger": { "Kind": "StageCleared", "Id": "greenvalley-01" },
+    "Speakers": [
+      { "Id": "lead", "Class": "$lead" },
+      { "Id": "recruit", "Class": "$recruit" }
+    ],
+    "Nodes": [
+      { "Id": "meet", "Speaker": "recruit", "Text": "Lorem ipsum! I saw the slimes scatter. Sed do eiusmod tempor, you fight well for so few.", "Next": "reply" },
+      {
+        "Id": "reply", "Speaker": "lead", "Text": "Ut enim ad minim veniam. We could use another pair of hands.",
+        "Choices": [
+          { "Label": "Join us.", "Next": "joined" },
+          { "Label": "The road is dangerous.", "Next": "warned" }
+        ]
+      },
+      { "Id": "warned", "Speaker": "recruit", "Text": "Duis aute irure dolor. Dangerous roads are why I am still standing here.", "Next": "joined" },
+      { "Id": "joined", "Speaker": "recruit", "Text": "Excepteur sint occaecat! Count me in, then.", "Effects": [ { "Type": "JoinHero", "Id": "redmage", "Role": "Mage" } ] }
+    ]
+  },
+  {
     "Id": "greenvalley_after_first",
     "Title": "After the first battle",
     "Trigger": { "Kind": "StageCleared", "Id": "greenvalley-01" },
@@ -46,6 +67,69 @@
     "Nodes": [
       { "Id": "one", "Speaker": "lead", "Text": "Lorem ipsum, the road is clear. Sed ut perspiciatis unde omnis.", "Next": "two" },
       { "Id": "two", "Speaker": "merchant", "Text": "Iste natus error sit voluptatem. Onward, then!" }
+    ]
+  },
+  {
+    "Id": "desert_recruit_support",
+    "Title": "Help at the oasis",
+    "Trigger": { "Kind": "ThemeStart", "Id": "desert" },
+    "Speakers": [
+      { "Id": "lead", "Class": "$lead" },
+      { "Id": "recruit", "Class": "$recruit" }
+    ],
+    "Nodes": [
+      { "Id": "meet", "Speaker": "recruit", "Text": "Consectetur adipiscing! Travelers, at last. Quis nostrud exercitation, the sands ate my cart.", "Next": "reply" },
+      {
+        "Id": "reply", "Speaker": "lead", "Text": "Nisi ut aliquip ex ea commodo. Ride with the caravan.",
+        "Choices": [
+          { "Label": "Join us.", "Next": "joined" },
+          { "Label": "The road is dangerous.", "Next": "warned" }
+        ]
+      },
+      { "Id": "warned", "Speaker": "recruit", "Text": "Velit esse cillum. I have mended worse than danger.", "Next": "joined" },
+      { "Id": "joined", "Speaker": "recruit", "Text": "Fugiat nulla pariatur! My tools are yours.", "Effects": [ { "Type": "JoinHero", "Id": "engineer", "Role": "Support" } ] }
+    ]
+  },
+  {
+    "Id": "cave_recruit_tank",
+    "Title": "A guard in the dark",
+    "Trigger": { "Kind": "ThemeStart", "Id": "cave" },
+    "Speakers": [
+      { "Id": "lead", "Class": "$lead" },
+      { "Id": "recruit", "Class": "$recruit" }
+    ],
+    "Nodes": [
+      { "Id": "meet", "Speaker": "recruit", "Text": "Sunt in culpa qui officia! Who goes there, in the Frostmaw dark?", "Next": "reply" },
+      {
+        "Id": "reply", "Speaker": "lead", "Text": "Deserunt mollit anim. Friends, if you will have us.",
+        "Choices": [
+          { "Label": "Join us.", "Next": "joined" },
+          { "Label": "The road is dangerous.", "Next": "warned" }
+        ]
+      },
+      { "Id": "warned", "Speaker": "recruit", "Text": "Id est laborum. I have held this pass alone for a season.", "Next": "joined" },
+      { "Id": "joined", "Speaker": "recruit", "Text": "Sed ut perspiciatis! Then my shield walks with you.", "Effects": [ { "Type": "JoinHero", "Id": "knight", "Role": "Tank" } ] }
+    ]
+  },
+  {
+    "Id": "cityruins_recruit_healer",
+    "Title": "A healer among the ruins",
+    "Trigger": { "Kind": "ThemeStart", "Id": "cityruins" },
+    "Speakers": [
+      { "Id": "lead", "Class": "$lead" },
+      { "Id": "recruit", "Class": "$recruit" }
+    ],
+    "Nodes": [
+      { "Id": "meet", "Speaker": "recruit", "Text": "Unde omnis iste natus! You are wounded. Error sit voluptatem accusantium.", "Next": "reply" },
+      {
+        "Id": "reply", "Speaker": "lead", "Text": "Doloremque laudantium. Mend us, and march with us.",
+        "Choices": [
+          { "Label": "Join us.", "Next": "joined" },
+          { "Label": "The road is dangerous.", "Next": "warned" }
+        ]
+      },
+      { "Id": "warned", "Speaker": "recruit", "Text": "Totam rem aperiam. The ruins are worse.", "Next": "joined" },
+      { "Id": "joined", "Speaker": "recruit", "Text": "Eaque ipsa quae! I will keep you standing.", "Effects": [ { "Type": "JoinHero", "Id": "sage", "Role": "Healer" } ] }
     ]
   },
   {

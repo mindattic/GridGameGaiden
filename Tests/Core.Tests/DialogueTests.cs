@@ -228,7 +228,7 @@ namespace Gaiden.Tests
         {
             var s = NewSave();
             Assert.That(DialogueRunner.PendingBeat(Real, s, "greenvalley-01")?.Id, Is.EqualTo("greenvalley_road_merchant"));
-            Assert.That(DialogueRunner.PendingBeat(Real, s, "desert-01"), Is.Null);
+            Assert.That(DialogueRunner.PendingBeat(Real, s, "swamp-01"), Is.Null); // a theme with no beat of its own
             s.SeenDialogues.Add("greenvalley_road_merchant");
             Assert.That(DialogueRunner.PendingBeat(Real, s, "greenvalley-01"), Is.Null);
             var t = TestLoop.NewSave(Real);
@@ -241,6 +241,8 @@ namespace Gaiden.Tests
             var s = NewSave();
             s.SeenDialogues.Add("greenvalley_road_merchant");
             s.ClearedStages.Add("greenvalley-01");
+            Assert.That(DialogueRunner.PendingBeat(Real, s, "greenvalley-02")?.Id, Is.EqualTo("greenvalley_recruit_mage"), "the story recruit comes first (GG-T118)");
+            s.SeenDialogues.Add("greenvalley_recruit_mage");
             Assert.That(DialogueRunner.PendingBeat(Real, s, "greenvalley-02"), Is.Null, "merchant hasn't joined");
             s.Flags.Add("npc:merchant");
             Assert.That(DialogueRunner.PendingBeat(Real, s, "greenvalley-02")?.Id, Is.EqualTo("greenvalley_after_first"));

@@ -38,11 +38,23 @@ namespace Gaiden.Meta
         public List<DialogueLine> Transcript { get; } = new List<DialogueLine>();
         /// <summary>What each effect did, in order ("Sellsword joins you!", "+50 G") — the screen toasts them.</summary>
         public List<string> Log { get; } = new List<string>();
+        /// <summary>The hero this dialogue's first JoinHero brings ("$recruit"), fixed when the dialogue opens so
+        /// the face that speaks is the hero who joins (GG-T118); null if it has none or nobody is left to join.</summary>
+        public string Recruit => recruits.Values.FirstOrDefault(v => v != null);
+        private readonly Dictionary<DialogueEffect, string> recruits = new Dictionary<DialogueEffect, string>();
 
         public DialogueRunner(ContentDb c, SaveData s, DialogueDef def, string with = null)
         {
             this.c = c; this.s = s; Def = def ?? throw new ArgumentNullException(nameof(def)); With = with;
             nodes = def.Nodes.Where(n => n?.Id != null).GroupBy(n => n.Id, StringComparer.OrdinalIgnoreCase).ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+            var promised = new List<string>();
+            foreach (var e in def.AllEffects().Where(e => e?.Type == DialogueEffectType.JoinHero))
+            {
+                if (recruits.ContainsKey(e)) continue;
+                var pick = Summon.StoryPick(c, s, e.Id, e.Role, promised);
+                recruits[e] = pick;
+                if (pick != null) promised.Add(pick);
+            }
             Enter(def.Start ?? def.Nodes.FirstOrDefault()?.Id);
         }
 
@@ -92,15 +104,26 @@ namespace Gaiden.Meta
         public (string name, string portrait) Resolve(DialogueSpeaker sp)
         {
             if (sp == null) return ("", null);
-            string cls = sp.Class == "$lead" ? s.Party.FirstOrDefault() : sp.Class == "$with" ? With : sp.Class;
+            string cls = sp.Class == "$lead" ? s.Party.FirstOrDefault() : sp.Class == "$with" ? With : sp.Class == "$recruit" ? Recruit : sp.Class;
             var def = c.TryClass(cls);
             return (sp.Name ?? def?.Name ?? sp.Id, sp.Portrait ?? def?.Id);
         }
 
         private void Apply(DialogueEffect e)
         {
-            var msg = ApplyEffect(c, s, e);
+            var msg = e?.Type == DialogueEffectType.JoinHero && recruits.TryGetValue(e, out var who) ? JoinStoryHero(c, s, who) : ApplyEffect(c, s, e);
             if (msg != null) Log.Add(msg);
+        }
+
+        /// <summary>Plays a dialogue to the end with no screen, taking the first choice offered at every turn —
+        /// how the bots (balance sims, Test Mode) live through story beats. Returns the effect log.</summary>
+        public static List<string> PlayHeadless(ContentDb c, SaveData s, DialogueDef def, string with = null)
+        {
+            var r = new DialogueRunner(c, s, def, with);
+            for (int guard = 0; !r.Finished && guard < 500; guard++)
+                if (!r.Advance()) r.Choose(0);
+            if (!r.Finished) s.SeenDialogues.Add(def.Id); // a loop no first choice escapes — count it as told
+            return r.Log;
         }
 
         // ── the vocabulary ──────────────────────────────────────────────────────────
@@ -157,8 +180,19 @@ namespace Gaiden.Meta
                 }
                 case DialogueEffectType.JoinNpc:
                     return s.Flags.Add(ContentLoader.NpcFlagPrefix + e.Id) ? $"The {Npc(e.Id)} joins the caravan!" : null;
+                case DialogueEffectType.JoinHero:
+                    return JoinStoryHero(c, s, Summon.StoryPick(c, s, e.Id, e.Role));
                 default: return null;
             }
+        }
+
+        /// <summary>A story recruit joins (GG-T118): free, at the roster's average experience, into the party if
+        /// there's room (else the reserve) — exactly like a Summon Circle recruit.</summary>
+        private static string JoinStoryHero(ContentDb c, SaveData s, string classId)
+        {
+            if (classId == null || c.TryClass(classId) == null || s.Hero(classId) != null) return null;
+            Summon.Join(c, s, classId);
+            return s.Party.Contains(classId) ? $"{c.Class(classId).Name} joins the party!" : $"{c.Class(classId).Name} joins you (in reserve)!";
         }
 
         /// <summary>A Camp NPC's display name ("blacksmith" → "Blacksmith").</summary>
@@ -169,9 +203,23 @@ namespace Gaiden.Meta
         /// <summary>The story beat to play before launching <paramref name="stageId"/>, or null: the first dialogue
         /// (file order) not yet seen whose ThemeStart names the stage's theme, or whose StageCleared stage is
         /// cleared, and whose conditions hold. Test Mode saves never get story (GG-T93: bot-only).</summary>
-        public static DialogueDef PendingBeat(ContentDb c, SaveData s, string stageId)
+        public static DialogueDef PendingBeat(ContentDb c, SaveData s, string stageId) =>
+            s == null || s.TestMode ? null : NextBeat(c, s, stageId);
+
+        /// <summary>For the bots (balance sims and Test Mode, which never show story): plays every story beat that's
+        /// pending before <paramref name="stageId"/> headlessly (first choice each time) so story recruits still
+        /// join (GG-T118). Returns what the beats did ("Red Mage joins the party!").</summary>
+        public static List<string> PlayPendingBeatsHeadless(ContentDb c, SaveData s, string stageId)
         {
-            if (s == null || s.TestMode) return null;
+            var log = new List<string>();
+            if (s == null) return log;
+            for (var d = NextBeat(c, s, stageId); d != null && !s.SeenDialogues.Contains(d.Id); d = NextBeat(c, s, stageId))
+                log.AddRange(PlayHeadless(c, s, d));
+            return log;
+        }
+
+        private static DialogueDef NextBeat(ContentDb c, SaveData s, string stageId)
+        {
             var theme = c.ThemeOf(stageId);
             foreach (var d in c.DialogueOrder)
             {

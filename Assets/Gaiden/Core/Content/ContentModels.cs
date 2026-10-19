@@ -577,8 +577,11 @@ namespace Gaiden.Core.Content
         public int Amount;
     }
 
-    /// <summary>Nothing here can remove a hero for good (owner rule: nobody dies permanently).</summary>
-    public enum DialogueEffectType { SetFlag, ClearFlag, GrantGold, GrantItem, RecruitHero, JoinNpc }
+    /// <summary>Nothing here can remove a hero for good (owner rule: nobody dies permanently).
+    /// RecruitHero hires exactly the named class (no-op if owned); JoinHero (GG-T118) is a story recruit that
+    /// always brings someone new: the named class if it's free, else a hero of <see cref="DialogueEffect.Role"/>
+    /// (or of a role the roster lacks) the player doesn't have yet.</summary>
+    public enum DialogueEffectType { SetFlag, ClearFlag, GrantGold, GrantItem, RecruitHero, JoinNpc, JoinHero }
 
     public sealed class DialogueEffect
     {
@@ -586,13 +589,15 @@ namespace Gaiden.Core.Content
         public string Id;
         /// <summary>GrantGold amount (negative = pay) or GrantItem count (default 1).</summary>
         public int Amount;
+        /// <summary>JoinHero only: the role to fall back on when <see cref="Id"/> is missing or already owned.</summary>
+        public string Role;
     }
 
     public sealed class DialogueSpeaker
     {
         public string Id;
-        /// <summary>A class id (its name and portrait), or "$lead" (the first party member) or "$with" (the
-        /// party member a Talk dialogue is with).</summary>
+        /// <summary>A class id (its name and portrait), or "$lead" (the first party member), "$with" (the
+        /// party member a Talk dialogue is with) or "$recruit" (the hero this dialogue's first JoinHero brings, GG-T118).</summary>
         public string Class;
         /// <summary>Display name; defaults to the class's name.</summary>
         public string Name;
@@ -642,5 +647,17 @@ namespace Gaiden.Core.Content
         /// <summary>First node id; defaults to the first node.</summary>
         public string Start;
         public List<DialogueNode> Nodes = new List<DialogueNode>();
+
+        /// <summary>Every effect in the dialogue — nodes' then their choices', in node order (null nodes/choices skipped).</summary>
+        public IEnumerable<DialogueEffect> AllEffects()
+        {
+            foreach (var n in Nodes)
+            {
+                if (n == null) continue;
+                foreach (var e in n.Effects) yield return e;
+                foreach (var ch in n.Choices)
+                    if (ch != null) foreach (var e in ch.Effects) yield return e;
+            }
+        }
     }
 }

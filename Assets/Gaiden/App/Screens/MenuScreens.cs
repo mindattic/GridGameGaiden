@@ -173,12 +173,13 @@ namespace Gaiden.App
     /// <summary>
     /// Fighting-game-style roster pick (owner request: "a grid at the bottom, select a tile, the full
     /// artwork appears on top, lock in that character"). Every hero class is open here regardless of
-    /// normal unlocks; five picks build the starting party. <c>-demo</c> drives the same screen by
-    /// tapping random tiles instead of a human, so each attract-mode run shows a different squad.
+    /// normal unlocks; <see cref="PartySize"/> picks build the small starting party — the rest of the five join
+    /// at story beats (GG-T118). <c>-demo</c> drives the same screen by tapping random tiles instead of a
+    /// human, so each attract-mode run shows a different squad.
     /// </summary>
     public sealed class CharacterSelectScreen : GameScreen
     {
-        public const int PartySize = 5;
+        public const int PartySize = Progression.StartingPartySize;
         private readonly Action<List<string>> onDone;
         private readonly bool auto;
         private readonly List<string> locked = new List<string>();
@@ -203,6 +204,9 @@ namespace Gaiden.App
             bg.style.unityBackgroundImageTintColor = new Color(0.4f, 0.4f, 0.55f);
             var col = Ui.El("fill col", root);
             Ui.Header("Choose Your Party", () => App.Router.Back(), col, out _);
+            var hint = Ui.Text($"Pick {PartySize} to set out with — more heroes join along the road.", "small dim", col);
+            hint.name = "charselect-hint";
+            hint.style.unityTextAlign = TextAnchor.MiddleCenter;
 
             partyStrip = Ui.El("row", col);
             partyStrip.style.justifyContent = Justify.Center;
