@@ -413,6 +413,44 @@ namespace Gaiden.Tests
             Assert.That(s.Count(risky.Item.Id), Is.EqualTo(0));
         }
 
+        /// <summary>GG-T87: with an open party slot and the gold for it, a camp visit recruits from the
+        /// Summon Circle (and the recruit lands in the party, not the reserve).</summary>
+        [Test]
+        public void CampRoutine_recruits_into_an_open_party_slot_when_affordable()
+        {
+            var c = Real; var s = Progression.NewGame(c, "CRSummon", Progression.StartingRoster.Take(3).ToList());
+            s.Gold = Summon.Price(c, s);
+            CampRoutine.Run(c, s);
+            Assert.That(s.Recruits, Is.EqualTo(1));
+            Assert.That(s.Party.Count, Is.EqualTo(4));
+        }
+
+        /// <summary>GG-T87: a full party leaves no slot, so the camp routine doesn't spend on a reserve recruit.</summary>
+        [Test]
+        public void CampRoutine_does_not_recruit_with_a_full_party()
+        {
+            var c = Real; var s = Progression.NewGame(c, "CRSummonFull");
+            s.Gold = 100000;
+            CampRoutine.Run(c, s);
+            Assert.That(s.Recruits, Is.EqualTo(0));
+        }
+
+        /// <summary>GG-T87: a finished bounty is claimed, and the next accepted contract is one the stages
+        /// still ahead can actually complete — never Slime Culling, whose 5 kills outnumber every slime00 the
+        /// campaign spawns.</summary>
+        [Test]
+        public void CampRoutine_claims_a_finished_bounty_and_accepts_only_an_achievable_one()
+        {
+            var c = Real; var s = Progression.NewGame(c, "CRBounty");
+            CampRoutine.Run(c, s);
+            Assert.That(s.Bounty.ActiveId, Is.Not.Null.And.Not.EqualTo("bounty_slime_culling"));
+            var first = Bounties.Active(c, s);
+            s.Bounty.Progress = first.Kills;
+            CampRoutine.Run(c, s);
+            Assert.That(s.Bounty.Claimed, Does.Contain(first.Id));
+            Assert.That(s.Bounty.ActiveId, Is.Not.Null.And.Not.EqualTo(first.Id));
+        }
+
         /// <summary>GG-T54: a Bargain offer at or above the safety threshold is still a legitimate cheap
         /// upgrade the camp routine should take for an empty slot.</summary>
         [Test]

@@ -9,7 +9,8 @@ namespace Gaiden.Meta
     /// <summary>
     /// "What a sensible player does at camp": scrap worn-out gear, rest, repair, forge and equip better
     /// gear (owned bag, then Forge, then the Merchant's Bargain shelf), learn a spell, fill empty bar
-    /// slots, keep potions stocked. Used by the balance simulation and the in-game auto-manage helper;
+    /// slots, keep potions stocked, work the Bounty Board and recruit at the Summon Circle into an open
+    /// party slot (GG-T87). Used by the balance simulation and the in-game auto-manage helper;
     /// every step goes through the same services the screens call.
     /// </summary>
     public static class CampRoutine
@@ -52,6 +53,18 @@ namespace Gaiden.Meta
                 }
             }
             if (Inn.Cost(c, s) > 0 && Inn.Cost(c, s) <= s.Gold) Note(Inn.Rest(c, s));
+
+            // Bounty Board (GG-T87): cash in a finished contract, drop one whose target no longer appears
+            // anywhere ahead, then take the one whose target shows up soonest on the road ahead.
+            ManageBounty(c, s, Note);
+
+            // Summon Circle (GG-T87): fill an open party slot with a recruit when the gold is there — done
+            // before the gear pass so the newcomer gets equipped on this same visit.
+            if (s.Party.Count < Progression.MaxPartySize && Summon.Price(c, s) <= s.Gold)
+            {
+                var recruit = Summon.Pool(c, s).FirstOrDefault(d => s.Hero(d.Id) == null);
+                if (recruit != null) Note(Summon.Recruit(c, s, recruit.Id));
+            }
 
             // The best affordable upgrade for each party member's weapon and armor: an owned bag copy
             // first, then a Forge recipe, then the Merchant's Bargain shelf (skipping near-shatter rolls).
@@ -115,6 +128,37 @@ namespace Gaiden.Meta
                 else break;
             }
             return log;
+        }
+
+        /// <summary>Claim a completed bounty; abandon an active one the stages still ahead can no longer finish;
+        /// with none active, accept the posted contract the road ahead completes soonest (cheapest reward
+        /// breaks ties). A playthrough meets each stage once, so a contract is only "achievable" if the
+        /// uncleared campaign stages spawn enough of its target — e.g. Slime Culling wants 5 slime00 kills
+        /// but the whole campaign spawns 3, so this player (who doesn't grind replays) never takes it.</summary>
+        private static void ManageBounty(ContentDb c, SaveData s, System.Action<Result> note)
+        {
+            if (Bounties.IsComplete(c, s)) note(Bounties.Claim(c, s));
+            var ahead = c.CampaignStages().Skip(s.HighestClearedStage + 1).ToList();
+            // Index (into `ahead`) of the stage that would bring the count to `needed`, or -1 if it never gets there.
+            int CompletesAt(string classId, int needed)
+            {
+                int seen = 0;
+                for (int i = 0; i < ahead.Count; i++)
+                {
+                    seen += ahead[i].Waves.Sum(w => w.Enemies.Count(e => e.Class == classId));
+                    if (seen >= needed) return i;
+                }
+                return -1;
+            }
+            var active = Bounties.Active(c, s);
+            if (active != null && CompletesAt(active.TargetClass, active.Kills - s.Bounty.Progress) < 0) note(Bounties.Abandon(s));
+            if (Bounties.Active(c, s) != null) return;
+            var pick = Bounties.Posted(c, s)
+                .Select(b => (b, at: CompletesAt(b.TargetClass, b.Kills)))
+                .Where(x => x.at >= 0)
+                .OrderBy(x => x.at).ThenBy(x => x.b.RewardGold)
+                .Select(x => x.b).FirstOrDefault();
+            if (pick != null) note(Bounties.Accept(c, s, pick.Id));
         }
     }
 }
