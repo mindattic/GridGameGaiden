@@ -168,6 +168,13 @@ namespace Gaiden.Meta
         // Guests (§25.11)
         public List<string> GuestsJoined = new List<string>();
         public List<string> GuestsLost = new List<string>();
+        // Crucible (§22.10)
+        public bool Crucible;
+        /// <summary>Waves fully cleared before the party fell or left.</summary>
+        public int CrucibleWaves;
+        /// <summary>The save's best waves-survived after this run.</summary>
+        public int CrucibleBest;
+        public bool CrucibleNewBest;
     }
 
     // ─────────────────────────────────────────────────────────────────────────────
@@ -306,17 +313,21 @@ namespace Gaiden.Meta
             return spec;
         }
 
-        public static BattleSetup Build(ContentDb c, SaveData s, string stageId, int seed)
+        public static BattleSetup Build(ContentDb c, SaveData s, string stageId, int seed) => Build(c, s, c.Stage(stageId), seed);
+
+        public static BattleSetup Build(ContentDb c, SaveData s, StageDef stage, int seed)
         {
-            var stage = c.Stage(stageId);
+            bool crucible = Crucible.IsStage(stage.Id);
             var setup = new BattleSetup
             {
                 Stage = stage,
                 Seed = seed,
                 UnlockedSlots = Progression.UnlockedSlots(s),
-                RecommendedLevel = Progression.StageRecommendedLevel(c, s, stage),
-                NewGamePlus = s.NewGamePlus,
-                StartOrbs = Expeditions.StartOrbs(c, s, stageId) + (int)CaravanUpgrades.Value(c, s, "mana_casks"),
+                // A Crucible run authors every wave's level from the party's own (§22.10), so neither the campaign
+                // curve nor New Game+'s step may lift it further.
+                RecommendedLevel = crucible ? 1 : Progression.StageRecommendedLevel(c, s, stage),
+                NewGamePlus = crucible ? 0 : s.NewGamePlus,
+                StartOrbs = Expeditions.StartOrbs(c, s, stage.Id) + (int)CaravanUpgrades.Value(c, s, "mana_casks"),
             };
             foreach (var h in s.Roster) setup.ExcludedGuests.Add(h.ClassId);
             foreach (var g in s.LostGuests) setup.ExcludedGuests.Add(g);
@@ -334,6 +345,7 @@ namespace Gaiden.Meta
         /// <summary>Commits a finished battle into the save (XP, gold, loot, wounds, durability, kills, bestiary, unlocks).</summary>
         public static BattleReport Commit(ContentDb c, SaveData s, BattleState battle)
         {
+            if (Crucible.IsStage(battle.Stage.Id)) return Crucible.Commit(c, s, battle);
             var r = battle.Results;
             var rep = new BattleReport
             {
@@ -370,45 +382,11 @@ namespace Gaiden.Meta
                     h.SkillPoints += Formulas.SkillPointsForLevelUp(before, after);
                     // Wounds carry; a hero who fell revives at 1 HP; a level-up refreshes to full.
                     h.Hp = after > before ? 0 : (u.Alive ? (u.Hp >= u.MaxHp ? 0 : u.Hp) : 1);
-                    r.BrokenWeapons.TryGetValue(u.Def.Id, out var shatteredWeapons);
-                    var finalWeapon = r.FinalWeapon.TryGetValue(u.Def.Id, out var fw) ? fw : u.WeaponId;
-                    // Bag bookkeeping by conservation: hand-before + bar-before = hand-after + bar-after + shattered,
-                    // and bar weapons live in the bag, so the bag changes by (hand-before − hand-after − shattered).
-                    // The old pairwise rule (old weapon back unless it shattered, new one out) missed a bar weapon
-                    // that was swapped in and then shattered while the original was re-equipped from the bar: that
-                    // copy became a Broken fragment *and* stayed whole in the bag — a duplicate (GG-T70).
-                    var bagDelta = new Dictionary<string, int>();
-                    void Delta(string id, int n) { if (id == null) return; bagDelta.TryGetValue(id, out var v); bagDelta[id] = v + n; }
-                    if (finalWeapon != h.WeaponId) { Delta(h.WeaponId, +1); Delta(finalWeapon, -1); }
-                    if (shatteredWeapons != null) foreach (var id in shatteredWeapons) Delta(id, -1);
-                    foreach (var kv in bagDelta) if (kv.Value != 0) s.AddItem(kv.Key, kv.Value);
-                    if (finalWeapon != h.WeaponId && finalWeapon != null)
-                    {
-                        // A bar swap: the hand now holds the bar's weapon (bag already settled above).
-                        h.WeaponId = finalWeapon;
-                        h.WeaponRepairs = 0;
-                        h.WeaponMastery = 1f; // bar backups always enter at factory spec (§24.5), never Masterwork
-                    }
-                    if (r.FinalBar.TryGetValue(u.Def.Id, out var bar))
-                        for (int i = 0; i < bar.Count && i < h.Bar.Count; i++)
-                            if (h.Bar[i] != null && h.Bar[i].StartsWith("weapon:")) h.Bar[i] = bar[i];
-                    if (r.WeaponDurability.TryGetValue(u.Def.Id, out var dur))
-                    {
-                        if (dur < 0 && h.WeaponId != null && u.WeaponId == null) { h.WeaponId = null; h.WeaponDurability = 0; h.WeaponRepairs = 0; h.WeaponMastery = 1f; }
-                        else if (dur >= 0 && h.WeaponId != null) h.WeaponDurability = dur;
-                    }
-                    if (r.ArmorDurability.TryGetValue(u.Def.Id, out var armorDur))
-                        foreach (var slot in BattleEngine.ArmorSlots)
-                        {
-                            if (!armorDur.TryGetValue(slot, out var adur) || !h.Armor.TryGetValue(slot, out var piece)) continue;
-                            if (adur < 0 && !u.Gear.ContainsKey(slot)) h.Armor.Remove(slot); // broke mid-battle
-                            else if (adur >= 0) piece.Durability = adur; // survived: sync current wear
-                        }
+                    SyncGear(s, h, u, r);
                 }
                 // Shattered weapons and broken armor become salvage-only Broken fragments instead of
                 // vanishing outright (GG-T41) — can't be equipped or repaired, only scrapped for materials.
-                foreach (var list in r.BrokenWeapons.Values) foreach (var id in list) s.AddBroken(id, 1);
-                foreach (var list in r.BrokenArmors.Values) foreach (var id in list) s.AddBroken(id, 1);
+                KeepBrokenFragments(s, r);
 
                 int index = c.CampaignStages().FindIndex(x => x.Id == battle.Stage.Id);
                 rep.FirstClear = s.ClearedStages.Add(battle.Stage.Id);
@@ -475,9 +453,55 @@ namespace Gaiden.Meta
             return rep;
         }
 
+        /// <summary>Writes one hero's end-of-battle gear back into the save: a bar weapon swap, current weapon/armor
+        /// wear, and gear that shattered mid-battle. Shared by Victory and the Crucible (§22.10).</summary>
+        internal static void SyncGear(SaveData s, HeroSave h, Unit u, BattleResults r)
+        {
+            r.BrokenWeapons.TryGetValue(u.Def.Id, out var shatteredWeapons);
+            var finalWeapon = r.FinalWeapon.TryGetValue(u.Def.Id, out var fw) ? fw : u.WeaponId;
+            // Bag bookkeeping by conservation: hand-before + bar-before = hand-after + bar-after + shattered,
+            // and bar weapons live in the bag, so the bag changes by (hand-before − hand-after − shattered).
+            // The old pairwise rule (old weapon back unless it shattered, new one out) missed a bar weapon
+            // that was swapped in and then shattered while the original was re-equipped from the bar: that
+            // copy became a Broken fragment *and* stayed whole in the bag — a duplicate (GG-T70).
+            var bagDelta = new Dictionary<string, int>();
+            void Delta(string id, int n) { if (id == null) return; bagDelta.TryGetValue(id, out var v); bagDelta[id] = v + n; }
+            if (finalWeapon != h.WeaponId) { Delta(h.WeaponId, +1); Delta(finalWeapon, -1); }
+            if (shatteredWeapons != null) foreach (var id in shatteredWeapons) Delta(id, -1);
+            foreach (var kv in bagDelta) if (kv.Value != 0) s.AddItem(kv.Key, kv.Value);
+            if (finalWeapon != h.WeaponId && finalWeapon != null)
+            {
+                // A bar swap: the hand now holds the bar's weapon (bag already settled above).
+                h.WeaponId = finalWeapon;
+                h.WeaponRepairs = 0;
+                h.WeaponMastery = 1f; // bar backups always enter at factory spec (§24.5), never Masterwork
+            }
+            if (r.FinalBar.TryGetValue(u.Def.Id, out var bar))
+                for (int i = 0; i < bar.Count && i < h.Bar.Count; i++)
+                    if (h.Bar[i] != null && h.Bar[i].StartsWith("weapon:")) h.Bar[i] = bar[i];
+            if (r.WeaponDurability.TryGetValue(u.Def.Id, out var dur))
+            {
+                if (dur < 0 && h.WeaponId != null && u.WeaponId == null) { h.WeaponId = null; h.WeaponDurability = 0; h.WeaponRepairs = 0; h.WeaponMastery = 1f; }
+                else if (dur >= 0 && h.WeaponId != null) h.WeaponDurability = dur;
+            }
+            if (r.ArmorDurability.TryGetValue(u.Def.Id, out var armorDur))
+                foreach (var slot in BattleEngine.ArmorSlots)
+                {
+                    if (!armorDur.TryGetValue(slot, out var adur) || !h.Armor.TryGetValue(slot, out var piece)) continue;
+                    if (adur < 0 && !u.Gear.ContainsKey(slot)) h.Armor.Remove(slot); // broke mid-battle
+                    else if (adur >= 0) piece.Durability = adur; // survived: sync current wear
+                }
+        }
+
+        internal static void KeepBrokenFragments(SaveData s, BattleResults r)
+        {
+            foreach (var list in r.BrokenWeapons.Values) foreach (var id in list) s.AddBroken(id, 1);
+            foreach (var list in r.BrokenArmors.Values) foreach (var id in list) s.AddBroken(id, 1);
+        }
+
         /// <summary>Grants items into the save, respecting stack caps (overflow auto-sells, US-245). Shared by
         /// Victory's full haul and a voluntary Retreat's partial one.</summary>
-        private static void GrantItems(ContentDb c, SaveData s, BattleReport rep, Dictionary<string, int> items)
+        internal static void GrantItems(ContentDb c, SaveData s, BattleReport rep, Dictionary<string, int> items)
         {
             foreach (var kv in items)
             {
@@ -514,7 +538,7 @@ namespace Gaiden.Meta
             foreach (var kv in r.Kills) Entry(s, kv.Key).Defeated += kv.Value;
         }
 
-        private static BestiaryEntry Entry(SaveData s, string id)
+        internal static BestiaryEntry Entry(SaveData s, string id)
         {
             if (!s.Bestiary.TryGetValue(id, out var e)) { e = new BestiaryEntry(); s.Bestiary[id] = e; }
             return e;

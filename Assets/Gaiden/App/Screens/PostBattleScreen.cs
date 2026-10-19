@@ -17,7 +17,7 @@ namespace Gaiden.App
         private readonly List<Coroutine> reveals = new List<Coroutine>();
         public PostBattleScreen(BattleReport report, string stageId) { this.report = report; this.stageId = stageId; }
         public override string Id => "postbattle";
-        public override string Music => report.Victory ? "HeroicAge" : "Heartbreaking";
+        public override string Music => report.Victory || report.Crucible ? "HeroicAge" : "Heartbreaking";
 
         public override void OnHidden()
         {
@@ -38,6 +38,7 @@ namespace Gaiden.App
             var col = Ui.El("fill col", root);
             col.style.paddingTop = 140; col.style.paddingLeft = col.style.paddingRight = 30; col.style.paddingBottom = 40;
 
+            if (report.Crucible) { BuildCrucible(root, col, c); return; }
             var title = Ui.Text(report.Victory ? "VICTORY" : report.Retreated ? "RETREATED" : report.Escaped ? "ESCAPED" : "DEFEAT", "title shadow", col);
             Fonts.UseDisplay(title);
             title.style.color = report.Victory ? new Color(1f, 0.85f, 0.4f) : new Color(1f, 0.45f, 0.45f);
@@ -118,6 +119,59 @@ namespace Gaiden.App
 
             if (TestMode.Active) root.schedule.Execute(() => TestMode.AfterBattle(report, stageId)).ExecuteLater(1500);
             else if (DemoMode.Active) root.schedule.Execute(() => DemoMode.AfterBattle(report, stageId)).ExecuteLater(1500);
+        }
+
+        /// <summary>Crucible results (§22.10): waves survived, the record, and the whole haul, which a Crucible run
+        /// keeps however it ended. Again › starts the save's next gauntlet; Continue goes back to camp.</summary>
+        private void BuildCrucible(VisualElement root, VisualElement col, ContentDb c)
+        {
+            var title = Ui.Text("CRUCIBLE", "title shadow", col);
+            Fonts.UseDisplay(title);
+            title.style.color = new Color(1f, 0.6f, 0.3f);
+            var waves = Ui.Text($"Survived {report.CrucibleWaves} wave{(report.CrucibleWaves == 1 ? "" : "s")}", "h1 shadow gold", col);
+            waves.name = "crucible-waves";
+            waves.style.unityTextAlign = TextAnchor.MiddleCenter;
+            var best = Ui.Text(report.CrucibleNewBest ? "New best!" : $"Best: {report.CrucibleBest} waves", report.CrucibleNewBest ? "h2 shadow good" : "h2 shadow dim", col);
+            best.name = "crucible-best";
+            best.style.unityTextAlign = TextAnchor.MiddleCenter;
+            if (report.CrucibleNewBest)
+            {
+                // The record is the run's headline: a fanfare and a pop, after the results have settled in.
+                best.style.opacity = 0f;
+                reveals.Add(App.StartCoroutine(NewBest(best)));
+            }
+
+            var w = Ui.Window(null, col);
+            w.style.marginTop = 30;
+            w.style.flexGrow = 1;
+            var list = Ui.List(w).contentContainer;
+            var t = Ui.Text(report.Victory ? "Every wave falls. The Crucible is silent, and the whole haul is yours." :
+                report.Retreated || report.Escaped ? "The party steps out of the Crucible with everything it earned, and recovers." :
+                "The party falls in the Crucible, but every coin, drop and point of experience earned is kept. Everyone recovers.", "small", list);
+            t.style.whiteSpace = WhiteSpace.Normal;
+            Ui.MenuRow("Gold", "+" + Ui.Gold(report.Gold), null, list).Q<Label>("value").AddToClassList("gold");
+            Ui.MenuRow("Experience", $"+{report.XpEach} each", null, list).name = "crucible-xp";
+            if (report.Items.Count == 0) Ui.Text("No items dropped.", "small dim", list);
+            RevealItems(report.Items, c, list);
+            if (report.BountyProgress != null) Ui.MenuRow("Bounty", report.BountyProgress, null, list);
+            if (report.AutoSold > 0) Ui.MenuRow("Bag full: sold extras", $"{report.AutoSold} items", null, list);
+
+            var row = Ui.El("row", col);
+            row.style.justifyContent = Justify.Center;
+            var cont = Ui.Button("Continue", () => App.Router.ResetTo(new HubScreen()), "btn--primary", row);
+            cont.name = "continue";
+            var again = Ui.Button("Again ›", () => CrucibleLauncher.Launch(true), null, row);
+            again.name = "crucible-again";
+            Ui.SetEnabled(again, Crucible.CanLaunch(c, App.Save, out _));
+            if (DemoMode.Active) root.schedule.Execute(() => App.Router.ResetTo(new HubScreen())).ExecuteLater(1500);
+        }
+
+        private IEnumerator NewBest(VisualElement label)
+        {
+            yield return Tween.Wait(0.5f);
+            App.Audio.Sfx("crucible_best");
+            label.style.opacity = 1f;
+            yield return Tween.Pop(label, 1.25f, 0.3f);
         }
 
         /// <summary>Items pop in one at a time instead of dumping the whole list at once (owner direction

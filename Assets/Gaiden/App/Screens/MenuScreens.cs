@@ -453,6 +453,10 @@ namespace Gaiden.App
             var list = Ui.List(menu);
             void Item(string label, Func<GameScreen> screen, string value = "") => Ui.MenuRow(label, value, () => App.Router.Push(screen()), list.contentContainer);
             Item("Adventure", () => new StageSelectScreen(), $"Stage {Math.Min(s.HighestClearedStage + 2, c.CampaignStages().Count)}");
+            // The Crucible (§22.10): endless waves for XP and loot. Closed mid-expedition — the row says why.
+            bool crucibleOpen = Crucible.CanLaunch(c, s, out var crucibleWhy);
+            var crucible = Ui.MenuRow("Crucible", crucibleOpen ? CrucibleScreen.RecordText(s) : crucibleWhy, () => App.Router.Push(new CrucibleScreen()), list.contentContainer, null, crucibleOpen);
+            crucible.name = "camp-crucible";
             Item("Items", () => new ItemsScreen());
             Item("Status", () => new StatusScreen(s.Party.FirstOrDefault()));
             Item("Equip", () => new EquipScreen(s.Party.FirstOrDefault()));
@@ -616,6 +620,20 @@ namespace Gaiden.App
                 app.Persist();
                 next = new StoryCrawlScreen(theme, next);
             }
+            if (replaceCurrent) app.Router.Replace(next); else app.Router.Push(next);
+        }
+    }
+
+    /// <summary>The one way into a Crucible run (§22.10): generates the save's next gauntlet and opens its battle.</summary>
+    public static class CrucibleLauncher
+    {
+        public static void Launch(bool replaceCurrent)
+        {
+            var app = GameApp.I;
+            if (!Crucible.CanLaunch(app.Content, app.Save, out var why)) { app.Toast(why); app.Audio.Sfx("ui.error"); return; }
+            var stage = Crucible.Prepare(app.Content, app.Save);
+            app.Audio.Sfx("crucible_enter");
+            GameScreen next = new BattleScreen(stage.Id);
             if (replaceCurrent) app.Router.Replace(next); else app.Router.Push(next);
         }
     }

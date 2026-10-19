@@ -1547,6 +1547,7 @@ Title ─▶ (Continue | New Game → slot → CharacterSelect (pick 5) | Load G
    ▼
 Camp (HubScreen)  ◀══════════════════════════════════════════╗
    │  Adventure ─▶ stage list (newest-first)                 ║
+   │  Crucible ─▶ endless waves, keeps everything (§22.10)   ║
    ▼                                                         ║
 StoryCrawl (first entry into a theme only)                   ║
    ▼                                                         ║
@@ -1577,6 +1578,7 @@ PostBattle — gold, items, unlocks, bounty ════════════
 - **Defeat**: nothing gained but hard-won XP (below); party HP reset to full.
 - **Retreat** (*Amended* — no longer a Defeat): keeps hard-won XP plus `BattleConfig.RetreatKeepFraction` (50%) of the battle's gold and item counts so far, floored; party HP reset to full, same as Defeat.
 - **Escaped** (*Amended*): nothing gained; wounds kept (fallen → 1 HP).
+- **Crucible** (*Amended 2026-10-19*, [§22.10](#2210-the-crucible)): however the run ends — wipe, leave, escape or (in theory) clearing every wave — it **keeps everything**: gold, item drops, the full XP total (level-ups and skill points), kills, bounty progress and gear wear; party HP reset to full. Never touches cleared stages, `HighestClearedStage`, unlocks, `LastStage` or the expedition. `BattleFactory.Commit` hands any `crucible-*` stage to `Crucible.Commit`.
 
 ### 22.2 Failure path detail
 
@@ -1585,6 +1587,7 @@ PostBattle — gold, items, unlocks, bounty ════════════
 - **Defeat** (all heroes down): "DEFEAT", no rewards but hard-won XP, party restored to full, PostBattle offers **Retry** and **Continue**.
 - **Retreat** (pause menu → Retreat, confirmed) — **Amended 2026-10-11: FFIV-style partial loss, no longer a Defeat.** Its own `BattlePhase.Retreated` (mirrors how `Escaped` already gets its own phase); `BattleFactory.Commit` keeps hard-won XP plus `RetreatKeepFraction` (50%) of the battle's `Results.Coins`/`Results.Items` accumulated so far, lost otherwise. PostBattle shows "RETREATED" and the partial haul. The pause-menu row and confirm dialog quote the exact kept percentage. Mid-expedition, a retreat still ends the expedition via the normal non-victory path ([§22.5](#225-expeditions)).
 - **Escape** (Smoke Bomb): "ESCAPED", no rewards, wounds remain. **Amended 2026-10-09** (new). No permadeath ([§29](#29-open-design-questions)).
+- **The Crucible is the exception** (*Amended 2026-10-19*): a wipe, Leave or escape there keeps the whole haul and all XP, party restored to full ([§22.10](#2210-the-crucible)).
 
 ### 22.3 Adventure — the stage list
 
@@ -1602,7 +1605,7 @@ Campaign (`campaign.json`): Green Valley, Sandsea Reaches, Mireholt Fens, Frostm
 
 ### 22.4 Bounty board
 
-**Amended 2026-10-09:** a Camp screen (`BountyScreen`, "Bounties"), not a StageSelect strip. Posted = every `bounties.json` contract not yet claimed (claimed ones never repost). One active slot (`Bounties.Accept` refuses while one is active); kills of the target class count **on victory only**, capped at the goal; **Claim** pays gold + item; **Abandon** resets. *(Test: `Full_loop_battle_commit_then_every_vendor`.)*
+**Amended 2026-10-09:** a Camp screen (`BountyScreen`, "Bounties"), not a StageSelect strip. Posted = every `bounties.json` contract not yet claimed (claimed ones never repost). One active slot (`Bounties.Accept` refuses while one is active); kills of the target class count **on victory only** (in the Crucible, on any ending — [§22.10](#2210-the-crucible)), capped at the goal; **Claim** pays gold + item; **Abandon** resets. *(Test: `Full_loop_battle_commit_then_every_vendor`.)*
 
 | Bounty | Target | Kills | Reward |
 |---|---|---|---|
@@ -1670,6 +1673,25 @@ it and learn what multipliers affect what; for right now just keep everything at
 - **Future direction, not yet built:** higher difficulty should mean better rewards (`RewardGold`/
   `RewardXp`/`ItemDropRate` scaling up as `EnemyHp`/`EnemyDamage`/`EnemySpeed` scale up) — this amendment
   only lands once the six multipliers are actually wired into combat and loot math.
+
+### 22.10 The Crucible (added 2026-10-19, owner direction, GG-T95)
+
+Owner: "a way to gain xp and loot for the saved campaign … a waiting for the bus kind of mode."
+
+A quick, endless survival battle fought from camp **inside a normal saved campaign** — a Camp menu row, not a separate game mode (`Meta/Crucible.cs`, `CrucibleScreen`, `CrucibleLauncher`).
+
+- **Entry.** Camp → **Crucible** row (right under Adventure; its value reads "Endless waves" before the first run, then "Best: N waves") → `CrucibleScreen` (what it is, first-wave level, the families you'll face, the record) → **Enter the Crucible** (`crucible_enter` cue). **Closed mid-expedition**: the row is disabled and reads "Closed on an expedition" (`Crucible.CanLaunch`) — the run's full-HP reset would otherwise heal the party between an expedition's battles for free ([§22.5](#225-expeditions)). It also refuses with no party or no foes met.
+- **One battle, many waves.** A run is one generated `StageDef` (`crucible-<seed>`, registered in the in-memory `ContentDb` only, earlier runs' stages pruned) of `Crucible.MaxWaves` (50) waves, fought by the ordinary `BattleEngine` wave loop — no new battle loop. Because it is one battle, **wounds, mana and consumables carry wave to wave** and there is no camp in between. Effectively endless: levels climb every wave, so the party falls (or leaves) long before wave 50; clearing all 50 would be a victory, committed the same way.
+- **Escalation.** Wave *i* (0-based) spawns at **`PartyLevel + i × LevelStep`** (`LevelStep` 1; `PartyLevel` = the active party's rounded mean level), with `2 + i/3` foes capped at 5. The levels are authored per spawn, so `BattleFactory.Build` gives a Crucible stage `RecommendedLevel` 1 and no New Game+ step — neither the campaign curve nor NG+ lifts them further.
+- **Families.** Each wave is **one enemy family** (`ClassDef.DropTable`, house convention), never the same family twice in a row, cycling through a fresh shuffle of every family the save knows: enemies it has **met** (Bestiary seen/scanned/defeated) or that fight in **the campaign so far** (cleared stages plus the next one). Bosses (`BossPhases`/`Boss` tag) and multi-tile foes stay in their own stages. So the drops are the mats this save is already crafting with. The arena (background, music, blocks) is one of the campaign-so-far stages.
+- **Seeded and deterministic.** `Crucible.SeedFor(save)` mixes the save's creation time with `CrucibleSave.Runs`: the same save replays the same gauntlet (and the same battle RNG) until it fights it, and each run after is new. `Crucible.Generate(content, save, seed)` is pure.
+- **Leaving.** The pause menu's Retreat row becomes **Leave the Crucible (keep all)**, confirmed with the wave count; a Smoke Bomb escape counts the same.
+- **Rewards — the exception to [§22.2](#222-failure-path-detail).** Unlike any other non-victory end, a Crucible wipe or retreat **keeps all the gold, drops and XP earned so far** (that is the point of the mode), then restores the party to full HP like a defeat. Commit rules in [§22.1](#221-per-transition-state-contract); AMENDMENTS 2026-10-19.
+- **Record.** `SaveData.Crucible` (`CrucibleSave`: `Best`, `Runs`, `TotalWaves`). Waves survived = waves fully cleared (the index of the wave the party fell or left on). The Camp row shows the best; a better run sets it, a worse one never lowers it.
+- **Presentation.** HUD reads "Crucible wave N" (no total); each wave's banner reads "Crucible wave N · Lv L" with a rising-pitch `crucible_wave` sting. Results: **CRUCIBLE**, "Survived N waves", "New best!" (with the `crucible_best` fanfare) or the standing best, then the whole haul (gold, XP each, items, bounty); **Continue** → camp, **Again ›** → the next run. Level-ups play first as after any battle.
+- Bounty kills count on any Crucible ending (it keeps every kill), unlike a stage's victory-only rule ([§22.4](#224-bounty-board)).
+- The first-battle tutorial never runs in the Crucible.
+- *(Tests: `CrucibleTests` — `Crucible_waves_escalate_one_family_at_a_time_from_the_party_level`, `Crucible_draws_only_families_the_save_has_met_or_reached`, `Crucible_is_deterministic_per_seed_and_per_save`, `Crucible_spawns_at_the_authored_level_even_on_new_game_plus`, `Crucible_cannot_start_mid_expedition_and_says_why`, `A_crucible_wipe_or_retreat_keeps_every_reward_and_restores_the_party`, `A_worse_run_never_lowers_the_best_record`, `A_crucible_run_never_touches_campaign_progress_unlocks_or_the_expedition`, `A_crucible_wipe_keeps_the_gear_wear_it_caused`, bot soak `Bot_soak_over_a_crucible_run`. Harness: `python tools/harness.py crucible [WAVES [RUN]]` — camp → Crucible → Enter → Auto → leave after WAVES (99 = fight to a wipe) → level-ups → results → camp, asserting the haul, XP, full HP, the record and the untouched campaign.)*
 
 ## 23. Character Classes
 

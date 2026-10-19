@@ -5,6 +5,7 @@ Self-play harness: launches the development player with the automation endpoint 
     python tools/harness.py sweep            # screenshot + layout-audit every menu screen
     python tools/harness.py clips N          # generate N random-stage/random-wave battle clips
     python tools/harness.py durability       # GG-T39: last-strike weapon badge + drag-preview shatter warning
+    python tools/harness.py crucible [WAVES [RUN]]  # GG-T95: camp -> Crucible -> Auto -> leave after WAVES (99 = fight to a wipe) -> results -> camp
     python tools/harness.py stress HOURS     # unattended soak test (GG-T21); default 4h
     python tools/harness.py testmode N       # GG-T93: -testmode self-play, N full battle→results→camp cycles
     python tools/harness.py shot NAME        # screenshot the running player
@@ -128,7 +129,7 @@ def sweep(run="sweep"):
     time.sleep(1)
     report = {}
     for screen in ["hub", "stages", "items", "status", "equip", "abilities", "party", "shop", "blacksmith",
-                   "alchemist", "summon", "bounties", "bestiary", "settings", "credits"]:
+                   "alchemist", "summon", "bounties", "crucible", "bestiary", "settings", "credits"]:
         call("goto", screen=screen)
         time.sleep(0.9)
         shot(f"sweep-{screen}")
@@ -461,6 +462,100 @@ def testmode(run="testmode", cycles=4, timeout_per_cycle=600):
     print("\n".join(sorted(shots_for.values())))
     return all(checks.values())
 
+def _tap_until(tap, done, tries=8, wait=0.8):
+    """Taps until `done()` holds. A synthetic tap is occasionally dropped (the player window losing focus to
+    another agent's window on a shared desktop is the usual suspect), so a flow that must advance retries the
+    tap rather than failing the run. Returns how many taps it took (0 = never got there)."""
+    for i in range(tries):
+        tap(); time.sleep(wait)
+        if done():
+            return i + 1
+    return 0
+
+
+def crucible(run="crucible", leave_after=3, speed=4, timeout=600):
+    """GG-T95: the Crucible end to end through the real UI. Camp -> the Crucible row -> Enter -> the battle on
+    Auto until `leave_after` waves are cleared (or the party wipes first) -> pause menu "Leave the Crucible" ->
+    level-ups -> results -> Continue -> camp, checking the haul really landed in the save (gold, items, XP),
+    the party recovered to full and the camp row now shows the best record. Screenshots in artifacts/<run>/."""
+    launch(run, fresh=True)
+    call("newgame", slot=0)
+    time.sleep(1.5)
+    call("cues", clear=1)
+    before = call("state")["save"]
+    out = {"before": {k: before[k] for k in ("Gold", "inventory", "xp", "crucible", "HighestClearedStage")}, "taps": {}}
+    screen = lambda: call("state")["screen"]
+    texts = lambda: [t for t in call("texts") if isinstance(t, str)]
+    shot("01-camp")
+    out["camp_row_before"] = [t for t in texts() if t in ("Crucible", "Endless waves") or t.startswith("Best:")]
+    out["taps"]["camp->crucible"] = _tap_until(lambda: call("clicktext", text="Crucible"), lambda: screen() == "crucible")
+    shot("02-crucible-screen")
+    out["taps"]["enter"] = _tap_until(lambda: call("click", name="crucible-enter"), lambda: screen() == "battle", wait=1.5)
+    call("speed", x=speed)
+    call("autoplay", on=1)
+    t0 = time.time(); ended_by = "timeout"; last_wave = -1
+    while time.time() - t0 < timeout:
+        time.sleep(1.0)
+        st = call("state")
+        if st["screen"] != "battle":
+            ended_by = "wipe"
+            break
+        b = st["battle"]
+        if b["wave"] != last_wave:
+            last_wave = b["wave"]
+            time.sleep(0.4)  # let the wave banner land before the shot
+            shot(f"03-battle-wave{b['wave'] + 1:02d}")
+        if b["wave"] >= leave_after:
+            # Leave the way a player would: Auto off, let the current action finish, pause menu, confirm.
+            call("autoplay", on=0)
+            for _ in range(80):
+                if not call("state").get("battle", {}).get("busy", True):
+                    break
+                time.sleep(0.25)
+            out["taps"]["pause"] = _tap_until(lambda: call("click", name="menu"), lambda: any("Leave the Crucible" in t for t in texts()))
+            shot("04-pause-menu")
+            out["taps"]["leave-row"] = _tap_until(lambda: call("clicktext", text="Leave the Crucible"), lambda: any(t.startswith("Leave the Crucible after") for t in texts()))
+            shot("05-leave-confirm")
+            out["taps"]["leave-confirm"] = _tap_until(lambda: call("clicktext", text="Leave"), lambda: screen() != "battle", wait=1.5)
+            ended_by = "left"
+            break
+    out["ended_by"] = ended_by
+    out["waves_reached"] = last_wave + 1
+    time.sleep(1.0)
+    st = call("state")
+    if st["screen"] == "levelup":
+        shot("06-levelup")
+    for _ in range(8):  # one "Skip" per hero that leveled up
+        if screen() != "levelup":
+            break
+        _tap_until(lambda: call("clicktext", text="Skip"), lambda: True, tries=1, wait=0.8)
+    time.sleep(1.5)
+    out["results_screen"] = screen()
+    shot("07-results")
+    out["results_texts"] = texts()[:40]
+    after = call("state")["save"]
+    out["taps"]["continue"] = _tap_until(lambda: call("click", name="continue"), lambda: screen() == "hub", wait=1.2)
+    out["back_at"] = screen()
+    shot("08-camp-after")
+    out["after"] = {k: after[k] for k in ("Gold", "inventory", "xp", "hp", "crucible", "HighestClearedStage", "expedition")}
+    gained = {k: v - before["inventory"].get(k, 0) for k, v in after["inventory"].items() if v != before["inventory"].get(k, 0)}
+    out["checks"] = {
+        "gold_gained": after["Gold"] - before["Gold"],
+        "items_changed": gained,
+        "xp_gained": {k: after["xp"][k] - before["xp"].get(k, 0) for k in after["xp"]},
+        "party_full_hp": all(after["hp"][k] == 0 for k in before["party"]),
+        "best_recorded": after["crucible"]["Best"],
+        "campaign_untouched": after["HighestClearedStage"] == before["HighestClearedStage"] and after["expedition"] is None,
+        "camp_row_after": [t for t in texts() if t == "Crucible" or t.startswith("Best:")],
+        "crucible_cues": sorted({c for c in call("cues") if c.startswith("crucible")}),
+    }
+    # A dropped tap (0 in "taps") is almost always the window losing focus to another player on a shared
+    # desktop: UI Toolkit ignores pointer input while unfocused, and `pick` reports it.
+    out["focused_at_end"] = call("pick", x=0, y=0).get("focused")
+    logs = call("logs")
+    out["errors"] = [l[:300] for l in logs if l.startswith(("Error", "Exception"))]
+    print(json.dumps(out, indent=1))
+
 
 def _report_death(art, returncode, n, extra_note=""):
     """GG-T21: the player process can vanish mid-battle with no exception in Player.log and no
@@ -595,6 +690,8 @@ if __name__ == "__main__":
         battle_clips(count=int(sys.argv[2]) if len(sys.argv) > 2 else 10)
     elif cmd == "durability":
         durability()
+    elif cmd == "crucible":
+        crucible(sys.argv[3] if len(sys.argv) > 3 else "crucible", leave_after=int(sys.argv[2]) if len(sys.argv) > 2 else 3)
     elif cmd == "bestiary":
         bestiary_drops(sys.argv[2] if len(sys.argv) > 2 else "bestiary")
     elif cmd == "stress":

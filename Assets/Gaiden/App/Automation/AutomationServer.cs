@@ -185,6 +185,23 @@ namespace Gaiden.App.Automation
                     StartCoroutine(Tap(c.x, c.y, reply));
                     return Pending;
                 }
+                case "pick":
+                {
+                    // Diagnostics for a tap that replies ok:true but does nothing (GG-T16/GG-T95): what UI Toolkit
+                    // would hit at a design point, whether the virtual mouse is live, and whether the window has
+                    // focus — on desktop, UI Toolkit drops pointer input while it doesn't (another agent's player
+                    // window grabbing focus on a shared desktop is the usual cause).
+                    var stage = app.Stage;
+                    var panelPoint = stage.worldBound.position + new Vector2(F(q["x"]), F(q["y"])) * (stage.worldBound.width / GameApp.DesignWidth);
+                    var hit = stage.panel?.Pick(panelPoint);
+                    var chain = new List<string>();
+                    for (var e = hit; e != null; e = e.parent) chain.Add($"{e.GetType().Name}#{e.name}.{string.Join(".", e.GetClasses())}");
+                    return new
+                    {
+                        chain, focused = Application.isFocused, mouseEnabled = mouse != null && mouse.enabled, mouseAdded = mouse != null && mouse.added,
+                        screen = new[] { Screen.width, Screen.height }, pointer = mouse != null ? mouse.position.ReadValue().ToString() : null,
+                    };
+                }
                 case "back": app.Router.Back(); return new { ok = true };
                 case "resetinput":
                     // GG-T16 recovery: click()/clicktext() have been seen going silently unresponsive
@@ -607,7 +624,7 @@ namespace Gaiden.App.Automation
                 ["fps"] = Mathf.Round(1f / Mathf.Max(0.0001f, Time.smoothDeltaTime)),
             };
             if (app.Save != null)
-                dump["save"] = new { app.Save.Gold, app.Save.HighestClearedStage, party = app.Save.Party, inventory = app.Save.Inventory, levels = app.Save.Roster.ToDictionary(h => h.ClassId, Progression.Level) };
+                dump["save"] = new { app.Save.Gold, app.Save.HighestClearedStage, party = app.Save.Party, inventory = app.Save.Inventory, levels = app.Save.Roster.ToDictionary(h => h.ClassId, Progression.Level), xp = app.Save.Roster.ToDictionary(h => h.ClassId, h => h.TotalXp), hp = app.Save.Roster.ToDictionary(h => h.ClassId, h => h.Hp), crucible = new { app.Save.Crucible.Best, app.Save.Crucible.Runs, app.Save.Crucible.TotalWaves }, expedition = app.Save.Expedition?.ThemeId };
             if (TestMode.Active) dump["testmode"] = new { cycles = TestMode.Completed, last = TestMode.LastLine };
             if (app.Router.Current is BattleScreen b && b.State != null)
             {

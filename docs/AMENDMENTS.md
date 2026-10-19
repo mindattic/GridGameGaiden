@@ -431,3 +431,20 @@ updated: 2026-10-09
   edge the portrait is nudged inside the board instead of hanging under the HUD; Reduce Motion drops the
   jitter but keeps the fade. The old token fade/shrink/spin is gone (the token just disappears).
 
+
+## 2026-10-19 — The Crucible: a defeat that keeps its rewards (owner direction, GG-T95)
+
+- "a way to gain xp and loot for the saved campaign … a waiting for the bus kind of mode." New Camp row and
+  battle mode, §22.10: endless escalating waves of families the save has met, fought from camp in the normal
+  save, never mid-expedition.
+- **Deviation from §22.2 (failure path):** everywhere else a defeat keeps only hard-won XP and a retreat keeps
+  `RetreatKeepFraction` (50%) of the gold and loot. In the Crucible a **wipe, a retreat (Leave the Crucible) or
+  a Smoke Bomb escape keeps everything earned so far** — all gold, every item drop, the full XP total and its
+  level-ups — and the party is still restored to full HP like a defeat. That is the point of the mode: it is a
+  reward faucet you leave whenever the bus comes, not a stage you can fail. It cannot be abused to skip the
+  campaign's losses because it never changes campaign progress, unlocks, `LastStage` or the expedition, and is
+  closed while an expedition is under way (so its full-HP reset can't heal the road). Gear wear from the run
+  is kept too (the wear happened). *(Tests: `A_crucible_wipe_or_retreat_keeps_every_reward_and_restores_the_party`,
+  `A_crucible_run_never_touches_campaign_progress_unlocks_or_the_expedition`.)*
+- Bounty kills count in the Crucible (on any ending), unlike §22.4's victory-only rule for stages — same
+  reasoning: every kill in the Crucible is kept.

@@ -125,6 +125,23 @@ namespace Gaiden.Core.Battle
             return System.Math.Max(0, (t - 1) / BattleConfig.ActionTicks);
         }
 
+        /// <summary>Writes every hero's end-of-battle gear state (weapon/armor durability, final weapon, bar weapons)
+        /// into <see cref="BattleState.Results"/> for the meta layer to commit. Victory does this as the battle ends;
+        /// the Crucible (§22.10) also calls it after a wipe or retreat, since it keeps that battle's wear too.</summary>
+        public static void SnapshotGear(BattleState s)
+        {
+            foreach (var h in s.Units)
+            {
+                if (!h.IsHero) continue;
+                s.Results.WeaponDurability[h.Def.Id] = h.WeaponId != null ? h.WeaponDurability : -1;
+                var armorDur = new Dictionary<EquipmentSlot, int>();
+                foreach (var slot in ArmorSlots) armorDur[slot] = h.Gear.TryGetValue(slot, out var piece) ? piece.Durability : -1;
+                s.Results.ArmorDurability[h.Def.Id] = armorDur;
+                s.Results.FinalWeapon[h.Def.Id] = h.WeaponId;
+                s.Results.FinalBar[h.Def.Id] = h.Bar.ConvertAll(sl => sl.WeaponId != null ? "weapon:" + sl.WeaponId : null);
+            }
+        }
+
         /// <summary>Snake members are armored (immune) while a later chain member lives (§14.2).</summary>
         public static bool IsArmored(BattleState s, Unit u)
         {

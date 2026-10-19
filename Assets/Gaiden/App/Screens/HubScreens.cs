@@ -899,6 +899,50 @@ namespace Gaiden.App
         }
     }
 
+    // ── The Crucible (§22.10) ────────────────────────────────────────────────────
+
+    public sealed class CrucibleScreen : HubPage
+    {
+        public override string Id => "crucible";
+        protected override string Title => "Crucible";
+        protected override string Backdrop => HubScreen.ThemeFor(C, S);
+
+        /// <summary>The Camp row's value: the save's best run, or an invitation before the first one.</summary>
+        public static string RecordText(SaveData s) =>
+            s.Crucible != null && s.Crucible.Runs > 0 ? $"Best: {s.Crucible.Best} wave{(s.Crucible.Best == 1 ? "" : "s")}" : "Endless waves";
+
+        protected override void BuildBody(VisualElement body)
+        {
+            var w = Ui.Window("The Crucible", body);
+            w.name = "crucible-intro";
+            var intro = Ui.Text("Wave after wave, back to back, until the party falls or you leave. Wounds, mana and items carry from wave to wave, with no camp between. " +
+                                "Every coin, drop and point of experience earned is <b>kept</b>, even in defeat, and the party recovers afterward. The campaign doesn't move.", "small", w);
+            intro.style.whiteSpace = WhiteSpace.Normal;
+            int start = Crucible.PartyLevel(S);
+            Ui.MenuRow("First wave", $"Lv {start}, +{Crucible.LevelStep} each wave", null, w);
+            var fams = Crucible.Families(C, S);
+            Ui.MenuRow("Foes", $"{fams.Count} famil{(fams.Count == 1 ? "y" : "ies")} met", null, w);
+            var names = Ui.Text(string.Join(", ", fams.Select(f => f[0].Name)), "tiny dim", w);
+            names.style.whiteSpace = WhiteSpace.Normal;
+            names.style.marginLeft = 40;
+
+            var rec = Ui.Window("Record", body);
+            rec.name = "crucible-record";
+            Ui.MenuRow("Best", S.Crucible.Runs > 0 ? $"{S.Crucible.Best} waves" : "None yet", null, rec).Q<Label>("value").AddToClassList("gold");
+            Ui.MenuRow("Runs", S.Crucible.Runs.ToString(), null, rec);
+            Ui.MenuRow("Waves cleared", S.Crucible.TotalWaves.ToString(), null, rec);
+
+            bool can = Crucible.CanLaunch(C, S, out var why);
+            if (!can) Ui.Text(why, "small bad", body).style.marginTop = 10;
+            var row = Ui.El("row", body);
+            row.style.justifyContent = Justify.Center;
+            row.style.marginTop = 20;
+            var enter = Ui.Button("Enter the Crucible", () => CrucibleLauncher.Launch(false), "btn--primary", row);
+            enter.name = "crucible-enter";
+            Ui.SetEnabled(enter, can);
+        }
+    }
+
     // ── Bounty board (§22.4) ─────────────────────────────────────────────────────
 
     public sealed class BountyScreen : HubPage

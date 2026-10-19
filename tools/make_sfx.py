@@ -2,10 +2,13 @@
 Original sound effects, synthesized from scratch (numpy) so every SFX in the repo is MindAttic's own
 work — no third-party pack licensing. Writes OGG files into Assets/Gaiden/Resources/Audio/Sfx/.
 
-    python tools/make_sfx.py
+    python tools/make_sfx.py                       # every cue
+    python tools/make_sfx.py crucible_enter ...    # only the named cues (the rest are still synthesized, so the
+                                                   # shared RNG stream and every other file stay byte-identical)
 """
 import os
 import subprocess
+import sys
 import tempfile
 import wave
 
@@ -16,6 +19,7 @@ SR = 44100
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "Assets", "Gaiden", "Resources", "Audio", "Sfx")
 rng = np.random.default_rng(7)
+ONLY = set(sys.argv[1:])
 
 
 def t(sec):
@@ -75,6 +79,8 @@ def norm(x, peak=0.85):
 
 
 def write(name, x, peak=0.85):
+    if ONLY and name not in ONLY:
+        return
     x = norm(x, peak)
     fade = min(len(x), int(SR * 0.004))
     x[-fade:] *= np.linspace(1, 0, fade)
@@ -189,6 +195,19 @@ def main():
     # Armor plates (§13.5): a metallic clang (inharmonic partials, fast attack, ringing tail).
     clang = mix(*[tone_env(f, 0.45, 0.001, 0.35) * a for f, a in ((523, 1.0), (1393, 0.6), (2311, 0.45), (3557, 0.3))])
     write("clang", mix(clang, 0.5 * filt(noise(0.45), "band", (2000, 7000)) * env(int(SR * 0.45), 0.001, 0.04, 6)))
+    # The Crucible (§22.10, GG-T95): entering it, each new wave, and a new best-waves record.
+    gong = mix(*[tone_env(f, 1.6, 0.004, 1.1) * a for f, a in ((98, 1.0), (196.7, 0.55), (263.1, 0.4), (395.2, 0.3), (531.0, 0.2))])
+    rumble = filt(noise(1.6), "low", 260) * env(int(SR * 1.6), 0.25, 0.9, 2)
+    rise = sine(sweep(110, 330, 1.6), 1.6) * env(int(SR * 1.6), 0.6, 0.8, 2) * 0.35
+    write("crucible_enter", mix(gong, 0.6 * rumble, rise))
+    drum = sine(sweep(140, 55, 0.35), 0.35) * env(int(SR * 0.35), 0.001, 0.2) + 0.5 * filt(noise(0.35), "low", 1200) * env(int(SR * 0.35), 0.001, 0.06, 5)
+    brass = filt(sum(tone_env(f, 0.42, 0.02, 0.3, saw) for f in (220, 329.6)), "low", 2200)
+    write("crucible_wave", mix(drum, np.concatenate([np.zeros(int(SR * 0.08)), 0.55 * brass])))
+    def horn(f, dur, d=0.5):
+        return filt(tone_env(f, dur, 0.012, d, saw) + 0.6 * tone_env(f * 1.5, dur, 0.012, d * 0.8, saw), "low", 3200)
+    record = np.concatenate([horn(392, 0.13), horn(392, 0.13), horn(523.3, 0.16), horn(659.3, 0.85, 1.0)])
+    sparkle = mix(*[np.concatenate([np.zeros(int(SR * (0.42 + 0.06 * k))), tone_env(f, 0.4, 0.001, 0.25)]) for k, f in enumerate((2093, 2637, 3136, 4186))])
+    write("crucible_best", mix(record, 0.35 * sparkle))
     print("wrote", len([f for f in os.listdir(OUT) if f.endswith('.ogg')]), "files to", OUT)
 
 

@@ -70,6 +70,8 @@ namespace Gaiden.Meta
         /// <summary>The expedition under way (null = at the caravan between expeditions) — §22.5.</summary>
         public ExpeditionSave Expedition;
         public BountySave Bounty = new BountySave();
+        /// <summary>Crucible record (§22.10): best waves survived and runs fought on this save.</summary>
+        public CrucibleSave Crucible = new CrucibleSave();
         public Dictionary<string, BestiaryEntry> Bestiary = new Dictionary<string, BestiaryEntry>();
         public SettingsSave Settings = new SettingsSave();
 
@@ -160,6 +162,15 @@ namespace Gaiden.Meta
         public HashSet<string> Claimed = new HashSet<string>();
     }
 
+    /// <summary>The save's Crucible record (§22.10). <see cref="Runs"/> also seeds the next run, so a save replays
+    /// the same gauntlet until it fights it.</summary>
+    public sealed class CrucibleSave
+    {
+        public int Best;
+        public int Runs;
+        public int TotalWaves;
+    }
+
     public sealed class BestiaryEntry
     {
         public bool Seen;
@@ -229,6 +240,7 @@ namespace Gaiden.Meta
                 s.Version = 2;
             }
             s.Bounty ??= new BountySave();
+            s.Crucible ??= new CrucibleSave();
             s.Worn ??= new Dictionary<string, List<WornGear>>();
             s.Broken ??= new Dictionary<string, int>();
             s.Settings ??= new SettingsSave();

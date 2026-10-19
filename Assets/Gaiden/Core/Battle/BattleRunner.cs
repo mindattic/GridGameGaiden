@@ -199,16 +199,7 @@ namespace Gaiden.Core.Battle
                     return false;
                 }
                 S.Phase = BattlePhase.Victory;
-                foreach (var h in S.Units)
-                {
-                    if (!h.IsHero) continue;
-                    S.Results.WeaponDurability[h.Def.Id] = h.WeaponId != null ? h.WeaponDurability : -1;
-                    var armorDur = new Dictionary<EquipmentSlot, int>();
-                    foreach (var slot in BattleEngine.ArmorSlots) armorDur[slot] = h.Gear.TryGetValue(slot, out var piece) ? piece.Durability : -1;
-                    S.Results.ArmorDurability[h.Def.Id] = armorDur;
-                    S.Results.FinalWeapon[h.Def.Id] = h.WeaponId;
-                    S.Results.FinalBar[h.Def.Id] = h.Bar.ConvertAll(sl => sl.WeaponId != null ? "weapon:" + sl.WeaponId : null);
-                }
+                BattleEngine.SnapshotGear(S);
                 Emit(new BattleEndedEvent { Victory = true });
                 return true;
             }

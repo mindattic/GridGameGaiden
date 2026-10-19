@@ -1388,7 +1388,16 @@ namespace Gaiden.App
                 App.StartCoroutine(Tween.Run(0.3f, k => { v.Root.style.opacity = k; v.Root.style.translate = new Translate(0, -80 * (1 - k)); }, Tween.EaseOut));
             }
             SyncTimeline(null);
-            if (wv.Wave > 0 || wv.TotalWaves > 1)
+            if (InCrucible)
+            {
+                // The Crucible's waves never run out (§22.10): no "N/total", and a rising sting marks each one.
+                ShowBanner(wv.Wave == 0 ? "The Crucible: wave 1" : $"Crucible wave {wv.Wave + 1} · Lv {Crucible.WaveLevel(State.Stage.LevelOverride ?? 1, wv.Wave)}");
+                App.Audio.Sfx("crucible_wave", 1f, 1f + Mathf.Min(0.5f, wv.Wave * 0.04f));
+                var f = board.Float($"WAVE {wv.Wave + 1}", new Vector2(BoardView.Tile * 3, BoardView.Tile * 4), new Color(1f, 0.55f, 0.3f), 120);
+                App.StartCoroutine(FloatAway(f, 1.0f));
+                yield return Tween.Wait(0.6f);
+            }
+            else if (wv.Wave > 0 || wv.TotalWaves > 1)
             {
                 ShowBanner($"Wave {wv.Wave + 1}/{wv.TotalWaves}");
                 var f = board.Float($"WAVE {wv.Wave + 1}", new Vector2(BoardView.Tile * 3, BoardView.Tile * 4), new Color(1f, 0.9f, 0.6f), 120);

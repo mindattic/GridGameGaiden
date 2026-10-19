@@ -113,6 +113,8 @@ namespace Gaiden.App
         }
 
         private bool Colorblind => App.Save?.Settings.ColorblindMode ?? false;
+        /// <summary>This battle is a Crucible run (§22.10): open-ended wave count, keep-everything retreat.</summary>
+        private bool InCrucible => Crucible.IsStage(stageId);
         private bool ReduceMotion => App.Save?.Settings.ReduceMotion ?? false;
 
         protected override void Build(VisualElement root)
@@ -130,7 +132,9 @@ namespace Gaiden.App
             shownCoins = -1;
             if (firstBuild)
             {
-                var setup = setupOverride ?? BattleFactory.Build(App.Content, App.Save, stageId, Environment.TickCount);
+                // A Crucible run is seeded by the save (§22.10) so the same save replays the same gauntlet.
+                int seed = InCrucible && App.Save != null ? Crucible.SeedFor(App.Save) : Environment.TickCount;
+                var setup = setupOverride ?? BattleFactory.Build(App.Content, App.Save, stageId, seed);
                 State = BattleEngine.Create(App.Content, setup, initial);
                 recorder = new BattleRecorder(State, setup, "player", initial);
                 var diff = App.Save?.Settings.Difficulty;
@@ -205,7 +209,7 @@ namespace Gaiden.App
 
             foreach (var u in State.Units) if (u.Alive) board.Add(u);
             SelectedHeroId = State.Units.FirstOrDefault(u => u.IsHero && u.Alive)?.Id ?? -1;
-            if (firstBuild && setupOverride == null && App.Save != null && !App.Save.TutorialDone && App.Save.HighestClearedStage < 0 && !CommandLine.Has("-autobattle") && !DemoMode.Active && !TestMode.Active) TutorialStep = 0;
+            if (firstBuild && setupOverride == null && !InCrucible && App.Save != null && !App.Save.TutorialDone && App.Save.HighestClearedStage < 0 && !CommandLine.Has("-autobattle") && !DemoMode.Active && !TestMode.Active) TutorialStep = 0;
             SyncAll();
             if (!firstBuild) return;
             App.StartCoroutine(Play(initial, false));
@@ -380,7 +384,7 @@ namespace Gaiden.App
             SyncBar();
             SyncPanel();
             int wave = Math.Min(State.Wave + 1, State.Stage.Waves.Count);
-            waveLabel.text = $"Wave {wave}/{State.Stage.Waves.Count}";
+            waveLabel.text = InCrucible ? $"Crucible wave {wave}" : $"Wave {wave}/{State.Stage.Waves.Count}";
             if (shownCoins < 0) SyncCoins();
         }
 
@@ -1086,8 +1090,12 @@ namespace Gaiden.App
             // returning here always re-Builds a fresh BoardView (and Lines) regardless, so just drop it now.
             Ui.MenuRow("How to play", "", () => { Close(); board.Lines.RemoveFromHierarchy(); App.Router.Push(new SettingsScreen()); }, w);
             int retreatPct = (int)(BattleConfig.RetreatKeepFraction * 100);
-            Ui.MenuRow("Retreat", $"(keep {retreatPct}%)", () => { Close();
-                Confirm.Show($"Retreat from battle? You'll keep {retreatPct}% of this fight's gold and loot — safer than risking a wipe.", "Retreat", Retreat); }, w);
+            if (InCrucible)
+                Ui.MenuRow("Leave the Crucible", "(keep all)", () => { Close();
+                    Confirm.Show($"Leave the Crucible after {State.Wave} wave{(State.Wave == 1 ? "" : "s")}? You keep every coin, item and point of experience earned so far.", "Leave", Retreat); }, w);
+            else
+                Ui.MenuRow("Retreat", $"(keep {retreatPct}%)", () => { Close();
+                    Confirm.Show($"Retreat from battle? You'll keep {retreatPct}% of this fight's gold and loot — safer than risking a wipe.", "Retreat", Retreat); }, w);
             Ui.Select(w[1]);
         }
 
