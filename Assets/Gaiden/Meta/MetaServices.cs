@@ -86,6 +86,24 @@ namespace Gaiden.Meta
 
         public static int RecommendedLevel(int campaignIndex) => campaignIndex + 1;
 
+        /// <summary>The party's level: the average of its heroes' levels, rounded (min 1). Small and shared on
+        /// purpose — anything that scales enemies to the party (Test Mode, GG-T93; the Crucible) uses this.</summary>
+        public static int PartyLevel(SaveData s)
+        {
+            var levels = s.Party.Select(s.Hero).Where(h => h != null).Select(Level).ToList();
+            return levels.Count == 0 ? 1 : Math.Max(1, (int)Math.Round(levels.Average(), MidpointRounding.AwayFromZero));
+        }
+
+        /// <summary>A stage's recommended level for this save (the floor its enemies spawn at): the party's
+        /// level on a Test Mode save (GG-T93, so difficulty rises as the party levels), otherwise the
+        /// stage's LevelOverride or its flattened campaign index.</summary>
+        public static int StageRecommendedLevel(ContentDb c, SaveData s, StageDef stage)
+        {
+            if (s.TestMode) return PartyLevel(s);
+            int index = c.CampaignStages().FindIndex(x => x.Id == stage.Id);
+            return stage.LevelOverride ?? (index >= 0 ? RecommendedLevel(index) : 1);
+        }
+
         public static bool CanStartNewGamePlus(ContentDb c, SaveData s)
         {
             var all = c.CampaignStages();
@@ -291,13 +309,12 @@ namespace Gaiden.Meta
         public static BattleSetup Build(ContentDb c, SaveData s, string stageId, int seed)
         {
             var stage = c.Stage(stageId);
-            int index = c.CampaignStages().FindIndex(x => x.Id == stage.Id);
             var setup = new BattleSetup
             {
                 Stage = stage,
                 Seed = seed,
                 UnlockedSlots = Progression.UnlockedSlots(s),
-                RecommendedLevel = stage.LevelOverride ?? (index >= 0 ? Progression.RecommendedLevel(index) : 1),
+                RecommendedLevel = Progression.StageRecommendedLevel(c, s, stage),
                 NewGamePlus = s.NewGamePlus,
                 StartOrbs = Expeditions.StartOrbs(c, s, stageId) + (int)CaravanUpgrades.Value(c, s, "mana_casks"),
             };

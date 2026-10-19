@@ -608,6 +608,7 @@ namespace Gaiden.App.Automation
             };
             if (app.Save != null)
                 dump["save"] = new { app.Save.Gold, app.Save.HighestClearedStage, party = app.Save.Party, inventory = app.Save.Inventory, levels = app.Save.Roster.ToDictionary(h => h.ClassId, Progression.Level) };
+            if (TestMode.Active) dump["testmode"] = new { cycles = TestMode.Completed, last = TestMode.LastLine };
             if (app.Router.Current is BattleScreen b && b.State != null)
             {
                 var s = b.State;

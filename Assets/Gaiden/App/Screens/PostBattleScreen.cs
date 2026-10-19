@@ -116,7 +116,8 @@ namespace Gaiden.App
                     Ui.Button("Next expedition ›", () => StageLauncher.Launch(stages[idx + 1].Id, true), null, row).name = "next";
             }
 
-            if (DemoMode.Active) root.schedule.Execute(() => DemoMode.AfterBattle(report, stageId)).ExecuteLater(1500);
+            if (TestMode.Active) root.schedule.Execute(() => TestMode.AfterBattle(report, stageId)).ExecuteLater(1500);
+            else if (DemoMode.Active) root.schedule.Execute(() => DemoMode.AfterBattle(report, stageId)).ExecuteLater(1500);
         }
 
         /// <summary>Items pop in one at a time instead of dumping the whole list at once (owner direction

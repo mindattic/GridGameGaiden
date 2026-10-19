@@ -76,7 +76,8 @@ namespace Gaiden.App
             BotSkillProfile.TelemetryEnabled = CommandLine.Has("-telemetry");
 
             var start = CommandLine.Value("-start");
-            if (DemoMode.Active) DemoMode.Start();
+            if (TestMode.Active) TestMode.Start();
+            else if (DemoMode.Active) DemoMode.Start();
             else if (!string.IsNullOrEmpty(start) && Automation.StartScreens.TryGet(start, out var startScreen)) Router.ResetTo(startScreen);
             else Router.ResetTo(new TitleScreen());
 
@@ -326,6 +327,92 @@ namespace Gaiden.App
             }
             app.Router.Changed += OnShown;
             app.Router.ResetTo(new HubScreen());
+        }
+    }
+
+    /// <summary>
+    /// `-testmode` (GG-T93, bot-only): self-plays the whole mechanical loop with no story, crawl, overworld
+    /// or tutorial, to verify the game end to end — throwaway save on slot -1 (Persist never writes it) with
+    /// the starting party → launch a stage → autoplayed battle → results → back to the Hub → CampRoutine
+    /// (repair, Inn, potions, forge/equip, learn/assign) → launch again, forever. Unlike `-demo`, it visits
+    /// camp and spends between every fight. Enemy level follows the party (Progression.StageRecommendedLevel)
+    /// and stage choice lives in Meta (TestLoop.PickStage); this class only drives screens and logs one
+    /// "[TestMode] cycle N | …" line per cycle (stage, party/enemy level, result, XP, gold, mats, camp actions).
+    /// </summary>
+    public static class TestMode
+    {
+        public static bool Active => CommandLine.Has("-testmode");
+        /// <summary>Cycles finished (camp done and logged) — reported by the automation state dump.</summary>
+        public static int Completed { get; private set; }
+        public static string LastLine { get; private set; }
+        private static TestCycle current;
+        private static int losses;
+
+        public static void Start()
+        {
+            var app = GameApp.I;
+            app.Save = TestLoop.NewSave(app.Content);
+            app.Slot = -1;
+            app.Save.Settings.BattleSpeed = 3f;
+            app.ApplySettings();
+            Debug.Log($"[TestMode] started: throwaway save (slot -1), party {string.Join(", ", app.Save.Party)}, {app.Save.Gold}g");
+            GoToCamp(runRoutine: false);
+        }
+
+        /// <summary>Called from PostBattleScreen once the results are up.</summary>
+        public static void AfterBattle(BattleReport report, string stageId)
+        {
+            var app = GameApp.I;
+            current?.Battle(app.Content, app.Save, report);
+            losses = report.Victory ? 0 : losses + 1;
+            GoToCamp(runRoutine: true);
+        }
+
+        private static void GoToCamp(bool runRoutine)
+        {
+            var app = GameApp.I;
+            void OnShown(GameScreen shown)
+            {
+                if (shown is not HubScreen hub) return;
+                app.Router.Changed -= OnShown;
+                app.StartCoroutine(Camp(hub, runRoutine));
+            }
+            app.Router.Changed += OnShown;
+            app.Router.ResetTo(new HubScreen());
+        }
+
+        private static IEnumerator Camp(HubScreen hub, bool runRoutine)
+        {
+            var app = GameApp.I;
+            yield return new WaitForSecondsRealtime(1.0f);
+            if (runRoutine && current != null)
+            {
+                current.RunCamp(app.Content, app.Save);
+                LastLine = current.ToString();
+                Completed++;
+                Debug.Log(LastLine);
+                if (app.Router.Current == hub) hub.Refresh();
+                yield return new WaitForSecondsRealtime(1.5f);
+            }
+            if (app.Router.Current != hub) yield break; // something else took over the screen; don't fight it
+            Launch();
+        }
+
+        private static void Launch()
+        {
+            var app = GameApp.I;
+            var c = app.Content; var s = app.Save;
+            string stageId = TestLoop.PickStage(c, s, losses);
+            if (stageId != null && !Expeditions.CanLaunch(c, s, stageId, out var why))
+            {
+                Debug.Log($"[TestMode] can't launch {stageId} ({why}) — abandoning the expedition");
+                Expeditions.Abandon(s);
+                stageId = TestLoop.PickStage(c, s, losses);
+            }
+            if (stageId == null) { Debug.LogError("[TestMode] no launchable stage"); return; }
+            current = TestCycle.Begin(c, s, stageId, Completed + 1);
+            Debug.Log($"[TestMode] cycle {current.Number} launch {stageId} | party Lv {current.PartyLevel} | enemy Lv {current.EnemyMin}-{current.EnemyMax}");
+            StageLauncher.Launch(stageId, false);
         }
     }
 }

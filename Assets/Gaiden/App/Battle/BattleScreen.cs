@@ -191,10 +191,10 @@ namespace Gaiden.App
 
             foreach (var u in State.Units) if (u.Alive) board.Add(u);
             SelectedHeroId = State.Units.FirstOrDefault(u => u.IsHero && u.Alive)?.Id ?? -1;
-            if (setupOverride == null && App.Save != null && !App.Save.TutorialDone && App.Save.HighestClearedStage < 0 && !CommandLine.Has("-autobattle") && !DemoMode.Active) TutorialStep = 0;
+            if (setupOverride == null && App.Save != null && !App.Save.TutorialDone && App.Save.HighestClearedStage < 0 && !CommandLine.Has("-autobattle") && !DemoMode.Active && !TestMode.Active) TutorialStep = 0;
             SyncAll();
             App.StartCoroutine(Play(initial, false));
-            if (CommandLine.Has("-autobattle") || DemoMode.Active) AutoPlay = true;
+            if (CommandLine.Has("-autobattle") || DemoMode.Active || TestMode.Active) AutoPlay = true;
             CaptureUnity.Raise("battle-start", new CaptureData { ["stage"] = State.Stage.Id });
         }
 

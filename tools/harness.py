@@ -6,6 +6,7 @@ Self-play harness: launches the development player with the automation endpoint 
     python tools/harness.py clips N          # generate N random-stage/random-wave battle clips
     python tools/harness.py durability       # GG-T39: last-strike weapon badge + drag-preview shatter warning
     python tools/harness.py stress HOURS     # unattended soak test (GG-T21); default 4h
+    python tools/harness.py testmode N       # GG-T93: -testmode self-play, N full battle→results→camp cycles
     python tools/harness.py shot NAME        # screenshot the running player
     python tools/harness.py call PATH [k=v]  # raw endpoint call, e.g. call state
 
@@ -397,6 +398,70 @@ def bestiary_drops(run="bestiary"):
     print("\n".join(files))
 
 
+def testmode(run="testmode", cycles=4, timeout_per_cycle=600):
+    """GG-T93: launches the player with -testmode (bot-only: throwaway save, no story/crawl/tutorial) and
+    lets it drive itself through `cycles` full launch → battle → results → camp loops. Screenshots each
+    cycle's battle, results and camp (the Hub after CampRoutine ran), collects the one-line-per-cycle
+    "[TestMode] cycle N | ..." log into artifacts/<run>/testmode.log, and checks the evidence: every cycle
+    logged, a battle/results/hub screen seen per cycle, the party level never falling, and no errors."""
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")  # camp lines carry ★ (masterwork) glyphs
+    art = launch(run, extra=("-testmode",), fresh=True)
+    lines, errors, seen = [], [], []
+    shots_for = {}  # (cycle, screen) -> file
+    last_screen = None
+    t0 = time.time()
+    done = 0
+    while done < cycles and time.time() - t0 < timeout_per_cycle * cycles:
+        time.sleep(0.5)
+        try:
+            st = call("state", timeout=10)
+        except Exception as e:
+            errors.append(f"state failed: {e}")
+            if not alive():
+                break
+            continue
+        tm = st.get("testmode") or {}
+        done = tm.get("cycles", 0)
+        scr = st["screen"]
+        cyc = done + 1
+        if scr != last_screen:
+            seen.append((cyc, scr))
+            last_screen = scr
+        key = (cyc, scr)
+        if scr in ("postbattle", "levelup") and key not in shots_for:
+            shots_for[key] = shot(f"c{cyc:02d}-{scr}")
+        if scr == "battle" and key not in shots_for and st.get("battle", {}).get("clock", 0) > 30:
+            shots_for[key] = shot(f"c{cyc:02d}-battle")
+        logs = call("logs", clear=1)
+        lines += [l.split(": ", 1)[1] for l in logs if "[TestMode]" in l]
+        errors += [l[:300] for l in logs if l.startswith(("Error", "Exception")) and "first mouse" not in l]
+        if done >= 1 and scr == "hub" and (done, "hub") not in shots_for:
+            shots_for[(done, "hub")] = shot(f"c{done:02d}-camp")
+    cycle_lines = [l for l in lines if l.startswith("[TestMode] cycle") and " launch " not in l]
+    with open(os.path.join(art, "testmode.log"), "w", encoding="utf-8") as f:
+        f.write("\n".join(lines) + "\n")
+    levels = []
+    for l in cycle_lines:
+        part = l.split("| party Lv ", 1)[1].split(" ", 1)[0]
+        levels.append(tuple(int(x) for x in part.split("->")))
+    per_cycle = {n: {s for c, s in seen if c == n} for n in range(1, done + 1)}
+    checks = {
+        "cycles_logged": len(cycle_lines) >= cycles,
+        "battle_results_camp_each_cycle": all({"battle", "postbattle", "hub"} <= per_cycle.get(n, set()) for n in range(1, cycles + 1)),
+        "party_level_never_falls": all(b >= a for a, b in levels) and all(levels[i + 1][0] >= levels[i][1] for i in range(len(levels) - 1)),
+        "camp_did_something": any(": nothing to do" not in l for l in cycle_lines),
+        "no_errors": not errors,
+    }
+    try:
+        call("quit", timeout=3)
+    except Exception:
+        pass
+    print("\n".join(cycle_lines))
+    print(json.dumps({"checks": checks, "errors": errors[:10], "screens": seen[:60]}, indent=1))
+    print("\n".join(sorted(shots_for.values())))
+    return all(checks.values())
+
+
 def _report_death(art, returncode, n, extra_note=""):
     """GG-T21: the player process can vanish mid-battle with no exception in Player.log and no
     Windows "Application Error" event — the only report from that incident was a human skimming
@@ -534,6 +599,8 @@ if __name__ == "__main__":
         bestiary_drops(sys.argv[2] if len(sys.argv) > 2 else "bestiary")
     elif cmd == "stress":
         stress(hours=float(sys.argv[2]) if len(sys.argv) > 2 else 4.0)
+    elif cmd == "testmode":
+        sys.exit(0 if testmode(cycles=int(sys.argv[2]) if len(sys.argv) > 2 else 4) else 1)
     elif cmd == "shot":
         print(shot(sys.argv[2]))
     elif cmd == "call":

@@ -62,6 +62,8 @@ namespace Gaiden.Meta
         /// turns over on every return to camp but replays identically from the same save (GG-T38).</summary>
         public int BargainRotation;
         public bool TutorialDone;
+        /// <summary>A `-testmode` throwaway save (GG-T93): enemy levels follow the party (Progression.StageRecommendedLevel).</summary>
+        public bool TestMode;
         /// <summary>New Game+ cycle (0 = first run). Unlocked by clearing the last campaign stage (US-332).</summary>
         public int NewGamePlus;
 

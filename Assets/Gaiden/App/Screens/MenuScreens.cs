@@ -650,7 +650,7 @@ namespace Gaiden.App
             var skip = Ui.Button("Skip ›", Finish, "btn--small", root);
             skip.style.position = Position.Absolute; skip.style.right = 30; skip.style.bottom = 40;
             root.RegisterCallback<ClickEvent>(_ => Finish());
-            if (DemoMode.Active) root.schedule.Execute(Finish).ExecuteLater(600);
+            if (DemoMode.Active || TestMode.Active) root.schedule.Execute(Finish).ExecuteLater(600);
         }
 
         public override void Tick(float dt)
