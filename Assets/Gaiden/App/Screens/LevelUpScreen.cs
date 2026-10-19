@@ -25,10 +25,22 @@ namespace Gaiden.App
         private VisualElement portraitRow, xpGauge, statColumn;
         private Label levelLabel;
         private bool skipHandlerBound;
+        /// <summary>Set once the router pops this screen. The fanfare coroutine runs on GameApp, not on this screen, so
+        /// without this it played on after a ResetTo (the harness's randombattle calls one mid-fanfare): it rebuilt a
+        /// popped screen against a generated stage already pruned ("Unknown stage 'skirmish-…'") and its Advance()
+        /// Replace()d whatever screen had just been mounted (GG-T127).</summary>
+        private bool hidden;
 
         public LevelUpScreen(BattleReport report, string stageId) { this.report = report; this.stageId = stageId; }
         public override string Id => "levelup";
         public override string Music => "HeroicAge";
+
+        public override void OnHidden()
+        {
+            hidden = true;
+            if (running != null) App.StopCoroutine(running);
+            running = null;
+        }
 
         protected override void Build(VisualElement root)
         {
@@ -37,7 +49,7 @@ namespace Gaiden.App
             var def = c.Class(classId);
 
             var bg = Ui.El("fill", root);
-            bg.style.backgroundImage = new StyleBackground(Art.Background(c.Stage(stageId).Theme, 1));
+            bg.style.backgroundImage = new StyleBackground(Art.Background(PostBattleScreen.ThemeOf(c, report, stageId), 1));
             bg.style.unityBackgroundImageTintColor = new Color(0.4f, 0.4f, 0.5f);
             var col = Ui.El("fill col center", root);
 
@@ -83,6 +95,7 @@ namespace Gaiden.App
 
         private void Skip()
         {
+            if (hidden) return;
             if (running != null) App.StopCoroutine(running);
             running = null;
             Advance();
@@ -90,6 +103,7 @@ namespace Gaiden.App
 
         private void Advance()
         {
+            if (hidden) return;
             index++;
             if (index >= report.LevelUps.Count) { App.Router.Replace(new PostBattleScreen(report, stageId)); return; }
             Refresh();

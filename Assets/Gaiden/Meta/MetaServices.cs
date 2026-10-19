@@ -146,6 +146,11 @@ namespace Gaiden.Meta
         /// <summary>A voluntary pause-menu Retreat (FFIV-style partial loss, §22.2) — distinct from Defeat.</summary>
         public bool Retreated;
         public string StageId;
+        /// <summary>The stage's name and theme as fought, copied at commit so the results flow never has to look the
+        /// stage up again: a generated stage (a harness skirmish, a Crucible run) can be pruned from the ContentDb
+        /// while the level-up and results screens are still showing it (GG-T127).</summary>
+        public string StageName;
+        public string StageTheme;
         public int Gold;
         public int XpEach;
         public Dictionary<string, int> Items = new Dictionary<string, int>();
@@ -358,6 +363,8 @@ namespace Gaiden.Meta
                 Escaped = battle.Phase == BattlePhase.Escaped,
                 Retreated = battle.Phase == BattlePhase.Retreated,
                 StageId = battle.Stage.Id,
+                StageName = battle.Stage.Name,
+                StageTheme = battle.Stage.Theme,
             };
             int slotsBefore = Progression.UnlockedSlots(s);
             Bargains.Rotate(s);

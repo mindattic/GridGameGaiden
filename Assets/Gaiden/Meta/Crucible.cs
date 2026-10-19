@@ -161,6 +161,8 @@ namespace Gaiden.Meta
                 Escaped = battle.Phase == BattlePhase.Escaped,
                 Retreated = battle.Phase == BattlePhase.Retreated,
                 StageId = battle.Stage.Id,
+                StageName = battle.Stage.Name,
+                StageTheme = battle.Stage.Theme,
                 Crucible = true,
             };
             int slotsBefore = Progression.UnlockedSlots(s);

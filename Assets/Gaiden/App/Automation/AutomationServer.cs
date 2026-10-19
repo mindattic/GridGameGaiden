@@ -302,6 +302,8 @@ namespace Gaiden.App.Automation
                     // same endpoint, left running, fed itself its own synthetic stages as "random real"
                     // sources within a few dozen calls, compounding (skirmish of a skirmish of a...) and
                     // collapsing variety toward whatever got picked early. Prune them before picking.
+                    // Safe while the last skirmish's level-up/results screens are still up (GG-T127): those read the
+                    // stage's name and theme from the BattleReport, and LevelUpScreen stops its fanfare when popped.
                     const string SynthPrefix = "skirmish-";
                     foreach (var oldId in app.Content.Stages.Keys.Where(k => k.StartsWith(SynthPrefix)).ToList())
                         app.Content.Stages.Remove(oldId);

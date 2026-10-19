@@ -25,6 +25,11 @@ namespace Gaiden.App
             reveals.Clear();
         }
 
+        /// <summary>The fought stage's theme and name, read from the report (GG-T127): a generated stage may already be
+        /// pruned from the ContentDb while its results still show; fall back to a live lookup for older reports.</summary>
+        public static string ThemeOf(ContentDb c, BattleReport report, string stageId) => report.StageTheme ?? c.TryStage(stageId)?.Theme;
+        public static string NameOf(ContentDb c, BattleReport report, string stageId) => report.StageName ?? c.TryStage(stageId)?.Name ?? "";
+
         /// <summary>Battle-end routing: a level-up fanfare first if anyone leveled, else straight to loot.</summary>
         public static void RouteFrom(BattleReport report, string stageId) =>
             App.Router.Replace(report.LevelUps.Count > 0 ? (GameScreen)new LevelUpScreen(report, stageId) : new PostBattleScreen(report, stageId));
@@ -33,7 +38,7 @@ namespace Gaiden.App
         {
             var c = App.Content;
             var bg = Ui.El("fill", root);
-            bg.style.backgroundImage = new StyleBackground(Art.Background(c.Stage(stageId).Theme, 3));
+            bg.style.backgroundImage = new StyleBackground(Art.Background(ThemeOf(c, report, stageId), 3));
             bg.style.unityBackgroundImageTintColor = new Color(0.45f, 0.45f, 0.55f);
             var col = Ui.El("fill col", root);
             col.style.paddingTop = 140; col.style.paddingLeft = col.style.paddingRight = 30; col.style.paddingBottom = 40;
@@ -42,7 +47,7 @@ namespace Gaiden.App
             var title = Ui.Text(report.Victory ? "VICTORY" : report.Retreated ? "RETREATED" : report.Escaped ? "ESCAPED" : "DEFEAT", "title shadow", col);
             Fonts.UseDisplay(title);
             title.style.color = report.Victory ? new Color(1f, 0.85f, 0.4f) : new Color(1f, 0.45f, 0.45f);
-            Ui.Text(c.Stage(stageId).Name, "h2 shadow dim", col).style.unityTextAlign = TextAnchor.MiddleCenter;
+            Ui.Text(NameOf(c, report, stageId), "h2 shadow dim", col).style.unityTextAlign = TextAnchor.MiddleCenter;
 
             var w = Ui.Window(null, col);
             w.style.marginTop = 40;
@@ -101,7 +106,7 @@ namespace Gaiden.App
                 // A failed expedition restarts from its first battle.
                 var theme = c.ThemeOf(stageId);
                 string retryId = report.ExpeditionFailed && theme != null ? theme.Stages[0] : stageId;
-                Ui.Button("Retry", () => StageLauncher.Launch(retryId, true), null, row);
+                if (c.TryStage(retryId) != null) Ui.Button("Retry", () => StageLauncher.Launch(retryId, true), null, row); // a pruned generated stage can't be retried
             }
             var cont = Ui.Button("Continue", () => App.Router.ResetTo(new HubScreen()), "btn--primary", row);
             cont.name = "continue";

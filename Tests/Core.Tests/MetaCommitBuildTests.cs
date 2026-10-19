@@ -29,6 +29,34 @@ namespace Gaiden.Tests
             return st;
         }
 
+        // ── Commit: the report names its stage ──
+
+        /// <summary>GG-T127: the report carries the fought stage's name and theme, so the level-up and results screens
+        /// never look a generated stage (a harness skirmish, a Crucible run) back up after it has been pruned.</summary>
+        [Test]
+        public void A_report_names_its_stage_even_after_a_generated_stage_is_pruned()
+        {
+            // A private ContentDb: this test registers and prunes stages, which the shared Real must never see.
+            var c = ContentLoader.Load(name => { var p = System.IO.Path.Combine(ContentDir, name + ".json"); return System.IO.File.Exists(p) ? System.IO.File.ReadAllText(p) : null; });
+            var s = Progression.NewGame(c, "Skirmish");
+            var src = c.CampaignStages()[0];
+            var synth = new StageDef { Id = "skirmish-test", Name = src.Name + " Skirmish", Theme = src.Theme, Background = src.Background, LevelOverride = 1, Waves = new List<WaveDef> { src.Waves[0] } };
+            c.Stages[synth.Id] = synth;
+            var b = DirectWin(c, s, synth.Id);
+            c.Stages.Remove(synth.Id); // what randombattle's prune does while the results are still up
+            var rep = BattleFactory.Commit(c, s, b);
+            Assert.That(rep.StageId, Is.EqualTo(synth.Id));
+            Assert.That(rep.StageName, Is.EqualTo(synth.Name));
+            Assert.That(rep.StageTheme, Is.EqualTo(src.Theme));
+
+            var crucible = Crucible.Prepare(c, s);
+            var cb = BattleEngine.Create(c, BattleFactory.Build(c, s, crucible.Id, 3), new List<BattleEvent>());
+            cb.Phase = BattlePhase.Defeat;
+            var crep = BattleFactory.Commit(c, s, cb);
+            Assert.That(crep.StageName, Is.EqualTo(crucible.Name));
+            Assert.That(crep.StageTheme, Is.EqualTo(crucible.Theme));
+        }
+
         // ── Commit: equipment ──
 
         [Test]
