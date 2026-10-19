@@ -99,12 +99,15 @@ def main():
         party = (h.call("state").get("save") or {}).get("party") or []
         check("new game starts with the small party (GG-T118)", len(party) == len(h.STARTING_PARTY), str(party))
         check("camp music", h.call("music")["track"] == "MinstrelGuild")
-        for item in ["Adventure", "Items", "Status", "Equip", "Abilities", "Party", "Talk", "Merchant", "Blacksmith", "Alchemist", "Inn", "Caravan", "Summon Circle", "Bounties", "Bestiary", "Settings"]:
+        for item in ["Adventure", "Items", "Status", "Equip", "Abilities", "Party", "Talk", "Caravan", "Summon Circle", "Bounties", "Bestiary", "Settings"]:
             if not has_text(item):
                 check(f"camp menu has {item}", False)
                 break
         else:
             check("camp menu has every command", True)
+        # GG-T119: the Camp NPCs are met on the road, so a new save's camp has none of their stations yet.
+        npc_rows = [x for x in ["Merchant", "Blacksmith", "Alchemist", "Enchantress", "Inn"] if x in texts()]
+        check("a new save's camp hides the stations of NPCs not yet met", not npc_rows, str(npc_rows))
         cards = [h.call("element", name=n) for n in h.call("names", prefix="camp-hero-")]
         win = h.call("element", name="camp-party")
         check("camp party is a 2-column grid with room for six", len(cards) >= 3 and all(c["w"] < win["w"] * 0.55 for c in cards)

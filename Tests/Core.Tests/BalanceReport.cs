@@ -29,6 +29,9 @@ namespace Gaiden.Tests
         {
             var c = Real;
             var s = save = Progression.NewGame(c, "Sim", startingParty);
+            // GG-T119: Camp NPCs join at story beats. A no-story row is the pre-story yardstick, so it has every
+            // service from the start, as every save did before; story rows meet them through the headless beats.
+            if (!story) CampNpcs.JoinAll(s);
             var rows = new Dictionary<string, Row>();
             var stages = c.CampaignStages();
             finished = true;
@@ -40,7 +43,7 @@ namespace Gaiden.Tests
                 {
                     if (story) DialogueRunner.PlayPendingBeatsHeadless(c, s, stage.Id);
                     if (manageCamp) CampRoutine.Run(c, s);
-                    else if (Inn.Cost(c, s) > 0 && Inn.Cost(c, s) <= s.Gold) Inn.Rest(c, s);
+                    else if (CampNpcs.Joined(s, CampNpcs.Innkeeper) && Inn.Cost(c, s) > 0 && Inn.Cost(c, s) <= s.Gold) Inn.Rest(c, s);
                     var setup = BattleFactory.Build(c, s, stage.Id, battleSeed++);
                     var st = BotRunner.Play(c, setup, new HeroBot(battleSeed, randomness), 900); // the first battle is a 20-wave gauntlet
                     if (!rows.TryGetValue(stage.Id, out var row)) rows[stage.Id] = row = new Row();
@@ -53,6 +56,9 @@ namespace Gaiden.Tests
                 }
                 if (!cleared) { finished = false; break; }
             }
+            // GG-T119: every Camp NPC is met on the road, early enough that a finished run has them all.
+            if (finished)
+                Assert.That(CampNpcs.All.Where(n => !CampNpcs.Joined(s, n)), Is.Empty, "a finished campaign should have met every Camp NPC");
             return rows;
         }
         /// <summary>The pre-GG-T118 starting five (the default trio plus the two story recruits' preferred classes) —

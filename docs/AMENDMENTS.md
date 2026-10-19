@@ -493,3 +493,21 @@ updated: 2026-10-09
   at Sandsea Reaches.
 - **The bots play story beats headlessly** (Test Mode, `BalanceReport`): they still never show story, but the beats'
   effects apply, so the story recruits join their parties too.
+
+## 2026-10-19 — Camp NPCs join along the way (owner direction, GG-T119)
+
+- The Camp's services were always there ([BIBLE §25.0](BIBLE.md)); now the Merchant, Blacksmith, Alchemist, a new
+  Enchantress and the Innkeeper are people met on the journey, and each one's Camp row is hidden until they join at a
+  story beat (dialogue `JoinNpc`, flag `npc:<id>`). Schedule and rules: [BIBLE §25.0.1](BIBLE.md). *Why:* owner — the
+  camp should fill up with the people you meet.
+- **Enchanting moved out of the Alchemist** into the Enchantress's own station ([§25.3.4](BIBLE.md)). Deviation: her
+  recipes still unlock with the Alchemist's station level rather than a ladder of her own, because every Enchant recipe
+  is Master tier and a ladder fed only by enchanting could never be climbed.
+- **The Alchemist's Heal tab is gone** — it was the Inn under another name, and resting now belongs to the Innkeeper.
+- `CampRoutine` and the balance simulation use only joined services; the simulation meets NPCs by playing each launch's
+  story beat. Test Mode saves auto-join everyone (no story plays there). Save version 4 joins everyone on older saves.
+- **Every pending story beat plays at a launch**, one after another, instead of only the first ([BIBLE §27.1](BIBLE.md)):
+  with GG-T118's recruit beats sharing stages with the NPC beats, one-per-launch pushed the Blacksmith back a whole
+  expedition, and the bots (`PlayPendingBeatsHeadless`) already played them all.
+- The GG-T117 sample beat after Green Valley I lost its `NpcJoined merchant` condition (it is now the Innkeeper's join
+  beat, and a join beat must always fire).

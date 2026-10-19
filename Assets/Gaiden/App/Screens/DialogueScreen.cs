@@ -22,6 +22,7 @@ namespace Gaiden.App
         private readonly string with;
         private DialogueRunner run;
         private readonly GameScreen next;
+        private readonly Func<GameScreen> nextFactory;
         private readonly string backdrop;
         private readonly Dictionary<string, int> sideOf = new Dictionary<string, int>();
         private readonly VisualElement[] portraits = new VisualElement[2];
@@ -40,6 +41,13 @@ namespace Gaiden.App
             this.def = def; this.with = with;
             this.next = next;
             this.backdrop = def.Backdrop ?? backdrop ?? HubScreen.ThemeFor(GameApp.I.Content, GameApp.I.Save);
+        }
+
+        /// <param name="next">Builds the screen to replace this one with once it ends — decided then, not now, so a
+        /// chain of story beats sees what the earlier ones did (GG-T119).</param>
+        public DialogueScreen(DialogueDef def, Func<GameScreen> next, string backdrop = null) : this(def, null, (GameScreen)null, backdrop)
+        {
+            nextFactory = next;
         }
 
         public override string Id => "dialogue";
@@ -315,7 +323,8 @@ namespace Gaiden.App
             done = true;
             controls?.Clear();
             App.Persist();
-            if (next != null) App.Router.Replace(next); else App.Router.Back();
+            var then = next ?? nextFactory?.Invoke();
+            if (then != null) App.Router.Replace(then); else App.Router.Back();
         }
     }
 

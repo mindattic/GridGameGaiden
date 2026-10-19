@@ -18,6 +18,8 @@ namespace Gaiden.App
         protected virtual string Backdrop => "greenvalley";
         /// <summary>Optional line shown under the header title (e.g. station level + next unlock, GG-T35).</summary>
         protected virtual string Subtitle => null;
+        /// <summary>The Camp NPC who keeps this station (GG-T119), or null: the header gets a Talk button for them.</summary>
+        protected virtual string Npc => null;
 
         protected override void Build(VisualElement root)
         {
@@ -25,7 +27,15 @@ namespace Gaiden.App
             bg.style.backgroundImage = new StyleBackground(Art.Background(Backdrop, 1));
             bg.style.unityBackgroundImageTintColor = new Color(0.45f, 0.5f, 0.7f, 1f);
             var col = Ui.El("fill col", root);
-            Ui.Header(Title, () => App.Router.Back(), col, out GoldLabel);
+            var header = Ui.Header(Title, () => App.Router.Back(), col, out GoldLabel);
+            // Every Camp NPC can be talked to from their own station as well as from Camp's Talk row (GG-T119).
+            var topic = Npc != null && CampNpcs.Joined(S, Npc) ? DialogueRunner.TalkTopic(C, S, ContentLoader.NpcFlagPrefix + Npc) : null;
+            if (topic != null)
+            {
+                var talk = Ui.Button(S.SeenDialogues.Contains(topic.Id) ? "Talk" : "Talk!", () => App.Router.Push(new DialogueScreen(topic, (string)null, (GameScreen)null)), "btn--small", null);
+                talk.name = "npc-talk";
+                header.Insert(header.IndexOf(GoldLabel), talk);
+            }
             if (Subtitle != null)
             {
                 var sub = Ui.Text(Subtitle, "small gold", col);
@@ -469,11 +479,16 @@ namespace Gaiden.App
             // Talk (§27.1, GG-T117): chat with party members and joined Camp NPCs.
             int newTalks = DialogueRunner.TalkPartners(s).Count(p => { var t = DialogueRunner.TalkTopic(c, s, p); return t != null && !s.SeenDialogues.Contains(t.Id); });
             Item("Talk", () => new TalkScreen(), newTalks > 0 ? $"{newTalks} new" : "");
-            Item("Merchant", () => new ShopScreen());
-            Item("Blacksmith", () => new BlacksmithScreen());
-            Item("Alchemist", () => new AlchemistScreen());
-            if (Expeditions.InnOpen(s)) Ui.MenuRow(s.Expedition != null ? "Inn (Medic Wagon)" : "Inn", Inn.Cost(c, s) > 0 ? Ui.Gold(Inn.Cost(c, s)) : "Rested", Rest, list.contentContainer);
-            else Ui.MenuRow("Inn", "On the road", null, list.contentContainer, null, false);
+            // Camp NPCs (GG-T119): each station appears once its keeper has joined the caravan at a story beat.
+            if (CampNpcs.Joined(s, CampNpcs.Merchant)) Item("Merchant", () => new ShopScreen());
+            if (CampNpcs.Joined(s, CampNpcs.Blacksmith)) Item("Blacksmith", () => new BlacksmithScreen());
+            if (CampNpcs.Joined(s, CampNpcs.Alchemist)) Item("Alchemist", () => new AlchemistScreen());
+            if (CampNpcs.Joined(s, CampNpcs.Enchantress)) Item("Enchantress", () => new EnchantressScreen());
+            if (CampNpcs.Joined(s, CampNpcs.Innkeeper))
+            {
+                if (Expeditions.InnOpen(s)) Ui.MenuRow(s.Expedition != null ? "Inn (Medic Wagon)" : "Inn", Inn.Cost(c, s) > 0 ? Ui.Gold(Inn.Cost(c, s)) : "Rested", Rest, list.contentContainer);
+                else Ui.MenuRow("Inn", "On the road", null, list.contentContainer, null, false);
+            }
             int caravanLevels = c.Caravan.Keys.Sum(k => CaravanUpgrades.Level(s, k));
             Item("Caravan", () => new CaravanScreen(), caravanLevels > 0 ? $"{caravanLevels} upgrades" : "");
             Item("Summon Circle", () => new SummonScreen());
@@ -621,10 +636,15 @@ namespace Gaiden.App
                 app.Persist();
             }
             var theme = app.Content.ThemeOf(stageId);
-            GameScreen next = new BattleScreen(stageId);
-            // Story beat between battles (§27.1, GG-T117): plays after the crawl, before the battle, once per save.
-            var beat = DialogueRunner.PendingBeat(app.Content, app.Save, stageId);
-            if (beat != null) next = new DialogueScreen(beat, null, next, theme?.Id);
+            // Story beats between battles (§27.1, GG-T117): play after the crawl, before the battle, once per save —
+            // every one pending, one after another (GG-T119: a recruit and a Camp NPC can share a stage), each
+            // picked when the last ends so later beats see what earlier ones did; the same set the bots play headless.
+            GameScreen BeatsThenBattle()
+            {
+                var beat = DialogueRunner.PendingBeat(app.Content, app.Save, stageId);
+                return beat == null ? new BattleScreen(stageId) : new DialogueScreen(beat, BeatsThenBattle, theme?.Id);
+            }
+            GameScreen next = BeatsThenBattle();
             if (theme != null && !string.IsNullOrEmpty(theme.Crawl) && app.Save != null && !app.Save.SeenCrawls.Contains(theme.Id))
             {
                 app.Save.SeenCrawls.Add(theme.Id);

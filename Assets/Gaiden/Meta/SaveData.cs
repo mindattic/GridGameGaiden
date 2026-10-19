@@ -23,7 +23,7 @@ namespace Gaiden.Meta
 
     public sealed class SaveData
     {
-        public const int CurrentVersion = 3;
+        public const int CurrentVersion = 4;
 
         public int Version = CurrentVersion;
         public string Name = "Lightbearer";
@@ -274,6 +274,13 @@ namespace Gaiden.Meta
                     h.Relics = new List<string>();
                 }
                 s.Version = 3;
+            }
+            if (s.Version < 4)
+            {
+                // GG-T119: Camp NPCs are now met on the journey and their services stay hidden until they join.
+                // A save from before that has been using every service all along, so everyone has already joined.
+                CampNpcs.JoinAll(s);
+                s.Version = 4;
             }
             foreach (var h in s.Roster)
             {

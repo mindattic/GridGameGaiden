@@ -9,7 +9,7 @@ namespace Gaiden.App.Automation
         public static readonly string[] All =
         {
             "title", "hub", "stages", "items", "status", "equip", "abilities", "party", "shop", "blacksmith",
-            "alchemist", "talk", "summon", "bounties", "crucible", "bestiary", "settings", "credits", "newgame", "load",
+            "alchemist", "enchantress", "talk", "summon", "bounties", "crucible", "bestiary", "settings", "credits", "newgame", "load",
         };
 
         public static bool TryGet(string id, out GameScreen screen)
@@ -20,6 +20,7 @@ namespace Gaiden.App.Automation
             if (needsSave && app.Save == null)
             {
                 app.Save = Meta.Progression.NewGame(app.Content, "Preview");
+                Meta.CampNpcs.JoinAll(app.Save); // the sweep shows every Camp station (GG-T119)
                 app.Slot = -1;
             }
             string hero = app.Save?.Party.FirstOrDefault();
@@ -36,6 +37,7 @@ namespace Gaiden.App.Automation
                 case "shop": screen = new ShopScreen(); break;
                 case "blacksmith": screen = new BlacksmithScreen(); break;
                 case "alchemist": screen = new AlchemistScreen(); break;
+                case "enchantress": screen = new EnchantressScreen(); break;
                 case "talk": screen = new TalkScreen(); break;
                 case "summon": screen = new SummonScreen(); break;
                 case "bounties": screen = new BountyScreen(); break;

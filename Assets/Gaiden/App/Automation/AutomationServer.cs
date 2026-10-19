@@ -245,6 +245,7 @@ namespace Gaiden.App.Automation
                     app.Save = Progression.NewGame(app.Content, q["name"] ?? "Bot");
                     app.Slot = slot;
                     if (q["gold"] != null) app.Save.Gold = (int)F(q["gold"]);
+                    if (q["npcs"] != null) CampNpcs.JoinAll(app.Save); // every Camp NPC already met (GG-T119)
                     app.ApplySettings();
                     app.Persist();
                     app.Router.ResetTo(new HubScreen());

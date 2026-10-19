@@ -199,11 +199,11 @@ def smoke(run="smoke"):
 
 def sweep(run="sweep"):
     launch(run)
-    call("newgame", slot=0, gold=5000)
+    call("newgame", slot=0, gold=5000, npcs=1)  # npcs: every Camp station on the hub shot (GG-T119)
     time.sleep(1)
     report = {}
     for screen in ["hub", "stages", "items", "status", "equip", "abilities", "party", "shop", "blacksmith",
-                   "alchemist", "talk", "summon", "bounties", "crucible", "bestiary", "settings", "credits"]:
+                   "alchemist", "enchantress", "talk", "summon", "bounties", "crucible", "bestiary", "settings", "credits"]:
         call("goto", screen=screen)
         time.sleep(0.9)
         shot(f"sweep-{screen}")

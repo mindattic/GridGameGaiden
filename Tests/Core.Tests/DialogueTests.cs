@@ -228,7 +228,7 @@ namespace Gaiden.Tests
         {
             var s = NewSave();
             Assert.That(DialogueRunner.PendingBeat(Real, s, "greenvalley-01")?.Id, Is.EqualTo("greenvalley_road_merchant"));
-            Assert.That(DialogueRunner.PendingBeat(Real, s, "swamp-01"), Is.Null); // a theme with no beat of its own
+            Assert.That(DialogueRunner.PendingBeat(Real, s, "greenvalley-04"), Is.Null); // a theme with no beat of its own
             s.SeenDialogues.Add("greenvalley_road_merchant");
             Assert.That(DialogueRunner.PendingBeat(Real, s, "greenvalley-01"), Is.Null);
             var t = TestLoop.NewSave(Real);
@@ -240,12 +240,23 @@ namespace Gaiden.Tests
         {
             var s = NewSave();
             s.SeenDialogues.Add("greenvalley_road_merchant");
+            Assert.That(DialogueRunner.PendingBeat(Real, s, "greenvalley-02"), Is.Null, "greenvalley-01 isn't cleared yet");
             s.ClearedStages.Add("greenvalley-01");
             Assert.That(DialogueRunner.PendingBeat(Real, s, "greenvalley-02")?.Id, Is.EqualTo("greenvalley_recruit_mage"), "the story recruit comes first (GG-T118)");
             s.SeenDialogues.Add("greenvalley_recruit_mage");
-            Assert.That(DialogueRunner.PendingBeat(Real, s, "greenvalley-02"), Is.Null, "merchant hasn't joined");
-            s.Flags.Add("npc:merchant");
             Assert.That(DialogueRunner.PendingBeat(Real, s, "greenvalley-02")?.Id, Is.EqualTo("greenvalley_after_first"));
+            // A beat's own conditions gate it too (a fixture: the shipped join beats are unconditional, GG-T119).
+            var d = new DialogueDef
+            {
+                Id = "gated", Trigger = new DialogueTrigger { Kind = DialogueTriggerKind.StageCleared, Id = "greenvalley-01" },
+                Conditions = { new DialogueCondition { Type = DialogueConditionType.NpcJoined, Id = "merchant" } },
+                Speakers = { new DialogueSpeaker { Id = "a", Name = "A" } },
+                Nodes = { new DialogueNode { Id = "n", Speaker = "a", Text = "x" } },
+            };
+            var db = Fixture(d);
+            Assert.That(DialogueRunner.PendingBeat(db, s, "greenvalley-02"), Is.Null, "merchant hasn't joined");
+            s.Flags.Add("npc:merchant");
+            Assert.That(DialogueRunner.PendingBeat(db, s, "greenvalley-02")?.Id, Is.EqualTo("gated"));
         }
 
         [Test]

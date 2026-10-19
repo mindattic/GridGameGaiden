@@ -401,7 +401,7 @@ namespace Gaiden.Tests
         [Test]
         public void CampRoutine_never_spends_below_zero_gold()
         {
-            var c = Real; var s = Progression.NewGame(c, "CR");
+            var c = Real; var s = Progression.NewGame(c, "CR"); CampNpcs.JoinAll(s); // every Camp service open (GG-T119)
             s.Gold = 50;
             for (int i = 0; i < 20; i++)
             {
@@ -416,7 +416,7 @@ namespace Gaiden.Tests
         [Test]
         public void CampRoutine_brews_potions_instead_of_buying_when_it_has_the_reagents()
         {
-            var c = Real; var s = Progression.NewGame(c, "CRBrew");
+            var c = Real; var s = Progression.NewGame(c, "CRBrew"); CampNpcs.JoinAll(s); // every Camp service open (GG-T119)
             s.Inventory.Remove("healing_potion_basic");
             s.Gold = 5000;
             s.AddItem("mat_slime_gel", 20); // enough reagents to brew every potion needed, never enough to need to buy
@@ -440,7 +440,7 @@ namespace Gaiden.Tests
             potion.BaseCost = 0;
             var brew = c.Recipes.Values.First(r => r.Station == CraftStation.Alchemy && r.Result == potion.Id);
             brew.ResultCount = potion.MaxStack + 1;
-            var s = Progression.NewGame(c, "CRFail");
+            var s = Progression.NewGame(c, "CRFail"); CampNpcs.JoinAll(s); // every Camp service open (GG-T119)
             s.Inventory.Remove(potion.Id);
             s.Gold = 5000;
             foreach (var ic in brew.Inputs) s.AddItem(ic.Item, ic.Count * 10);
@@ -458,7 +458,7 @@ namespace Gaiden.Tests
         [Test]
         public void CampRoutine_salvages_broken_fragments_on_every_visit()
         {
-            var c = Real; var s = Progression.NewGame(c, "CRBroken");
+            var c = Real; var s = Progression.NewGame(c, "CRBroken"); CampNpcs.JoinAll(s); // every Camp service open (GG-T119)
             s.AddBroken("eq_sword_iron", 2);
             CampRoutine.Run(c, s);
             Assert.That(s.BrokenCount("eq_sword_iron"), Is.EqualTo(0));
@@ -471,7 +471,7 @@ namespace Gaiden.Tests
         [Test]
         public void CampRoutine_salvages_an_equipped_piece_instead_of_an_uneconomical_repair()
         {
-            var c = Real; var s = Progression.NewGame(c, "CRSalvageEquip");
+            var c = Real; var s = Progression.NewGame(c, "CRSalvageEquip"); CampNpcs.JoinAll(s); // every Camp service open (GG-T119)
             var h = s.Hero(s.Party[0]);
             h.WeaponId = "eq_sword_iron";
             h.WeaponDurability = 0;
@@ -499,7 +499,7 @@ namespace Gaiden.Tests
             }
             Assert.That(risky != null, Is.True, "expected at least one near-shatter offer within 500 rotations");
 
-            var s = Progression.NewGame(c, "CRBargainRisky");
+            var s = Progression.NewGame(c, "CRBargainRisky"); CampNpcs.JoinAll(s); // every Camp service open (GG-T119)
             s.BargainRotation = riskyRotation;
             s.Gold = 100000;
             foreach (var h in s.Roster) { h.WeaponId = null; h.ArmorId = null; }
@@ -512,7 +512,7 @@ namespace Gaiden.Tests
         [Test]
         public void CampRoutine_recruits_into_an_open_party_slot_when_affordable()
         {
-            var c = Real; var s = Progression.NewGame(c, "CRSummon"); // the small start leaves slots open (GG-T118)
+            var c = Real; var s = Progression.NewGame(c, "CRSummon"); CampNpcs.JoinAll(s); // the small start leaves slots open (GG-T118); every Camp service open (GG-T119)
             s.Gold = Summon.Price(c, s);
             CampRoutine.Run(c, s);
             Assert.That(s.Recruits, Is.EqualTo(1));
@@ -523,7 +523,7 @@ namespace Gaiden.Tests
         [Test]
         public void CampRoutine_does_not_recruit_with_a_full_party()
         {
-            var c = Real; var s = Progression.NewGame(c, "CRSummonFull", new[] { "paladin", "barbarian", "cleric", "redmage", "engineer" });
+            var c = Real; var s = Progression.NewGame(c, "CRSummonFull", new[] { "paladin", "barbarian", "cleric", "redmage", "engineer" }); CampNpcs.JoinAll(s); // every Camp service open (GG-T119)
             s.Gold = 100000;
             CampRoutine.Run(c, s);
             Assert.That(s.Recruits, Is.EqualTo(0));
@@ -535,7 +535,7 @@ namespace Gaiden.Tests
         [Test]
         public void CampRoutine_claims_a_finished_bounty_and_accepts_only_an_achievable_one()
         {
-            var c = Real; var s = Progression.NewGame(c, "CRBounty");
+            var c = Real; var s = Progression.NewGame(c, "CRBounty"); CampNpcs.JoinAll(s); // every Camp service open (GG-T119)
             CampRoutine.Run(c, s);
             Assert.That(s.Bounty.ActiveId, Is.Not.Null.And.Not.EqualTo("bounty_slime_culling"));
             var first = Bounties.Active(c, s);
@@ -561,7 +561,7 @@ namespace Gaiden.Tests
             }
             Assert.That(safe != null, Is.True, "expected at least one safe weapon offer within 500 rotations");
 
-            var s = Progression.NewGame(c, "CRBargainSafe");
+            var s = Progression.NewGame(c, "CRBargainSafe"); CampNpcs.JoinAll(s); // every Camp service open (GG-T119)
             s.BargainRotation = safeRotation;
             s.Gold = 100000;
             foreach (var h in s.Roster) h.WeaponId = null;

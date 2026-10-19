@@ -59,14 +59,44 @@
     "Id": "greenvalley_after_first",
     "Title": "After the first battle",
     "Trigger": { "Kind": "StageCleared", "Id": "greenvalley-01" },
-    "Conditions": [ { "Type": "NpcJoined", "Id": "merchant" } ],
     "Speakers": [
       { "Id": "lead", "Class": "$lead" },
-      { "Id": "merchant", "Name": "Wandering Merchant", "Portrait": "courier" }
+      { "Id": "innkeeper", "Name": "Innkeeper", "Portrait": "pandagirl" }
     ],
     "Nodes": [
       { "Id": "one", "Speaker": "lead", "Text": "Lorem ipsum, the road is clear. Sed ut perspiciatis unde omnis.", "Next": "two" },
-      { "Id": "two", "Speaker": "merchant", "Text": "Iste natus error sit voluptatem. Onward, then!" }
+      { "Id": "two", "Speaker": "innkeeper", "Text": "Iste natus error sit voluptatem! You look half dead. My wagon has warm beds, accusantium doloremque.", "Next": "ask" },
+      {
+        "Id": "ask", "Speaker": "innkeeper", "Text": "Laudantium, totam rem aperiam. Shall I hitch it to your caravan?",
+        "Choices": [
+          { "Label": "Please do.", "Next": "joined", "Effects": [ { "Type": "JoinNpc", "Id": "innkeeper" } ] },
+          { "Label": "We can't pay much.", "Next": "cheap", "Effects": [ { "Type": "JoinNpc", "Id": "innkeeper" } ] }
+        ]
+      },
+      { "Id": "cheap", "Speaker": "innkeeper", "Text": "Eaque ipsa quae ab illo. A fair price for heroes, then.", "Next": "joined" },
+      { "Id": "joined", "Speaker": "innkeeper", "Text": "Inventore veritatis! Rest at camp whenever the road wears you down." }
+    ]
+  },
+  {
+    "Id": "greenvalley_smith",
+    "Title": "A smith at the ford",
+    "Trigger": { "Kind": "StageCleared", "Id": "greenvalley-02" },
+    "Speakers": [
+      { "Id": "smith", "Name": "Blacksmith", "Portrait": "tinkerer" },
+      { "Id": "lead", "Class": "$lead" }
+    ],
+    "Nodes": [
+      { "Id": "hail", "Speaker": "smith", "Text": "Quasi architecto beatae vitae! Those blades are notched to the hilt.", "Next": "reply" },
+      { "Id": "reply", "Speaker": "lead", "Text": "Nemo enim ipsam voluptatem. Can you mend them?", "Next": "ask" },
+      {
+        "Id": "ask", "Speaker": "smith", "Text": "Quia voluptas sit aspernatur. Mend, forge, melt down. Take me along?",
+        "Choices": [
+          { "Label": "Bring your anvil.", "Next": "joined", "Effects": [ { "Type": "JoinNpc", "Id": "blacksmith" } ] },
+          { "Label": "Prove it first.", "Next": "proof" }
+        ]
+      },
+      { "Id": "proof", "Speaker": "smith", "Text": "Aut odit aut fugit! There, edge restored. Satisfied?", "Effects": [ { "Type": "JoinNpc", "Id": "blacksmith" } ], "Next": "joined" },
+      { "Id": "joined", "Speaker": "smith", "Text": "Sed quia consequuntur magni. Find me by the forge-cart at camp." }
     ]
   },
   {
@@ -161,6 +191,118 @@
       { "Id": "forgiven", "Speaker": "merchant", "Text": "Nemo enim ipsam voluptatem. All is forgiven, friend." },
       { "Id": "hired", "Speaker": "merchant", "Text": "Quia voluptas sit! Treat my sellsword well." },
       { "Id": "bye", "Speaker": "merchant", "Text": "Neque porro quisquam est. Safe roads." }
+    ]
+  },
+  {
+    "Id": "desert_alchemist",
+    "Title": "The alchemist in the dunes",
+    "Trigger": { "Kind": "ThemeStart", "Id": "desert" },
+    "Speakers": [
+      { "Id": "alchemist", "Name": "Alchemist", "Portrait": "alchemist" },
+      { "Id": "lead", "Class": "$lead" }
+    ],
+    "Nodes": [
+      { "Id": "hail", "Speaker": "alchemist", "Text": "Dolores eos qui ratione! Careful, those flasks are older than you.", "Next": "reply" },
+      { "Id": "reply", "Speaker": "lead", "Text": "Voluptatem sequi nesciunt. What are you brewing out here?", "Next": "ask" },
+      {
+        "Id": "ask", "Speaker": "alchemist", "Text": "Neque porro quisquam est. Potions, from whatever you pull off the beasts. Need a brewer?",
+        "Choices": [
+          { "Label": "Join us.", "Next": "joined", "Effects": [ { "Type": "JoinNpc", "Id": "alchemist" } ] },
+          { "Label": "Is it safe?", "Next": "safe" }
+        ]
+      },
+      { "Id": "safe", "Speaker": "alchemist", "Text": "Qui dolorem ipsum! Mostly. I'm coming anyway.", "Effects": [ { "Type": "JoinNpc", "Id": "alchemist" } ], "Next": "joined" },
+      { "Id": "joined", "Speaker": "alchemist", "Text": "Quia dolor sit amet. Bring me reagents and I'll brew them at camp." }
+    ]
+  },
+  {
+    "Id": "swamp_enchantress",
+    "Title": "Lights in the fen",
+    "Trigger": { "Kind": "ThemeStart", "Id": "swamp" },
+    "Speakers": [
+      { "Id": "enchantress", "Name": "Enchantress", "Portrait": "whitewitch" },
+      { "Id": "lead", "Class": "$lead" }
+    ],
+    "Nodes": [
+      { "Id": "hail", "Speaker": "enchantress", "Text": "Consectetur, adipisci velit. You followed my lights a long way.", "Next": "reply" },
+      { "Id": "reply", "Speaker": "lead", "Text": "Sed quia non numquam. Who are you?", "Next": "ask" },
+      {
+        "Id": "ask", "Speaker": "enchantress", "Text": "Eius modi tempora incidunt. One who binds runes into steel. Your caravan could use me.",
+        "Choices": [
+          { "Label": "Then come with us.", "Next": "joined", "Effects": [ { "Type": "JoinNpc", "Id": "enchantress" } ] },
+          { "Label": "Show us a rune.", "Next": "rune" }
+        ]
+      },
+      { "Id": "rune", "Speaker": "enchantress", "Text": "Ut labore et dolore magnam! It's yours once I'm aboard.", "Effects": [ { "Type": "JoinNpc", "Id": "enchantress" } ], "Next": "joined" },
+      { "Id": "joined", "Speaker": "enchantress", "Text": "Aliquam quaerat voluptatem. My table is at camp when your gear is ready." }
+    ]
+  },
+  {
+    "Id": "camp_innkeeper_chat",
+    "Title": "Chat with the innkeeper",
+    "Trigger": { "Kind": "Talk", "Id": "npc:innkeeper" },
+    "Speakers": [ { "Id": "innkeeper", "Name": "Innkeeper", "Portrait": "pandagirl" } ],
+    "Nodes": [
+      {
+        "Id": "greet", "Speaker": "innkeeper", "Text": "Ut enim ad minima veniam! Beds are made. What's on your mind?",
+        "Choices": [
+          { "Label": "Any news from the road?", "Next": "news" },
+          { "Label": "Goodnight.", "Next": "bye" }
+        ]
+      },
+      { "Id": "news", "Speaker": "innkeeper", "Text": "Quis nostrum exercitationem ullam corporis. Travelers talk, I listen.", "Next": "greet" },
+      { "Id": "bye", "Speaker": "innkeeper", "Text": "Nisi ut aliquid ex ea commodi. Sleep well." }
+    ]
+  },
+  {
+    "Id": "camp_blacksmith_chat",
+    "Title": "Chat with the blacksmith",
+    "Trigger": { "Kind": "Talk", "Id": "npc:blacksmith" },
+    "Speakers": [ { "Id": "smith", "Name": "Blacksmith", "Portrait": "tinkerer" } ],
+    "Nodes": [
+      {
+        "Id": "greet", "Speaker": "smith", "Text": "Quis autem vel eum iure! Mind the sparks.",
+        "Choices": [
+          { "Label": "Where did you learn the trade?", "Next": "trade" },
+          { "Label": "Carry on.", "Next": "bye" }
+        ]
+      },
+      { "Id": "trade", "Speaker": "smith", "Text": "Reprehenderit qui in ea voluptate velit esse. My mother's forge, long ago.", "Next": "greet" },
+      { "Id": "bye", "Speaker": "smith", "Text": "Quam nihil molestiae. Bring me something broken." }
+    ]
+  },
+  {
+    "Id": "camp_alchemist_chat",
+    "Title": "Chat with the alchemist",
+    "Trigger": { "Kind": "Talk", "Id": "npc:alchemist" },
+    "Speakers": [ { "Id": "alchemist", "Name": "Alchemist", "Portrait": "alchemist" } ],
+    "Nodes": [
+      {
+        "Id": "greet", "Speaker": "alchemist", "Text": "Vel illum qui dolorem! Don't touch the green one.",
+        "Choices": [
+          { "Label": "What does the green one do?", "Next": "green" },
+          { "Label": "I'll leave you to it.", "Next": "bye" }
+        ]
+      },
+      { "Id": "green", "Speaker": "alchemist", "Text": "Eum fugiat quo voluptas nulla pariatur. Nobody knows. That's the fun.", "Next": "greet" },
+      { "Id": "bye", "Speaker": "alchemist", "Text": "At vero eos et accusamus. Bring reagents!" }
+    ]
+  },
+  {
+    "Id": "camp_enchantress_chat",
+    "Title": "Chat with the enchantress",
+    "Trigger": { "Kind": "Talk", "Id": "npc:enchantress" },
+    "Speakers": [ { "Id": "enchantress", "Name": "Enchantress", "Portrait": "whitewitch" } ],
+    "Nodes": [
+      {
+        "Id": "greet", "Speaker": "enchantress", "Text": "Et iusto odio dignissimos. The runes are restless tonight.",
+        "Choices": [
+          { "Label": "Restless how?", "Next": "runes" },
+          { "Label": "Goodnight.", "Next": "bye" }
+        ]
+      },
+      { "Id": "runes", "Speaker": "enchantress", "Text": "Ducimus qui blanditiis praesentium. They hum when danger is near.", "Next": "greet" },
+      { "Id": "bye", "Speaker": "enchantress", "Text": "Voluptatum deleniti atque. Sleep lightly." }
     ]
   },
   {

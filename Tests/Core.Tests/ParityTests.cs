@@ -731,6 +731,7 @@ namespace Gaiden.Tests
         {
             var c = Real;
             var save = Progression.NewGame(c, "Camp");
+            CampNpcs.JoinAll(save); // the Innkeeper and Merchant have joined (GG-T119)
             save.Gold = 5000;
             save.Hero("paladin").Hp = 10;
             save.Inventory.Remove("healing_potion_basic");

@@ -11,7 +11,9 @@ namespace Gaiden.Meta
     /// gear (owned bag, then Forge, then the Merchant's Bargain shelf), learn abilities into dead bar
     /// slots (GG-T100), keep potions stocked, work the Bounty Board and recruit at the Summon Circle into an open
     /// party slot (GG-T87). Used by the balance simulation and the in-game auto-manage helper;
-    /// every step goes through the same services the screens call.
+    /// every step goes through the same services the screens call, and only the services whose Camp NPC has
+    /// joined (GG-T119): no Blacksmith means no repair/salvage/forge, no Innkeeper no rest, no Merchant no
+    /// buying or Bargains, no Alchemist no brewing.
     /// </summary>
     public static class CampRoutine
     {
@@ -25,10 +27,14 @@ namespace Gaiden.Meta
         {
             var log = new List<string>();
             void Note(Result r) { if (r.Ok && r.Message != null) log.Add(r.Message); }
+            // Only the Camp NPCs who have joined (GG-T119) — a service whose keeper hasn't been met yet is hidden
+            // from the player, so the routine doesn't use it either. Bounties, the Summon Circle and Learn have no keeper.
+            bool smith = CampNpcs.Joined(s, CampNpcs.Blacksmith), merchant = CampNpcs.Joined(s, CampNpcs.Merchant);
+            bool alchemist = CampNpcs.Joined(s, CampNpcs.Alchemist), inn = CampNpcs.Joined(s, CampNpcs.Innkeeper);
 
             // Broken fragments (GG-T41) can't be equipped or repaired — only scrapped — so there's never a
             // reason to let them sit in the bag; salvage every copy of every one.
-            foreach (var itemId in s.Broken.Keys.ToList())
+            foreach (var itemId in smith ? s.Broken.Keys.ToList() : new List<string>())
             {
                 // Stops on a failed call, or one that didn't use up a fragment, rather than spinning (GG-T111).
                 Result r;
@@ -39,7 +45,7 @@ namespace Gaiden.Meta
 
             // A repair that costs as much as the item is worth (GG-T42's "Salvage instead" offer) is a
             // losing trade — scrap it for materials instead of pouring gold into a piece about to shatter anyway.
-            foreach (var h in s.Roster)
+            foreach (var h in smith ? s.Roster : new List<HeroSave>())
             {
                 if (h.WeaponId != null)
                 {
@@ -55,7 +61,7 @@ namespace Gaiden.Meta
                     else Note(Repair.RepairArmor(c, s, h, slot));
                 }
             }
-            if (Inn.Cost(c, s) > 0 && Inn.Cost(c, s) <= s.Gold) Note(Inn.Rest(c, s));
+            if (inn && Inn.Cost(c, s) > 0 && Inn.Cost(c, s) <= s.Gold) Note(Inn.Rest(c, s));
 
             // Bounty Board (GG-T87): cash in a finished contract, drop one whose target no longer appears
             // anywhere ahead, then take the one whose target shows up soonest on the road ahead.
@@ -82,7 +88,7 @@ namespace Gaiden.Meta
                 {
                     float current = MetaHeuristics.Score(c.TryItem(Equipment.Equipped(h, slot)));
                     var owned = MetaHeuristics.BestFirst(Equipment.Candidates(c, s, slot)).FirstOrDefault();
-                    if (owned == null || MetaHeuristics.Score(owned) <= current)
+                    if (smith && (owned == null || MetaHeuristics.Score(owned) <= current))
                     {
                         var recipe = Crafting.Recipes(c, CraftStation.Forge)
                             .Where(r => r.BaseItem == null && Equipment.Fits(c.Item(r.Result), slot) && Crafting.HasInputs(s, r) && r.Gold <= s.Gold / 2)
@@ -90,7 +96,7 @@ namespace Gaiden.Meta
                         if (recipe != null && MetaHeuristics.Score(c.Item(recipe.Result)) > current) Note(Crafting.Craft(c, s, recipe));
                         owned = MetaHeuristics.BestFirst(Equipment.Candidates(c, s, slot)).FirstOrDefault();
                     }
-                    if (owned == null || MetaHeuristics.Score(owned) <= current)
+                    if (merchant && (owned == null || MetaHeuristics.Score(owned) <= current))
                     {
                         var bargain = Bargains.Shelf(c, s)
                             .Where(o => Equipment.Fits(o.Item, slot) && o.Price <= s.Gold / 2 && o.Durability >= o.Item.Durability * MinSafeBargainDurabilityFraction)
@@ -116,11 +122,11 @@ namespace Gaiden.Meta
             {
                 int before = s.Count(potion.Id);
                 bool ok = false;
-                if (brew != null && Crafting.IsUnlocked(s, brew) && Crafting.HasInputs(s, brew) && s.Gold >= brew.Gold)
+                if (alchemist && brew != null && Crafting.IsUnlocked(s, brew) && Crafting.HasInputs(s, brew) && s.Gold >= brew.Gold)
                 {
                     var r = Crafting.Craft(c, s, brew); Note(r); ok = r.Ok;
                 }
-                if (!ok && s.Gold >= potion.BaseCost * 3)
+                if (!ok && merchant && s.Gold >= potion.BaseCost * 3)
                 {
                     var r = Shop.Buy(c, s, new Dictionary<string, int> { [potion.Id] = System.Math.Min(3, Shop.MaxBuy(s, potion)) }); Note(r); ok = r.Ok;
                 }

@@ -26,13 +26,16 @@ namespace Gaiden.Meta
 
         /// <summary>A throwaway save (the app keeps it on slot -1, which Persist never writes): the default small
         /// starting party (GG-T118; story recruits join headlessly in <see cref="TestCycle.Begin"/>), the tutorial
-        /// marked done and every story crawl marked seen.</summary>
+        /// marked done, every story crawl marked seen and every Camp NPC joined (GG-T119).</summary>
         public static SaveData NewSave(ContentDb c)
         {
             var s = Progression.NewGame(c, SaveName);
             s.TestMode = true;
             s.TutorialDone = true;
             foreach (var t in c.Campaign.Themes) s.SeenCrawls.Add(t.Id);
+            // Every Camp NPC joins up front (GG-T119): Test Mode shows no story, and although TestCycle.Begin's headless
+            // beats would bring them along the way, the loop should exercise repair, rest, buying and brewing from cycle 1.
+            CampNpcs.JoinAll(s);
             return s;
         }
 

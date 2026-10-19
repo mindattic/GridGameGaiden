@@ -255,4 +255,29 @@ namespace Gaiden.Meta
             return options.Select(x => x.d).FirstOrDefault();
         }
     }
+
+    /// <summary>
+    /// The Camp's people (§25.0.1, GG-T119): the Merchant, Blacksmith, Alchemist, Enchantress and Innkeeper are met on
+    /// the journey and join at story beats (a dialogue <c>JoinNpc</c> effect sets the flag <c>npc:&lt;id&gt;</c>). Until
+    /// one joins, their Camp service is hidden and the camp routine doesn't use it.
+    /// </summary>
+    public static class CampNpcs
+    {
+        public const string Merchant = "merchant";
+        public const string Blacksmith = "blacksmith";
+        public const string Alchemist = "alchemist";
+        public const string Enchantress = "enchantress";
+        public const string Innkeeper = "innkeeper";
+
+        public static IReadOnlyList<string> All => DialogueDef.Npcs;
+
+        public static bool Joined(SaveData s, string npcId) => s != null && DialogueRunner.NpcJoined(s, npcId);
+
+        /// <summary>Every NPC joins at once — a Test Mode save (it never plays story), the sweep's preview save, and
+        /// the v4 migration of a save from before NPCs had to be met (they'd been using every service already).</summary>
+        public static void JoinAll(SaveData s)
+        {
+            foreach (var n in DialogueDef.Npcs) s.Flags.Add(ContentLoader.NpcFlagPrefix + n);
+        }
+    }
 }

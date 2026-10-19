@@ -486,6 +486,7 @@ namespace Gaiden.App
         private readonly Dictionary<string, int> sellCart = new Dictionary<string, int>();
         public override string Id => "shop";
         protected override string Title => "Merchant";
+        protected override string Npc => CampNpcs.Merchant;
 
         protected override void BuildBody(VisualElement body)
         {
@@ -589,6 +590,7 @@ namespace Gaiden.App
         protected override string Title => "Blacksmith";
         protected override string Backdrop => "cave";
         protected override string Subtitle => StationProgress.HeaderText(S, StationKind.Blacksmith);
+        protected override string Npc => CampNpcs.Blacksmith;
 
         protected override void BuildBody(VisualElement body)
         {
@@ -794,39 +796,48 @@ namespace Gaiden.App
         }
     }
 
-    // ── Alchemist: brew / enchant / heal party (§25.3) ───────────────────────────
+    // ── Alchemist: brew (§25.3) ───────────────────────────────────────────────────
+    // GG-T119: enchanting moved to the Enchantress's own station, and resting is the Innkeeper's (the old Heal tab
+    // was the Inn under another name, which would have let the Alchemist open it before the Innkeeper joined).
 
     public sealed class AlchemistScreen : HubPage
     {
-        private int tab;
         private RecipeDef selected;
         public override string Id => "alchemist";
         protected override string Title => "Alchemist";
         protected override string Backdrop => "swamp";
         protected override string Subtitle => StationProgress.HeaderText(S, StationKind.Alchemist);
+        protected override string Npc => CampNpcs.Alchemist;
 
-        protected override void BuildBody(VisualElement body)
+        protected override void BuildBody(VisualElement body) => StationBody(body, CraftStation.Alchemy, false, ref selected, this);
+
+        /// <summary>A recipe list over a detail pane — the Alchemist's Brew and the Enchantress's Enchant share it.</summary>
+        internal static void StationBody(VisualElement body, CraftStation station, bool upgrades, ref RecipeDef selected, HubPage page)
         {
-            Ui.Tabs(new[] { "Brew", "Enchant", "Heal" }, tab, i => { tab = i; selected = null; Refresh(); }, body);
             var w = Ui.Window(null, body);
-            w.style.flexGrow = 1; w.style.marginTop = 0;
+            w.style.flexGrow = 1;
             var list = Ui.List(w).contentContainer;
             var detail = Ui.Window(null, body);
             detail.style.minHeight = 330;
-            if (tab == 0) BlacksmithScreen.RecipeList(list, detail, C, S, CraftStation.Alchemy, false, ref selected, this);
-            else if (tab == 1) BlacksmithScreen.RecipeList(list, detail, C, S, CraftStation.Enchant, true, ref selected, this);
-            else
-            {
-                int cost = Inn.Cost(C, S);
-                foreach (var h in S.Roster)
-                {
-                    int miss = Inn.MissingHp(C, S, h);
-                    Ui.MenuRow(C.Class(h.ClassId).Name, miss > 0 ? $"−{miss} HP" : "Healthy", null, list, null, miss > 0);
-                }
-                var b = Ui.Button(cost > 0 ? $"Heal party — {Ui.Gold(cost)}" : "Party healthy", () => Done(Inn.Rest(C, S)), "btn--primary", detail);
-                Ui.SetEnabled(b, cost > 0 && S.Gold >= cost);
-            }
+            BlacksmithScreen.RecipeList(list, detail, GameApp.I.Content, GameApp.I.Save, station, upgrades, ref selected, page);
         }
+    }
+
+    // ── Enchantress: enchant (§25.3.4, GG-T119) ──────────────────────────────────
+
+    /// <summary>The Enchantress's station: the Enchant recipes that used to be the Alchemist's second tab. Every
+    /// enchant is Master tier and she has no ladder of her own to climb, so her recipes still unlock with the
+    /// Alchemist's station level (her reagents are his brews); her header says how far off that is.</summary>
+    public sealed class EnchantressScreen : HubPage
+    {
+        private RecipeDef selected;
+        public override string Id => "enchantress";
+        protected override string Title => "Enchantress";
+        protected override string Backdrop => "swamp";
+        protected override string Subtitle => "Unlocks with the Alchemist: " + StationProgress.HeaderText(S, StationKind.Alchemist);
+        protected override string Npc => CampNpcs.Enchantress;
+
+        protected override void BuildBody(VisualElement body) => AlchemistScreen.StationBody(body, CraftStation.Enchant, true, ref selected, this);
     }
 
     // ── Caravan upgrades (§25.12) ────────────────────────────────────────────────
