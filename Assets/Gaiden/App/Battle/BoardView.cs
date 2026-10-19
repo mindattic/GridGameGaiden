@@ -217,11 +217,11 @@ namespace Gaiden.App
             {
                 if (weaponPulseAmber || armorPulseAmber)
                 {
-                    float k = 0.55f + 0.45f * Mathf.Abs(Mathf.Sin(Time.unscaledTime * 4f));
+                    float k = 0.55f + 0.45f * Mathf.Abs(Mathf.Sin(Tween.Clock * 4f));
                     if (weaponPulseAmber) weaponBarEl.style.opacity = k;
                     if (armorPulseAmber) armorBarEl.style.opacity = k;
                 }
-                if (weaponGlow) WeaponCrack.style.opacity = 0.55f + 0.45f * Mathf.Abs(Mathf.Sin(Time.unscaledTime * 3f));
+                if (weaponGlow) WeaponCrack.style.opacity = 0.55f + 0.45f * Mathf.Abs(Mathf.Sin(Tween.Clock * 3f));
             }).Every(33);
 
             if (u.IsSnakeSegment)
@@ -510,7 +510,7 @@ namespace Gaiden.App
                 MarkLayer.Add(amp);
                 amp.schedule.Execute(() =>
                 {
-                    float k = 1f + 0.08f * Mathf.Sin(Time.unscaledTime * 5f);
+                    float k = 1f + 0.08f * Mathf.Sin(Tween.Clock * 5f);
                     amp.style.scale = new Scale(new Vector2(k, k));
                 }).Every(33);
             }
@@ -612,7 +612,7 @@ namespace Gaiden.App
             float phase = (p.Id * 1.7f) % 6.28f;
             root.schedule.Execute(() =>
             {
-                float t = Time.unscaledTime * 3f + phase;
+                float t = Tween.Clock * 3f + phase;
                 disc.style.translate = new Translate(0, -8f * Mathf.Abs(Mathf.Sin(t)));
                 glow.style.opacity = 0.65f + 0.35f * Mathf.Sin(t * 1.3f);
             }).Every(33);

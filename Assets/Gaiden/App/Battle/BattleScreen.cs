@@ -104,8 +104,7 @@ namespace Gaiden.App
         public override void OnHidden()
         {
             board?.Lines.RemoveFromHierarchy();
-            pauseVeil?.RemoveFromHierarchy();
-            pauseVeil = null;
+            if (pauseVeil != null) { pauseVeil.RemoveFromHierarchy(); pauseVeil = null; ResumeBattle(); }
             // The billboard lives on the Overlay too; without this, each battle left one behind (lines from the
             // last ~1.6 s showing over the PostBattle screen) and they piled up battle after battle (GG-T70).
             billboard?.RemoveFromHierarchy();
@@ -611,6 +610,7 @@ namespace Gaiden.App
         /// <summary>The shared 1.2 s beat: cast rings, overlapping timeline circles and status slots each show their next item.</summary>
         private void CycleCastRings()
         {
+            if (Paused) return; // the 1.2 s beat is game time too (GG-T126)
             castCycle++;
             if (State == null || board == null || lastAt == null) return;
             SyncCastRings(lastAt);
@@ -844,7 +844,7 @@ namespace Gaiden.App
         /// <summary>Not while a drag is in progress either: a second finger tapping GUARD or a slot mid-drag would
         /// commit that instead and silently drop the drag, leaving the previewed units out of place (GG-T70).
         /// CommitDrag clears <c>dragging</c> before it commits, so the drag's own command still goes through.</summary>
-        public bool CanCommand() => !playing && !ended && !State.IsOver && !dragging;
+        public bool CanCommand() => !playing && !ended && !State.IsOver && !dragging && !Paused;
 
         /// <summary>Dev/automation helper: add orbs to the bank (cheat — development builds only call this).</summary>
         public void DevGiveMana(int n)
@@ -1064,12 +1064,56 @@ namespace Gaiden.App
 
         public override bool OnBack()
         {
+            // Back/Escape on the open pause menu resumes, like its Resume row.
+            if (pauseVeil != null) { closePause?.Invoke(); return false; }
             if (TargetingSlot >= 0) { CancelByPlayer(); return false; }
             OpenMenu();
             return false;
         }
 
         private VisualElement pauseVeil;
+        private Action closePause;
+
+        /// <summary>The pause menu is up: the battle's clock is stopped (GG-T126).</summary>
+        public bool Paused => pauseVeil != null;
+        /// <summary>Playback beats started so far this battle — the automation proof that none start while paused.</summary>
+        public int PlaybackBeats { get; private set; }
+        private int beatsAtPause;
+        /// <summary>Beats that started while the menu was up (must stay 0; logged as an error when not).</summary>
+        public int BeatsWhilePaused { get; private set; }
+        /// <summary>Seconds of unpaused battle time; the playback watchdog measures against this, so a long pause
+        /// can't make it fire on Resume.</summary>
+        private float battleTime;
+
+        /// <summary>
+        /// Stops the battle's clock (GG-T126): Tween.Dt reads 0, so every playback beat, cut-in, outline, float, coin
+        /// burst, dissolve, banner scroll and ambient pulse holds exactly where it is; the event player and Safe()
+        /// stop stepping; the drag timer, hints and auto battle stop; ringing sound effects pause mid-clip. Resume
+        /// carries on from the same frame.
+        /// </summary>
+        private void PauseBattle()
+        {
+            Tween.Paused = true;
+            beatsAtPause = PlaybackBeats;
+            App.Audio.HoldSfx(true);
+        }
+
+        private void ResumeBattle()
+        {
+            Tween.Paused = false;
+            App.Audio.HoldSfx(false);
+        }
+
+        /// <summary>The pause veil must be the last child of the Overlay, above board.Lines, cut-ins, the billboard,
+        /// coin and orb flights — everything playback adds there or BringToFront()s (GG-T126).</summary>
+        /// <summary>Automation: the open pause veil is the topmost Overlay child (nothing of the battle draws over it).</summary>
+        public bool PauseOnTop => pauseVeil != null && pauseVeil.parent != null && pauseVeil.parent.IndexOf(pauseVeil) == pauseVeil.parent.childCount - 1;
+
+        private void KeepPauseOnTop()
+        {
+            if (pauseVeil != null && pauseVeil.parent != null && pauseVeil.parent.IndexOf(pauseVeil) != pauseVeil.parent.childCount - 1)
+                pauseVeil.BringToFront();
+        }
 
         private void OpenMenu()
         {
@@ -1079,10 +1123,13 @@ namespace Gaiden.App
             if (ended || pauseVeil != null) return;
             var overlay = App.Overlay;
             var veil = pauseVeil = Ui.El("fill veil col center", overlay);
+            veil.name = "pause-veil";
             veil.pickingMode = PickingMode.Position;
+            PauseBattle();
             var w = Ui.Window("Paused", veil);
             w.style.width = 800;
-            void Close() { veil.RemoveFromHierarchy(); pauseVeil = null; }
+            void Close() { veil.RemoveFromHierarchy(); pauseVeil = null; ResumeBattle(); }
+            closePause = Close;
             Ui.MenuRow("Resume", "", Close, w);
             Ui.MenuRow(AutoPlay ? "Auto battle: ON" : "Auto battle: OFF", "", () => { AutoPlay = !AutoPlay; Close(); }, w);
             // Push (unlike Pop/Replace/ResetTo) never calls OnHidden, so board.Lines would otherwise keep
@@ -1146,8 +1193,22 @@ namespace Gaiden.App
 
         public override void Tick(float dt)
         {
+            if (Paused)
+            {
+                // GG-T126: the battle's clock is stopped — no watchdog, drag timer, hint, long-press or auto battle
+                // runs, and the veil stays above anything a frozen beat already put on the Overlay.
+                KeepPauseOnTop();
+                if (PlaybackBeats != beatsAtPause)
+                {
+                    BeatsWhilePaused += PlaybackBeats - beatsAtPause;
+                    Debug.LogError($"[Pause] {PlaybackBeats - beatsAtPause} playback beat(s) advanced while paused");
+                    beatsAtPause = PlaybackBeats;
+                }
+                return;
+            }
+            battleTime += dt;
             // Watchdog: playback can never hold input hostage.
-            if (playing && Time.unscaledTime - playStarted > 20f)
+            if (playing && battleTime - playStarted > 20f)
             {
                 Debug.LogError("[Battle] playback watchdog fired; resyncing");
                 playing = false;
@@ -1208,7 +1269,7 @@ namespace Gaiden.App
             if (!BeginSimulatedDrag(m.HeroId)) yield break;
             playing = true;
             simulatingDrag = true;
-            playStarted = Time.unscaledTime;
+            playStarted = battleTime;
 
             var hero = State.UnitById(m.HeroId);
             var pts = new List<Vector2> { BoardView.CenterOf(hero.Pos) };
@@ -1364,7 +1425,8 @@ namespace Gaiden.App
 
         private IEnumerator FeedFade(Label l)
         {
-            yield return new WaitForSecondsRealtime(4f);
+            float hold = 0f;
+            while (hold < 4f && l.parent != null) { hold += Tween.Dt; yield return null; } // game time: holds while paused
             float t = 0;
             while (t < 0.6f && l.parent != null) { t += Tween.Dt; l.style.opacity = 1f - t / 0.6f; yield return null; }
             l.RemoveFromHierarchy();

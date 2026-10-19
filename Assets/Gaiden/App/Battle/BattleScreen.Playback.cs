@@ -16,6 +16,8 @@ namespace Gaiden.App
     public sealed partial class BattleScreen
     {
         private int chainCount;
+        /// <summary>Pincers played so far in the current event list (automation: "mid-chain").</summary>
+        public int ChainCount => playing ? chainCount : 0;
         private float playStarted;
 
         /// <summary>
@@ -26,7 +28,7 @@ namespace Gaiden.App
         private IEnumerator Play(List<BattleEvent> events, bool skipMovePrefix)
         {
             playing = true;
-            playStarted = Time.unscaledTime;
+            playStarted = battleTime;
             chainCount = 0;
             int i = 0;
             // The drag already showed the hero's walk live: the hero follows the finger and ApplyPreview slid every
@@ -59,6 +61,10 @@ namespace Gaiden.App
                 // Within the already-shown walk, its moves are no-ops (their tokens already stand at the walk's end).
                 bool shownLive = i < walkEnd && ((events[i] is SteppedEvent ws && ws.UnitId == walkHero) || (events[i] is DisplacedEvent wd && wd.ByUnitId == walkHero) || events[i] is StepBlockedEvent);
                 if (shownLive) continue;
+                // GG-T126: no beat starts while the pause menu is up (a beat's side effects — banners, tallies,
+                // outlines — run the moment Animate is called, before its first yield).
+                while (Tween.Paused) yield return null;
+                PlaybackBeats++;
                 IEnumerator anim = null;
                 try { anim = Animate(events[i]); }
                 catch (System.Exception e) { Debug.LogException(e); }
@@ -77,6 +83,7 @@ namespace Gaiden.App
             BoardAudit.Settled(AuditTokens(true));
             SyncAll();
             BoardAudit.Synced(AuditTokens(true, rendered: true));
+            while (Tween.Paused) yield return null;
             playing = false;
             if (State.IsOver && !ended) yield return EndBattle();
         }
@@ -93,6 +100,8 @@ namespace Gaiden.App
         {
             while (true)
             {
+                // GG-T126: a beat never steps while paused, even across a bare one-frame yield.
+                while (Tween.Paused) yield return null;
                 object cur;
                 try
                 {
@@ -956,6 +965,8 @@ namespace Gaiden.App
 
         private VisualElement billboard;
         public int BillboardLines => billboard?.childCount ?? 0;
+        /// <summary>Strokes on the pincer/outline layer right now (automation: the pause harness pauses mid-chain).</summary>
+        public int LineStrokes => board == null ? 0 : board.Lines.Segs.Count + board.Lines.Outlines.Count + board.Lines.Rings.Count;
 
         /// <summary>A top-of-board window naming every spell, ability and combo as it happens; lines fade after 1.6 s.</summary>
         /// <summary>The billboard steps out of the way: when the action is in the top two rows it moves to the board's foot.</summary>
@@ -1020,12 +1031,16 @@ namespace Gaiden.App
             l.style.whiteSpace = WhiteSpace.Normal; // a wider font should wrap here, never overflow the window
             while (billboard.childCount > 3) billboard[0].RemoveFromHierarchy();
             App.StartCoroutine(Tween.Pop(row, 1.12f, 0.12f));
-            var bb = billboard; // OnHidden may null the field before this fires
-            bb.schedule.Execute(() =>
-            {
-                row.RemoveFromHierarchy();
-                if (bb.childCount == 0) bb.style.display = DisplayStyle.None;
-            }).ExecuteLater((long)(1600 / Mathf.Max(0.5f, Tween.Speed)));
+            App.StartCoroutine(RetireBillboardRow(billboard, row));
+        }
+
+        /// <summary>Drops a billboard line after 1.6 s of game time — held while paused, unlike a scheduler delay (GG-T126).
+        /// Takes the billboard itself: OnHidden may null the field before this fires.</summary>
+        private IEnumerator RetireBillboardRow(VisualElement bb, VisualElement row)
+        {
+            yield return Tween.Wait(1.6f);
+            row.RemoveFromHierarchy();
+            if (bb.childCount == 0) bb.style.display = DisplayStyle.None;
         }
 
         /// <summary>Gold shown on the HUD: the party's purse plus what this battle has dropped so far.</summary>

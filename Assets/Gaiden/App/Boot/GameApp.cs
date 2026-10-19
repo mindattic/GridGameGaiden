@@ -198,6 +198,7 @@ namespace Gaiden.App
         private void Update()
         {
             FitStage();
+            Tween.Advance();
             float dt = Tween.Dt;
             if (Save != null) { playClock += dt; if (playClock >= 1f) { Save.PlaySeconds += playClock; playClock = 0f; } }
             Router.Current?.Tick(dt);

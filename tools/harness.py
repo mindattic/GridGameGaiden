@@ -5,6 +5,7 @@ Self-play harness: launches the development player with the automation endpoint 
     python tools/harness.py sweep            # screenshot + layout-audit every menu screen
     python tools/harness.py clips N          # generate N random-stage/random-wave battle clips
     python tools/harness.py boardaudit N     # GG-T97: N autoplayed battles; fail if two tokens are ever drawn on one tile
+    python tools/harness.py pause            # GG-T126: pause mid-chain freezes playback (two identical frames), resume finishes it
     python tools/harness.py durability       # GG-T39: last-strike weapon badge + drag-preview shatter warning
     python tools/harness.py crucible [WAVES [RUN]]  # GG-T95: camp -> Crucible -> Auto -> leave after WAVES (99 = fight to a wipe) -> results -> camp
     python tools/harness.py stress HOURS     # unattended soak test (GG-T21); default 4h
@@ -411,6 +412,92 @@ def board_audit(run="boardaudit", count=12, speed=4, timeout=300):
     return True
 
 
+def _frame_diff(a, b):
+    """Fraction of pixels that differ between two screenshots (0.0 = identical frames)."""
+    from PIL import Image, ImageChops
+    ia, ib = Image.open(a).convert("RGB"), Image.open(b).convert("RGB")
+    if ia.size != ib.size:
+        return 1.0
+    diff = ImageChops.difference(ia, ib).convert("L").point(lambda v: 255 if v > 8 else 0)
+    return (diff.histogram()[255]) / float(ia.size[0] * ia.size[1])
+
+
+def pause_check(run="pause", speed=1, timeout=240):
+    """GG-T126: Pause must pause. Autoplays random battles until playback is mid-pincer (outline strokes drawn,
+    chain >= 1; a CHAIN x2 is preferred for the first 90 s), taps the real "II" menu button, then screenshots twice
+    ~2 s apart: no playback beat may start (beats / beatsWhilePaused), the outline, clock and frame must be
+    identical, and the pause veil must be the topmost Overlay layer. Then taps Resume and checks the chain plays
+    on to the end. Returns True when every check passes."""
+    art = launch(run)
+    call("speed", x=speed)
+    t0 = time.time(); caught = None
+    while time.time() - t0 < timeout and caught is None:
+        call("randombattle"); time.sleep(1.0)
+        call("autoplay", on=1)
+        t1 = time.time()
+        while time.time() - t1 < 90:
+            st = call("state")
+            b = st.get("battle")
+            if st["screen"] != "battle" or b is None:
+                break
+            want = 2 if time.time() - t0 < 90 else 1
+            if b["busy"] and b["chain"] >= want and b["lines"] > 0:
+                caught = b
+                break
+            time.sleep(0.03)
+    if caught is None:
+        print("FAIL: never caught playback mid-pincer")
+        return False
+    for _ in range(8):  # GG-T121: a synthetic tap can drop on an unfocused window
+        call("click", name="menu"); time.sleep(0.3)
+        if call("state")["battle"]["paused"]:
+            break
+    s1 = call("state")["battle"]
+    a = shot("paused-a")
+    time.sleep(2.0)
+    s2 = call("state")["battle"]
+    b2 = shot("paused-b")
+    diff = _frame_diff(a, b2)
+    checks = {
+        "paused": s1["paused"] and s2["paused"],
+        "paused mid-chain": s1["busy"] and s1["chain"] >= 1 and s1["lines"] > 0,
+        "no beat advanced": s1["beats"] == s2["beats"] and s2["beatsWhilePaused"] == 0,
+        "outline frozen": s1["lines"] == s2["lines"],
+        "clock frozen": s1["clock"] == s2["clock"] and s1["bank"] == s2["bank"],
+        "veil on top": s1["pauseOnTop"] and s2["pauseOnTop"],
+        "frames identical": diff == 0.0,
+    }
+    for _ in range(8):
+        call("clicktext", text="Resume"); time.sleep(0.3)
+        if not call("state")["battle"]["paused"]:
+            break
+    resumed = call("state")["battle"]
+    checks["resumed"] = not resumed["paused"]
+    end = time.time() + 30
+    after = resumed
+    while time.time() < end:
+        st = call("state")
+        if st["screen"] != "battle":
+            after = None
+            break
+        after = st["battle"]
+        # The paused event list has played out once beats moved on and either playback went idle or the bot
+        # already committed its next command (the state clock only changes on a new command).
+        if after["beats"] > s2["beats"] and (not after["busy"] or after["clock"] != s2["clock"]):
+            break
+        time.sleep(0.2)
+    checks["chain finished after resume"] = after is None or (after["beats"] > s2["beats"] and (not after["busy"] or after["clock"] != s2["clock"]))
+    shot("resumed")
+    logs = call("logs")
+    pause_errors = [l[:300] for l in logs if "[Pause]" in l or "watchdog" in l]
+    checks["no pause/watchdog errors"] = not pause_errors
+    print(json.dumps({"caught": {k: caught[k] for k in ("chain", "lines", "beats")}, "paused_a": {k: s1[k] for k in ("beats", "lines", "clock", "chain")},
+                      "paused_b": {k: s2[k] for k in ("beats", "lines", "clock", "chain")}, "frame_diff": diff,
+                      "after": after and {k: after[k] for k in ("beats", "busy", "clock")}, "errors": pause_errors, "checks": checks}, indent=1))
+    print(a); print(b2)
+    return all(checks.values())
+
+
 def durability(run="durability"):
     """GG-T39: forces the bot's suggested hero to its weapon's last-strike durability (1) mid-battle,
     then verifies the battle card shows the cracked-weapon badge and the next drag preview (the same
@@ -791,6 +878,8 @@ if __name__ == "__main__":
         sys.exit(0 if board_audit(count=int(sys.argv[2]) if len(sys.argv) > 2 else 12) else 1)
     elif cmd == "durability":
         durability()
+    elif cmd == "pause":
+        sys.exit(0 if pause_check() else 1)
     elif cmd == "crucible":
         crucible(sys.argv[3] if len(sys.argv) > 3 else "crucible", leave_after=int(sys.argv[2]) if len(sys.argv) > 2 else 3)
     elif cmd == "bestiary":

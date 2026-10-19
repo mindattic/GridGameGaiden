@@ -72,10 +72,30 @@ namespace Gaiden.App
             lastPlayed[key] = now;
             var c = Clip("Audio/Sfx/" + Cue(key));
             if (c == null) return;
-            AudioSource src = sfx[0];
-            foreach (var s in sfx) if (!s.isPlaying) { src = s; break; }
+            AudioSource src = null;
+            foreach (var s in sfx) if (!s.isPlaying && !held.Contains(s)) { src = s; break; }
+            if (src == null) foreach (var s in sfx) if (!held.Contains(s)) { src = s; break; }
+            if (src == null) return;
             src.pitch = pitch;
             src.PlayOneShot(c, volume * sfxVolume);
+        }
+
+        private readonly HashSet<AudioSource> held = new HashSet<AudioSource>();
+
+        /// <summary>
+        /// Battle pause (GG-T126): freezes every sound effect still ringing from the frozen beat, mid-clip, and
+        /// resumes them from the same sample on Resume. Music keeps playing, and new cues (the pause menu's own
+        /// clicks) take a source that isn't held.
+        /// </summary>
+        public void HoldSfx(bool hold)
+        {
+            if (hold)
+            {
+                foreach (var s in sfx) if (s.isPlaying) { s.Pause(); held.Add(s); }
+                return;
+            }
+            foreach (var s in held) if (s != null) s.UnPause();
+            held.Clear();
         }
 
         /// <summary>Semantic cue → file. Keep game code speaking in cues, not filenames.</summary>

@@ -650,7 +650,7 @@ namespace Gaiden.App.Automation
                 dump["battle"] = new
                 {
                     phase = s.Phase.ToString(), wave = s.Wave, clock = s.Clock, busy = b.Busy, selected = b.SelectedHeroId, targeting = b.TargetingSlot, confirming = b.Confirming, record = b.LastRecordPath,
-                    bank = s.Bank.ToString(), cutins = b.CutInsShown, coinsShown = b.CoinsShown, tallies = b.TalliesBurst, billboard = b.BillboardLines, amplifier = s.Amplifier.HasValue ? new[] { s.Amplifier.Value.X, s.Amplifier.Value.Y } : null,
+                    bank = s.Bank.ToString(), cutins = b.CutInsShown, coinsShown = b.CoinsShown, tallies = b.TalliesBurst, billboard = b.BillboardLines, paused = b.Paused, pauseOnTop = b.PauseOnTop, beats = b.PlaybackBeats, beatsWhilePaused = b.BeatsWhilePaused, lines = b.LineStrokes, chain = b.ChainCount, amplifier = s.Amplifier.HasValue ? new[] { s.Amplifier.Value.X, s.Amplifier.Value.Y } : null,
                     units = s.Units.Where(u => u.Alive).Select(u => new
                     {
                         u.Id, cls = u.Def.Id, team = u.Team.ToString(), x = u.Pos.X, y = u.Pos.Y, u.W, u.H, u.Hp, u.MaxHp, u.Level,

@@ -60,7 +60,7 @@ namespace Gaiden.App
 
         private void OnPointerMove(PointerMoveEvent evt)
         {
-            if (!pressing) return;
+            if (!pressing || Paused) return; // a drag held through Escape-to-pause stays frozen (GG-T126)
             Vector2 local = evt.localPosition;
             if (TargetingSlot >= 0)
             {

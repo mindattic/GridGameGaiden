@@ -14,7 +14,22 @@ namespace Gaiden.App
         /// frame, however long the frame took, so a frame-by-frame capture shows every beat.
         /// </summary>
         public static float FixedStep;
-        public static float Dt => FixedStep > 0f ? FixedStep : Time.unscaledDeltaTime;
+
+        /// <summary>
+        /// The game clock is stopped (the battle's pause menu, GG-T126). Every animation in the game advances by
+        /// <see cref="Dt"/>, so while this is set each Tween.Run/Wait/Move, every hand-rolled Dt timer (coin bursts,
+        /// cut-in streaks, the simulated drag, channel motes, the death dissolve) and <see cref="Clock"/>-driven pulse
+        /// holds its exact position and carries on from there when it clears. The pause menu itself never tweens.
+        /// </summary>
+        public static bool Paused;
+
+        public static float Dt => Paused ? 0f : FixedStep > 0f ? FixedStep : Time.unscaledDeltaTime;
+
+        /// <summary>Seconds of unpaused game time since launch, advanced once per frame by GameApp.Update — the
+        /// pause-aware stand-in for Time.unscaledTime in looping ambient animations (pulses, bobs).</summary>
+        public static float Clock { get; private set; }
+
+        public static void Advance() => Clock += Dt;
 
         public static float EaseOut(float t) => 1f - (1f - t) * (1f - t);
         public static float EaseInOut(float t) => t < 0.5f ? 2f * t * t : 1f - Mathf.Pow(-2f * t + 2f, 2f) / 2f;
@@ -24,10 +39,17 @@ namespace Gaiden.App
         {
             float d = Mathf.Max(0.0001f, seconds / Mathf.Max(0.1f, Speed));
             float t = 0f;
+            bool first = true;
             while (t < d)
             {
-                float k = t / d;
-                step(ease != null ? ease(k) : k);
+                // While paused the frame is held as-is: re-running a step at the same k would still re-roll anything
+                // random in it (Shake's jitter) and visibly move a "frozen" frame (GG-T126).
+                if (first || !Paused)
+                {
+                    float k = t / d;
+                    step(ease != null ? ease(k) : k);
+                }
+                first = false;
                 yield return null;
                 t += Dt;
             }
