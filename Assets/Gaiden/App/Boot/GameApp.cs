@@ -213,8 +213,8 @@ namespace Gaiden.App
         public void Persist()
         {
             if (Save == null || Slot < 0) return;
-            try { Saves.Write(Slot, Save); }
-            catch (Exception e) { Debug.LogError("[Save] write failed: " + e); Toast("Couldn't save!"); }
+            // SaveStore.Write never throws — it logs and reports failure via its return value (GG-T146).
+            if (!Saves.Write(Slot, Save)) Toast("Couldn't save!");
         }
 
         public void Toast(string text, float seconds = 1.8f)

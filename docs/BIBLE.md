@@ -1479,6 +1479,8 @@ Level is **derived** from `TotalXp` (`Formulas.LevelFromTotalXp`, `XpToNext(L) =
 | Save & Quit | yes |
 | Mid-battle | no (battle state is not saved; quitting mid-battle loses the battle only) |
 
+**Amended 2026-10-20 (GG-T146):** `SaveStore.Write` never throws. A failure at any step (disk full, a locked file, permissions) is caught, logged as `[Save] slot N write failed: …`, best-effort-cleans the `.tmp` file, and is reported to the caller via a `bool` return instead of losing progress silently — mirroring how `Load` reports a bad read with a log plus a `null` sentinel rather than an exception. `GameApp.Persist` shows the "Couldn't save!" toast whenever `Write` returns `false`. *(Tests: `SaveStoreTests.Write_WhenTheTempFileCannotBeWritten_ReturnsFalseInsteadOfThrowing`, `Write_WhenTheReplaceStepFails_ReturnsFalseAndLeavesThePreviousSaveIntact`.)*
+
 ### 15.3 Ability bar and Bestiary
 
 - `HeroSave.Known` lists learned ability ids; `HeroSave.Bar` the five bar entries. The battle reads the bar through `BattleFactory.SpecFor`. *(Tests: `Save_round_trips_through_json`, `Full_loop_battle_commit_then_every_vendor`.)*

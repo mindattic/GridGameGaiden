@@ -96,6 +96,45 @@ namespace Gaiden.App.Tests
         }
 
         [Test]
+        public void Write_OnSuccess_ReturnsTrue()
+        {
+            Assert.IsTrue(store.Write(0, new SaveData()));
+        }
+
+        [Test]
+        public void Write_WhenTheTempFileCannotBeWritten_ReturnsFalseInsteadOfThrowing()
+        {
+            // Hold the .tmp path open exclusively so File.WriteAllText fails the way a locked file would.
+            var tmp = SlotPath(0) + ".tmp";
+            using (new FileStream(tmp, FileMode.Create, FileAccess.Write, FileShare.None))
+            {
+                LogAssert.Expect(LogType.Error, new System.Text.RegularExpressions.Regex("^\\[Save\\] slot 1 write failed:.*"));
+                bool ok = true;
+                Assert.DoesNotThrow(() => ok = store.Write(0, new SaveData { Gold = 99 }));
+                Assert.IsFalse(ok);
+            }
+        }
+
+        [Test]
+        public void Write_WhenTheReplaceStepFails_ReturnsFalseAndLeavesThePreviousSaveIntact()
+        {
+            store.Write(0, new SaveData { Gold = 1 });
+            var p = SlotPath(0);
+
+            // Lock the existing save file so File.Replace can't take it, the way an OS-level lock would.
+            using (new FileStream(p, FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                LogAssert.Expect(LogType.Error, new System.Text.RegularExpressions.Regex("^\\[Save\\] slot 1 write failed:.*"));
+                bool ok = true;
+                Assert.DoesNotThrow(() => ok = store.Write(0, new SaveData { Gold = 2 }));
+                Assert.IsFalse(ok);
+            }
+
+            Assert.IsFalse(File.Exists(p + ".tmp"), "a failed write should not leave a stray .tmp file behind");
+            Assert.AreEqual(1, store.Load(0).Gold, "the previous save must survive a failed write");
+        }
+
+        [Test]
         public void Delete_RemovesSave()
         {
             store.Write(0, new SaveData());

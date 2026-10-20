@@ -54,7 +54,14 @@ namespace Gaiden.App
             }
         }
 
-        public void Write(int slot, SaveData s)
+        /// <summary>
+        /// Writes the slot atomically (temp file + replace). Never throws: a disk-full/locked-file/permissions
+        /// failure at any step is caught, logged, and reported back as <c>false</c> instead of silently losing
+        /// the player's progress (GG-T146) — mirroring how <see cref="Load"/> reports a bad read with a log and
+        /// a sentinel return rather than an exception. Best-effort-deletes the temp file on failure so a stray
+        /// `.tmp` doesn't linger; a save attempted again later overwrites it either way.
+        /// </summary>
+        public bool Write(int slot, SaveData s)
         {
             s.UpdatedUtc = DateTime.UtcNow;
             var p = PathFor(slot);
@@ -74,13 +81,14 @@ namespace Gaiden.App
                     File.Move(tmp, p);
                 }
                 Flush();
+                return true;
             }
             catch (Exception e)
             {
-                // The swap into `p` never happened on any failure path above, so the previous save (if any)
-                // is untouched — but unlike Load(), nothing here told the caller or the player their progress
-                // didn't actually save (disk full, a locked file, permissions). Log it, same as Load().
-                Debug.LogError($"[Save] slot {slot + 1} failed to write: {e.Message}");
+                Debug.LogError($"[Save] slot {slot + 1} write failed: {e.Message}");
+                try { if (File.Exists(tmp)) File.Delete(tmp); }
+                catch (Exception) { /* best effort; a later write overwrites it anyway */ }
+                return false;
             }
         }
 
