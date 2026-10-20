@@ -140,6 +140,20 @@ namespace Gaiden.Tests
         }
 
         [Test]
+        public void A_second_items_resistance_cannot_undo_an_earlier_items_full_immunity()
+        {
+            var db = Mini();
+            db.Items["cloak"] = new ItemDef { Id = "cloak", Name = "Cinder Cloak", Type = ItemType.Equipment, Slot = EquipmentSlot.Torso, Resistances = { [DamageType.Fire] = 0f } };
+            db.Items["ring"] = new ItemDef { Id = "ring", Name = "Ember Ring", Type = ItemType.Equipment, Slot = EquipmentSlot.Ring1, Resistances = { [DamageType.Fire] = 0.5f } };
+            var setup = new BattleSetup { Stage = Stage(("tank", 0, 0)), Seed = 3, UnlockedSlots = 2 };
+            setup.Party.Add(new HeroSpec { ClassId = "knight", Start = new Coord(5, 7), EquippedItemIds = { "cloak", "ring" } });
+            setup.Party.Add(new HeroSpec { ClassId = "cleric", Start = new Coord(4, 7) });
+            var s = BattleEngine.Create(db, setup, new List<BattleEvent>());
+            Assert.That(Hero(s, "knight").ResistanceMultiplier(DamageType.Fire), Is.EqualTo(0f).Within(1e-3),
+                "the cloak's full immunity must survive the ring's weaker resistance being folded in afterwards");
+        }
+
+        [Test]
         public void Boss_phase_fires_once_when_hp_crosses_threshold()
         {
             var db = Mini();
