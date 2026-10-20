@@ -42,10 +42,11 @@ Write-Host '  Stopping running instance...' -ForegroundColor Yellow
 $repoDirPrefix = $repoDir.TrimEnd('\') + '\'
 $outPrefix     = $out.TrimEnd('\') + '\'
 $procs = Get-Process 'GridGameGaiden' -ErrorAction SilentlyContinue | Where-Object {
-    $exePath = $_.Path
     # Trailing-separator prefix match, not a raw StartsWith: a bare prefix would also match a
     # sibling worktree whose name extends this one's (GG-T7 vs. GG-T70/GG-T71..79) — the exact
-    # cross-worktree kill GG-T21 exists to prevent (GG-T153).
+    # cross-worktree kill GG-T21 exists to prevent (GG-T153). $_.Path can also throw (access
+    # denied) for a process owned by another user/elevation level; treat that as "not ours".
+    try { $exePath = $_.Path } catch { $exePath = $null }
     $exePath -and ($exePath.StartsWith($repoDirPrefix, [System.StringComparison]::OrdinalIgnoreCase) `
                    -or $exePath.StartsWith($outPrefix, [System.StringComparison]::OrdinalIgnoreCase))
 }
