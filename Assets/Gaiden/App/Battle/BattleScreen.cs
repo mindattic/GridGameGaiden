@@ -639,7 +639,10 @@ namespace Gaiden.App
         }
 
         /// <param name="upTo">Mid-playback (GG-T112): fill only this many slots, so orbs minted in one action light
-        /// their own slots one by one instead of all at once; -1 shows the bank as it is.</param>
+        /// their own slots one by one instead of all at once; -1 shows the bank as it is. Also used by
+        /// <see cref="OrbsSpentEvent"/> playback (GG-T130) to redraw to the count right after that spend, not the
+        /// command's end-of-action <see cref="BattleState.Bank"/> count, which may already include orbs the same
+        /// action mints later.</param>
         private void SyncOrbs(int upTo = -1)
         {
             int filled = upTo >= 0 ? Mathf.Min(upTo, State.Bank.Count) : State.Bank.Count;

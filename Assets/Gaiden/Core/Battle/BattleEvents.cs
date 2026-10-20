@@ -180,7 +180,11 @@ namespace Gaiden.Core.Battle
     public sealed class OrbsSpentEvent : BattleEvent
     {
         public int Count;
-        public override string ToString() => $"OrbsSpent {Count}";
+        /// <summary>The bank count right after this spend, captured at spend time (GG-T130) so playback redraws
+        /// to this value instead of the command's end-of-action bank count, which may already include orbs this
+        /// same action mints later (their fly-in would otherwise land on a bank that already looks full).</summary>
+        public int CountAfter;
+        public override string ToString() => $"OrbsSpent {Count} -> {CountAfter}";
     }
 
     public sealed class TimelineAdvancedEvent : BattleEvent

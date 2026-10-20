@@ -145,7 +145,7 @@ namespace Gaiden.App
                 case AmplifierUsedEvent au: return AmpUsedAnim(au);
                 case ManaChargedEvent mc: return ChargeAnim(mc);
                 case OrbMintedEvent o: if (o.Reason == "pincer") FlushTallies(); return OrbAnim(o);
-                case OrbsSpentEvent _: SyncOrbs(); App.Audio.Sfx("cast", 0.6f); return Tween.Wait(0.12f);
+                case OrbsSpentEvent os: SyncOrbs(os.CountAfter); App.Audio.Sfx("cast", 0.6f); return Tween.Wait(0.12f);
 
                 case TimelineAdvancedEvent ta: FlushTallies(); return TimelineAnim(ta);
                 case PushedBackEvent pb: return PushAnim(pb);

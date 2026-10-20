@@ -643,6 +643,39 @@ namespace Gaiden.Tests
             Assert.That(crits, Is.InRange(5, 30)); // 50% physical crit cap × 0.5 → ~25%
         }
 
+        [Test] // GG-T130
+        public void OrbsSpent_reports_the_bank_right_after_that_spend_not_the_whole_actions_end()
+        {
+            // A spell's cost comes out of the bank the instant it's cast, but the same action can still mint
+            // more orbs afterward (here: a crit's charge rolling over). OrbsSpentEvent.CountAfter must freeze the
+            // bank as it stood right after the spend, not read it back off the command's final state once those
+            // later orbs have already landed (GG-T130, found by GG-T112) — playback would otherwise show the bank
+            // topped up before the later orb's fly-in arrives.
+            var db = Mini();
+            db.Classes["mage"].BaseStats.Luck = 200; // crit some of the time
+            bool sawMintAfterSpend = false;
+            for (int seed = 1; seed <= 60 && !sawMintAfterSpend; seed++)
+            {
+                var setup = new BattleSetup { Stage = Stage(("tank", 2, 2)), Seed = seed, UnlockedSlots = 2 };
+                setup.Party.Add(new HeroSpec { ClassId = "mage", Start = new Coord(4, 7), Bar = new List<string> { "fireball" } });
+                setup.Party.Add(new HeroSpec { ClassId = "knight", Start = new Coord(5, 7) });
+                var s = BattleEngine.Create(db, setup, new List<BattleEvent>());
+                s.Bank.Add(2);
+                int bankBeforeCast = s.Bank.Count;
+                s.ManaCharge = BattleConfig.ManaChargePerOrb - BattleConfig.CritCharge; // one crit away from minting
+                var ev = BattleEngine.Apply(s, new UseSlotCommand { HeroId = Hero(s, "mage").Id, Slot = 0, Target = new Coord(2, 2) });
+                int spentIndex = ev.FindIndex(e => e is OrbsSpentEvent);
+                if (spentIndex < 0) continue;
+                var spent = (OrbsSpentEvent)ev[spentIndex];
+                Assert.That(spent.CountAfter, Is.EqualTo(bankBeforeCast - spent.Count));
+                var mintedLater = ev.Skip(spentIndex + 1).OfType<OrbMintedEvent>().Where(o => o.Landed).ToList();
+                if (mintedLater.Count == 0) continue;
+                sawMintAfterSpend = true;
+                Assert.That(spent.CountAfter, Is.LessThan(s.Bank.Count)); // the later mint must not already show in CountAfter
+            }
+            Assert.That(sawMintAfterSpend, Is.True, "never saw a crit roll an orb in the same action as the spend; widen the seed range");
+        }
+
         [Test] // US-245
         public void Loot_past_the_stack_limit_is_auto_sold()
         {

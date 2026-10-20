@@ -107,7 +107,7 @@ namespace Gaiden.Core.Battle
             else
             {
                 S.Bank.Spend(a.Cost);
-                Emit(new OrbsSpentEvent { Count = a.Cost });
+                Emit(new OrbsSpentEvent { Count = a.Cost, CountAfter = S.Bank.Count });
                 if (a.CastTime > 0f)
                 {
                     int ticks = Formulas.SecondsToTicks(Formulas.CastTime(a.CastTime, hero.Effective));
