@@ -408,6 +408,42 @@ namespace Gaiden.Tests
             Assert.That(s.Hero("drifter"), Is.Not.Null);
         }
 
+        private static StageDef TwoWaveGuestStage(string guest) => new StageDef
+        {
+            Id = "g2w", Name = "G2W", IsTest = true,
+            Waves =
+            {
+                new WaveDef { Enemies = { new SpawnDef { Class = "slime00", Level = 1, X = 2, Y = 1 } } },
+                new WaveDef
+                {
+                    Enemies = { new SpawnDef { Class = "slime00", Level = 1, X = 2, Y = 1 } },
+                    Guests = { new SpawnDef { Class = guest, Level = 3, X = 0, Y = 5 } },
+                },
+            },
+        };
+
+        [Test] // GG-T140: a downed hero is still on the roster (no permadeath) and must still block a same-class guest
+        public void A_downed_heros_class_still_blocks_a_later_wave_guest_of_that_class()
+        {
+            var c = Real; var s = Progression.NewGame(c, "G5"); // default trio includes "paladin"
+            var setup = BattleFactory.Build(c, s, c.CampaignStages()[0].Id, 1);
+            setup.Stage = TwoWaveGuestStage("paladin");
+            var ev = new List<BattleEvent>();
+            var st = BattleEngine.Create(c, setup, ev);
+
+            var paladin = st.Units.Single(u => u.IsHero && !u.IsGuest && u.Def.Id == "paladin");
+            paladin.Hp = 0; paladin.OnBoard = false; // downed mid-battle, not removed: no permadeath
+            var enemy = st.Units.Single(u => u.Team == Team.Enemy && u.Alive);
+            enemy.Hp = 0; enemy.OnBoard = false; // clear wave 0 by hand
+
+            ev.Clear();
+            ev.AddRange(BattleEngine.Apply(st, new ShieldCommand()));
+
+            Assert.That(st.Wave, Is.EqualTo(1), "wave 1 (the paladin guest) should have spawned");
+            Assert.That(ev.OfType<GuestJoinedEvent>(), Is.Empty, "the downed paladin's class should still block the duplicate guest");
+            Assert.That(st.Units.Count(u => u.Def.Id == "paladin"), Is.EqualTo(1), "no duplicate paladin on the board");
+        }
+
         [Test] // GG-T114: "no one dies permanently" — the one permanent-loss rule is off, and Ironman doesn't exist yet
         public void Permadeath_is_off_by_default_and_old_lost_guests_come_back()
         {
