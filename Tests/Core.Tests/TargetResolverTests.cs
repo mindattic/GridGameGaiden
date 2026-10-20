@@ -269,6 +269,20 @@ namespace Gaiden.Tests
         }
 
         [Test]
+        public void IsValidPick_empty_only_adjacent_only_rejects_a_free_tile_that_isnt_adjacent_and_accepts_one_that_is()
+        {
+            var db = Mini();
+            db.Abilities["swap_step"] = new AbilityDef { Id = "swap_step", Name = "Swap Step", Kind = AbilityKind.Skill, Shape = TargetShape.SingleTile, Mode = TargetMode.PickTile, Filter = TargetFilter.EmptyOnly, AdjacentOnly = true };
+            var (s, _) = Battle(db, Stage(("goblin", 2, 2)), ("knight", 5, 7));
+            var knight = Hero(s, "knight");
+            var swapStep = db.Abilities["swap_step"];
+            // Adjacent and empty: valid.
+            Assert.That(TargetResolver.IsValidPick(s, swapStep, knight, new Coord(knight.Pos.X - 1, knight.Pos.Y)), Is.True);
+            // Empty but far away (board-wide, not adjacent): must now be rejected.
+            Assert.That(TargetResolver.IsValidPick(s, swapStep, knight, new Coord(0, 0)), Is.False);
+        }
+
+        [Test]
         public void IsValidPick_adjacent_only_rejects_a_non_adjacent_or_empty_target_and_accepts_an_adjacent_enemy()
         {
             var db = Mini();
