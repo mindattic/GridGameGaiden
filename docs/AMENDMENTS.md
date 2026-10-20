@@ -511,3 +511,22 @@ updated: 2026-10-09
   expedition, and the bots (`PlayPendingBeatsHeadless`) already played them all.
 - The GG-T117 sample beat after Green Valley I lost its `NpcJoined merchant` condition (it is now the Innkeeper's join
   beat, and a join beat must always fire).
+
+## 2026-10-20 — Overworld withdrawn; traversal lab spun off as TownWalker (owner direction, GG-T115)
+
+- **Owner:** "no world map - it takes away from a quick sit-down game." The overworld/terrain-gate pitch
+  ([`docs/design-draft-overworld-and-dialogue.md`](design-draft-overworld-and-dialogue.md) §2/§2.1) is
+  withdrawn, not deferred: [BIBLE §28 "No Overworld"](BIBLE.md) stays permanently, and is no longer
+  contingent on GridGameCaravan settling on a traversal demo. [BIBLE §3](BIBLE.md) is confirmed
+  unchanged on "no world map" (only "no dialog system" was ever struck, by GG-T117).
+- **The journey is already told without one:** the party is travelling, and the story is carried by the
+  per-theme text crawl ([§27](BIBLE.md)) and the dialogue engine ([§27.1](BIBLE.md), GG-T117–120). *Why:*
+  owner — the game is four kinds of screen: fighting, in-town buying/upgrading, reading a text crawl, or
+  talking with people (NPCs, party); a fifth, overworld kind of screen isn't wanted.
+- **GridGameCaravan is spun off as its own project, "TownWalker,"** independent of Gaiden — not a
+  prototype feeding a future Gaiden port. Nothing from `Lab.Core`/`WalkerRig2D` moves into
+  `Gaiden.Meta`/`Gaiden.App`; the design draft's "porting follows Gaiden's laws" section is withdrawn
+  along with the overworld it described.
+- **Unaffected:** §1 (the biomechanical-plague/Longmother narrative merge, already landed GG-T120), §3
+  (the dialogue engine, already landed GG-T117–120) and §4 (mid-battle recruitment, still open) — none of
+  the three ever depended on an overworld.

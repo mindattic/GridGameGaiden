@@ -46,7 +46,7 @@ GridGame Gaiden is **NOT**:
 - **Not a grid-puzzle** — no match-3 piece-color matching; tile state is "who's standing there".
 - **Not free-form movement** — one tile at a time, cardinal only, no pathfinding or diagonals.
 - **Not a stat-spreadsheet** — if a player needs a wiki to build, the design failed.
-- **No world map.** Narrative is a skippable per-theme text crawl ([§27](#27-story-crawl-no-dialog)) plus portrait dialogue at story beats between battles and from Camp's Talk row ([§27.1](#271-dialogue-gg-t117)); stage navigation is the Adventure list ([§28](#28-no-overworld)). **Amended 2026-10-19 (owner, GG-T117):** "no dialog system" withdrawn.
+- **No world map.** Narrative is a skippable per-theme text crawl ([§27](#27-story-crawl-no-dialog)) plus portrait dialogue at story beats between battles and from Camp's Talk row ([§27.1](#271-dialogue-gg-t117)); stage navigation is the Adventure list ([§28](#28-no-overworld)). **Amended 2026-10-19 (owner, GG-T117):** "no dialog system" withdrawn. **Confirmed 2026-10-20 (owner, GG-T115):** the separate overworld pitch ([design-draft-overworld-and-dialogue.md §2](design-draft-overworld-and-dialogue.md)) is withdrawn — a world map "takes away from a quick sit-down game." The game is four kinds of screen: fighting, in-town buying/upgrading, reading a text crawl, or talking with people (NPCs, party).
 
 ## 4. Architecture canon {#GG-§4}
 
@@ -2170,7 +2170,7 @@ One UI-only camera (`cullingMask = 0`, black clear); the board is UI Toolkit, so
 
 ## 28. No Overworld
 
-There is no world map. Stage navigation is the Adventure list ([§22.3](#223-adventure--the-stage-list)).
+There is no world map. Stage navigation is the Adventure list ([§22.3](#223-adventure--the-stage-list)). **Confirmed 2026-10-20 (owner, GG-T115):** permanent, not contingent on GridGameCaravan's traversal prototype picking a demo — the earlier pitch for a navigable overworld and terrain gates ([design-draft-overworld-and-dialogue.md §2/§2.1](design-draft-overworld-and-dialogue.md), withdrawn) is not coming back. The journey is understood without one: the party is travelling, and the story is told by text crawls ([§27](#27-story-crawl-no-dialog)) and dialogue ([§27.1](#271-dialogue-gg-t117)). GridGameCaravan, the traversal lab that would have fed this, is spun off as its own project ("TownWalker"), not a Gaiden prototype.
 
 ## 29. Open Design Questions
 

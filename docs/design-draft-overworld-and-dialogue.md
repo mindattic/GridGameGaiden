@@ -1,14 +1,32 @@
 ---
-status: draft — pitch for owner review
+status: mixed — see Resolution status below (2026-10-20)
 date: 2026-10-18
 purpose: RFC for three net-new systems the owner described (overworld, dialogue/branching, mid-battle
   recruitment) that currently contradict BIBLE.md §27 "Story crawl (no dialog)" and §28 "No Overworld".
-  Nothing here is built or amended yet — this is the "say so and ask" required by GG-LAW-7 before any
-  of it lands in code or in the bible. Supersedes nothing in docs/story-draft-spider-town.md; merges
-  with it per owner direction (2026-10-18).
+  This is the "say so and ask" required by GG-LAW-7 before any of it lands in code or in the bible.
+  Supersedes nothing in docs/story-draft-spider-town.md; merges with it per owner direction (2026-10-18).
 ---
 
 # Overworld, dialogue and battle recruitment — design pitch
+
+## Resolution status (2026-10-20, GG-T115)
+
+- **§1 Narrative merge** — **landed** (GG-T120, 2026-10-19). See `docs/BIBLE.md` §27.1.
+- **§2/§2.1 Overworld and terrain gates** — **withdrawn** (owner, 2026-10-19). "No world map — it takes
+  away from a quick sit-down game." `docs/BIBLE.md` §28 "No Overworld" stays, permanently and not
+  contingent on GridGameCaravan picking a demo. The journey is already understood: the party is
+  travelling, and the story is told by text crawls and dialogue. GridGameCaravan, the traversal lab
+  this section pointed at, is spun off as its own project — **TownWalker** — not a Gaiden prototype;
+  nothing in it ports into Gaiden. Kept below only as a record of what was considered and why it was
+  dropped.
+- **§3 Dialogue engine** — **landed** (GG-T117 through GG-T120). See `docs/BIBLE.md` §27.1. The game is
+  four kinds of screen: fighting, in-town buying/upgrading, reading a text crawl, or talking with
+  people (NPCs, party) — no fifth, overworld kind.
+- **§4 Mid-battle recruitment** — still open, not built; unaffected by the overworld withdrawal (§4
+  never depended on §2, see its own text below).
+- **§5/§6 checklist and open questions** — superseded by this status block for the overworld items;
+  the remaining open questions (recruitment permanence, magic-vs-machine depth, plague/town naming,
+  recruitment sequencing) still stand.
 
 ## 0. What's already true, so this isn't a rewrite
 
@@ -31,8 +49,9 @@ not oversights — but per `GG-LAW-7` they need to be written down and agreed be
 
 ## 0.1 Modes (owner, 2026-10-19)
 
-- **Campaign** — the full game: the macro loop above plus the story cutscenes/dialogue (§3) and
-  exploration (§2) this pitch proposes. Today's New Game/Continue is its mechanical core.
+- **Campaign** — the full game: the macro loop above plus the story dialogue (§3, landed GG-T117–120).
+  **No exploration/overworld layer** — §2's pitch for one is withdrawn (owner, 2026-10-19; GG-T115).
+  Today's New Game/Continue is its mechanical core.
 - **Crucible** (ticket GG-T95) — a "waiting for the bus" endless survival battle reached from Camp
   inside a saved campaign: escalating waves until wiped or retreating, and the XP and loot it earns
   are kept by the campaign save. Independent of this pitch; buildable now.
@@ -81,15 +100,22 @@ Placeholder naming carries over unresolved from the Longmother draft (town name,
 whether it has a singular "author" the way the Demon Lord does) — not re-litigated here, see Open
 Questions.
 
-## 2. The overworld — undecided, being prototyped in GridGameCaravan
+## 2. The overworld — withdrawn (owner, 2026-10-19; GG-T115)
 
-**Status (owner, 2026-10-19): still up for debate.** The traversal layer is being prototyped in a
+**Withdrawn.** "No world map — it takes away from a quick sit-down game." There is no navigable
+overworld layer between Camp and a stage; stage navigation stays the Adventure list, per
+`docs/BIBLE.md` §28, permanently. The traversal lab that would have fed this, `GridGameCaravan`, is
+spun off as its own project — **TownWalker** — not a Gaiden prototype; none of it ports into
+`Gaiden.Meta`/`Gaiden.App`. The rest of this section is kept only as a record of what was considered
+and explicitly dropped, not as a pending design.
+
+~~**Status (owner, 2026-10-19): still up for debate.** The traversal layer is being prototyped in a
 separate repo, `D:\Projects\MindAttic\GridGameCaravan` ("traversal lab"), before anything is folded
 into Gaiden. Its premise already matches §1: towns walk on giant legs because the surface is overrun,
 and ground teams disembark to fight and haul fuel/ore home. Every Caravan demo plays the same
 `Lab.Core` loop — scan → choose a site → walk the town and/or send the ground team by bike → battle
 (placeholder) → haul resources home — so the five candidates compare on feel, time-to-battle and taps
-per decision:
+per decision:~~
 
 | Caravan demo | Idea |
 |---|---|
@@ -117,7 +143,10 @@ withdrawn as a recommendation. What holds whichever demo wins:
 - **Site types beyond Battle** carry over from the owner's ask: a cache (loot, no fight), an event
   (dialogue scene, §3), a fuel/scavenge hunt (short combat).
 
-### 2.1 Terrain gates — what the town can't walk (owner, 2026-10-19)
+### 2.1 Terrain gates — withdrawn with §2 (owner, 2026-10-19; GG-T115)
+
+**Withdrawn along with §2** — there is no overworld for a terrain gate to live on. Kept only as a
+record of what was considered.
 
 The walking town is the story gate. At first it **can't cross water**; later it **can't cross lava**;
 each barrier is lifted by an upgrade to the town itself (fording legs, heat plating, and so on), built
@@ -139,7 +168,8 @@ This holds for any Caravan demo: a node graph shows it as impassable edges, Isom
 impassable terrain the town paths around. Caravan's `Lab.Core` already models town routing, so that's where
 impassable terrain would be prototyped first.
 
-Until Caravan settles, §3 and §4 are designed not to depend on the overworld at all.
+§3 and §4 were designed not to depend on the overworld at all, which is exactly why withdrawing §2/§2.1
+(above) doesn't touch them.
 
 ## 3. Dialogue / conversation system
 
@@ -155,8 +185,9 @@ events and for recruitment (§4).
 - **Conditions/effects are the existing save-and-party vocabulary**, not a new scripting language:
   `HasItem`, `GoldAtLeast`, `FlagSet` (a new small string-set on `SaveData` for story beats, the same
   idea as `SeenCrawls`), `PartyHas(classId)`; effects are `GrantGold`, `GrantItem`, `SetFlag`,
-  `RecruitHero(classId)` (§4), `UnlockOverworldNode`. This keeps the engine a data interpreter, not a
-  bespoke VM — consistent with `§4.4`/`GG-LAW-10`.
+  `RecruitHero(classId)` (§4), ~~`UnlockOverworldNode`~~ (moot — §2 withdrawn, GG-T115). This keeps the
+  engine a data interpreter, not a bespoke VM — consistent with `§4.4`/`GG-LAW-10`. **As landed
+  (GG-T117–119), the real vocabulary is wider** — see `docs/BIBLE.md` §27.1.
 - **Engine placement:** a `DialogueRunner` belongs in `Gaiden.Meta` (it reads/writes `SaveData`, same
   tier as `Shop`/`Crafting`/`Inn`), not `Gaiden.Core` (it never touches `BattleState`) and not `App`
   (so it's testable under `dotnet test` without Unity, matching every other meta service).
@@ -164,10 +195,12 @@ events and for recruitment (§4).
   3+-speaker scene), the owner's "overlapping boxes" read as the classic visual-novel layering (back
   speaker dimmed, current speaker full-bright, box slides in). Same UI Toolkit + `Theme.uss` approach as
   every other screen, no new rendering tech.
-- **Where it's triggered:** an Overworld Event node (§2), a one-time trigger on entering a theme
+- **Where it's triggered:** ~~an Overworld Event node (§2),~~ a one-time trigger on entering a theme
   (replacing or supplementing the existing `StoryCrawlScreen`, which can stay as the quick/skippable
   option for minor beats while full dialogue handles named-character scenes), and the in-battle
-  recruitment prompt (§4) reusing the same renderer in a lighter single-exchange mode.
+  recruitment prompt (§4) reusing the same renderer in a lighter single-exchange mode. **As landed
+  (GG-T117–119), with §2 withdrawn:** `ThemeStart` and `StageCleared` triggers plus Camp's Talk row —
+  no Overworld Event node, since there's no overworld.
 
 This is the piece that most directly reverses `§27`. Scope risk is real — branching dialogue content
 is a lot of writing, not just engineering — so the recommendation is to ship the **engine** generically
@@ -201,30 +234,37 @@ text already does.
 
 ## 5. What would need to change in the bible if the owner approves this
 
-Not done yet — listed so approval has a concrete checklist:
+**Superseded 2026-10-20 (GG-T115) for the overworld items** — see Resolution status at the top. Kept
+below as a record of the original checklist:
 
-- `§3` — strike "No dialog system, no world map."
+- `§3` — strike "No dialog system, no world map." **Done** (owner, GG-T117): "no dialog system" struck;
+  "no world map" stands and is reaffirmed (GG-T115).
 - `§27` — rewrite "Story crawl (no dialog)" to describe the dialogue engine, keeping `StoryCrawlScreen`
-  as the lightweight path for minor beats.
-- `§28` — rewrite "No Overworld" once GridGameCaravan picks a traversal demo; until then it stays.
+  as the lightweight path for minor beats. **Done** (GG-T117, §27.1).
+- `§28` — ~~rewrite "No Overworld" once GridGameCaravan picks a traversal demo; until then it stays.~~
+  **Moot (GG-T115):** the overworld pitch is withdrawn outright, so `§28` stays permanently and is not
+  waiting on a Caravan/TownWalker demo.
 - `§7 Active frontier` — the "V2 direction... branching story" line currently defers this to a future
   build window; approving this pitch means pulling it into the current one.
 - New laws/sections as needed for `Team.Neutral`, `TalkCommand`, `DialogueDef` validation rules.
+  `DialogueDef` validation landed with §3 (GG-T117); `Team.Neutral`/`TalkCommand` (§4) are still open.
 
 ## 6. Open questions for the owner
 
 1. **Recruitment permanence** — does a convinced unit join the permanent roster (like a Summon Circle
    pull) or only that one battle?
-2. **Overworld** — which GridGameCaravan demo wins (Isometric Expanse is the current front-runner), and
-   does it keep linear stage unlock or allow free choice of site order?
+2. ~~**Overworld** — which GridGameCaravan demo wins...~~ **Resolved 2026-10-20 (GG-T115): withdrawn.**
+   No overworld, on any demo. GridGameCaravan continues as its own project, TownWalker, independent of
+   this question.
 3. **Magic-vs-machine mechanical depth** — is the "spells fizzle more in plague-heavy zones, machines
    don't" idea meant to be a real stat system (a zone fizzle-chance multiplier, new equipment tags) this
    pass, or pure flavor for now with the mechanic following later?
 4. **Plague/town naming** — still open from the Longmother draft; now also needs a name for the plague
    itself if it's going to be referenced in dialogue choices and item flavor, not just crawl text.
-5. **Terrain gates (§2.1)** — which barriers, in what order (water, then lava, then...?), and does each
-   need a material check on top of clearing the previous theme?
+5. ~~**Terrain gates (§2.1)** — which barriers, in what order...~~ **Moot 2026-10-20 (GG-T115):** §2.1
+   is withdrawn with §2; there is no overworld for a terrain gate to live on.
 6. **Sequencing** — suggested build order, cheapest/least-risky first: (a) recruitment mechanic
-   (§4, no overworld/dialogue dependency, smallest surface), (b) dialogue engine generically (§3), (c)
-   overworld (§2) once GridGameCaravan picks a demo, (d) magic-vs-machine content pass
-   (§1) threaded in afterward. Confirm or reorder.
+   (§4, no overworld/dialogue dependency, smallest surface) — still open; (b) dialogue engine
+   generically (§3) — **done** (GG-T117–120); ~~(c) overworld (§2) once GridGameCaravan picks a
+   demo~~ — **dropped** (GG-T115); (d) magic-vs-machine content pass (§1) threaded in afterward — still
+   open, now next after (a).
