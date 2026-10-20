@@ -109,6 +109,10 @@ namespace Gaiden.App
             // last ~1.6 s showing over the PostBattle screen) and they piled up battle after battle (GG-T70).
             billboard?.RemoveFromHierarchy();
             billboard = null;
+            // Build() rebuilds `banner` fresh when the player backs out of "How to play" onto this same
+            // instance (see the Build() comment); an in-flight scroll left running would keep animating
+            // whatever `banner` now points to using timing measured against the old one (GG-T70).
+            if (bannerScrollRoutine != null) { App.StopCoroutine(bannerScrollRoutine); bannerScrollRoutine = null; }
         }
 
         private bool Colorblind => App.Save?.Settings.ColorblindMode ?? false;

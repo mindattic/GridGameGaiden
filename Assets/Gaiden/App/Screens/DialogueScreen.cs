@@ -54,6 +54,12 @@ namespace Gaiden.App
         /// <summary>Keeps whatever was playing (the crawl's theme before a beat, camp music for a chat).</summary>
         public override string Music => null;
 
+        /// <summary>Without this, a screen change away from a still-playing dialogue (demo-mode AutoPlay is the
+        /// only thing that keeps running on its own) left AutoPlay ticking on a popped screen: it kept tapping
+        /// through lines, applying effects and eventually called Finish(), which Replace()/Back()'d whatever
+        /// screen had since been mounted — the same failure class as LevelUpScreen's fanfare coroutine (GG-T127).</summary>
+        public override void OnHidden() => done = true;
+
         protected override void Build(VisualElement root)
         {
             // Started on first show, not at construction: a beat queued behind a story crawl mustn't apply its

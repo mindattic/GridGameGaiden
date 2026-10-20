@@ -195,8 +195,19 @@ namespace Gaiden.App
         private readonly List<string> locked = new List<string>();
         private string highlighted;
         private bool finishing;
+        private Coroutine finishRoutine;
         private VisualElement partyStrip, revealPanel, grid;
         private Button lockBtn;
+
+        /// <summary>Without this, backing out during the 0.7s Lock-In fanfare (the header's Back button has no
+        /// `finishing` guard) left Finish() running: it still fired onDone() afterward, silently starting/
+        /// overwriting a save and jumping to the Hub out from under a player who'd just tried to cancel —
+        /// the same failure class as LevelUpScreen's fanfare coroutine (GG-T127).</summary>
+        public override void OnHidden()
+        {
+            if (finishRoutine != null) App.StopCoroutine(finishRoutine);
+            finishRoutine = null;
+        }
 
         public CharacterSelectScreen(Action<List<string>> onDone, bool auto = false)
         {
@@ -266,7 +277,7 @@ namespace Gaiden.App
             highlighted = null;
             App.Audio.Sfx("ui.buy");
             RefreshState();
-            if (locked.Count >= PartySize) { finishing = true; App.StartCoroutine(Finish()); }
+            if (locked.Count >= PartySize) { finishing = true; finishRoutine = App.StartCoroutine(Finish()); }
         }
 
         private IEnumerator Finish()

@@ -59,19 +59,29 @@ namespace Gaiden.App
             s.UpdatedUtc = DateTime.UtcNow;
             var p = PathFor(slot);
             var tmp = p + ".tmp";
-            File.WriteAllText(tmp, JsonConvert.SerializeObject(s, Formatting.Indented, SaveSettings));
             try
             {
-                if (File.Exists(p)) File.Replace(tmp, p, null);
-                else File.Move(tmp, p);
+                File.WriteAllText(tmp, JsonConvert.SerializeObject(s, Formatting.Indented, SaveSettings));
+                try
+                {
+                    if (File.Exists(p)) File.Replace(tmp, p, null);
+                    else File.Move(tmp, p);
+                }
+                catch (PlatformNotSupportedException)
+                {
+                    // WebGL's file system has no atomic replace.
+                    if (File.Exists(p)) File.Delete(p);
+                    File.Move(tmp, p);
+                }
+                Flush();
             }
-            catch (PlatformNotSupportedException)
+            catch (Exception e)
             {
-                // WebGL's file system has no atomic replace.
-                if (File.Exists(p)) File.Delete(p);
-                File.Move(tmp, p);
+                // The swap into `p` never happened on any failure path above, so the previous save (if any)
+                // is untouched — but unlike Load(), nothing here told the caller or the player their progress
+                // didn't actually save (disk full, a locked file, permissions). Log it, same as Load().
+                Debug.LogError($"[Save] slot {slot + 1} failed to write: {e.Message}");
             }
-            Flush();
         }
 
 #if UNITY_WEBGL && !UNITY_EDITOR

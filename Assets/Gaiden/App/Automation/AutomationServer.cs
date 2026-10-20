@@ -478,7 +478,10 @@ namespace Gaiden.App.Automation
                 case "release":
                 {
                     var up = Send(lastHeld, PointerPhase.Up);
-                    StartCoroutine(Frames(3, () => reply(up.Arrived ? (object)new { ok = true, target = up.Target } : new { ok = false, error = "release not delivered to the panel" })));
+                    StartCoroutine(Frames(3, () => reply(
+                        up.HitsNothing ? new { ok = false, error = "release hit nothing", target = up.Target }
+                        : !up.Arrived ? new { ok = false, error = "release not delivered to the panel", target = up.Target }
+                        : new { ok = true, error = (string)null, target = up.Target })));
                     return Pending;
                 }
                 case "stagebounds":

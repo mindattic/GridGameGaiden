@@ -7,10 +7,12 @@ MUSIC = os.path.join(ROOT, "Assets", "Gaiden", "Resources", "Audio", "Music")
 SPECIAL = {"ui.click": "ui_click", "ui.back": "ui_click", "ui.select": "ui_select", "ui.buy": "ui_coin", "ui.error": "ui_error", "ui.press": "ui_press", "ui.confirm": "ui_confirm", "ui.cancel": "ui_cancel", "move": "move_0", "hit": "hit_0"}
 code = "".join(open(p, encoding="utf-8").read() for p in glob.glob(os.path.join(ROOT, "Assets", "Gaiden", "App", "**", "*.cs"), recursive=True))
 cues = set(re.findall(r'Sfx\("([^"]+)"', code))
-cues |= set(re.findall(r'\? "([a-z.]+)" : "([a-z.]+)"', code) and [c for pair in re.findall(r'Sfx\([^;]*?"([a-z.]+)"\s*:\s*"([a-z.]+)"', code) for c in pair] or [])
+# (NB: a bare "A and B or []" here would silently evaluate to [] whenever A itself found nothing,
+# even though B is the pattern that actually matters — never leave that construct for the next edit.)
+cues |= set(c for pair in re.findall(r'Sfx\([^;]*?"([a-z.]+)"\s*:\s*"([a-z.]+)"', code) for c in pair)
 for m in re.findall(r'case DamageType\.\w+: return "([a-z]+)";', code): cues.add(m)
 missing = [c for c in sorted(cues) if not os.path.exists(os.path.join(SFX, SPECIAL.get(c, c) + ".ogg"))]
-tracks = set(re.findall(r'Music => "([A-Za-z]+)"', code)) | set(re.findall(r'\? "([A-Z][A-Za-z]+)" : "([A-Z][A-Za-z]+)"', code) and [t for p in re.findall(r'Music => [^;]*?"([A-Z][A-Za-z]+)"\s*:\s*"([A-Z][A-Za-z]+)"', code) for t in p] or [])
+tracks = set(re.findall(r'Music => "([A-Za-z]+)"', code)) | set(t for p in re.findall(r'Music => [^;]*?"([A-Z][A-Za-z]+)"\s*:\s*"([A-Z][A-Za-z]+)"', code) for t in p)
 missing += [f"music:{t}" for t in sorted(tracks) if not os.path.exists(os.path.join(MUSIC, t + ".mp3"))]
 import json
 classes = json.load(open(os.path.join(ROOT, "Assets", "Gaiden", "Resources", "Content", "classes.json"), encoding="utf-8"))

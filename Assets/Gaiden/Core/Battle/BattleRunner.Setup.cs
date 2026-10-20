@@ -51,8 +51,11 @@ namespace Gaiden.Core.Battle
             {
                 var def = C.TryClass(g.Class);
                 if (def == null || def.Team != Team.Hero || excludedGuests.Contains(def.Id)) continue;
+                // Not just the living: a hero of this class who's merely down (no permadeath — still in
+                // S.Units, not removed) already represents this class too, so a later wave reusing the
+                // same guest class must not spawn a second, simultaneous instance of them.
                 bool already = false;
-                foreach (var u in S.Units) if (u.Alive && u.IsHero && u.Def.Id == def.Id) already = true;
+                foreach (var u in S.Units) if (u.IsHero && u.Def.Id == def.Id) already = true;
                 if (already) continue;
                 var at = new Coord(g.X, g.Y);
                 if (!S.FreeForSpawn(at)) { var free = RandomFreeTile(1, 1, 3, BattleConfig.Rows - 1) ?? RandomFreeTile(1, 1, 0, BattleConfig.Rows - 1); if (free == null) continue; at = free.Value; }
@@ -97,8 +100,11 @@ namespace Gaiden.Core.Battle
                 if (item.StartsProtected && !startProtected.Contains(u.Id)) startProtected.Add(u.Id);
                 foreach (var kv in item.Resistances)
                 {
-                    u.GearResist.TryGetValue(kv.Key, out var cur);
-                    u.GearResist[kv.Key] = (cur == 0f ? 1f : cur) * kv.Value;
+                    // TryGetValue's own false (no entry yet) means "no resistance from gear so far" (identity 1f);
+                    // a present entry is used as-is even when it's 0f (full immunity from an earlier piece), so a
+                    // second piece's resistance to the same type can't silently erase it.
+                    float cur = u.GearResist.TryGetValue(kv.Key, out var existing) ? existing : 1f;
+                    u.GearResist[kv.Key] = cur * kv.Value;
                 }
             }
             var weapon = C.TryItem(spec.WeaponId);

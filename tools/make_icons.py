@@ -106,7 +106,9 @@ def item_rule(it, manifest):
         return manifest["item"][iid]
     if it["Type"] == "Equipment":
         if it.get("WeaponType"):
-            svg = WEAPON_SVG[it["WeaponType"]]
+            svg = WEAPON_SVG.get(it["WeaponType"])
+            if svg is None:
+                return None  # unmapped WeaponType: report through the normal "NO ICON MAPPING" path, not a crash
         elif "Ring" in name or "Band" in name:
             svg = "delapouite/ring"
         elif "Amulet" in name or "Talisman" in name:

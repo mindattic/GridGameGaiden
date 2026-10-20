@@ -22,6 +22,7 @@ namespace Gaiden.App
         private readonly string stageId;
         private int index;
         private Coroutine running;
+        private readonly List<Coroutine> reveals = new List<Coroutine>();
         private VisualElement portraitRow, xpGauge, statColumn;
         private Label levelLabel;
         private bool skipHandlerBound;
@@ -40,6 +41,8 @@ namespace Gaiden.App
             hidden = true;
             if (running != null) App.StopCoroutine(running);
             running = null;
+            foreach (var co in reveals) if (co != null) App.StopCoroutine(co);
+            reveals.Clear();
         }
 
         protected override void Build(VisualElement root)
@@ -125,7 +128,7 @@ namespace Gaiden.App
                 App.Audio.Sfx("crit", 0.6f, 0.8f + 0.1f * (lvl - from));
                 yield return Tween.Run(0.25f, k => Ui.SetGauge(xpGauge, k));
                 levelLabel.text = $"Lv {lvl + 1}";
-                App.StartCoroutine(Tween.Pop(levelLabel, 1.3f, 0.2f));
+                reveals.Add(App.StartCoroutine(Tween.Pop(levelLabel, 1.3f, 0.2f)));
                 yield return Tween.Wait(0.15f);
                 Ui.SetGauge(xpGauge, 0f);
             }
@@ -142,7 +145,7 @@ namespace Gaiden.App
                 var row = Ui.El("row", statColumn);
                 Ui.Text(label, "small dim", row).style.width = 60;
                 Ui.Text($"{b:0} → {a:0}  (+{a - b:0})", "small good", row);
-                App.StartCoroutine(Tween.Pop(row, 1.15f, 0.15f));
+                reveals.Add(App.StartCoroutine(Tween.Pop(row, 1.15f, 0.15f)));
                 yield return Tween.Wait(0.08f);
             }
             yield return Tween.Wait(1.1f); // the fanfare hold

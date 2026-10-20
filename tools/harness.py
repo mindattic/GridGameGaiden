@@ -294,9 +294,14 @@ def campaign(run="campaign", stages=6, speed=3, extra=(), max_loss_retries=3):
             time.sleep(1.2)
             st = _skip_levelups(call("state"))
         else:
-            results.append({"stage": n, "result": "DIFFICULTY_WALL", "retries": max_loss_retries})
-            print(f"stage{n}: lost {max_loss_retries} times running — real difficulty cliff, not automation flakiness, stopping")
-            gave_up = True
+            # Every retry up to max_loss_retries played ("ended" each time), but that last retry's own
+            # result was never probed — that would be one more iteration. Check it now before declaring
+            # a wall, so a win on the final retry isn't misreported as one.
+            r = call("clicktext", text="Retry")
+            if not (isinstance(r, dict) and r.get("error")):
+                results.append({"stage": n, "result": "DIFFICULTY_WALL", "retries": max_loss_retries})
+                print(f"stage{n}: lost {max_loss_retries} times running — real difficulty cliff, not automation flakiness, stopping")
+                gave_up = True
         if gave_up:
             break
 
@@ -363,8 +368,6 @@ def story_recruits(run="recruits", speed=3):
         time.sleep(1.5)
         if call("state")["screen"] != "postbattle":
             break
-        if attempt == 2:
-            call("resetinput"); time.sleep(0.5)
     if call("state")["screen"] == "crawl":
         call("clicktext", text="Skip"); time.sleep(1.5)
     ok["recruit_beat_plays"] = _wait_screen("dialogue", 6.0)

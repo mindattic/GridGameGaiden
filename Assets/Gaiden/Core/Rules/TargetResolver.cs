@@ -78,7 +78,13 @@ namespace Gaiden.Core.Rules
             if (!BattleState.InBounds(target)) return false;
             var occ = s.UnitAt(target);
             if (a.Mode == TargetMode.Auto) return true;
-            if (a.Filter == TargetFilter.EmptyOnly) return occ == null && s.TrapAt(target) == null;
+            if (a.Filter == TargetFilter.EmptyOnly)
+            {
+                if (occ != null || s.TrapAt(target) != null) return false;
+                if (!a.AdjacentOnly) return true;
+                foreach (var t in caster.Tiles()) if (t.IsCardinalNeighbor(target)) return true;
+                return false;
+            }
             if (a.AdjacentOnly && (occ == null || !caster.IsAdjacentTo(occ))) return false;
             if (a.Mode == TargetMode.PickActor) return occ != null && Passes(a.Filter, caster, occ);
             // PickTile: any in-bounds tile whose shape catches at least one valid unit.
