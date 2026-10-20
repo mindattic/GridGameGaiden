@@ -42,6 +42,14 @@ not oversights — but per `GG-LAW-7` they need to be written down and agreed be
 
 ## 1. Narrative merge: biomechanical plague + the Longmother
 
+**Landed 2026-10-19 (GG-T120):** this merge is now the shipped story. Every `campaign.json` theme's
+`Crawl` carries it (the five main themes plus the five postgame themes, which the merge's "she can't
+recross woken ground, so her route curls" framing now explains), and the NPC/hero join scenes plus a
+new `*_party_talk` beat per theme in `dialogues.json` thread the magic-vs-machine and
+built-not-grown/buried threads through actual dialogue. See `docs/BIBLE.md` §27.1 for the summary and
+pointers. The mechanical depth question in §6.3 below is still open — this pass is narrative/flavor
+only, no new stat system.
+
 Per owner direction, this **merges with** `docs/story-draft-spider-town.md` rather than replacing it.
 Keep from that draft: the town is built on something that walks (placeholder "the Longmother"), it
 moves because standing still is fatal, the party are vanguard crews dropping down at each step to clear

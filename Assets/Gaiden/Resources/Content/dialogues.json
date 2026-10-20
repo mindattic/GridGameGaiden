@@ -8,10 +8,10 @@
       { "Id": "lead", "Class": "$lead" }
     ],
     "Nodes": [
-      { "Id": "hail", "Speaker": "merchant", "Text": "Lorem ipsum dolor sit amet, travelers! Consectetur adipiscing elit, sed do eiusmod tempor?", "Next": "reply" },
-      { "Id": "reply", "Speaker": "lead", "Text": "Ut enim ad minim veniam. Quis nostrud exercitation ullamco laboris.", "Next": "ask" },
+      { "Id": "hail", "Speaker": "merchant", "Text": "Hold up there -- you're the ones who dropped at the last footfall, aren't you? I heard you cleared it before the ground even finished shaking.", "Next": "reply" },
+      { "Id": "reply", "Speaker": "lead", "Text": "Word travels faster than we do, apparently. What do you need?", "Next": "ask" },
       {
-        "Id": "ask", "Speaker": "merchant", "Text": "Duis aute irure dolor in reprehenderit. May I ride along with your caravan?",
+        "Id": "ask", "Speaker": "merchant", "Text": "Not a thing -- I'm offering. I've been riding a few wagons back of every crew since the wells turned, and a caravan this size could use another set of wheels. Let me ride with you?",
         "Choices": [
           { "Label": "Welcome aboard.", "Next": "joined", "Effects": [ { "Type": "JoinNpc", "Id": "merchant" } ] },
           {
@@ -23,15 +23,28 @@
         ]
       },
       {
-        "Id": "map", "Speaker": "merchant", "Text": "Excepteur sint occaecat! Sunt in culpa, and a tonic for luck.",
+        "Id": "map", "Speaker": "merchant", "Text": "Smart. Here -- the roads past the valley, marked true, and a tonic for the nerves. On the house, since you're paying for the ink.",
         "Effects": [ { "Type": "GrantItem", "Id": "healing_potion_basic", "Amount": 1 } ],
         "Choices": [
           { "Label": "Then ride with us.", "Next": "joined", "Effects": [ { "Type": "JoinNpc", "Id": "merchant" } ] },
           { "Label": "Safe travels.", "Next": "snubbed", "Effects": [ { "Type": "SetFlag", "Id": "merchant_snubbed" } ] }
         ]
       },
-      { "Id": "snubbed", "Speaker": "merchant", "Text": "Nulla pariatur. I will follow a few wagons back all the same.", "Effects": [ { "Type": "JoinNpc", "Id": "merchant" } ] },
-      { "Id": "joined", "Speaker": "merchant", "Text": "Velit esse cillum dolore! Find me at camp when you need supplies." }
+      { "Id": "snubbed", "Speaker": "merchant", "Text": "Suit yourselves. I'll follow a few wagons back all the same -- somebody has to sell you rope when you run out.", "Effects": [ { "Type": "JoinNpc", "Id": "merchant" } ] },
+      { "Id": "joined", "Speaker": "merchant", "Text": "Good. Find my wagon at camp whenever you need supplies -- and don't let that caravan guard talk you into anything expensive." }
+    ]
+  },
+  {
+    "Id": "greenvalley_party_talk",
+    "Title": "Keeping pace",
+    "Trigger": { "Kind": "ThemeStart", "Id": "greenvalley" },
+    "Speakers": [
+      { "Id": "lead", "Class": "$lead" },
+      { "Id": "merchant", "Name": "Wandering Merchant", "Portrait": "courier" }
+    ],
+    "Nodes": [
+      { "Id": "a", "Speaker": "lead", "Text": "So this is really how it works -- we drop, we clear, we grab what's useful, and she just... keeps walking.", "Next": "b" },
+      { "Id": "b", "Speaker": "merchant", "Text": "That's the whole trade, far as I've ever seen it. Stand still too long anywhere on this road and you'll learn why she doesn't." }
     ]
   },
   {
@@ -43,16 +56,16 @@
       { "Id": "recruit", "Class": "$recruit" }
     ],
     "Nodes": [
-      { "Id": "meet", "Speaker": "recruit", "Text": "Lorem ipsum! I saw the slimes scatter. Sed do eiusmod tempor, you fight well for so few.", "Next": "reply" },
+      { "Id": "meet", "Speaker": "recruit", "Text": "You're the crew that cleared the slime nest? I watched from the ridge -- didn't think three of you would still be standing.", "Next": "reply" },
       {
-        "Id": "reply", "Speaker": "lead", "Text": "Ut enim ad minim veniam. We could use another pair of hands.",
+        "Id": "reply", "Speaker": "lead", "Text": "We nearly weren't. We could use another pair of hands, if you're offering.",
         "Choices": [
           { "Label": "Join us.", "Next": "joined" },
           { "Label": "The road is dangerous.", "Next": "warned" }
         ]
       },
-      { "Id": "warned", "Speaker": "recruit", "Text": "Duis aute irure dolor. Dangerous roads are why I am still standing here.", "Next": "joined" },
-      { "Id": "joined", "Speaker": "recruit", "Text": "Excepteur sint occaecat! Count me in, then.", "Effects": [ { "Type": "JoinHero", "Id": "redmage", "Role": "Mage" } ] }
+      { "Id": "warned", "Speaker": "recruit", "Text": "Dangerous is why I'm still out here instead of back where the wells turned. I can handle it.", "Next": "joined" },
+      { "Id": "joined", "Speaker": "recruit", "Text": "Then that's settled. Where this caravan's headed, it'll want someone who can still cast a straight line.", "Effects": [ { "Type": "JoinHero", "Id": "redmage", "Role": "Mage" } ] }
     ]
   },
   {
@@ -64,17 +77,17 @@
       { "Id": "innkeeper", "Name": "Innkeeper", "Portrait": "pandagirl" }
     ],
     "Nodes": [
-      { "Id": "one", "Speaker": "lead", "Text": "Lorem ipsum, the road is clear. Sed ut perspiciatis unde omnis.", "Next": "two" },
-      { "Id": "two", "Speaker": "innkeeper", "Text": "Iste natus error sit voluptatem! You look half dead. My wagon has warm beds, accusantium doloremque.", "Next": "ask" },
+      { "Id": "one", "Speaker": "lead", "Text": "That's the road clear behind us, for now. Feels like the first time any of us has stopped moving in days.", "Next": "two" },
+      { "Id": "two", "Speaker": "innkeeper", "Text": "You look it. I've got a wagon with real beds, not bedrolls on a cart floor -- first good sleep since the wells turned sour, if you'll have it.", "Next": "ask" },
       {
-        "Id": "ask", "Speaker": "innkeeper", "Text": "Laudantium, totam rem aperiam. Shall I hitch it to your caravan?",
+        "Id": "ask", "Speaker": "innkeeper", "Text": "Shall I hitch my wagon to yours, then?",
         "Choices": [
           { "Label": "Please do.", "Next": "joined", "Effects": [ { "Type": "JoinNpc", "Id": "innkeeper" } ] },
           { "Label": "We can't pay much.", "Next": "cheap", "Effects": [ { "Type": "JoinNpc", "Id": "innkeeper" } ] }
         ]
       },
-      { "Id": "cheap", "Speaker": "innkeeper", "Text": "Eaque ipsa quae ab illo. A fair price for heroes, then.", "Next": "joined" },
-      { "Id": "joined", "Speaker": "innkeeper", "Text": "Inventore veritatis! Rest at camp whenever the road wears you down." }
+      { "Id": "cheap", "Speaker": "innkeeper", "Text": "A fair price for people who clear footfalls for a living. I wasn't going to charge you much anyway.", "Next": "joined" },
+      { "Id": "joined", "Speaker": "innkeeper", "Text": "Good. Rest at camp whenever the road wears you down -- the Longmother doesn't stop, but you're allowed to." }
     ]
   },
   {
@@ -86,17 +99,17 @@
       { "Id": "lead", "Class": "$lead" }
     ],
     "Nodes": [
-      { "Id": "hail", "Speaker": "smith", "Text": "Quasi architecto beatae vitae! Those blades are notched to the hilt.", "Next": "reply" },
-      { "Id": "reply", "Speaker": "lead", "Text": "Nemo enim ipsam voluptatem. Can you mend them?", "Next": "ask" },
+      { "Id": "hail", "Speaker": "smith", "Text": "Those edges are chewed to the hilt. Whatever you've been fighting, it's eating your steel faster than you can swing it.", "Next": "reply" },
+      { "Id": "reply", "Speaker": "lead", "Text": "Faster than we'd like. Can it be mended?", "Next": "ask" },
       {
-        "Id": "ask", "Speaker": "smith", "Text": "Quia voluptas sit aspernatur. Mend, forge, melt down. Take me along?",
+        "Id": "ask", "Speaker": "smith", "Text": "Mended, reforged, melted down for something better -- whatever it needs. Take me along and you'll never fight on a notched blade again. Well?",
         "Choices": [
           { "Label": "Bring your anvil.", "Next": "joined", "Effects": [ { "Type": "JoinNpc", "Id": "blacksmith" } ] },
           { "Label": "Prove it first.", "Next": "proof" }
         ]
       },
-      { "Id": "proof", "Speaker": "smith", "Text": "Aut odit aut fugit! There, edge restored. Satisfied?", "Effects": [ { "Type": "JoinNpc", "Id": "blacksmith" } ], "Next": "joined" },
-      { "Id": "joined", "Speaker": "smith", "Text": "Sed quia consequuntur magni. Find me by the forge-cart at camp." }
+      { "Id": "proof", "Speaker": "smith", "Text": "Fair. Hold still... there. Edge restored, and better balanced than it was new. Satisfied?", "Effects": [ { "Type": "JoinNpc", "Id": "blacksmith" } ], "Next": "joined" },
+      { "Id": "joined", "Speaker": "smith", "Text": "Good. Find me at the forge-cart whenever something breaks -- and with this caravan's company, something always breaks." }
     ]
   },
   {
@@ -108,16 +121,51 @@
       { "Id": "recruit", "Class": "$recruit" }
     ],
     "Nodes": [
-      { "Id": "meet", "Speaker": "recruit", "Text": "Consectetur adipiscing! Travelers, at last. Quis nostrud exercitation, the sands ate my cart.", "Next": "reply" },
+      { "Id": "meet", "Speaker": "recruit", "Text": "Travelers -- thank every working gear in creation. The sand took my cart two days back and the goblin digs further in are not polite company.", "Next": "reply" },
       {
-        "Id": "reply", "Speaker": "lead", "Text": "Nisi ut aliquip ex ea commodo. Ride with the caravan.",
+        "Id": "reply", "Speaker": "lead", "Text": "Ride with the caravan, then. We're headed through the Reaches ourselves.",
         "Choices": [
           { "Label": "Join us.", "Next": "joined" },
           { "Label": "The road is dangerous.", "Next": "warned" }
         ]
       },
-      { "Id": "warned", "Speaker": "recruit", "Text": "Velit esse cillum. I have mended worse than danger.", "Next": "joined" },
-      { "Id": "joined", "Speaker": "recruit", "Text": "Fugiat nulla pariatur! My tools are yours.", "Effects": [ { "Type": "JoinHero", "Id": "engineer", "Role": "Support" } ] }
+      { "Id": "warned", "Speaker": "recruit", "Text": "I've rebuilt worse than danger out of spare parts. Danger I can work with.", "Next": "joined" },
+      { "Id": "joined", "Speaker": "recruit", "Text": "Then my tools are yours. Fair warning -- I fix things that are already broken a lot better than I avoid breaking them in the first place.", "Effects": [ { "Type": "JoinHero", "Id": "engineer", "Role": "Support" } ] }
+    ]
+  },
+  {
+    "Id": "desert_alchemist",
+    "Title": "The alchemist in the dunes",
+    "Trigger": { "Kind": "ThemeStart", "Id": "desert" },
+    "Speakers": [
+      { "Id": "alchemist", "Name": "Alchemist", "Portrait": "alchemist" },
+      { "Id": "lead", "Class": "$lead" }
+    ],
+    "Nodes": [
+      { "Id": "hail", "Speaker": "alchemist", "Text": "Careful with those flasks -- half of them are older than you, and the other half I'm honestly not sure what's in anymore.", "Next": "reply" },
+      { "Id": "reply", "Speaker": "lead", "Text": "What are you brewing all the way out here?", "Next": "ask" },
+      {
+        "Id": "ask", "Speaker": "alchemist", "Text": "Whatever your crews pull off the things you kill. Venom, ichor, scale -- it's all reagent if you know how to read it. Need a brewer who isn't afraid of the green ones?",
+        "Choices": [
+          { "Label": "Join us.", "Next": "joined", "Effects": [ { "Type": "JoinNpc", "Id": "alchemist" } ] },
+          { "Label": "Is it safe?", "Next": "safe" }
+        ]
+      },
+      { "Id": "safe", "Speaker": "alchemist", "Text": "Mostly. I'm coming either way -- the desert's not safe for a brewer working alone, and lately neither is a clean spell.", "Effects": [ { "Type": "JoinNpc", "Id": "alchemist" } ], "Next": "joined" },
+      { "Id": "joined", "Speaker": "alchemist", "Text": "Good. Bring me what you find out there and I'll turn it into something that keeps you standing." }
+    ]
+  },
+  {
+    "Id": "desert_party_talk",
+    "Title": "Older than the stride",
+    "Trigger": { "Kind": "ThemeStart", "Id": "desert" },
+    "Speakers": [
+      { "Id": "lead", "Class": "$lead" },
+      { "Id": "alchemist", "Name": "Alchemist", "Portrait": "alchemist" }
+    ],
+    "Nodes": [
+      { "Id": "a", "Speaker": "lead", "Text": "The works under these dunes aren't the Longmother's leavings -- those digs are older than her whole stride through here.", "Next": "b" },
+      { "Id": "b", "Speaker": "alchemist", "Text": "Older than her stride, maybe. Not older than whatever's souring the ground. That didn't start with us, and it isn't finishing with us either." }
     ]
   },
   {
@@ -129,16 +177,29 @@
       { "Id": "recruit", "Class": "$recruit" }
     ],
     "Nodes": [
-      { "Id": "meet", "Speaker": "recruit", "Text": "Sunt in culpa qui officia! Who goes there, in the Frostmaw dark?", "Next": "reply" },
+      { "Id": "meet", "Speaker": "recruit", "Text": "Who goes there, in the Frostmaw dark? Answer slow -- I've had worse than bandits down this pass.", "Next": "reply" },
       {
-        "Id": "reply", "Speaker": "lead", "Text": "Deserunt mollit anim. Friends, if you will have us.",
+        "Id": "reply", "Speaker": "lead", "Text": "Friends, if you'll have us. We're with the caravan on the Longmother's back.",
         "Choices": [
           { "Label": "Join us.", "Next": "joined" },
           { "Label": "The road is dangerous.", "Next": "warned" }
         ]
       },
-      { "Id": "warned", "Speaker": "recruit", "Text": "Id est laborum. I have held this pass alone for a season.", "Next": "joined" },
-      { "Id": "joined", "Speaker": "recruit", "Text": "Sed ut perspiciatis! Then my shield walks with you.", "Effects": [ { "Type": "JoinHero", "Id": "knight", "Role": "Tank" } ] }
+      { "Id": "warned", "Speaker": "recruit", "Text": "I've held this pass alone a full season. Danger and I are well acquainted.", "Next": "joined" },
+      { "Id": "joined", "Speaker": "recruit", "Text": "Then my shield walks with you. Whatever's down here that's built and not grown, I want to see it fall as much as you do.", "Effects": [ { "Type": "JoinHero", "Id": "knight", "Role": "Tank" } ] }
+    ]
+  },
+  {
+    "Id": "cave_party_talk",
+    "Title": "Built, not grown",
+    "Trigger": { "Kind": "ThemeStart", "Id": "cave" },
+    "Speakers": [
+      { "Id": "lead", "Class": "$lead" },
+      { "Id": "smith", "Name": "Blacksmith", "Portrait": "tinkerer" }
+    ],
+    "Nodes": [
+      { "Id": "a", "Speaker": "lead", "Text": "That thing we pulled out of the ice wasn't grown. It was built. On purpose.", "Next": "b" },
+      { "Id": "b", "Speaker": "smith", "Text": "I've forged enough to know the difference between an accident and a design. That was a design. Somebody made that, somewhere, a long time before we ever got here." }
     ]
   },
   {
@@ -150,16 +211,129 @@
       { "Id": "recruit", "Class": "$recruit" }
     ],
     "Nodes": [
-      { "Id": "meet", "Speaker": "recruit", "Text": "Unde omnis iste natus! You are wounded. Error sit voluptatem accusantium.", "Next": "reply" },
+      { "Id": "meet", "Speaker": "recruit", "Text": "Hold still -- you're bleeding from that last stretch of ruin and you don't even seem to know it.", "Next": "reply" },
       {
-        "Id": "reply", "Speaker": "lead", "Text": "Doloremque laudantium. Mend us, and march with us.",
+        "Id": "reply", "Speaker": "lead", "Text": "Mend us, and march with us. We won't say no to either.",
         "Choices": [
           { "Label": "Join us.", "Next": "joined" },
           { "Label": "The road is dangerous.", "Next": "warned" }
         ]
       },
-      { "Id": "warned", "Speaker": "recruit", "Text": "Totam rem aperiam. The ruins are worse.", "Next": "joined" },
-      { "Id": "joined", "Speaker": "recruit", "Text": "Eaque ipsa quae! I will keep you standing.", "Effects": [ { "Type": "JoinHero", "Id": "sage", "Role": "Healer" } ] }
+      { "Id": "warned", "Speaker": "recruit", "Text": "The ruins are worse than anything on the road behind you. I'd rather face them with company.", "Next": "joined" },
+      { "Id": "joined", "Speaker": "recruit", "Text": "Then I'll keep you standing. Whatever's waiting in here that refuses to lie down, we're going to make sure it finally does.", "Effects": [ { "Type": "JoinHero", "Id": "sage", "Role": "Healer" } ] }
+    ]
+  },
+  {
+    "Id": "cityruins_party_talk",
+    "Title": "Walls instead of walking",
+    "Trigger": { "Kind": "ThemeStart", "Id": "cityruins" },
+    "Speakers": [
+      { "Id": "lead", "Class": "$lead" },
+      { "Id": "innkeeper", "Name": "Innkeeper", "Portrait": "pandagirl" }
+    ],
+    "Nodes": [
+      { "Id": "a", "Speaker": "lead", "Text": "A dead city that tried to just... stay. No Longmother, no walking, just walls.", "Next": "b" },
+      { "Id": "b", "Speaker": "innkeeper", "Text": "And it still didn't work. Whatever's waiting in there has had longer than anyone to learn what staying still actually costs." }
+    ]
+  },
+  {
+    "Id": "greenvalley2_party_talk",
+    "Title": "The curl in the road",
+    "Trigger": { "Kind": "ThemeStart", "Id": "greenvalley2" },
+    "Speakers": [
+      { "Id": "lead", "Class": "$lead" },
+      { "Id": "merchant", "Name": "Wandering Merchant", "Portrait": "courier" }
+    ],
+    "Nodes": [
+      { "Id": "a", "Speaker": "lead", "Text": "The Vampire Lord's down, and we're back in green country. I almost thought that was the end of it.", "Next": "b" },
+      { "Id": "b", "Speaker": "merchant", "Text": "It never was going to be. She can't walk back over ground she's already woken, so she curls instead -- and we end up somewhere that looks like home and isn't. Deeper in than the old road ever ran." }
+    ]
+  },
+  {
+    "Id": "desert2_party_talk",
+    "Title": "Not one throne",
+    "Trigger": { "Kind": "ThemeStart", "Id": "desert2" },
+    "Speakers": [
+      { "Id": "lead", "Class": "$lead" },
+      { "Id": "alchemist", "Name": "Alchemist", "Portrait": "alchemist" }
+    ],
+    "Nodes": [
+      { "Id": "a", "Speaker": "lead", "Text": "This isn't rare anymore. Half of what we're fighting out here is half-built like that thing near the ridge.", "Next": "b" },
+      { "Id": "b", "Speaker": "alchemist", "Text": "Out past the Reaches, it's the norm, not the exception. We give the strong ones a single name, like it's one throne and not a condition. I don't think it's one throne." }
+    ]
+  },
+  {
+    "Id": "swamp2_party_talk",
+    "Title": "Somewhere better to be",
+    "Trigger": { "Kind": "ThemeStart", "Id": "swamp2" },
+    "Speakers": [
+      { "Id": "lead", "Class": "$lead" },
+      { "Id": "enchantress", "Name": "Enchantress", "Portrait": "whitewitch" }
+    ],
+    "Nodes": [
+      { "Id": "a", "Speaker": "lead", "Text": "Those markings on the wreck back there -- that's not our caravan's make.", "Next": "b" },
+      { "Id": "b", "Speaker": "enchantress", "Text": "No. Somebody else was working this ground before us, and didn't get the chance to leave. Past the mire, nobody comes this far who still has somewhere better to be." }
+    ]
+  },
+  {
+    "Id": "cave2_party_talk",
+    "Title": "Nothing burns clean",
+    "Trigger": { "Kind": "ThemeStart", "Id": "cave2" },
+    "Speakers": [
+      { "Id": "lead", "Class": "$lead" },
+      { "Id": "smith", "Name": "Blacksmith", "Portrait": "tinkerer" }
+    ],
+    "Nodes": [
+      { "Id": "a", "Speaker": "lead", "Text": "The ore's thinner down here. Half of what we're hauling up doesn't burn clean anymore.", "Next": "b" },
+      { "Id": "b", "Speaker": "smith", "Text": "Then we stop trusting it to burn clean and start trusting it less. Whatever's down at the bottom of these veins isn't interested in making this easy for us." }
+    ]
+  },
+  {
+    "Id": "cityruins2_party_talk",
+    "Title": "Older under older",
+    "Trigger": { "Kind": "ThemeStart", "Id": "cityruins2" },
+    "Speakers": [
+      { "Id": "lead", "Class": "$lead" },
+      { "Id": "innkeeper", "Name": "Innkeeper", "Portrait": "pandagirl" }
+    ],
+    "Nodes": [
+      { "Id": "a", "Speaker": "lead", "Text": "We're past where the Vampire Lord held, and the ruins just... keep going. Older under older.", "Next": "b" },
+      { "Id": "b", "Speaker": "innkeeper", "Text": "Then the road's not done asking its question. We've beaten what was standing in the doorway. We still don't know what built the house." }
+    ]
+  },
+  {
+    "Id": "swamp_enchantress",
+    "Title": "Lights in the fen",
+    "Trigger": { "Kind": "ThemeStart", "Id": "swamp" },
+    "Speakers": [
+      { "Id": "enchantress", "Name": "Enchantress", "Portrait": "whitewitch" },
+      { "Id": "lead", "Class": "$lead" }
+    ],
+    "Nodes": [
+      { "Id": "hail", "Speaker": "enchantress", "Text": "You followed my lights a long way through that muck. Most crews turn back at the first will-o'-wisp.", "Next": "reply" },
+      { "Id": "reply", "Speaker": "lead", "Text": "Most crews haven't seen what we've seen. Who are you?", "Next": "ask" },
+      {
+        "Id": "ask", "Speaker": "enchantress", "Text": "One who binds workings into steel instead of trusting them to the air -- which, out here, the air doesn't deserve. Your caravan could use that.",
+        "Choices": [
+          { "Label": "Then come with us.", "Next": "joined", "Effects": [ { "Type": "JoinNpc", "Id": "enchantress" } ] },
+          { "Label": "Show us a rune.", "Next": "rune" }
+        ]
+      },
+      { "Id": "rune", "Speaker": "enchantress", "Text": "Fair enough -- there. Bound tight enough to survive this fen; most spells aren't, anymore.", "Effects": [ { "Type": "JoinNpc", "Id": "enchantress" } ], "Next": "joined" },
+      { "Id": "joined", "Speaker": "enchantress", "Text": "Good. My table's at camp when your gear needs runework the mire won't unravel." }
+    ]
+  },
+  {
+    "Id": "swamp_party_talk",
+    "Title": "Where it pools",
+    "Trigger": { "Kind": "ThemeStart", "Id": "swamp" },
+    "Speakers": [
+      { "Id": "lead", "Class": "$lead" },
+      { "Id": "enchantress", "Name": "Enchantress", "Portrait": "whitewitch" }
+    ],
+    "Nodes": [
+      { "Id": "a", "Speaker": "lead", "Text": "Every fen's worse than the last fen. That's not a feeling anymore, that's just the route.", "Next": "b" },
+      { "Id": "b", "Speaker": "enchantress", "Text": "Because the blight pools where the ground's low and wet, same as anything else that doesn't like to keep moving. We're walking into exactly what it likes best." }
     ]
   },
   {
@@ -171,7 +345,7 @@
     ],
     "Nodes": [
       {
-        "Id": "greet", "Speaker": "merchant", "Text": "Lorem ipsum! Accusantium doloremque laudantium. What can I do for you?",
+        "Id": "greet", "Speaker": "merchant", "Text": "Welcome back. Wares, news, or just killing time before the next footfall?",
         "Choices": [
           { "Label": "About that map...", "Next": "map", "Conditions": [ { "Type": "FlagSet", "Id": "bought_map" } ] },
           {
@@ -187,54 +361,10 @@
           { "Label": "Just passing by.", "Next": "bye" }
         ]
       },
-      { "Id": "map", "Speaker": "merchant", "Text": "Totam rem aperiam: eaque ipsa quae ab illo inventore veritatis.", "Next": "greet" },
-      { "Id": "forgiven", "Speaker": "merchant", "Text": "Nemo enim ipsam voluptatem. All is forgiven, friend." },
-      { "Id": "hired", "Speaker": "merchant", "Text": "Quia voluptas sit! Treat my sellsword well." },
-      { "Id": "bye", "Speaker": "merchant", "Text": "Neque porro quisquam est. Safe roads." }
-    ]
-  },
-  {
-    "Id": "desert_alchemist",
-    "Title": "The alchemist in the dunes",
-    "Trigger": { "Kind": "ThemeStart", "Id": "desert" },
-    "Speakers": [
-      { "Id": "alchemist", "Name": "Alchemist", "Portrait": "alchemist" },
-      { "Id": "lead", "Class": "$lead" }
-    ],
-    "Nodes": [
-      { "Id": "hail", "Speaker": "alchemist", "Text": "Dolores eos qui ratione! Careful, those flasks are older than you.", "Next": "reply" },
-      { "Id": "reply", "Speaker": "lead", "Text": "Voluptatem sequi nesciunt. What are you brewing out here?", "Next": "ask" },
-      {
-        "Id": "ask", "Speaker": "alchemist", "Text": "Neque porro quisquam est. Potions, from whatever you pull off the beasts. Need a brewer?",
-        "Choices": [
-          { "Label": "Join us.", "Next": "joined", "Effects": [ { "Type": "JoinNpc", "Id": "alchemist" } ] },
-          { "Label": "Is it safe?", "Next": "safe" }
-        ]
-      },
-      { "Id": "safe", "Speaker": "alchemist", "Text": "Qui dolorem ipsum! Mostly. I'm coming anyway.", "Effects": [ { "Type": "JoinNpc", "Id": "alchemist" } ], "Next": "joined" },
-      { "Id": "joined", "Speaker": "alchemist", "Text": "Quia dolor sit amet. Bring me reagents and I'll brew them at camp." }
-    ]
-  },
-  {
-    "Id": "swamp_enchantress",
-    "Title": "Lights in the fen",
-    "Trigger": { "Kind": "ThemeStart", "Id": "swamp" },
-    "Speakers": [
-      { "Id": "enchantress", "Name": "Enchantress", "Portrait": "whitewitch" },
-      { "Id": "lead", "Class": "$lead" }
-    ],
-    "Nodes": [
-      { "Id": "hail", "Speaker": "enchantress", "Text": "Consectetur, adipisci velit. You followed my lights a long way.", "Next": "reply" },
-      { "Id": "reply", "Speaker": "lead", "Text": "Sed quia non numquam. Who are you?", "Next": "ask" },
-      {
-        "Id": "ask", "Speaker": "enchantress", "Text": "Eius modi tempora incidunt. One who binds runes into steel. Your caravan could use me.",
-        "Choices": [
-          { "Label": "Then come with us.", "Next": "joined", "Effects": [ { "Type": "JoinNpc", "Id": "enchantress" } ] },
-          { "Label": "Show us a rune.", "Next": "rune" }
-        ]
-      },
-      { "Id": "rune", "Speaker": "enchantress", "Text": "Ut labore et dolore magnam! It's yours once I'm aboard.", "Effects": [ { "Type": "JoinNpc", "Id": "enchantress" } ], "Next": "joined" },
-      { "Id": "joined", "Speaker": "enchantress", "Text": "Aliquam quaerat voluptatem. My table is at camp when your gear is ready." }
+      { "Id": "map", "Speaker": "merchant", "Text": "That map's good as far as the Reaches -- past that, you're trusting the same ruts I am.", "Next": "greet" },
+      { "Id": "forgiven", "Speaker": "merchant", "Text": "Already forgotten. A crew that turns away a stranger on a bad road isn't wrong to, most days." },
+      { "Id": "hired", "Speaker": "merchant", "Text": "Good man. Treat my guard well -- he's saved my hide more than the map ever has." },
+      { "Id": "bye", "Speaker": "merchant", "Text": "Safe roads. Mind the wells." }
     ]
   },
   {
@@ -244,14 +374,14 @@
     "Speakers": [ { "Id": "innkeeper", "Name": "Innkeeper", "Portrait": "pandagirl" } ],
     "Nodes": [
       {
-        "Id": "greet", "Speaker": "innkeeper", "Text": "Ut enim ad minima veniam! Beds are made. What's on your mind?",
+        "Id": "greet", "Speaker": "innkeeper", "Text": "Beds are made, water's hot. What's keeping you up?",
         "Choices": [
           { "Label": "Any news from the road?", "Next": "news" },
           { "Label": "Goodnight.", "Next": "bye" }
         ]
       },
-      { "Id": "news", "Speaker": "innkeeper", "Text": "Quis nostrum exercitationem ullam corporis. Travelers talk, I listen.", "Next": "greet" },
-      { "Id": "bye", "Speaker": "innkeeper", "Text": "Nisi ut aliquid ex ea commodi. Sleep well." }
+      { "Id": "news", "Speaker": "innkeeper", "Text": "Travelers talk more than they think when they're warm and fed. I just listen -- you'd be surprised what a crew says the night after a bad footfall.", "Next": "greet" },
+      { "Id": "bye", "Speaker": "innkeeper", "Text": "Sleep while you can. The ground doesn't wait for anyone, but you've earned the night." }
     ]
   },
   {
@@ -261,14 +391,14 @@
     "Speakers": [ { "Id": "smith", "Name": "Blacksmith", "Portrait": "tinkerer" } ],
     "Nodes": [
       {
-        "Id": "greet", "Speaker": "smith", "Text": "Quis autem vel eum iure! Mind the sparks.",
+        "Id": "greet", "Speaker": "smith", "Text": "Mind the sparks. What do you need -- mended, or melted down?",
         "Choices": [
           { "Label": "Where did you learn the trade?", "Next": "trade" },
           { "Label": "Carry on.", "Next": "bye" }
         ]
       },
-      { "Id": "trade", "Speaker": "smith", "Text": "Reprehenderit qui in ea voluptate velit esse. My mother's forge, long ago.", "Next": "greet" },
-      { "Id": "bye", "Speaker": "smith", "Text": "Quam nihil molestiae. Bring me something broken." }
+      { "Id": "trade", "Speaker": "smith", "Text": "My mother's forge, a long time before the wells turned. She worked shed-plate same as I do now. Guess some trades just keep walking.", "Next": "greet" },
+      { "Id": "bye", "Speaker": "smith", "Text": "Bring me something broken. There's always something broken." }
     ]
   },
   {
@@ -278,14 +408,14 @@
     "Speakers": [ { "Id": "alchemist", "Name": "Alchemist", "Portrait": "alchemist" } ],
     "Nodes": [
       {
-        "Id": "greet", "Speaker": "alchemist", "Text": "Vel illum qui dolorem! Don't touch the green one.",
+        "Id": "greet", "Speaker": "alchemist", "Text": "Don't touch the green one. What do you need?",
         "Choices": [
           { "Label": "What does the green one do?", "Next": "green" },
           { "Label": "I'll leave you to it.", "Next": "bye" }
         ]
       },
-      { "Id": "green", "Speaker": "alchemist", "Text": "Eum fugiat quo voluptas nulla pariatur. Nobody knows. That's the fun.", "Next": "greet" },
-      { "Id": "bye", "Speaker": "alchemist", "Text": "At vero eos et accusamus. Bring reagents!" }
+      { "Id": "green", "Speaker": "alchemist", "Text": "Not entirely sure yet. That's half the reason it's still in the flask and not in somebody's potion belt.", "Next": "greet" },
+      { "Id": "bye", "Speaker": "alchemist", "Text": "Bring me reagents. The good kind come off the things that still twitch after you've killed them." }
     ]
   },
   {
@@ -295,14 +425,14 @@
     "Speakers": [ { "Id": "enchantress", "Name": "Enchantress", "Portrait": "whitewitch" } ],
     "Nodes": [
       {
-        "Id": "greet", "Speaker": "enchantress", "Text": "Et iusto odio dignissimos. The runes are restless tonight.",
+        "Id": "greet", "Speaker": "enchantress", "Text": "The runes are restless tonight. What do you need?",
         "Choices": [
           { "Label": "Restless how?", "Next": "runes" },
           { "Label": "Goodnight.", "Next": "bye" }
         ]
       },
-      { "Id": "runes", "Speaker": "enchantress", "Text": "Ducimus qui blanditiis praesentium. They hum when danger is near.", "Next": "greet" },
-      { "Id": "bye", "Speaker": "enchantress", "Text": "Voluptatum deleniti atque. Sleep lightly." }
+      { "Id": "runes", "Speaker": "enchantress", "Text": "They hum, faint, when something's close that magic doesn't like the shape of. Out here, that's most nights.", "Next": "greet" },
+      { "Id": "bye", "Speaker": "enchantress", "Text": "Sleep lightly. I'll be listening to the steel." }
     ]
   },
   {
@@ -314,16 +444,16 @@
     ],
     "Nodes": [
       {
-        "Id": "open", "Speaker": "hero", "Text": "Lorem ipsum dolor sit amet. Qui dolorem ipsum quia dolor?",
+        "Id": "open", "Speaker": "hero", "Text": "Didn't expect to be out here when the season started, if I'm honest. Strange how fast normal changes.",
         "Choices": [
           { "Label": "How are you holding up?", "Next": "holding" },
           { "Label": "What do you make of the merchant?", "Next": "merchant", "Conditions": [ { "Type": "NpcJoined", "Id": "merchant" } ] },
           { "Label": "Rest well.", "Next": "rest" }
         ]
       },
-      { "Id": "holding", "Speaker": "hero", "Text": "Consectetur, adipisci velit. Sed quia non numquam eius modi tempora.", "Next": "open" },
-      { "Id": "merchant", "Speaker": "hero", "Text": "Ut labore et dolore magnam aliquam. Quaerat voluptatem, I'd say." },
-      { "Id": "rest", "Speaker": "hero", "Text": "Ut enim ad minima veniam. You too." }
+      { "Id": "holding", "Speaker": "hero", "Text": "Tired. Everyone's tired. But we're still standing, and that counts for something out here.", "Next": "open" },
+      { "Id": "merchant", "Speaker": "hero", "Text": "He talks too much and prices everything, but he hasn't steered us wrong yet. I'll take it." },
+      { "Id": "rest", "Speaker": "hero", "Text": "You too. Try to actually sleep -- the ground'll still be there in the morning. Probably." }
     ]
   }
 ]

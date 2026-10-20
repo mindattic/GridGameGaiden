@@ -228,8 +228,9 @@ namespace Gaiden.Tests
         {
             var s = NewSave();
             Assert.That(DialogueRunner.PendingBeat(Real, s, "greenvalley-01")?.Id, Is.EqualTo("greenvalley_road_merchant"));
-            Assert.That(DialogueRunner.PendingBeat(Real, s, "greenvalley-04"), Is.Null); // a theme with no beat of its own
-            s.SeenDialogues.Add("greenvalley_road_merchant");
+            // A postgame theme (GG-T120) carries its own single party-talk beat, played the same way.
+            Assert.That(DialogueRunner.PendingBeat(Real, s, "greenvalley-04")?.Id, Is.EqualTo("greenvalley2_party_talk"));
+            s.SeenDialogues.Add("greenvalley_road_merchant"); s.SeenDialogues.Add("greenvalley_party_talk");
             Assert.That(DialogueRunner.PendingBeat(Real, s, "greenvalley-01"), Is.Null);
             var t = TestLoop.NewSave(Real);
             Assert.That(DialogueRunner.PendingBeat(Real, t, "greenvalley-01"), Is.Null);
@@ -239,7 +240,7 @@ namespace Gaiden.Tests
         public void Stage_cleared_beat_waits_for_the_clear_and_its_conditions()
         {
             var s = NewSave();
-            s.SeenDialogues.Add("greenvalley_road_merchant");
+            s.SeenDialogues.Add("greenvalley_road_merchant"); s.SeenDialogues.Add("greenvalley_party_talk");
             Assert.That(DialogueRunner.PendingBeat(Real, s, "greenvalley-02"), Is.Null, "greenvalley-01 isn't cleared yet");
             s.ClearedStages.Add("greenvalley-01");
             Assert.That(DialogueRunner.PendingBeat(Real, s, "greenvalley-02")?.Id, Is.EqualTo("greenvalley_recruit_mage"), "the story recruit comes first (GG-T118)");
