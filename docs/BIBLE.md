@@ -1520,6 +1520,7 @@ Level is **derived** from `TotalXp` (`Formulas.LevelFromTotalXp`, `XpToNext(L) =
 5. **Unknown JSON fields.** `MissingMemberHandling.Error` fails the load — add the field to `ContentModels.cs` first.
 6. **PowerShell 5.1 encoding.** Never round-trip `.cs`/`.json` through `Get-Content`/`Set-Content` (BOM-less UTF-8 mojibakes); use an editor or .NET `WriteAllText` with `UTF8Encoding(false)`.
 7. **Playback stalls.** Every animation runs through `Safe()`, the final `SyncAll()` snaps views to truth, and a 20 s watchdog resyncs — don't bypass them.
+8. **Worktree package resolution (GG-T159).** `Packages/manifest.json` pulls `com.mindattic.capture`/`com.mindattic.telemetry` via `file:../../MindAttic.Capture(/Telemetry)/unity/...`, two levels above the project root. In the main checkout that lands on the real sibling repo; in a per-ticket worktree (`<WorkspaceRoot>.worktrees\Unity.GridGame\<Ticket>\`) the same climb instead lands on `<WorkspaceRoot>.worktrees\Unity.GridGame\<Repo>`, which has no repo of its own. `tools/unity.ps1` now auto-creates a directory junction there (pointing at the real sibling repo, found by walking up to the nearest `*.worktrees` ancestor) the first time it's missing, so `tools/build.ps1`/`tools/test.ps1 -Compile` work in a fresh worktree with no manual setup; junctions, not symlinks, because creating a symlink needs admin/Developer-Mode privilege on Windows and junctions don't.
 
 ### 17.2 Cadence
 
