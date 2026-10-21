@@ -1,7 +1,6 @@
 @echo off
-rem Builds the Windows Release player and publishes it to C:\Apps\GridGameGaiden.
-rem Thin forwarder to tools\deploy.ps1 (the authoritative implementation); pass -Launch to also
-rem run the published exe once it's copied. Requires the Unity Editor closed (batchmode build).
+rem Pulls latest, builds Release only if the source changed, publishes to C:\Apps\GridGameGaiden,
+rem refreshes the Desktop shortcut, and launches it (tools\deploy.ps1 does the work).
 setlocal
-powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0tools\deploy.ps1" %*
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0tools\deploy.ps1" -Launch %*
 exit /b %ERRORLEVEL%
