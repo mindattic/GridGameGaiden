@@ -382,16 +382,21 @@ namespace GridGame.App
             var list = Ui.List(w);
             if (Equipment.Equipped(h, slot) != null)
                 Ui.MenuRow("Remove", "", () => Done(Equipment.Unequip(C, S, h, slot)), list.contentContainer);
+            // GG-T52: the bag listing is shape-only (Equipment.Candidates with no hero) so a piece the hero
+            // owns but isn't proficient in still shows up — locked, with a 🔒 and the passive that would
+            // unlock it — instead of silently disappearing as if it were never picked up.
             var cands = Equipment.Candidates(C, S, slot);
             if (cands.Count == 0) Ui.Text("Nothing in your bag fits this slot. Forge gear at the Blacksmith.", "small dim", list.contentContainer).style.whiteSpace = WhiteSpace.Normal;
             foreach (var it in cands)
             {
                 var item = it;
-                var row = ItemUi.Row(item, $"×{S.Count(item.Id)}", () =>
+                var gate = Equipment.ProficiencyGate(C, h, item);
+                var value = gate != null ? $"🔒 {gate}" : $"×{S.Count(item.Id)}";
+                var row = ItemUi.Row(item, value, () =>
                 {
                     if (previewId == item.Id) { previewId = null; Done(Equipment.Equip(C, S, h, slot, item.Id)); }
                     else { previewId = item.Id; Refresh(); App.Toast("Tap again to equip"); }
-                }, list.contentContainer, true, Equipment.IsMasterwork(S, item.Id));
+                }, list.contentContainer, gate == null, Equipment.IsMasterwork(S, item.Id));
                 if (item.Id == previewId) Ui.Select(row);
             }
         }

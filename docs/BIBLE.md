@@ -1840,12 +1840,20 @@ Relic/Epic+ named passives (`PincerDamageBonus`, `RegenPerTurn`, `StartsProtecte
 
 Weapon, Armor, Relic I–III. `Equipment.Fits` (weapon/armor by slot; any relic in any relic slot), `Equip` (takes one from the bag, returns the old piece), `Unequip`, `Compare` (stat preview).
 
+#### 24.2.1 Proficiency gating (GG-T52)
+
+Every weapon carries a `WeaponClass` (`Simple`/`Martial`/`Arcane`) and every Head/Torso/Legs/Gloves/Boots piece an `ArmorWeight` (`Light`/`Medium`/`Heavy`); every hero can always use Simple weapons and wear Light/Medium armor regardless of class. `ClassDef.WeaponProficiencies` (which non-Simple classes a class starts trained in) and `ClassDef.ArmorProficiency` (the heaviest armor it starts able to wear, default Medium) set each class's out-of-the-box reach: the Tank archetype (Guardian tree) starts at Heavy armor; Warrior/Guardian/Ranger start with Martial weapons; Mage starts with Arcane; Cleric and Alchemist start Simple-weapons-only (daggers, maces) until they earn more.
+
+`Progression.EffectiveWeaponProficiencies`/`EffectiveArmorProficiency` layer the class default together with any proficiency-unlock passive already in `HeroSave.Known` — `martial_weapons_proficiency` ("Martial Weapons"), `arcane_focus_proficiency` ("Arcane Focus") and `heavy_armor_proficiency` ("Heavy Armor Proficiency"), the same three passives §25.6's Build screen already reads via `Progression.KnownProficiencies` (staged by GG-T74). They're real skill-tree nodes today: **Mage** can unlock Heavy Armor Proficiency (so a mage can earn the right to wear armor — the ticket's own example), **Cleric** can unlock Martial Weapons, and **Alchemist** can unlock Arcane Focus, each a late node (`RequiredPointsInTree: 8`) in its tree. Actually spending a point on *any* tree node (these three included) is still the deferred follow-up noted in §25.6/§25.6.1 — until that lands, a passive only enters `Known` via a class's starting kit (none do yet) or the migration grandfather clause below.
+
+`Equipment.ProficiencyGate(c, h, item)` returns null if `h` can equip `item`, else the unlocking passive's name; `Equipment.Fits(c, h, item, slot)` (an overload of the shape-only `Fits(item, slot)`) folds that check in, and `Equipment.Equip` refuses with `"Not proficient — needs {gate}"` without consuming the item. The Equip screen's bag listing still calls the shape-only `Fits`/`Candidates` so a piece the hero owns but can't wear stays visible — shown disabled with a 🔒 and the gate's name in place of its count — instead of silently vanishing; `Equipment.Candidates(c, s, slot, h)` (the hero-aware overload) is what the camp bot and shop-browsing code use instead, so it never buys or crafts toward gear it can't equip. A save written before this landed may already have a hero wearing something ungated at the time — `SaveMigrations.Migrate` auto-grants the matching proficiency for anything already equipped, so nobody's gear is stripped out from under them. *(Tests: `LoadoutAndProgressionTests` — effective proficiencies by class default and by passive, `ProficiencyGate`/`Fits`/`Equip`/`Candidates` behavior, the migration grandfather clause.)*
+
 ### 24.3 ItemDef fields
 
 ```
-Id, Name, Description, Type, Rarity, Slot, WeaponType, BaseCost, SellValue (−1 = BaseCost/2),
-MaxStack, Durability, BaseHealing, BaseDamage, DamageType, Stats{8}, BattleStartManaOrbs,
-OnUseAbility, GrantsOrbs, CuresBuff, CuresAll, Revives, Escape, OutOfBattleOnly,
+Id, Name, Description, Type, Rarity, Slot, WeaponType, WeaponClass, ArmorWeight, BaseCost,
+SellValue (−1 = BaseCost/2), MaxStack, Durability, BaseHealing, BaseDamage, DamageType, Stats{8},
+BattleStartManaOrbs, OnUseAbility, GrantsOrbs, CuresBuff, CuresAll, Revives, Escape, OutOfBattleOnly,
 BonusVsTag, BonusMultiplier, Resistances{type→mult}, SoldByVendor, Icon
 ```
 
@@ -2024,7 +2032,7 @@ The Merchant, Blacksmith, Alchemist, Enchantress and Innkeeper are people the pa
 - **Base vs. gear stats** — each stat as Base (`Unit.LevelStats`) / Gear (the delta to `Unit.Effective`, colored like an Equip-screen preview) / Total, instead of only the effective sum.
 - **Known Abilities** — every id in `HeroSave.Known`, name + kind, in a scrollable list (the hero's full kit can run past default-loadout size once Learn has bought a few).
 - **Skill Trees** — `Progression.TreeInvestment(c, h)`: for each tree, the sum of every node's `Cost` whose `Grants` the hero already has Known, highest first. This is a read-only reading of the tree map against what the hero already knows (its default loadout plus anything gold-Learned) — **not** a spend ledger, since spending points against a tree is still GG-T49/50's deferred follow-up (previous paragraph); a hero with nothing matching a tree's nodes just shows none.
-- **Proficiencies** — `Progression.KnownProficiencies`: any of the three proficiency-unlock passives (`heavy_armor_proficiency`, `martial_weapons_proficiency`, `arcane_focus_proficiency`, staged by GG-T74 for §25.6.1) already in `Known`. Always empty today — nothing can grant one until GG-T52 (gear-proficiency gating, still open) lands — shown with a note instead of inventing a gate that doesn't exist yet.
+- **Proficiencies** — `Progression.KnownProficiencies`: any of the three proficiency-unlock passives (`heavy_armor_proficiency`, `martial_weapons_proficiency`, `arcane_focus_proficiency`, staged by GG-T74 for §25.6.1) already in `Known`. **Amended 2026-10-21 (GG-T52):** these now actually gate gear ([§24.2.1](#2421-proficiency-gating-gg-t52)) and are real nodes in the Mage/Cleric/Alchemist trees — still shows "None yet" for a fresh hero today, since spending a tree point on any node (these included) remains the deferred follow-up §25.6 already notes; a hero picks one up via the migration grandfather clause until then.
 - **Build summary** — `Progression.BuildSummary`: `"{Class} · {tree A} {pts}[ / {tree B} {pts}…] — {role}[ who {cross-tree verb}]"` (e.g. "Paladin · Guardian 7 — a tank"), reading only off the class, its tree investment and its `Role` — a cross-tree verb ("…who heals") only appears once a non-home tree's matched nodes reach 3 points, so the line never claims a build the hero's Known list doesn't back up.
 
 *(Tests: `BuildScreenTests` — tree investment sums only nodes whose grant is Known, a cross-tree ability counts toward its own tree and not the home tree, an empty Known list yields no tree investment, proficiencies report only what's actually known, the build summary names class/trees/role and gains its cross-tree tail only at the 3-point threshold, every real hero class produces a summary without throwing.)*
@@ -2040,6 +2048,8 @@ The Merchant, Blacksmith, Alchemist, Enchantress and Innkeeper are people the pa
 `ContentLoader.Validate` resolves every grant and prerequisite, rejects duplicate node ids within a tree and prerequisite cycles, and requires every `Team.Hero` class to name a tree that exists. Six trees ship today, one per `Role` (§25.13): **Guardian** (Tank), **Warrior** (Striker), **Ranger** (Ranged), **Mage** (Mage), **Cleric** (Healer), **Alchemist** (Support) — a deliberate simplification of the Guardian/Warrior/Rogue/Ranger/Mage/Cleric/Alchemist archetype list down to one tree per already-`Role`-validated archetype, leaving a Rogue split out of Warrior for a later pass once rogue-specific content exists.
 
 **Amended 2026-10-16 (GG-T74):** each tree deepened from a flat 5-node list to **2 shared nucleus nodes + 3 variant branches (Opener → Core → Branch Capstone) + 1 cross-branch Finale** — **72 nodes total**, every tree 12 deep. The 3 branches per tree are the bible's own §25.13 sub-archetype clusters, now actually spendable instead of only shaping a class's starting kit:
+
+**Amended 2026-10-21 (GG-T52):** Mage, Cleric and Alchemist each picked up a 13th node (`RequiredPointsInTree: 8`, no prerequisite) granting one of the three proficiency-unlock passives ([§24.2.1](#2421-proficiency-gating-gg-t52)) — Mage → Heavy Armor Proficiency, Cleric → Martial Weapons, Alchemist → Arcane Focus. Guardian/Warrior/Ranger don't need one: their classes already start with Martial weapons (and Guardian with Heavy armor) by `ClassDef` default.
 
 | Tree | Branch 1 | Branch 2 | Branch 3 |
 |---|---|---|---|

@@ -170,6 +170,33 @@ namespace GridGame.Meta
         public static List<string> KnownProficiencies(ContentDb c, HeroSave h) =>
             ProficiencyPassiveIds.Where(h.Known.Contains).Select(id => c.TryAbility(id)?.Name).Where(n => n != null).ToList();
 
+        /// <summary>Weapon classes this hero can currently wield (GG-T52, gear-proficiency gating): every hero
+        /// can always use <see cref="WeaponClass.Simple"/>; Martial/Arcane come from the class's own home-tree
+        /// training (<see cref="ClassDef.WeaponProficiencies"/>) or from having learned that class's unlock
+        /// passive (<c>martial_weapons_proficiency</c> / <c>arcane_focus_proficiency</c> — <see cref="ProficiencyPassiveIds"/>),
+        /// e.g. a cleric earning Martial Weapons or a warrior earning Arcane Focus.</summary>
+        public static HashSet<WeaponClass> EffectiveWeaponProficiencies(ContentDb c, HeroSave h)
+        {
+            var cls = c.TryClass(h.ClassId);
+            var set = new HashSet<WeaponClass> { WeaponClass.Simple };
+            if (cls != null) foreach (var w in cls.WeaponProficiencies) set.Add(w);
+            if (h.Known.Contains("martial_weapons_proficiency")) set.Add(WeaponClass.Martial);
+            if (h.Known.Contains("arcane_focus_proficiency")) set.Add(WeaponClass.Arcane);
+            return set;
+        }
+
+        /// <summary>Heaviest armor this hero can currently wear (GG-T52): the class's own training
+        /// (<see cref="ClassDef.ArmorProficiency"/>), bumped straight to Heavy if Heavy Armor Proficiency is
+        /// known — the passive's own text ("regardless of class") skips Medium on purpose, matching how
+        /// Light and Medium are never gated behind any passive today.</summary>
+        public static ArmorWeight EffectiveArmorProficiency(ContentDb c, HeroSave h)
+        {
+            var cls = c.TryClass(h.ClassId);
+            var max = cls?.ArmorProficiency ?? ArmorWeight.Medium;
+            if (h.Known.Contains("heavy_armor_proficiency") && max < ArmorWeight.Heavy) max = ArmorWeight.Heavy;
+            return max;
+        }
+
         /// <summary>A one-line "what this hero is becoming" summary for the Build screen, e.g.
         /// "Knight · Guardian 7 / Cleric 3 — a tank who heals". Built only from the class name, its
         /// <see cref="TreeInvestment"/> and its <see cref="ClassDef.Role"/> — never an authored string that
@@ -1320,8 +1347,41 @@ namespace GridGame.Meta
             return item.Slot == slot;
         }
 
-        public static List<ItemDef> Candidates(ContentDb c, SaveData s, EquipmentSlot slot) =>
-            s.Inventory.Where(kv => kv.Value > 0).Select(kv => c.TryItem(kv.Key)).Where(i => Fits(i, slot)).OrderByDescending(i => i.Rarity).ThenBy(i => i.Name).ToList();
+        /// <summary>GG-T52: shape fit (above) plus proficiency — refuses gear <paramref name="h"/> isn't
+        /// trained to use. The shape-only overload still drives the Equip screen's bag listing (so a locked
+        /// piece the hero owns stays visible with a lock badge instead of disappearing), and bot/shop code
+        /// that should never pick gear it can't use calls this one instead.</summary>
+        public static bool Fits(ContentDb c, HeroSave h, ItemDef item, EquipmentSlot slot) =>
+            Fits(item, slot) && ProficiencyGate(c, h, item) == null;
+
+        /// <summary>Null if <paramref name="h"/> can equip <paramref name="item"/> today; otherwise the name
+        /// of the proficiency-unlock passive that would let them (GG-T52) — e.g. "Heavy Armor Proficiency".
+        /// Only the Weapon and armor slots are ever gated; jewelry and consumables never are.</summary>
+        public static string ProficiencyGate(ContentDb c, HeroSave h, ItemDef item)
+        {
+            if (item == null || item.Type != ItemType.Equipment) return null;
+            if (item.Slot == EquipmentSlot.Weapon)
+            {
+                if (item.WeaponClass == WeaponClass.Simple) return null;
+                if (Progression.EffectiveWeaponProficiencies(c, h).Contains(item.WeaponClass)) return null;
+                var passiveId = item.WeaponClass == WeaponClass.Arcane ? "arcane_focus_proficiency" : "martial_weapons_proficiency";
+                return c.TryAbility(passiveId)?.Name ?? passiveId;
+            }
+            if (IsArmorSlot(item.Slot))
+            {
+                if (item.ArmorWeight <= Progression.EffectiveArmorProficiency(c, h)) return null;
+                return c.TryAbility("heavy_armor_proficiency")?.Name ?? "Heavy Armor Proficiency";
+            }
+            return null;
+        }
+
+        /// <summary>Everything in the bag that shape-fits this slot (locked gear included, GG-T52) — the Equip
+        /// screen's bag listing. Pass <paramref name="h"/> to additionally drop anything the hero isn't
+        /// proficient in (bot/shop shopping lists, which should never pick gear it can't wear).</summary>
+        public static List<ItemDef> Candidates(ContentDb c, SaveData s, EquipmentSlot slot, HeroSave h = null) =>
+            s.Inventory.Where(kv => kv.Value > 0).Select(kv => c.TryItem(kv.Key))
+                .Where(i => Fits(i, slot) && (h == null || ProficiencyGate(c, h, i) == null))
+                .OrderByDescending(i => i.Rarity).ThenBy(i => i.Name).ToList();
 
         /// <summary>True if the one owned (unequipped) copy of this item id is a Masterwork roll (§24.6.2, GG-T46).</summary>
         public static bool IsMasterwork(SaveData s, string itemId) =>
@@ -1331,6 +1391,8 @@ namespace GridGame.Meta
         {
             var item = c.TryItem(itemId);
             if (!Fits(item, slot)) return Result.Fail("That doesn't go there");
+            var gate = ProficiencyGate(c, h, item);
+            if (gate != null) return Result.Fail($"Not proficient — needs {gate}");
             if (s.Count(itemId) < 1) return Result.Fail("You don't own that");
             Unequip(c, s, h, slot);
             if (IsJewelrySlot(slot))

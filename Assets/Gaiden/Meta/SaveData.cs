@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using GridGame.Core.Battle;
 using GridGame.Core.Content;
 using GridGame.Core.Rules;
 
@@ -230,8 +231,10 @@ namespace GridGame.Meta
 
     public static class SaveMigrations
     {
-        /// <summary>Upgrades an older save in place. Unknown future versions are rejected.</summary>
-        public static SaveData Migrate(SaveData s)
+        /// <summary>Upgrades an older save in place. Unknown future versions are rejected. <paramref name="c"/>
+        /// is optional (version-shape fixups below don't need content) but drives the GG-T52 proficiency
+        /// grandfather clause at the end: without it that step is simply skipped.</summary>
+        public static SaveData Migrate(SaveData s, ContentDb c = null)
         {
             if (s == null) return null;
             if (s.Version > SaveData.CurrentVersion) throw new InvalidOperationException($"Save version {s.Version} is newer than this build");
@@ -287,7 +290,39 @@ namespace GridGame.Meta
                 h.Armor ??= new Dictionary<EquipmentSlot, EquippedArmor>();
                 h.Jewelry ??= new Dictionary<EquipmentSlot, string>();
             }
+            // GG-T52 (gear-proficiency gating): a save written before this shipped may already have a hero
+            // wearing gear their class isn't nominally trained for (there was no gate to stop them). Rather
+            // than strip currently-equipped gear out from under a returning player, auto-grant the matching
+            // proficiency-unlock passive so Equipment.Fits keeps considering them proficient. Re-running this
+            // on an already-fine save is a no-op (every check is already satisfied). No-op entirely without a
+            // ContentDb (c == null), e.g. the version-only unit tests above that never touch gear/content.
+            if (c != null)
+                foreach (var h in s.Roster)
+                {
+                    GrandfatherGearProficiency(c, h, h.WeaponId);
+                    foreach (var piece in h.Armor.Values) GrandfatherGearProficiency(c, h, piece.ItemId);
+                }
             return s;
+        }
+
+        /// <summary>GG-T52: if <paramref name="itemId"/> is equipped but <paramref name="h"/> isn't nominally
+        /// proficient in it, grant whichever proficiency-unlock passive would explain that (idempotent — a
+        /// hero who's already proficient, or has nothing in that slot, is untouched).</summary>
+        private static void GrandfatherGearProficiency(ContentDb c, HeroSave h, string itemId)
+        {
+            var item = itemId != null ? c.TryItem(itemId) : null;
+            if (item == null) return;
+            if (item.Slot == EquipmentSlot.Weapon && item.WeaponClass != WeaponClass.Simple &&
+                !Progression.EffectiveWeaponProficiencies(c, h).Contains(item.WeaponClass))
+            {
+                var passive = item.WeaponClass == WeaponClass.Arcane ? "arcane_focus_proficiency" : "martial_weapons_proficiency";
+                if (!h.Known.Contains(passive)) h.Known.Add(passive);
+            }
+            else if (Array.IndexOf(BattleEngine.ArmorSlots, item.Slot) >= 0 &&
+                     item.ArmorWeight > Progression.EffectiveArmorProficiency(c, h))
+            {
+                if (!h.Known.Contains("heavy_armor_proficiency")) h.Known.Add("heavy_armor_proficiency");
+            }
         }
     }
 }

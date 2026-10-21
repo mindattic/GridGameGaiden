@@ -38,14 +38,17 @@ namespace GridGame.App
 
         public bool Exists(int slot) => File.Exists(PathFor(slot));
 
-        public SaveData Load(int slot)
+        /// <summary><paramref name="content"/> drives GG-T52's proficiency grandfather clause during
+        /// migration (a save equipped before that gate existed keeps its gear instead of losing it);
+        /// omit it only where content isn't loaded yet (e.g. save-shape-only tests).</summary>
+        public SaveData Load(int slot, GridGame.Core.Content.ContentDb content = null)
         {
             var p = PathFor(slot);
             if (!File.Exists(p)) return null;
             try
             {
                 var s = JsonConvert.DeserializeObject<SaveData>(File.ReadAllText(p), SaveSettings);
-                return SaveMigrations.Migrate(s);
+                return SaveMigrations.Migrate(s, content);
             }
             catch (Exception e)
             {

@@ -163,6 +163,169 @@ namespace GridGame.Tests
             Assert.That(Equipment.Equipped(hero, EquipmentSlot.Ring2), Is.EqualTo(rings[1].Id));
         }
 
+        // ── Proficiency gating (GG-T52): armor weight + weapon class ──
+
+        [Test]
+        public void EffectiveWeaponProficiencies_always_includes_Simple_plus_the_class_default()
+        {
+            var c = Real;
+            var cleric = Progression.NewHero(c, "cleric"); // no WeaponProficiencies in content: Simple only
+            var barbarian = Progression.NewHero(c, "barbarian"); // warrior tree: Martial by default
+            Assert.That(Progression.EffectiveWeaponProficiencies(c, cleric), Is.EquivalentTo(new[] { WeaponClass.Simple }));
+            Assert.That(Progression.EffectiveWeaponProficiencies(c, barbarian), Is.EquivalentTo(new[] { WeaponClass.Simple, WeaponClass.Martial }));
+        }
+
+        [Test]
+        public void EffectiveWeaponProficiencies_grows_once_the_unlock_passive_is_known()
+        {
+            var c = Real;
+            var cleric = Progression.NewHero(c, "cleric");
+            cleric.Known.Add("martial_weapons_proficiency");
+            Assert.That(Progression.EffectiveWeaponProficiencies(c, cleric), Does.Contain(WeaponClass.Martial));
+            cleric.Known.Add("arcane_focus_proficiency");
+            Assert.That(Progression.EffectiveWeaponProficiencies(c, cleric), Does.Contain(WeaponClass.Arcane));
+        }
+
+        [Test]
+        public void EffectiveArmorProficiency_defaults_to_Heavy_for_the_tank_archetype_and_Medium_elsewhere()
+        {
+            var c = Real;
+            var paladin = Progression.NewHero(c, "paladin"); // guardian (Tank) tree
+            var cleric = Progression.NewHero(c, "cleric");
+            Assert.That(Progression.EffectiveArmorProficiency(c, paladin), Is.EqualTo(ArmorWeight.Heavy));
+            Assert.That(Progression.EffectiveArmorProficiency(c, cleric), Is.EqualTo(ArmorWeight.Medium));
+        }
+
+        [Test]
+        public void EffectiveArmorProficiency_jumps_straight_to_Heavy_once_the_unlock_passive_is_known()
+        {
+            var c = Real;
+            var cleric = Progression.NewHero(c, "cleric");
+            Assert.That(Progression.EffectiveArmorProficiency(c, cleric), Is.LessThan(ArmorWeight.Heavy));
+            cleric.Known.Add("heavy_armor_proficiency");
+            Assert.That(Progression.EffectiveArmorProficiency(c, cleric), Is.EqualTo(ArmorWeight.Heavy));
+        }
+
+        [Test]
+        public void ProficiencyGate_locks_a_Martial_weapon_for_a_Simple_only_class_and_names_the_unlock()
+        {
+            var c = Real;
+            var cleric = Progression.NewHero(c, "cleric");
+            var sword = c.Items.Values.First(i => i.Slot == EquipmentSlot.Weapon && i.WeaponClass == WeaponClass.Martial);
+            var gate = Equipment.ProficiencyGate(c, cleric, sword);
+            Assert.That(gate, Is.EqualTo("Martial Weapons"));
+            Assert.That(Equipment.Fits(c, cleric, sword, EquipmentSlot.Weapon), Is.False);
+        }
+
+        [Test]
+        public void ProficiencyGate_locks_Heavy_armor_for_a_non_tank_class_and_names_the_unlock()
+        {
+            var c = Real;
+            var cleric = Progression.NewHero(c, "cleric");
+            var plate = c.Items.Values.First(i => i.Slot == EquipmentSlot.Torso && i.ArmorWeight == ArmorWeight.Heavy);
+            var gate = Equipment.ProficiencyGate(c, cleric, plate);
+            Assert.That(gate, Is.EqualTo("Heavy Armor Proficiency"));
+            Assert.That(Equipment.Fits(c, cleric, plate, EquipmentSlot.Torso), Is.False);
+        }
+
+        [Test]
+        public void ProficiencyGate_is_null_once_proficient_either_by_class_default_or_by_passive()
+        {
+            var c = Real;
+            var barbarian = Progression.NewHero(c, "barbarian");
+            var sword = c.Items.Values.First(i => i.Slot == EquipmentSlot.Weapon && i.WeaponClass == WeaponClass.Martial);
+            Assert.That(Equipment.ProficiencyGate(c, barbarian, sword), Is.Null); // warrior tree: Martial by default
+
+            var cleric = Progression.NewHero(c, "cleric");
+            Assert.That(Equipment.ProficiencyGate(c, cleric, sword), Is.Not.Null);
+            cleric.Known.Add("martial_weapons_proficiency");
+            Assert.That(Equipment.ProficiencyGate(c, cleric, sword), Is.Null); // earned it
+        }
+
+        [Test]
+        public void ProficiencyGate_never_gates_Simple_weapons_or_Light_Medium_armor()
+        {
+            var c = Real;
+            var cleric = Progression.NewHero(c, "cleric");
+            var dagger = c.Items.Values.First(i => i.Slot == EquipmentSlot.Weapon && i.WeaponClass == WeaponClass.Simple);
+            var leather = c.Items.Values.First(i => i.Slot == EquipmentSlot.Torso && i.ArmorWeight == ArmorWeight.Light);
+            Assert.That(Equipment.ProficiencyGate(c, cleric, dagger), Is.Null);
+            Assert.That(Equipment.ProficiencyGate(c, cleric, leather), Is.Null);
+        }
+
+        [Test]
+        public void Equip_refuses_gear_the_hero_is_not_proficient_in_and_names_the_unlock_in_the_message()
+        {
+            var c = Real;
+            var s = Progression.NewGame(c, "Prof1");
+            var cleric = s.Hero("cleric");
+            var sword = c.Items.Values.First(i => i.Slot == EquipmentSlot.Weapon && i.WeaponClass == WeaponClass.Martial);
+            s.AddItem(sword.Id, 1);
+            var result = Equipment.Equip(c, s, cleric, EquipmentSlot.Weapon, sword.Id);
+            Assert.That(result.Ok, Is.False);
+            Assert.That(result.Message, Does.Contain("Martial Weapons"));
+            Assert.That(cleric.WeaponId, Is.Null);
+            Assert.That(s.Count(sword.Id), Is.EqualTo(1)); // nothing consumed on a rejected equip
+        }
+
+        [Test]
+        public void Equip_succeeds_once_the_hero_has_earned_the_matching_proficiency()
+        {
+            var c = Real;
+            var s = Progression.NewGame(c, "Prof2");
+            var cleric = s.Hero("cleric");
+            cleric.Known.Add("martial_weapons_proficiency");
+            var sword = c.Items.Values.First(i => i.Slot == EquipmentSlot.Weapon && i.WeaponClass == WeaponClass.Martial);
+            s.AddItem(sword.Id, 1);
+            Assert.That(Equipment.Equip(c, s, cleric, EquipmentSlot.Weapon, sword.Id).Ok, Is.True);
+            Assert.That(cleric.WeaponId, Is.EqualTo(sword.Id));
+        }
+
+        [Test]
+        public void Candidates_shape_only_still_lists_a_locked_piece_so_the_Equip_screen_can_show_it()
+        {
+            var c = Real;
+            var s = Progression.NewGame(c, "Prof3");
+            var cleric = s.Hero("cleric");
+            var sword = c.Items.Values.First(i => i.Slot == EquipmentSlot.Weapon && i.WeaponClass == WeaponClass.Martial);
+            s.AddItem(sword.Id, 1);
+            Assert.That(Equipment.Candidates(c, s, EquipmentSlot.Weapon).Select(i => i.Id), Does.Contain(sword.Id));
+            Assert.That(Equipment.Candidates(c, s, EquipmentSlot.Weapon, cleric).Select(i => i.Id), Does.Not.Contain(sword.Id));
+        }
+
+        /// <summary>GG-T52: a save written before gear gating existed may already have a hero wearing something
+        /// their class isn't nominally trained for; migration must grandfather the proficiency in rather than
+        /// strip the gear out from under a returning player.</summary>
+        [Test]
+        public void SaveMigrations_grandfathers_a_proficiency_for_already_equipped_gear()
+        {
+            var c = Real;
+            var s = Progression.NewGame(c, "Prof4");
+            var cleric = s.Hero("cleric");
+            var sword = c.Items.Values.First(i => i.Slot == EquipmentSlot.Weapon && i.WeaponClass == WeaponClass.Martial);
+            var plate = c.Items.Values.First(i => i.Slot == EquipmentSlot.Torso && i.ArmorWeight == ArmorWeight.Heavy);
+            // Simulate a pre-GG-T52 save: gear equipped directly, bypassing today's Equipment.Equip gate.
+            cleric.WeaponId = sword.Id;
+            cleric.Armor[EquipmentSlot.Torso] = new EquippedArmor { ItemId = plate.Id };
+            Assert.That(Equipment.ProficiencyGate(c, cleric, sword), Is.Not.Null);
+            Assert.That(Equipment.ProficiencyGate(c, cleric, plate), Is.Not.Null);
+
+            SaveMigrations.Migrate(s, c);
+
+            Assert.That(cleric.Known, Does.Contain("martial_weapons_proficiency"));
+            Assert.That(cleric.Known, Does.Contain("heavy_armor_proficiency"));
+            Assert.That(Equipment.ProficiencyGate(c, cleric, sword), Is.Null);
+            Assert.That(Equipment.ProficiencyGate(c, cleric, plate), Is.Null);
+        }
+
+        [Test]
+        public void SaveMigrations_without_content_skips_the_grandfather_clause_instead_of_throwing()
+        {
+            var s = new SaveData();
+            s.Roster.Add(new HeroSave { ClassId = "cleric", WeaponId = "eq_sword_iron" });
+            Assert.DoesNotThrow(() => SaveMigrations.Migrate(s));
+        }
+
         // ── Abilities.Assign ──
 
         [Test]

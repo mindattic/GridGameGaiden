@@ -113,7 +113,7 @@ namespace GridGame.App
         private void Continue(int slot)
         {
             Debug.Log($"[Title] continue slot {slot}");
-            var s = App.Saves.Load(slot);
+            var s = App.Saves.Load(slot, App.Content);
             if (s == null) { App.Toast("That save is damaged"); return; }
             App.Save = s; App.Slot = slot;
             App.ApplySettings();
@@ -138,7 +138,7 @@ namespace GridGame.App
             for (int i = 0; i < SaveStore.Slots; i++)
             {
                 int slot = i;
-                var s = App.Saves.Load(i);
+                var s = App.Saves.Load(i, App.Content);
                 string label = s == null ? $"Slot {i + 1} — Empty" : $"Slot {i + 1} — {s.Name}";
                 string value = s == null ? "" : $"Stage {s.HighestClearedStage + 2}  {Ui.Gold(s.Gold)}";
                 var row = Ui.MenuRow(label, value, () => Pick(slot, s), w, null, newGame || s != null);

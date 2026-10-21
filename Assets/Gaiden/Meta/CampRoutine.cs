@@ -87,19 +87,19 @@ namespace GridGame.Meta
                 foreach (var slot in new[] { EquipmentSlot.Weapon }.Concat(BattleEngine.ArmorSlots))
                 {
                     float current = MetaHeuristics.Score(c.TryItem(Equipment.Equipped(h, slot)));
-                    var owned = MetaHeuristics.BestFirst(Equipment.Candidates(c, s, slot)).FirstOrDefault();
+                    var owned = MetaHeuristics.BestFirst(Equipment.Candidates(c, s, slot, h)).FirstOrDefault();
                     if (smith && (owned == null || MetaHeuristics.Score(owned) <= current))
                     {
                         var recipe = Crafting.Recipes(c, CraftStation.Forge)
-                            .Where(r => r.BaseItem == null && Equipment.Fits(c.Item(r.Result), slot) && Crafting.HasInputs(s, r) && r.Gold <= s.Gold / 2)
+                            .Where(r => r.BaseItem == null && Equipment.Fits(c, h, c.Item(r.Result), slot) && Crafting.HasInputs(s, r) && r.Gold <= s.Gold / 2)
                             .OrderByDescending(r => MetaHeuristics.Score(c.Item(r.Result))).FirstOrDefault();
                         if (recipe != null && MetaHeuristics.Score(c.Item(recipe.Result)) > current) Note(Crafting.Craft(c, s, recipe));
-                        owned = MetaHeuristics.BestFirst(Equipment.Candidates(c, s, slot)).FirstOrDefault();
+                        owned = MetaHeuristics.BestFirst(Equipment.Candidates(c, s, slot, h)).FirstOrDefault();
                     }
                     if (merchant && (owned == null || MetaHeuristics.Score(owned) <= current))
                     {
                         var bargain = Bargains.Shelf(c, s)
-                            .Where(o => Equipment.Fits(o.Item, slot) && o.Price <= s.Gold / 2 && o.Durability >= o.Item.Durability * MinSafeBargainDurabilityFraction)
+                            .Where(o => Equipment.Fits(c, h, o.Item, slot) && o.Price <= s.Gold / 2 && o.Durability >= o.Item.Durability * MinSafeBargainDurabilityFraction)
                             .OrderByDescending(o => MetaHeuristics.Score(o.Item)).FirstOrDefault();
                         if (bargain != null && MetaHeuristics.Score(bargain.Item) > current)
                         {

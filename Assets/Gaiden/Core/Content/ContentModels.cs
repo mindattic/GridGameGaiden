@@ -54,6 +54,17 @@ namespace GridGame.Core.Content
     /// </summary>
     public enum EquipmentSlot { None, Weapon, Head, Torso, Legs, Gloves, Boots, Necklace, Earring1, Earring2, Ring1, Ring2 }
 
+    /// <summary>A weapon's proficiency category (GG-T52). Every hero can always wield <c>Simple</c> weapons;
+    /// <c>Martial</c> and <c>Arcane</c> are gated by <see cref="ClassDef.WeaponProficiencies"/> (the class's
+    /// own home-tree training) or an earned proficiency-unlock passive (Martial Weapons / Arcane Focus).</summary>
+    public enum WeaponClass { Simple, Martial, Arcane }
+
+    /// <summary>An armor piece's weight class (GG-T52), ordered light-to-heavy so a hero's allowance can be
+    /// compared with <![CDATA[<=]]>. Only <c>Heavy</c> is ever actually gated today — everyone can wear Light
+    /// and Medium regardless of class (see <see cref="ClassDef.ArmorProficiency"/>); Heavy needs the class's
+    /// own training or the Heavy Armor Proficiency passive.</summary>
+    public enum ArmorWeight { Light, Medium, Heavy }
+
     public enum CraftStation { Forge, Alchemy, Enchant }
 
     public enum ChargeShape { Single, Line }
@@ -193,6 +204,14 @@ namespace GridGame.Core.Content
         /// Hero-only; required for Team.Hero, left null for Team.Enemy. The class's own starting kit
         /// (<see cref="DefaultLoadout"/>) is known from level 1 regardless of what's unlocked in the tree.</summary>
         public string HomeTree;
+        /// <summary>Weapon classes (GG-T52) this class is trained in from level 1 — no proficiency passive
+        /// needed. Every hero can always use <see cref="WeaponClass.Simple"/> regardless of this list; leave
+        /// it empty for a class that starts Simple-only (e.g. a healer/support archetype).</summary>
+        public List<WeaponClass> WeaponProficiencies = new List<WeaponClass>();
+        /// <summary>Heaviest armor (GG-T52) this class can wear from level 1 without a proficiency passive.
+        /// Defaults to Medium — the only weight actually gated is Heavy, reserved for the Tank archetype
+        /// (Guardian) by default; every other class earns it through Heavy Armor Proficiency.</summary>
+        public ArmorWeight ArmorProficiency = ArmorWeight.Medium;
 
         public bool HasTag(string tag) => Tags != null && Tags.Contains(tag);
     }
@@ -287,6 +306,12 @@ namespace GridGame.Core.Content
         public ItemRarity Rarity = ItemRarity.Common;
         public EquipmentSlot Slot = EquipmentSlot.None;
         public string WeaponType;
+        /// <summary>Weapon-slot items only (GG-T52): which proficiency category (Simple/Martial/Arcane) this
+        /// weapon needs. Ignored for every other slot. Default Simple = usable by any hero.</summary>
+        public WeaponClass WeaponClass = WeaponClass.Simple;
+        /// <summary>Head/Torso/Legs/Gloves/Boots items only (GG-T52): how much armor training (Light/Medium/
+        /// Heavy) this piece demands. Ignored for Weapon/jewelry slots. Default Light = usable by any hero.</summary>
+        public ArmorWeight ArmorWeight = ArmorWeight.Light;
         public int BaseCost;
         /// <summary>-1 = BaseCost/2.</summary>
         public int SellValue = -1;

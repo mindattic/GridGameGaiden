@@ -516,6 +516,15 @@
      "spellblade_capstone",
      "fieldcaster_capstone"
     ]
+   },
+   {
+    "Id": "mage_heavy_armor_proficiency",
+    "Name": "Heavy Armor Proficiency",
+    "Description": "Earns the right to wear heavy plate and mail, regardless of class.",
+    "Grants": "heavy_armor_proficiency",
+    "Cost": 2,
+    "RequiredPointsInTree": 8,
+    "Prerequisites": []
    }
   ]
  },
@@ -646,6 +655,15 @@
      "aegiswardens_capstone",
      "hexmenders_capstone"
     ]
+   },
+   {
+    "Id": "cleric_martial_weapons_proficiency",
+    "Name": "Martial Weapons",
+    "Description": "Earns the right to wield any weapon in the armory, regardless of class.",
+    "Grants": "martial_weapons_proficiency",
+    "Cost": 2,
+    "RequiredPointsInTree": 8,
+    "Prerequisites": []
    }
   ]
  },
@@ -776,6 +794,15 @@
      "tempoweave_capstone",
      "fieldeng_capstone"
     ]
+   },
+   {
+    "Id": "alchemist_arcane_focus_proficiency",
+    "Name": "Arcane Focus",
+    "Description": "Sharpens a hand not born to the arcane, regardless of class.",
+    "Grants": "arcane_focus_proficiency",
+    "Cost": 2,
+    "RequiredPointsInTree": 8,
+    "Prerequisites": []
    }
   ]
  }
