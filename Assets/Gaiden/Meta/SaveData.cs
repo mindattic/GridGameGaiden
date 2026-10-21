@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using Gaiden.Core.Content;
-using Gaiden.Core.Rules;
+using GridGame.Core.Content;
+using GridGame.Core.Rules;
 
-namespace Gaiden.Meta
+namespace GridGame.Meta
 {
     /// <summary>
     /// One save slot (bible §15). Plain data, JSON-serialized by the app's save store.

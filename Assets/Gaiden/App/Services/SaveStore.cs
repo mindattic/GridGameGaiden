@@ -1,12 +1,12 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
-using Gaiden.Meta;
+using GridGame.Meta;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using UnityEngine;
 
-namespace Gaiden.App
+namespace GridGame.App
 {
     /// <summary>Three save slots as JSON files (atomic write via temp + replace). Root is overridable for tests/automation.</summary>
     public sealed class SaveStore

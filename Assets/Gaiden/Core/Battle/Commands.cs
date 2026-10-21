@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Gaiden.Core.Battle
+namespace GridGame.Core.Battle
 {
     /// <summary>A player decision. Exactly one command is applied per committed action.</summary>
     public abstract class BattleCommand { }

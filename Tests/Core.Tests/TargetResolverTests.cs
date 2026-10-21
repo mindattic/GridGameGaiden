@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 using System.Linq;
-using Gaiden.Core;
-using Gaiden.Core.Battle;
-using Gaiden.Core.Content;
-using Gaiden.Core.Rules;
+using GridGame.Core;
+using GridGame.Core.Battle;
+using GridGame.Core.Content;
+using GridGame.Core.Rules;
 using NUnit.Framework;
-using static Gaiden.Tests.TestKit;
+using static GridGame.Tests.TestKit;
 
-namespace Gaiden.Tests
+namespace GridGame.Tests
 {
     /// <summary>Shape × mode × filter targeting (bible §5, GG-LAW-5) — Tiles, Passes, Collect, IsValidPick, Opposite.</summary>
     public class TargetResolverTests

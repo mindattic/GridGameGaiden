@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Gaiden.Core.Battle;
-using Gaiden.Core.Content;
-using Gaiden.Meta;
+using GridGame.Core.Battle;
+using GridGame.Core.Content;
+using GridGame.Meta;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Gaiden.App
+namespace GridGame.App
 {
     internal static class ItemUi
     {
@@ -229,9 +229,9 @@ namespace Gaiden.App
             blurb.style.whiteSpace = WhiteSpace.Normal; blurb.style.flexShrink = 1;
             Ui.Text($"HP  {hp} / {u.MaxHp}", "h2", stats);
             Ui.Gauge(hp / (float)u.MaxHp, stats).style.marginBottom = 18;
-            var (lvl, into) = Gaiden.Core.Rules.Formulas.LevelFromTotalXp(h.TotalXp);
+            var (lvl, into) = GridGame.Core.Rules.Formulas.LevelFromTotalXp(h.TotalXp);
             Ui.Text($"Level {lvl}", "h2 gold", stats);
-            Ui.Text($"Next: {Gaiden.Core.Rules.Formulas.XpToNext(lvl) - into} XP", "small dim", stats);
+            Ui.Text($"Next: {GridGame.Core.Rules.Formulas.XpToNext(lvl) - into} XP", "small dim", stats);
             Ui.Text($"Skill Points: {h.SkillPoints}", "small dim", stats).style.marginBottom = 12;
             var e = u.Effective;
             void Stat(string n, float v) { var r = Ui.El("row", stats); Ui.Text(n, "small dim", r).style.width = 120; Ui.Text($"{v:0}", "h2", r); }
@@ -1054,8 +1054,8 @@ namespace Gaiden.App
                 Ui.Text(Ui.StatLine(d.BaseStats), "small", w);
                 var kit = Ui.KitTraits(C, d);
                 if (kit.Length > 0) Ui.Text(kit, "small gold", w).style.whiteSpace = WhiteSpace.Normal;
-                Ui.Text(Gaiden.Core.Rules.EnemyPlanner.Describe(d.Targeting != Targeting.Auto ? d.Targeting : d.BaseStats.Intelligence >= 14 ? Targeting.Weakest : d.Tags.Contains("Humanoid") ? Targeting.Threat : Targeting.Closest), "small warn", w);
-                Ui.Text(Gaiden.Core.Rules.EnemyPlanner.DescribeBrain(d.Brain), "small", w).style.whiteSpace = WhiteSpace.Normal;
+                Ui.Text(GridGame.Core.Rules.EnemyPlanner.Describe(d.Targeting != Targeting.Auto ? d.Targeting : d.BaseStats.Intelligence >= 14 ? Targeting.Weakest : d.Tags.Contains("Humanoid") ? Targeting.Threat : Targeting.Closest), "small warn", w);
+                Ui.Text(GridGame.Core.Rules.EnemyPlanner.DescribeBrain(d.Brain), "small", w).style.whiteSpace = WhiteSpace.Normal;
             }
             else Ui.Text("Scan it in battle to reveal its stats.", "tiny dim", w);
         }

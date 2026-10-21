@@ -1,6 +1,6 @@
 {
-  "name": "Gaiden.Core",
-  "rootNamespace": "Gaiden.Core",
+  "name": "GridGame.Core",
+  "rootNamespace": "GridGame.Core",
   "references": [],
   "includePlatforms": [],
   "excludePlatforms": [],

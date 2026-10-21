@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Gaiden.App
+namespace GridGame.App
 {
     /// <summary>
     /// Named-VFX flourishes (bible §6.2): abilities carry a CastVfx/ProjectileVfx/ImpactVfx/LingerVfx name

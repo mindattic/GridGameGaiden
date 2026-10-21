@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Gaiden.Core.Content
+namespace GridGame.Core.Content
 {
     /// <summary>
     /// GG-T55: deterministic endless-mode encounters. Builds a synthetic 5-wave <see cref="StageDef"/> from a

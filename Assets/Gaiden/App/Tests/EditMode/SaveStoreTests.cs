@@ -1,11 +1,11 @@
 using System;
 using System.IO;
-using Gaiden.Meta;
+using GridGame.Meta;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
 
-namespace Gaiden.App.Tests
+namespace GridGame.App.Tests
 {
     public class SaveStoreTests
     {

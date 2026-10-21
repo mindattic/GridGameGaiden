@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using Gaiden.Core.Content;
+using GridGame.Core.Content;
 
-namespace Gaiden.Core.Battle
+namespace GridGame.Core.Battle
 {
     /// <summary>
     /// Everything that happens in a battle is reported as an ordered stream of these. The

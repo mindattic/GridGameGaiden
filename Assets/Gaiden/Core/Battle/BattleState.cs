@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using Gaiden.Core.Content;
+using GridGame.Core.Content;
 
-namespace Gaiden.Core.Battle
+namespace GridGame.Core.Battle
 {
     public enum BattlePhase { PlayerInput, Victory, Defeat, Escaped, Retreated }
 

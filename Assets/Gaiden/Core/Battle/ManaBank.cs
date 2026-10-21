@@ -1,4 +1,4 @@
-namespace Gaiden.Core.Battle
+namespace GridGame.Core.Battle
 {
     /// <summary>
     /// The party's single shared, capped pool of generic mana orbs (bible §3.1, GG-LAW-6).

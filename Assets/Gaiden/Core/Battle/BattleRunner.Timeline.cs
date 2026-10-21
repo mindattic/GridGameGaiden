@@ -1,6 +1,6 @@
 using System;
 
-namespace Gaiden.Core.Battle
+namespace GridGame.Core.Battle
 {
     internal sealed partial class BattleRunner
     {

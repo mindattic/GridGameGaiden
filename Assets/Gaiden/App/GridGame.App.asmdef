@@ -1,7 +1,7 @@
 {
-  "name": "Gaiden.App",
-  "rootNamespace": "Gaiden.App",
-  "references": ["Gaiden.Core", "Gaiden.Meta", "Unity.InputSystem", "MindAttic.Capture.Unity", "MindAttic.Telemetry.Unity"],
+  "name": "GridGame.App",
+  "rootNamespace": "GridGame.App",
+  "references": ["GridGame.Core", "GridGame.Meta", "Unity.InputSystem", "MindAttic.Capture.Unity", "MindAttic.Telemetry.Unity"],
   "includePlatforms": [],
   "excludePlatforms": [],
   "allowUnsafeCode": false,

@@ -1,12 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
-using Gaiden.Core.Content;
-using Gaiden.Core.Rules;
-using Gaiden.Meta;
+using GridGame.Core.Content;
+using GridGame.Core.Rules;
+using GridGame.Meta;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Gaiden.App
+namespace GridGame.App
 {
     /// <summary>
     /// One hero at a time: portrait slam, an XP bar that ticks through every level crossed, then stat

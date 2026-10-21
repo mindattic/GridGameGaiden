@@ -15,7 +15,7 @@
     2. Removes Build\WindowsRelease — the build OUTPUT only, never Library\ (Unity's asset
        import / script-compile cache, which survives exactly as it does for a normal
        Editor rebuild) — so the player build below is never a stale incremental copy.
-    3. Runs tools\unity.ps1 -Method Gaiden.EditorTools.GaidenBuild.BuildWindowsRelease in Unity
+    3. Runs tools\unity.ps1 -Method GridGame.EditorTools.GaidenBuild.BuildWindowsRelease in Unity
        batch mode (requires the Editor closed) -> Build\WindowsRelease\GridGameGaiden.exe.
     4. Copies Build\WindowsRelease\* -> C:\Apps\GridGameGaiden\.
 
@@ -70,7 +70,7 @@ if (Test-Path $buildDir) {
 # ── Build ────────────────────────────────────────────────────────────────────
 Write-Host ''
 Write-Host '  Building Windows Release player (Unity batch mode)...' -ForegroundColor Cyan
-& (Join-Path $PSScriptRoot 'unity.ps1') -Method Gaiden.EditorTools.GaidenBuild.BuildWindowsRelease -Log deploy-build
+& (Join-Path $PSScriptRoot 'unity.ps1') -Method GridGame.EditorTools.GaidenBuild.BuildWindowsRelease -Log deploy-build
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Build failed (exit $LASTEXITCODE)." -ForegroundColor Red
     exit $LASTEXITCODE

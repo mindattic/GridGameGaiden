@@ -2,15 +2,15 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Gaiden.Core.Battle;
-using Gaiden.Core.Bot;
-using Gaiden.Core.Content;
-using Gaiden.Meta;
+using GridGame.Core.Battle;
+using GridGame.Core.Bot;
+using GridGame.Core.Content;
+using GridGame.Meta;
 using Newtonsoft.Json;
 using NUnit.Framework;
-using static Gaiden.Tests.TestKit;
+using static GridGame.Tests.TestKit;
 
-namespace Gaiden.Tests
+namespace GridGame.Tests
 {
     /// <summary>GG-T95: the Crucible (§22.10) — endless escalating waves from camp that keep every reward.</summary>
     public class CrucibleTests
@@ -28,7 +28,7 @@ namespace Gaiden.Tests
         {
             var c = Real;
             var s = Progression.NewGame(c, "Cru");
-            foreach (var h in s.Roster) h.TotalXp = Gaiden.Core.Rules.Formulas.TotalXpForLevel(6);
+            foreach (var h in s.Roster) h.TotalXp = GridGame.Core.Rules.Formulas.TotalXpForLevel(6);
             int start = Crucible.PartyLevel(s);
             Assert.That(start, Is.EqualTo(6));
             var st = Crucible.Generate(c, s, 1234);
@@ -105,7 +105,7 @@ namespace Gaiden.Tests
             var s = Progression.NewGame(c, "Cru");
             s.NewGamePlus = 2;
             s.HighestClearedStage = 9; // the campaign curve must not lift it either
-            foreach (var h in s.Roster) h.TotalXp = Gaiden.Core.Rules.Formulas.TotalXpForLevel(4);
+            foreach (var h in s.Roster) h.TotalXp = GridGame.Core.Rules.Formulas.TotalXpForLevel(4);
             var st = Crucible.Generate(c, s, 3);
             var setup = BattleFactory.Build(c, s, st, 3);
             Assert.That(setup.NewGamePlus, Is.EqualTo(0));
@@ -264,7 +264,7 @@ namespace Gaiden.Tests
             var s = Progression.NewGame(c, "Soak");
             s.CreatedUtc = SoakEpoch;
             s.HighestClearedStage = level - 1;
-            foreach (var h in s.Roster) { h.TotalXp = Gaiden.Core.Rules.Formulas.TotalXpForLevel(level); }
+            foreach (var h in s.Roster) { h.TotalXp = GridGame.Core.Rules.Formulas.TotalXpForLevel(level); }
             s.Crucible.Runs = seed;
             Assert.That(Crucible.CanLaunch(c, s, out var why), Is.True, why);
             var st = Crucible.Prepare(c, s);
@@ -309,7 +309,7 @@ namespace Gaiden.Tests
                     var s = Progression.NewGame(c, "Soak");
                     s.CreatedUtc = SoakEpoch.AddMinutes(37 * k + 1);
                     s.HighestClearedStage = level - 1;
-                    foreach (var h in s.Roster) h.TotalXp = Gaiden.Core.Rules.Formulas.TotalXpForLevel(level);
+                    foreach (var h in s.Roster) h.TotalXp = GridGame.Core.Rules.Formulas.TotalXpForLevel(level);
                     s.Crucible.Runs = seed;
                     var st = Crucible.Prepare(c, s);
                     var b = BotRunner.Play(c, BattleFactory.Build(c, s, st.Id, Crucible.SeedFor(s)), new HeroBot(seed), 6000);

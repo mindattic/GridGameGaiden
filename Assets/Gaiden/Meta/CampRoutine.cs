@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
-using Gaiden.Core.Battle;
-using Gaiden.Core.Bot;
-using Gaiden.Core.Content;
+using GridGame.Core.Battle;
+using GridGame.Core.Bot;
+using GridGame.Core.Content;
 
-namespace Gaiden.Meta
+namespace GridGame.Meta
 {
     /// <summary>
     /// "What a sensible player does at camp": scrap worn-out gear, rest, repair, forge and equip better

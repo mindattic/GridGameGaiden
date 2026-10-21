@@ -1,14 +1,14 @@
 using System.Collections.Generic;
 using System.Linq;
-using Gaiden.Core.Battle;
-using Gaiden.Core.Bot;
-using Gaiden.Core.Content;
-using Gaiden.Core.Rules;
-using Gaiden.Meta;
+using GridGame.Core.Battle;
+using GridGame.Core.Bot;
+using GridGame.Core.Content;
+using GridGame.Core.Rules;
+using GridGame.Meta;
 using NUnit.Framework;
-using static Gaiden.Tests.TestKit;
+using static GridGame.Tests.TestKit;
 
-namespace Gaiden.Tests
+namespace GridGame.Tests
 {
     /// <summary>Test Mode (`-testmode`, GG-T93): enemy level follows the party on a test save and is unchanged
     /// otherwise; stage picking keeps the loop cycling; the headless loop runs battle → results → camp.</summary>

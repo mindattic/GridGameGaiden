@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
-using Gaiden.Core.Content;
-using Gaiden.Meta;
+using GridGame.Core.Content;
+using GridGame.Meta;
 using System.Linq;
 using NUnit.Framework;
 
-namespace Gaiden.Tests
+namespace GridGame.Tests
 {
     public class SaveDataTests
     {

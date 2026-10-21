@@ -1,8 +1,8 @@
 {
-  "name": "Gaiden.Editor",
-  "rootNamespace": "Gaiden.EditorTools",
-  "references": ["Gaiden.Core", "Gaiden.Meta", "Gaiden.App"],
-  "includePlatforms": ["Editor"],
+  "name": "GridGame.Meta",
+  "rootNamespace": "GridGame.Meta",
+  "references": ["GridGame.Core"],
+  "includePlatforms": [],
   "excludePlatforms": [],
   "allowUnsafeCode": false,
   "overrideReferences": true,
@@ -10,5 +10,5 @@
   "autoReferenced": true,
   "defineConstraints": [],
   "versionDefines": [],
-  "noEngineReferences": false
+  "noEngineReferences": true
 }

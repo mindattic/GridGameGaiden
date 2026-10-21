@@ -1,12 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Gaiden.Core.Content;
-using Gaiden.Meta;
+using GridGame.Core.Content;
+using GridGame.Meta;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Gaiden.App
+namespace GridGame.App
 {
     /// <summary>Results: victory/defeat/retreat, gold, loot, unlocks (bible §22). Level-ups are shown
     /// first, by LevelUpScreen — route through <see cref="RouteFrom"/> rather than constructing this directly.</summary>

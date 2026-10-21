@@ -1,11 +1,11 @@
 using System.Collections.Generic;
-using Gaiden.Core;
-using Gaiden.Core.Battle;
-using Gaiden.Core.Content;
+using GridGame.Core;
+using GridGame.Core.Battle;
+using GridGame.Core.Content;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Gaiden.App
+namespace GridGame.App
 {
     /// <summary>One actor on the board: framed portrait crop, HP strip, buff pips (turn order lives on the timeline).</summary>
     public sealed class UnitView

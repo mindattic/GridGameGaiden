@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
-using Gaiden.Core.Content;
-using Gaiden.Meta;
+using GridGame.Core.Content;
+using GridGame.Meta;
 using NUnit.Framework;
 
-namespace Gaiden.Tests
+namespace GridGame.Tests
 {
     /// <summary>Camp NPCs join along the way (§25.0.1, GG-T119): each Camp service stays hidden until its keeper joins
     /// at a story beat; the camp routine only uses joined services; Test Mode and old saves have everyone already.</summary>

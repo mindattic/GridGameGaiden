@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
-using Gaiden.Core.Bot;
-using Gaiden.Core.Content;
-using Gaiden.Meta;
+using GridGame.Core.Bot;
+using GridGame.Core.Content;
+using GridGame.Meta;
 using NUnit.Framework;
 
-namespace Gaiden.Tests
+namespace GridGame.Tests
 {
     /// <summary>GG-T118: a new game starts with a small party and the rest join at story beats through dialogue
     /// (JoinHero), on top of rescued guests and the Summon Circle — and nobody is ever lost for good.</summary>

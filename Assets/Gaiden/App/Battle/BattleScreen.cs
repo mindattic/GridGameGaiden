@@ -2,12 +2,12 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Gaiden.Core;
-using Gaiden.Core.Battle;
-using Gaiden.Core.Bot;
-using Gaiden.Core.Content;
-using Gaiden.Core.Rules;
-using Gaiden.Meta;
+using GridGame.Core;
+using GridGame.Core.Battle;
+using GridGame.Core.Bot;
+using GridGame.Core.Content;
+using GridGame.Core.Rules;
+using GridGame.Meta;
 using MindAttic.Capture;
 using MindAttic.Capture.Unity;
 using MindAttic.Telemetry;
@@ -15,7 +15,7 @@ using MindAttic.Telemetry.Unity;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Gaiden.App
+namespace GridGame.App
 {
     /// <summary>
     /// The battle. Layout follows the bible HUD rows (§9): top bar · timeline + shield · action banner ·
@@ -784,7 +784,7 @@ namespace Gaiden.App
             foreach (var b in u.Buffs)
                 StatusRow(col, b.Def.Id, string.IsNullOrEmpty(b.Def.Letter) ? b.Def.Name.Substring(0, 1) : b.Def.Letter,
                     Art.HexColor(b.Def.Color, b.Def.Kind == BuffKind.Buff ? new Color(0.4f, 0.8f, 1f) : new Color(0.8f, 0.4f, 0.9f)),
-                    b.Def.Name, $"{Ui.BuffEffect(b.Def)} ({b.Remaining} {(b.Def.Unit == Gaiden.Core.Content.DurationUnit.Turns ? "turns" : "s")} left)");
+                    b.Def.Name, $"{Ui.BuffEffect(b.Def)} ({b.Remaining} {(b.Def.Unit == GridGame.Core.Content.DurationUnit.Turns ? "turns" : "s")} left)");
         }
 
         private static string SideName(Coord f) => f.Y > 0 ? "front (facing down)" : f.Y < 0 ? "front (facing up)" : f.X > 0 ? "front (facing right)" : "front (facing left)";

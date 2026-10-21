@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Gaiden.Core.Battle;
-using Gaiden.Core.Content;
+using GridGame.Core.Battle;
+using GridGame.Core.Content;
 
-namespace Gaiden.Meta
+namespace GridGame.Meta
 {
     /// <summary>
     /// Test Mode (`-testmode`, GG-T93): the engine-free half of a bot-only loop that self-plays the whole

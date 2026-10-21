@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using Gaiden.Core.Content;
-using Gaiden.Core.Rules;
+using GridGame.Core.Content;
+using GridGame.Core.Rules;
 
-namespace Gaiden.Core.Battle
+namespace GridGame.Core.Battle
 {
     /// <summary>Executes one command against a state, appending events. Split across partial files by concern.</summary>
     internal sealed partial class BattleRunner

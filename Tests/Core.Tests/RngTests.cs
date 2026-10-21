@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Gaiden.Core;
+using GridGame.Core;
 using NUnit.Framework;
 
-namespace Gaiden.Tests
+namespace GridGame.Tests
 {
     /// <summary>
     /// Battle replays and records are keyed on a seed, so Rng must stay bit-exact across runs (GG-T24).

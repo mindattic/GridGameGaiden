@@ -2,12 +2,12 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Gaiden.Core.Content;
-using Gaiden.Meta;
+using GridGame.Core.Content;
+using GridGame.Meta;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Gaiden.App
+namespace GridGame.App
 {
     /// <summary>
     /// A conversation (§27.1, GG-T117): the speakers' portraits overlap across the top (the one talking full-bright

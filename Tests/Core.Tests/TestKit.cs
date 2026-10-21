@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Gaiden.Core;
-using Gaiden.Core.Battle;
-using Gaiden.Core.Content;
+using GridGame.Core;
+using GridGame.Core.Battle;
+using GridGame.Core.Content;
 using NUnit.Framework;
 
-namespace Gaiden.Tests
+namespace GridGame.Tests
 {
     public static class TestKit
     {

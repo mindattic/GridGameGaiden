@@ -1,14 +1,14 @@
 using System.Collections.Generic;
 using System.Linq;
-using Gaiden.Core;
-using Gaiden.Core.Battle;
-using Gaiden.Core.Content;
-using Gaiden.Core.Rules;
-using Gaiden.Meta;
+using GridGame.Core;
+using GridGame.Core.Battle;
+using GridGame.Core.Content;
+using GridGame.Core.Rules;
+using GridGame.Meta;
 using NUnit.Framework;
-using static Gaiden.Tests.TestKit;
+using static GridGame.Tests.TestKit;
 
-namespace Gaiden.Tests
+namespace GridGame.Tests
 {
     /// <summary>Roles that need each other (§25.13): taunt, caster power, empowered strikes and battle pickups (§13.3.1).</summary>
     public class SynergyTests

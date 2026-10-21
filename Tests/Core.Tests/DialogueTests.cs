@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Gaiden.Core.Content;
-using Gaiden.Meta;
+using GridGame.Core.Content;
+using GridGame.Meta;
 using NUnit.Framework;
 
-namespace Gaiden.Tests
+namespace GridGame.Tests
 {
     /// <summary>The dialogue engine (§27.1, GG-T117): dialogues.json validation, DialogueRunner's walk/choices/
     /// effects in the save vocabulary, and the story-beat / Camp Talk triggers.</summary>

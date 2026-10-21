@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Gaiden.Core;
-using Gaiden.Core.Battle;
-using Gaiden.Core.Content;
+using GridGame.Core;
+using GridGame.Core.Battle;
+using GridGame.Core.Content;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Gaiden.App
+namespace GridGame.App
 {
     /// <summary>
     /// The guided first battle (US-331, expanded 2026-10-11 — owner: "there needs to be a full tutorial with

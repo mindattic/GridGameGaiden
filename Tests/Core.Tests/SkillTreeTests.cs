@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
-using Gaiden.Core.Content;
-using Gaiden.Meta;
+using GridGame.Core.Content;
+using GridGame.Meta;
 using NUnit.Framework;
-using static Gaiden.Tests.TestKit;
+using static GridGame.Tests.TestKit;
 
-namespace Gaiden.Tests
+namespace GridGame.Tests
 {
     /// <summary>Archetype skill trees (§25.6.1, GG-T50): one tree per hero archetype, ContentLoader validates
     /// every node's grant and prerequisites, and every hero class names a home tree that exists.</summary>

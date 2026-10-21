@@ -1,8 +1,8 @@
-using Gaiden.Core.Content;
+using GridGame.Core.Content;
 using System.Linq;
 using NUnit.Framework;
 
-namespace Gaiden.Tests
+namespace GridGame.Tests
 {
     /// <summary>
     /// Only the happy path (real content validates clean, ContentAndSoakTests) was covered before this

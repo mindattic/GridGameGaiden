@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Gaiden.Core.Content
+namespace GridGame.Core.Content
 {
     // Plain data definitions deserialized from Assets/Gaiden/Resources/Content/*.json.
     // Property names are the JSON keys (PascalCase); enums serialize as strings.
@@ -244,7 +244,7 @@ namespace Gaiden.Core.Content
         public string LingerVfx;
         public string Sfx;
         /// <summary>Class-agnostic Skill: learnable by any hero regardless of class, like every Spell already is
-        /// (<see cref="Gaiden.Meta.MetaServices.Abilities.Learnable"/>). Ignored on Spell/Passive, which already
+        /// (<see cref="GridGame.Meta.MetaServices.Abilities.Learnable"/>). Ignored on Spell/Passive, which already
         /// have their own universal/owning-class rules.</summary>
         public bool Universal;
     }
@@ -550,7 +550,7 @@ namespace Gaiden.Core.Content
     }
 
     // ─────────────────────────────────────────────────────────────────────────────
-    // Dialogue (§27.1, GG-T117): dialogues.json. The engine (Gaiden.Meta.DialogueRunner) is a data
+    // Dialogue (§27.1, GG-T117): dialogues.json. The engine (GridGame.Meta.DialogueRunner) is a data
     // interpreter over these shapes; conditions and effects are the save's own vocabulary, not a script.
     // ─────────────────────────────────────────────────────────────────────────────
 

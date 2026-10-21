@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using Gaiden.Core.Battle;
-using Gaiden.Core.Content;
+using GridGame.Core.Battle;
+using GridGame.Core.Content;
 
-namespace Gaiden.Core.Rules
+namespace GridGame.Core.Rules
 {
     /// <summary>Shape × mode × filter targeting (bible §5, GG-LAW-5).</summary>
     public static class TargetResolver

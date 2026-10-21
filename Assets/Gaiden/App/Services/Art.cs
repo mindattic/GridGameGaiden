@@ -1,9 +1,9 @@
 using System.Linq;
 using System.Collections.Generic;
-using Gaiden.Core.Content;
+using GridGame.Core.Content;
 using UnityEngine;
 
-namespace Gaiden.App
+namespace GridGame.App
 {
     /// <summary>
     /// Every texture the game draws: imported art by key (Resources) plus procedurally generated UI

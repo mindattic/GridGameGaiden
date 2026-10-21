@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Gaiden.Core
+namespace GridGame.Core
 {
     /// <summary>
     /// Deterministic, copyable PRNG (xoshiro128**). Every random decision in the simulation

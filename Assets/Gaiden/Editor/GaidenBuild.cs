@@ -6,10 +6,10 @@ using UnityEditor.Build.Reporting;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 
-namespace Gaiden.EditorTools
+namespace GridGame.EditorTools
 {
     /// <summary>
-    /// Command-line entry points (Unity -batchmode -executeMethod Gaiden.EditorTools.GaidenBuild.X).
+    /// Command-line entry points (Unity -batchmode -executeMethod GridGame.EditorTools.GaidenBuild.X).
     /// The one scene is an empty shell — GameApp builds everything at runtime — so this file is the
     /// only "scene authoring" the project has.
     /// </summary>

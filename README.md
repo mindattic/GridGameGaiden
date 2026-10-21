@@ -1,4 +1,4 @@
-# GridGameGaiden
+# Unity.GridGame
 
 A portrait-mobile tactics RPG in Unity 6: Terra Battle pincer combat on a Grandia II-style timeline that only moves when you act, plus a Final Fantasy-style camp, all on a deterministic engine-free battle core.
 
@@ -51,8 +51,8 @@ Prerequisites:
 Clone, test and build the Windows development player:
 
 ```powershell
-git clone https://github.com/mindattic/GridGameGaiden.git
-cd GridGameGaiden
+git clone https://github.com/mindattic/Unity.GridGame.git
+cd Unity.GridGame
 pwsh tools/test.ps1
 pwsh tools/build.ps1
 .\Build\Windows\GridGameGaiden.exe

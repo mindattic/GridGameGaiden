@@ -1,10 +1,10 @@
 {
-    "name": "Gaiden.App.Tests.EditMode",
-    "rootNamespace": "Gaiden.App.Tests",
+    "name": "GridGame.App.Tests.EditMode",
+    "rootNamespace": "GridGame.App.Tests",
     "references": [
-        "Gaiden.Core",
-        "Gaiden.Meta",
-        "Gaiden.App",
+        "GridGame.Core",
+        "GridGame.Meta",
+        "GridGame.App",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

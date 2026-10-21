@@ -1,6 +1,6 @@
 using NUnit.Framework;
 
-namespace Gaiden.App.Tests
+namespace GridGame.App.Tests
 {
     public class BotSkillProfileTests
     {

@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Gaiden.Core.Content;
+using GridGame.Core.Content;
 
-namespace Gaiden.Meta
+namespace GridGame.Meta
 {
     /// <summary>One spoken line as the screen shows it: who (resolved name + portrait) and what.</summary>
     public sealed class DialogueLine

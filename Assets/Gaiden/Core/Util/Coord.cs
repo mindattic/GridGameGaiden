@@ -1,6 +1,6 @@
 using System;
 
-namespace Gaiden.Core
+namespace GridGame.Core
 {
     /// <summary>Board tile coordinate. X = column (0..Cols-1, left→right), Y = row (0..Rows-1, top→bottom).</summary>
     public readonly struct Coord : IEquatable<Coord>

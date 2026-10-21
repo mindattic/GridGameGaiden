@@ -1,16 +1,16 @@
 using System.Collections.Generic;
 using System.Linq;
-using Gaiden.Core;
-using Gaiden.Core.Battle;
-using Gaiden.Core.Bot;
-using Gaiden.Core.Content;
-using Gaiden.Core.Rules;
-using Gaiden.Meta;
+using GridGame.Core;
+using GridGame.Core.Battle;
+using GridGame.Core.Bot;
+using GridGame.Core.Content;
+using GridGame.Core.Rules;
+using GridGame.Meta;
 using Newtonsoft.Json;
 using NUnit.Framework;
-using static Gaiden.Tests.TestKit;
+using static GridGame.Tests.TestKit;
 
-namespace Gaiden.Tests
+namespace GridGame.Tests
 {
     public class MetaLoopTests
     {
@@ -601,7 +601,7 @@ namespace Gaiden.Tests
             float baseChance = Crafting.MasterworkChance(c, s);
             Assert.That(baseChance >= Crafting.MasterworkBaseChance, Is.True);
 
-            foreach (var h in s.Roster) h.TotalXp = Gaiden.Core.Rules.Formulas.TotalXpForLevel(20);
+            foreach (var h in s.Roster) h.TotalXp = GridGame.Core.Rules.Formulas.TotalXpForLevel(20);
             float leveledChance = Crafting.MasterworkChance(c, s);
             Assert.That(leveledChance > baseChance, Is.True, "higher party Luck should raise the chance");
 
@@ -631,7 +631,7 @@ namespace Gaiden.Tests
             return craft;
         }
 
-        private static float StatSum(Gaiden.Core.Content.Stats st) =>
+        private static float StatSum(GridGame.Core.Content.Stats st) =>
             st.Strength + st.Vitality + st.Agility + st.Speed + st.Stamina + st.Intelligence + st.Wisdom + st.Luck;
 
         [Test]

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace Gaiden.Core.Content
+namespace GridGame.Core.Content
 {
     /// <summary>
     /// Builds a <see cref="ContentDb"/> from the JSON documents. The text source is injected

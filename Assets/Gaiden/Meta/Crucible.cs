@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Gaiden.Core;
-using Gaiden.Core.Battle;
-using Gaiden.Core.Content;
-using Gaiden.Core.Rules;
+using GridGame.Core;
+using GridGame.Core.Battle;
+using GridGame.Core.Content;
+using GridGame.Core.Rules;
 
-namespace Gaiden.Meta
+namespace GridGame.Meta
 {
     /// <summary>
     /// The Crucible (§22.10, GG-T95): a quick, endless survival battle fought from camp inside a normal saved

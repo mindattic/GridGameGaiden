@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 
-namespace Gaiden.App.Automation
+namespace GridGame.App.Automation
 {
     /// <summary>Screen ids → factories, for `-start <id>` and the automation `goto` endpoint (snapshot sweeps).</summary>
     public static class StartScreens

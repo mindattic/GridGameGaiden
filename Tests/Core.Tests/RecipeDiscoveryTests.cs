@@ -1,10 +1,10 @@
 using System.Linq;
-using Gaiden.Core.Content;
-using Gaiden.Meta;
+using GridGame.Core.Content;
+using GridGame.Meta;
 using NUnit.Framework;
-using static Gaiden.Tests.TestKit;
+using static GridGame.Tests.TestKit;
 
-namespace Gaiden.Tests
+namespace GridGame.Tests
 {
     /// <summary>Recipe discovery (§24.6.2, GG-T36): recipes start hidden and are learned from a recipe
     /// scroll, first-ever pickup of the recipe's rarest input, or the station reaching the recipe's tier.</summary>

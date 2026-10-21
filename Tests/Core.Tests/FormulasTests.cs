@@ -1,10 +1,10 @@
-using Gaiden.Core;
-using Gaiden.Core.Battle;
-using Gaiden.Core.Content;
-using Gaiden.Core.Rules;
+using GridGame.Core;
+using GridGame.Core.Battle;
+using GridGame.Core.Content;
+using GridGame.Core.Rules;
 using NUnit.Framework;
 
-namespace Gaiden.Tests
+namespace GridGame.Tests
 {
     public class FormulasTests
     {

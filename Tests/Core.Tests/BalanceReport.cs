@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Gaiden.Core.Battle;
-using Gaiden.Core.Bot;
-using Gaiden.Meta;
+using GridGame.Core.Battle;
+using GridGame.Core.Bot;
+using GridGame.Meta;
 using NUnit.Framework;
-using static Gaiden.Tests.TestKit;
+using static GridGame.Tests.TestKit;
 
-namespace Gaiden.Tests
+namespace GridGame.Tests
 {
     /// <summary>
     /// Balance instrument (bible §0.3 pacing targets): plays the campaign in order with natural progression —

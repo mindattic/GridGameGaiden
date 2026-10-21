@@ -1,4 +1,4 @@
-namespace Gaiden.Core.Battle
+namespace GridGame.Core.Battle
 {
     /// <summary>
     /// Every tuning number of the battle simulation in one place (bible §2, §3, §13).

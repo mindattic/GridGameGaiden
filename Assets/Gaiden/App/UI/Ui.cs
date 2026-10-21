@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
-using Gaiden.Core.Battle;
-using Gaiden.Core.Content;
+using GridGame.Core.Battle;
+using GridGame.Core.Content;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Gaiden.App
+namespace GridGame.App
 {
     /// <summary>
     /// The widget kit. Every screen composes these; nothing positions itself with magic pixel offsets

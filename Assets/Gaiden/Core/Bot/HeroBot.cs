@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using Gaiden.Core.Battle;
-using Gaiden.Core.Content;
-using Gaiden.Core.Rules;
+using GridGame.Core.Battle;
+using GridGame.Core.Content;
+using GridGame.Core.Rules;
 
-namespace Gaiden.Core.Bot
+namespace GridGame.Core.Bot
 {
     /// <summary>
     /// A player stand-in that drives the real command API. Greedy one-ply: it previews every

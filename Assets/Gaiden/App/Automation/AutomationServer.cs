@@ -8,15 +8,15 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
-using Gaiden.Core;
-using Gaiden.Core.Battle;
-using Gaiden.Core.Content;
-using Gaiden.Meta;
+using GridGame.Core;
+using GridGame.Core.Battle;
+using GridGame.Core.Content;
+using GridGame.Meta;
 using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Gaiden.App.Automation
+namespace GridGame.App.Automation
 {
     /// <summary>
     /// Development-build-only remote control so the game can be played and inspected by a script:
@@ -398,7 +398,7 @@ namespace Gaiden.App.Automation
                 case "suggest":
                 {
                     if (!(app.Router.Current is BattleScreen sb2)) return new { error = "not in battle" };
-                    var cmd = new Gaiden.Core.Bot.HeroBot(5).BestMove(sb2.State);
+                    var cmd = new GridGame.Core.Bot.HeroBot(5).BestMove(sb2.State);
                     if (cmd == null) return new { error = "no move" };
                     var pv = BattleEngine.PreviewMove(sb2.State, cmd.HeroId, cmd.Path);
                     var hero = sb2.State.UnitById(cmd.HeroId);

@@ -11,6 +11,6 @@
     <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="../Gaiden.Core/Gaiden.Core.csproj" />
+    <ProjectReference Include="../GridGame.Core/GridGame.Core.csproj" />
   </ItemGroup>
 </Project>

@@ -1,14 +1,14 @@
 using System;
 using System.IO;
 using System.Linq;
-using Gaiden.Core.Battle;
-using Gaiden.Core.Bot;
-using Gaiden.Meta;
+using GridGame.Core.Battle;
+using GridGame.Core.Bot;
+using GridGame.Meta;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
-using static Gaiden.Tests.TestKit;
+using static GridGame.Tests.TestKit;
 
-namespace Gaiden.Tests
+namespace GridGame.Tests
 {
     /// <summary>
     /// Battle records (§22.6). The check always runs; set GAIDEN_RECORDS=&lt;dir&gt; to also write a soak of bot-played

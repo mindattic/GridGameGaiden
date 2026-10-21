@@ -1,13 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Gaiden.Core;
-using Gaiden.Core.Battle;
-using Gaiden.Core.Content;
+using GridGame.Core;
+using GridGame.Core.Battle;
+using GridGame.Core.Content;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Gaiden.App
+namespace GridGame.App
 {
     /// <summary>
     /// Staging (owner direction 2026-10-11): "there is a rhythm and tempo to gameplay that requires pauses and

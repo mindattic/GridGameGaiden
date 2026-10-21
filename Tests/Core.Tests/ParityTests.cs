@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Gaiden.Core;
-using Gaiden.Core.Battle;
-using Gaiden.Core.Content;
-using Gaiden.Core.Rules;
-using Gaiden.Meta;
+using GridGame.Core;
+using GridGame.Core.Battle;
+using GridGame.Core.Content;
+using GridGame.Core.Rules;
+using GridGame.Meta;
 using NUnit.Framework;
-using static Gaiden.Tests.TestKit;
+using static GridGame.Tests.TestKit;
 
-namespace Gaiden.Tests
+namespace GridGame.Tests
 {
     /// <summary>One targeted assertion per bible rule that was previously only exercised by the soak.</summary>
     public class ParityTests
@@ -682,7 +682,7 @@ namespace Gaiden.Tests
             var c = Real;
             var save = Progression.NewGame(c, "Stack");
             var setup = BattleFactory.Build(c, save, c.CampaignStages()[1].Id, 5);
-            var st = Gaiden.Core.Bot.BotRunner.Play(c, setup, new Gaiden.Core.Bot.HeroBot(2), 300);
+            var st = GridGame.Core.Bot.BotRunner.Play(c, setup, new GridGame.Core.Bot.HeroBot(2), 300);
             Assert.That(st.Phase, Is.EqualTo(BattlePhase.Victory));
             var item = st.Results.Items.Keys.FirstOrDefault();
             if (item == null) return;
@@ -749,7 +749,7 @@ namespace Gaiden.Tests
             var c = Real;
             var save = Progression.NewGame(c, "Best");
             var setup = BattleFactory.Build(c, save, c.CampaignStages()[1].Id, 9); // a short battle (the first is a 20-wave gauntlet)
-            var st = Gaiden.Core.Bot.BotRunner.Play(c, setup, new Gaiden.Core.Bot.HeroBot(1), 300);
+            var st = GridGame.Core.Bot.BotRunner.Play(c, setup, new GridGame.Core.Bot.HeroBot(1), 300);
             Assert.That(st.Phase, Is.EqualTo(BattlePhase.Victory));
             BattleFactory.Commit(c, save, st);
             foreach (var kv in st.Results.Kills)

@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Gaiden.Core.Content;
+using GridGame.Core.Content;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 
-namespace Gaiden.Core.Battle
+namespace GridGame.Core.Battle
 {
     /// <summary>
     /// Battle recorder (bible §22.6, owner direction 2026-10-11: "record everything so you can learn how to balance and

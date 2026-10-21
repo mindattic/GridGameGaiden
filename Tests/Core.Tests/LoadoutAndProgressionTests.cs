@@ -1,10 +1,10 @@
 using System.Linq;
-using Gaiden.Core.Content;
-using Gaiden.Meta;
+using GridGame.Core.Content;
+using GridGame.Meta;
 using NUnit.Framework;
-using static Gaiden.Tests.TestKit;
+using static GridGame.Tests.TestKit;
 
-namespace Gaiden.Tests
+namespace GridGame.Tests
 {
     /// <summary>Camp-screen edge cases (GG-T31): equip/unequip, the ability bar, learning, and new-game/progression rules.</summary>
     public class LoadoutAndProgressionTests

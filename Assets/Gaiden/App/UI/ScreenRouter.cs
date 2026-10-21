@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Gaiden.App
+namespace GridGame.App
 {
     /// <summary>A full-screen page. Build() is called each time it becomes visible, so it always reflects current state.</summary>
     public abstract class GameScreen

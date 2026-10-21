@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Gaiden.Core.Content
+namespace GridGame.Core.Content
 {
     /// <summary>All loaded content, indexed by id. Immutable after load.</summary>
     public sealed class ContentDb

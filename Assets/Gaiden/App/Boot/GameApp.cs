@@ -1,14 +1,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Gaiden.Core.Battle;
-using Gaiden.Core.Content;
-using Gaiden.Meta;
+using GridGame.Core.Battle;
+using GridGame.Core.Content;
+using GridGame.Meta;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
 
-namespace Gaiden.App
+namespace GridGame.App
 {
     /// <summary>
     /// The whole app is constructed here, in code, at startup — the scene file is an empty shell.

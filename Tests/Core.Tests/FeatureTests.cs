@@ -1,14 +1,14 @@
 using System.Collections.Generic;
 using System.Linq;
-using Gaiden.Core;
-using Gaiden.Core.Battle;
-using Gaiden.Core.Content;
-using Gaiden.Core.Rules;
-using Gaiden.Meta;
+using GridGame.Core;
+using GridGame.Core.Battle;
+using GridGame.Core.Content;
+using GridGame.Core.Rules;
+using GridGame.Meta;
 using NUnit.Framework;
-using static Gaiden.Tests.TestKit;
+using static GridGame.Tests.TestKit;
 
-namespace Gaiden.Tests
+namespace GridGame.Tests
 {
     public class FeatureTests
     {
@@ -154,7 +154,7 @@ namespace Gaiden.Tests
         [Test] // generic mana: every hero spell is payable from a full bank
         public void Every_hero_spell_costs_between_one_orb_and_a_full_bank()
         {
-            foreach (var a in Real.Abilities.Values.Where(x => Gaiden.Meta.Abilities.IsHeroUsable(x) && x.Kind == AbilityKind.Spell))
+            foreach (var a in Real.Abilities.Values.Where(x => GridGame.Meta.Abilities.IsHeroUsable(x) && x.Kind == AbilityKind.Spell))
                 Assert.That(a.Cost, Is.InRange(1, ManaBank.DefaultCapacity));
         }
     }

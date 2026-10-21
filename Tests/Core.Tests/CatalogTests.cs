@@ -1,20 +1,20 @@
 using System.Collections.Generic;
 using System.Linq;
-using Gaiden.Core;
-using Gaiden.Core.Battle;
-using Gaiden.Core.Content;
-using Gaiden.Meta;
+using GridGame.Core;
+using GridGame.Core.Battle;
+using GridGame.Core.Content;
+using GridGame.Meta;
 using NUnit.Framework;
-using static Gaiden.Tests.TestKit;
+using static GridGame.Tests.TestKit;
 
-namespace Gaiden.Tests
+namespace GridGame.Tests
 {
     /// <summary>Exercises every entry of the real content catalogs through the engine (no ability is "data only").</summary>
     public class CatalogTests
     {
 
         public static IEnumerable<object[]> HeroAbilities() =>
-            Real.Abilities.Values.Where(Gaiden.Meta.Abilities.IsHeroUsable).Select(a => new object[] { a.Id });
+            Real.Abilities.Values.Where(GridGame.Meta.Abilities.IsHeroUsable).Select(a => new object[] { a.Id });
         [TestCaseSource(nameof(HeroAbilities))]
         public void Every_hero_ability_resolves_against_a_live_board(string abilityId)
         {
@@ -258,8 +258,8 @@ namespace Gaiden.Tests
             foreach (var cls in Real.Classes.Values)
             {
                 Assert.That(string.IsNullOrEmpty(cls.Name), Is.False, cls.Id);
-                var st = Gaiden.Core.Rules.Formulas.StatsAtLevel(cls, 10);
-                Assert.That(Gaiden.Core.Rules.Formulas.MaxHp(st, 10) > 0, Is.True, cls.Id);
+                var st = GridGame.Core.Rules.Formulas.StatsAtLevel(cls, 10);
+                Assert.That(GridGame.Core.Rules.Formulas.MaxHp(st, 10) > 0, Is.True, cls.Id);
                 Assert.That(System.IO.File.Exists(System.IO.Path.Combine(RepoRoot, "Assets", "Gaiden", "Resources", "Thumbs", cls.Id + ".png")), Is.True, $"missing thumb for {cls.Id}");
             }
         }

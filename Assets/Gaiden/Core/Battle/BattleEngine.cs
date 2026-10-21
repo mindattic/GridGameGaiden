@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using Gaiden.Core.Content;
-using Gaiden.Core.Rules;
+using GridGame.Core.Content;
+using GridGame.Core.Rules;
 
-namespace Gaiden.Core.Battle
+namespace GridGame.Core.Battle
 {
     public enum SlotStatus { Ready, Empty, Locked, Unaffordable, OutOfCharges, Cooldown, Silenced, CastCapReached, CannotAct, NoTargets }
 

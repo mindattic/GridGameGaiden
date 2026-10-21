@@ -3,7 +3,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Gaiden.App
+namespace GridGame.App
 {
     /// <summary>Tiny coroutine tweens on unscaled time, scaled by the battle-speed setting.</summary>
     public static class Tween

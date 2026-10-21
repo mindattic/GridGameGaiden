@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
-using Gaiden.Core.Content;
+using GridGame.Core.Content;
 
-namespace Gaiden.Core.Bot
+namespace GridGame.Core.Bot
 {
     /// <summary>
     /// A stand-in for what a player does at camp between battles, expressed against plain callbacks so

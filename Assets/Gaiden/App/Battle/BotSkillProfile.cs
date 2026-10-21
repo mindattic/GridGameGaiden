@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Gaiden.App
+namespace GridGame.App
 {
     /// <summary>
     /// Demo/capture-only knob (owner request): one 0-100 number spanning "perfect campaign" down to "a
