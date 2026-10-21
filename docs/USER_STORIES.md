@@ -1,6 +1,6 @@
 ---
 codex: 1
-project: GridGameGaiden
+project: Unity.GridGame
 code: GG
 layer: stories
 status: living
@@ -548,3 +548,4 @@ Open design questions that gate future stories live in [BIBLE §29](BIBLE.md#29-
 | GG-T155 | 2026-10-20 | chore | closed | Add a regression test for GG-T139's resistance-immunity fix (BattleRunner.SpawnHero), since the fix landed on main without one | A_second_items_resistance_cannot_undo_an_earlier_items_full_immunity |
 | GG-T156 | 2026-10-20 | fix | closed | tools/deploy.ps1's running-instance filter read $_.Path unguarded; Process.Path throws for a process this script can't query (access/elevation denied), which would abort the whole deploy instead of just skipping that process | 5f3d1e7412dc65e5aba2bc0f081b448ab120c656 |
 | GG-T157 | 2026-10-20 | docs | open | Publish GridGameGaiden docs to GitHub Pages via the shared Toolkit DocFX pipeline: run adopt-docs-site.ps1 (README.md as home page, docs/*.md as articles, API reference only where the code builds in CI), enable Pages with build_type=workflow, set the repo homepage URL, retire tools/build-readme.ps1 and README.htm, confirm the docs Actions run is green and https://mindattic.github.io/GridGameGaiden/ returns 200. Depends on MAT-T8. | — |
+| GG-T158 | 2026-10-20 | chore | closed | Rename GridGameGaiden to Unity.GridGame: part of the Unity-fleet naming pass (all Unity game repos get a Unity. prefix). Covers GitHub repo, local folder, git remote URL, ticket DB key (tickets repos rename), the Gaiden.App/Gaiden.Core/Gaiden.Editor/Gaiden.Meta/Gaiden.App.Tests.EditMode csproj/assembly names and their C# namespaces (Gaiden.* -> GridGame.*; the MindAttic.Capture.Unity*/MindAttic.Telemetry.Unity csproj stay as-is, they're shared MindAttic libraries, not part of this repo's identity), code comments, README/AGENTS/CLAUDE docs, and any other repo that references GridGameGaiden by name (grep workspace-wide). Owner-approved 2026-10-20 as part of the Unity Fleet Rename effort; run crossrepo from a General (workspace-root) window so the folder move is included. | e067872 |
