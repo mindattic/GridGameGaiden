@@ -4,7 +4,7 @@ project: GridGameGaiden
 code: GG
 layer: bible
 status: living
-updated: 2026-10-20
+updated: 2026-10-21
 ---
 
 # GridGame Gaiden — Project Bible
@@ -445,6 +445,19 @@ Owner: "Add in the Power Amplifier from the original Terra Battle … if you ali
 - **Enemies:** never use it. An enemy stepping into it **pushes it to the tile the enemy just left** (a 2×2 drags it along its lane; `AmplifierMovedEvent`). Clever personalities (Weakest, Threat) seek it out to break an amplified setup (+4 step score).
 - **View:** a pulsing gold diamond on its tile; pops in, slides when shoved, flashes a ring and "AMPLIFIED!" when used.
 - *(Tests: `Amplifier_chance_grows_with_party_luck_and_caps`, `An_attacker_on_the_amplifier_strikes_harder_adds_mana_charge_and_uses_it_up`, `Enemies_cannot_use_the_amplifier_but_stepping_on_it_shoves_it_back`.)*
+
+#### 1.2.7 Outline & view layering (GG-T65 investigation, 2026-10-21)
+
+The pincer outline (`board.Lines.Outline`, `BoardView.GroupRect`) is drawn **exactly one tile thick along the pincer's axis**, widened only by the same multi-tile-opponent allowance [GG-LAW-2](#GG-LAW-2) already states (`PincerGeometry.Error`'s guard: one big opponent may widen it to its own width; two opposed big opponents, `2×widest−1`).
+
+GG-T65 was opened against a screenshot of a ~2×3 gold loop wrapping a "SUPPORT" cut-in card, two hero portraits and a "MISS" float — wider than this battle's geometry should ever draw. Investigating it found two separate, since-fixed view defects, not a hole in `PincerDetector`/`PincerGeometry`:
+
+- **GG-T98** (closed): the outline read live `State` positions, already end-of-command by playback time — a unit that moved later in the same command (an enemy turn, knockback, a later chain link) stretched the box across wherever it ended up. Fixed by snapshotting every member's tile onto `PincerFormedEvent`/`UnitFootprint` at formation time, guarded by `PincerGeometry.Error` in dev builds. *(Test: `PincerGeometryTests.Pincer_reports_formation_time_tiles_when_the_foe_darts_away_in_the_same_command`.)*
+- **GG-T128** (closed): an earlier pass at this same ticket's z-order need (cut-in cards must never cover the outline) reparented `board.Lines` out of the board and onto `App.Overlay`, so it stopped inheriting `boardHost`'s camera twist/zoom/shake — it then sat still while the board (and anything riding it) tilted or shook, reading as a mismatched box around whatever UI shared the frame. Fixed by putting the line layer back inside the board's transformed tree and meeting the z-order need with a board-local `cutInLayer` sitting just below `board.Lines` instead.
+
+Current layering (verified against both fixes, `BattleScreen.cs`'s board-build comment: "tiles, units, marks, fx, cut-in cards, lines"): `board.Lines` (outline + drag path) and `cutInLayer` (`ActionCard` pop-ups — `SupporterPop`, chained `PopUpCards`, `CasterSlide`) both live inside `board.Root`/`boardHost`, so the outline and these cards ride every camera twist, zoom, drift and shake together, and the cards never draw over the outline. The full-screen `PincerCutIn` portrait sweep (first link of a chain only) is deliberately left outside that tree — a cinematic overlay unrelated to tile alignment, same as the GridGame2026 cut-in it ports (US-145) — and GG-T128's own fix evidence recorded that this split still meets GG-T65's original z-order need. GG-T126 separately confirmed the Pause veil draws above every one of these battle layers, including mid-chain.
+
+No change was needed in `PincerDetector`/`PincerGeometry`/`BoardView.GroupRect`: the shape rule they enforce (one tile thick, widened only by a multi-tile opponent) is correct and tested; the ~2×3 box this ticket reported was these two now-fixed view bugs.
 
 ### 1.3 Humanoid restriction
 
