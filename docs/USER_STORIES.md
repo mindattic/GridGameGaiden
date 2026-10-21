@@ -554,4 +554,4 @@ Open design questions that gate future stories live in [BIBLE §29](BIBLE.md#29-
 | GG-T161 | 2026-10-21 | docs | closed | Update USER_STORIES.md | — |
 | GG-T162 | 2026-10-21 | feature | open | Add a deploy.ps1 that builds GridGame Gaiden in Release (Unity -batchmode -executeMethod GridGame.EditorTools.GaidenBuild.BuildWindowsRelease) into C:\Apps\GridGameGaiden only when Assets/Packages/ProjectSettings are newer than the exe, and writes deploy.bat (redeploy, then launch); point the GridGameGaiden desktop shortcut at it | — |
 | GG-T163 | 2026-10-21 | feature | closed | Add deploy.ps1/deploy.bat wiring the existing GaidenBuild.BuildWindowsRelease into a Desktop-shortcut pull+build+launch flow | e48a243 |
-| GG-T164 | 2026-10-21 | fix | open | deploy.ps1 dirty-check blocked on untracked files (e.g. .prose/), not just real tracked changes | — |
+| GG-T164 | 2026-10-21 | fix | closed | deploy.ps1 dirty-check blocked on untracked files (e.g. .prose/), not just real tracked changes | 57e8f6a |
