@@ -136,6 +136,89 @@ namespace GridGame.Meta
             var state = BattleEngine.Create(c, setup, new List<BattleEvent>());
             return state.Units.First(u => u.IsHero);
         }
+
+        // ── Build screen read models (GG-T48): every number here is derived from data the hero already has
+        // (Known, its class, the tree content GG-T50 shipped) — none of it invents a spend ledger ahead of the
+        // real one (§25.6: spending skill points against a tree is still follow-up work, GG-T49/50).
+
+        /// <summary>Proficiency-unlock passives staged by GG-T74 for GG-T52's gear gating. Granted by a tree
+        /// node like any other, but GG-T52 hasn't landed yet, so nothing can unlock one through play today —
+        /// <see cref="KnownProficiencies"/> simply reports whichever of these a hero's <c>Known</c> already
+        /// has, ready to light up once GG-T52 wires the gate.</summary>
+        public static readonly string[] ProficiencyPassiveIds =
+            { "heavy_armor_proficiency", "martial_weapons_proficiency", "arcane_focus_proficiency" };
+
+        /// <summary>How many of each skill tree's points a hero's current <c>Known</c> list would represent,
+        /// highest first: for every <see cref="SkillTreeDef"/>, the sum of every node's <c>Cost</c> whose
+        /// <c>Grants</c> ability the hero already knows (its default loadout, §25.6.1's last paragraph, plus
+        /// anything gold-Learned since). Trees with zero matching nodes are left out. This is a read-only
+        /// snapshot of "what a hero's kit looks like mapped onto the tree map" — not a spend ledger, since
+        /// spending points against a tree doesn't exist yet (§25.6).</summary>
+        public static List<(string TreeId, string TreeName, int Points)> TreeInvestment(ContentDb c, HeroSave h)
+        {
+            var result = new List<(string, string, int)>();
+            foreach (var t in c.SkillTrees.Values)
+            {
+                int points = t.Nodes.Where(n => h.Known.Contains(n.Grants)).Sum(n => n.Cost);
+                if (points > 0) result.Add((t.Id, t.Name, points));
+            }
+            return result.OrderByDescending(x => x.Item3).ThenBy(x => x.Item2, StringComparer.OrdinalIgnoreCase).ToList();
+        }
+
+        /// <summary>Friendly names of every proficiency-unlock passive (<see cref="ProficiencyPassiveIds"/>)
+        /// the hero already knows.</summary>
+        public static List<string> KnownProficiencies(ContentDb c, HeroSave h) =>
+            ProficiencyPassiveIds.Where(h.Known.Contains).Select(id => c.TryAbility(id)?.Name).Where(n => n != null).ToList();
+
+        /// <summary>A one-line "what this hero is becoming" summary for the Build screen, e.g.
+        /// "Knight · Guardian 7 / Cleric 3 — a tank who heals". Built only from the class name, its
+        /// <see cref="TreeInvestment"/> and its <see cref="ClassDef.Role"/> — never an authored string that
+        /// could drift from the numbers behind it.</summary>
+        public static string BuildSummary(ContentDb c, HeroSave h)
+        {
+            var def = c.Class(h.ClassId);
+            var trees = TreeInvestment(c, h);
+            string treePart = trees.Count == 0 ? "no tree investment yet" : string.Join(" / ", trees.Take(3).Select(t => $"{t.TreeName} {t.Points}"));
+            string tail = RoleWord(def.Role);
+            const int crossTreeFlavorThreshold = 3;
+            var cross = trees.FirstOrDefault(t => !string.Equals(t.TreeId, def.HomeTree, StringComparison.OrdinalIgnoreCase));
+            if (cross.TreeId != null && cross.Points >= crossTreeFlavorThreshold)
+            {
+                string verb = TreeVerb(cross.TreeId);
+                if (!string.IsNullOrEmpty(verb)) tail = $"{tail} who {verb}";
+            }
+            return $"{def.Name} · {treePart} — {tail}";
+        }
+
+        private static string RoleWord(string role)
+        {
+            switch (role)
+            {
+                case "Tank": return "a tank";
+                case "Healer": return "a healer";
+                case "Mage": return "a mage";
+                case "Striker": return "a striker";
+                case "Support": return "a support";
+                case "Ranged": return "a ranged attacker";
+                default: return "a hero";
+            }
+        }
+
+        /// <summary>The role a tree's own branches serve (§25.6.1's one-tree-per-role table), as a verb for
+        /// the "…who heals" tail of <see cref="BuildSummary"/>.</summary>
+        private static string TreeVerb(string treeId)
+        {
+            switch ((treeId ?? "").ToLowerInvariant())
+            {
+                case "guardian": return "tanks";
+                case "warrior": return "strikes";
+                case "ranger": return "shoots";
+                case "mage": return "casts";
+                case "cleric": return "heals";
+                case "alchemist": return "supports";
+                default: return null;
+            }
+        }
     }
 
     // ─────────────────────────────────────────────────────────────────────────────

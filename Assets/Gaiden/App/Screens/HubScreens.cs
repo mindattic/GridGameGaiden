@@ -212,8 +212,16 @@ namespace GridGame.App
             var h = Hero;
             var def = C.Class(h.ClassId);
             var u = Progression.Preview(C, h);
+
+            // GG-T48: the build summary — class, tree investment and role, all read off the numbers below.
+            var summary = Ui.Text(Progression.BuildSummary(C, h), "small gold", body);
+            summary.style.whiteSpace = WhiteSpace.Normal; summary.style.marginBottom = 10;
+
+            // Sized by its own content (portrait + stats + gear + lore), not flex-grown: the Known
+            // Abilities/Skill Trees/Proficiencies block below is the one that absorbs leftover height and
+            // scrolls, so a hero with a long Known list or lots of gear never pushes the later sections
+            // off the bottom of the screen (GG-T48 — a plain fixed-height stack here did exactly that).
             var w = Ui.Window(null, body);
-            w.style.flexGrow = 1;
             var top = Ui.El("row", w);
             var art = Ui.El("", top);
             art.style.width = 420; art.style.height = 620;
@@ -233,10 +241,29 @@ namespace GridGame.App
             Ui.Text($"Level {lvl}", "h2 gold", stats);
             Ui.Text($"Next: {GridGame.Core.Rules.Formulas.XpToNext(lvl) - into} XP", "small dim", stats);
             Ui.Text($"Skill Points: {h.SkillPoints}", "small dim", stats).style.marginBottom = 12;
-            var e = u.Effective;
-            void Stat(string n, float v) { var r = Ui.El("row", stats); Ui.Text(n, "small dim", r).style.width = 120; Ui.Text($"{v:0}", "h2", r); }
-            Stat("STR", e.Strength); Stat("VIT", e.Vitality); Stat("AGI", e.Agility); Stat("SPD", e.Speed);
-            Stat("INT", e.Intelligence); Stat("WIS", e.Wisdom); Stat("LCK", e.Luck);
+
+            // GG-T48: base (pre-gear) vs. gear-bought vs. total, instead of just the effective total.
+            var baseStats = u.LevelStats;
+            var eff = u.Effective;
+            var statHead = Ui.El("row", stats);
+            Ui.Text("", "small dim", statHead).style.width = 90;
+            Ui.Text("Base", "tiny dim", statHead).style.width = 70;
+            Ui.Text("Gear", "tiny dim", statHead).style.width = 70;
+            Ui.Text("Total", "tiny dim", statHead).style.width = 90;
+            void Stat(string n, float b, float t)
+            {
+                var r = Ui.El("row", stats);
+                Ui.Text(n, "small dim", r).style.width = 90;
+                Ui.Text($"{b:0}", "small dim", r).style.width = 70;
+                float d = t - b;
+                string gearClass = d > 0.05f ? "small good" : d < -0.05f ? "small bad" : "small dim";
+                Ui.Text(Math.Abs(d) < 0.05f ? "—" : $"{(d > 0 ? "+" : "")}{d:0}", gearClass, r).style.width = 70;
+                Ui.Text($"{t:0}", "h2", r).style.width = 90;
+            }
+            Stat("STR", baseStats.Strength, eff.Strength); Stat("VIT", baseStats.Vitality, eff.Vitality);
+            Stat("AGI", baseStats.Agility, eff.Agility); Stat("SPD", baseStats.Speed, eff.Speed);
+            Stat("INT", baseStats.Intelligence, eff.Intelligence); Stat("WIS", baseStats.Wisdom, eff.Wisdom);
+            Stat("LCK", baseStats.Luck, eff.Luck);
 
             var gear = Ui.El("col", w); gear.style.marginTop = 16;
             void G(string label, string id, int dur = -1, int repairs = 0, float mastery = 1f)
@@ -258,6 +285,42 @@ namespace GridGame.App
                 G(ItemUi.SlotName(slot), h.Jewelry.TryGetValue(slot, out var jid) ? jid : null);
             var lore = Ui.Text(Ui.Keywords(def.Lore ?? def.Description ?? ""), "small dim", w);
             lore.style.whiteSpace = WhiteSpace.Normal; lore.style.marginTop = 16;
+
+            // GG-T48: known abilities, skill-tree point spend by tree, and gated proficiencies — one
+            // flex-grown, scrollable block (the EquipScreen/AbilitiesScreen pattern) so a long Known list
+            // or many gear pieces above never pushes a later section off the bottom of the screen.
+            var buildArea = Ui.Window(null, body);
+            buildArea.style.flexGrow = 1;
+            var buildList = Ui.List(buildArea).contentContainer;
+
+            var abilitiesWindow = Ui.Window($"Known Abilities ({h.Known.Count})", buildList);
+            abilitiesWindow.name = "status-known-abilities";
+            if (h.Known.Count == 0) Ui.Text("None learned yet.", "small dim", abilitiesWindow);
+            foreach (var id in h.Known)
+            {
+                var a = C.TryAbility(id);
+                if (a == null) continue;
+                Ui.MenuRow(a.Name, a.Kind == AbilityKind.Passive ? "Passive" : a.Kind.ToString(), null, abilitiesWindow, Art.AbilityIcon(a));
+            }
+
+            var treeWindow = Ui.Window("Skill Trees", buildList);
+            treeWindow.name = "status-skill-trees";
+            var trees = Progression.TreeInvestment(C, h);
+            if (trees.Count == 0)
+                Ui.Text("No tree investment yet — abilities already known will count here as they match tree nodes.", "small dim", treeWindow).style.whiteSpace = WhiteSpace.Normal;
+            foreach (var t in trees)
+            {
+                var r = Ui.El("row", treeWindow);
+                Ui.Text(t.TreeName, "small dim", r).style.width = 180;
+                Ui.Text($"{t.Points} pts", "h2 gold", r);
+            }
+
+            var profWindow = Ui.Window("Proficiencies", buildList);
+            profWindow.name = "status-proficiencies";
+            var profs = Progression.KnownProficiencies(C, h);
+            if (profs.Count == 0)
+                Ui.Text("None yet — unlocked through skill-tree passives (Heavy Armor Proficiency, Martial Weapons, Arcane Focus).", "small dim", profWindow).style.whiteSpace = WhiteSpace.Normal;
+            foreach (var p in profs) Ui.Text("✔ " + p, "small good", profWindow);
         }
     }
 
