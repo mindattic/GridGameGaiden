@@ -4,7 +4,7 @@ project: GridGameGaiden
 code: GG
 layer: bible
 status: living
-updated: 2026-10-15
+updated: 2026-10-20
 ---
 
 # GridGame Gaiden — Project Bible
@@ -2030,6 +2030,15 @@ A branch's Capstone is reachable in 3 points (Opener 1 + Core 2); the tree's Fin
 A hero's starting bar is unaffected: `Progression.NewHero` already makes every `DefaultLoadout` entry Known at creation regardless of the tree (§15.1), so "the hero starts in its home tree with its default abilities pre-unlocked" holds without any new linking.
 
 *(Tests: `SkillTreeTests` — every hero class names a real tree, every node's grant/prerequisites resolve, `ContentLoader.Validate` catches an unknown grant, an unknown prerequisite, a duplicate node id, a non-positive cost and a prerequisite cycle; `CatalogTests` resolves every new `AbilityDef` on a live board; full suite 873/873, glyph + asset checks clean.)*
+
+**Amended 2026-10-20 (GG-T80, docs-only class/region audit):** every `Team.Hero` class's `DefaultLoadout` was matched against its own `HomeTree`'s 3 branches above, by `<cluster>_<move>` ability-id prefix (e.g. an `aegisguard_opener` sibling kit uses `aegisguard_*` ids) — how well each tree's 3 chosen branches actually cover the classes that live in that region. Requested to inform where bridge nodes and new classes would be needed on a future unified map (GG-T79's own hex-wedge sketch didn't survive — see §25.6.2's neighbor note below and `docs/USER_STORIES.md` GG-T83 — but this gap data stands on its own regardless of topology). Findings:
+
+- **Guardian — full branch coverage, 2 orphans.** Aegis Guard (`defender`, `knight`, `paladin`), Juggernaut (`myrmidon`, `tank`) and Warlord (`shieldmaiden`, `warchief`) between them cover 7 of Guardian's 9 classes. The other 2 — `darktemplar` and `jadeknight` — both run a `deathguard_*` kit (`deathguard_mana_siphon`, `deathguard_dark_communion`) that matches none of the tree's 3 branches; §25.13's own Tank sub-archetype list already names Deathguard as a 4th cluster, it just never got a branch (follow-up: GG-T82).
+- **Warrior — structurally overloaded.** Striker's 31 classes split across **8** real `<cluster>_` kits, but the tree kept only 3 as branches. Per-cluster counts: duelist ×7 (`assassain`, `duelist`, `fencer`, `ronin`, `sellsword`, `swordmaster`, `thief`), shadowstep ×6 (`blackninja`, `blueninja`, `chromaninja`, `greenninja`, `redninja`, `yellowninja`), skirmisher ×5 (`lancer`, `raider`, `speedster`, `streetfighter`, `striker`), berserker ×4 (`barbarian`, `basher`, `bruiser`, `pandagirl`), combobrawler ×4 (`fighter`, `martialartist`, `prizefighter`, `pugilist`), opportunist ×2 (`nighthunter`, `ripper`), brawler ×2 (`odachi`, `slasher`), attrition ×1 (`vampire`). Only Berserker, Duelist and Shadowstep became branches; the other 5 clusters — skirmisher, combobrawler, opportunist, brawler, attrition, **14 classes (45%)** — match no branch in their own home tree (follow-up: GG-T81, carve a Rogue region out of the excess).
+- **Ranger — branches nobody is assigned to.** Marksman, Trapper and Skirmisher (GG-T74's new, Ranger-only content) have zero classes walking them. Ranger's only 2 classes, `hexsniper` and `hexwarden`, still run the pre-branch shared `ranged_*` baseline kit (`ranged_quickshot`, `ranged_calledshot`, `ranged_suppressingfire`) — neither was retrofitted onto a branch (follow-up: GG-T82).
+- **Mage, Cleric, Alchemist — no gap.** Every class in these 3 regions matches one of its tree's 3 branches: Mage — Spellblade (`harbinger`, `redmage`), Field Caster (`drifter`, `operative`), Hexweaver (`blackwitch`, `ritualist`); Cleric — Aegis Wardens (`alchemist`, `cleric`, `doctor`), Hexmenders (`sage`, `whitewitch`), Skirmish-Menders (`monk`, `sister`, `whiteninja`); Alchemist — Tempo Weavers (`courier`, `dervish`), Field Engineers (`engineer`, `machinist`, `technician`, `tinkerer`), Primal Pack (`bluelion`, `wildchild`).
+
+This audit is read-only — no `ClassDef`, `SkillTreeDef` or other content changed, no new tests (none apply to a docs-only pass). *(Source: `Assets/Gaiden/Resources/Content/classes.json` × `skilltrees.json`, matched by script against every `Team.Hero` entry's `HomeTree` and `DefaultLoadout`.)*
 
 ### 25.7 Shared Camp utilities
 
