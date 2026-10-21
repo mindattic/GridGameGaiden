@@ -39,17 +39,29 @@ $deployBat = Join-Path $repoDir 'deploy.bat'
 $marker    = Join-Path $out '.deploy-commit'
 
 # ── Pull latest, skip the rebuild entirely if nothing changed ──────────────
-# Untracked files (e.g. .prose/ session state) don't block a pull; only real changes to tracked
-# files (staged or not) do.
+# Untracked files (e.g. .prose/ session state) don't block a pull; changes to tracked files (staged
+# or not) skip it, as does a pull that fails: the desktop shortcut runs this, and the ticket tools
+# keep docs/USER_STORIES.md modified, so throwing here left the game unopenable (GG-T162). It then
+# deploys the commit already checked out.
 $dirty = git -C $repoDir status --porcelain | Where-Object { $_ -notmatch '^\?\? ' }
-if ($dirty) { throw "$repoDir has uncommitted changes - not pulling. Commit/stash first." }
-git -C $repoDir pull --ff-only
-if ($LASTEXITCODE -ne 0) { throw "git pull --ff-only failed in $repoDir (not a clean fast-forward)." }
+if ($dirty) {
+    Write-Host "  $repoDir has uncommitted changes - not pulling; deploying the current commit." -ForegroundColor DarkYellow
+} else {
+    git -C $repoDir pull --ff-only
+    if ($LASTEXITCODE -ne 0) { Write-Host "  git pull --ff-only failed in $repoDir - deploying the current commit." -ForegroundColor DarkYellow }
+}
 $head = (git -C $repoDir rev-parse HEAD).Trim()
-$upToDate = (Test-Path (Join-Path $out $exeName)) -and (Test-Path $marker) -and
-            ((Get-Content -LiteralPath $marker -Raw).Trim() -eq $head)
+# Up to date when nothing the player is built from (Assets, Packages, ProjectSettings) differs between
+# the deployed commit and HEAD: a docs- or tickets-only commit doesn't rebuild the game (GG-T162).
+$upToDate = $false
+if ((Test-Path (Join-Path $out $exeName)) -and (Test-Path $marker)) {
+    $deployed = (Get-Content -LiteralPath $marker -Raw).Trim()
+    git -C $repoDir diff --quiet $deployed $head -- Assets Packages ProjectSettings 2>$null
+    $upToDate = $LASTEXITCODE -eq 0
+    if ($upToDate -and $deployed -ne $head) { Set-Content -LiteralPath $marker -Value $head -NoNewline }
+}
 if ($upToDate) {
-    Write-Host "  Already deployed at $head - skipping rebuild." -ForegroundColor Green
+    Write-Host "  Already deployed at $head (no player source changed) - skipping rebuild." -ForegroundColor Green
     if ($Launch) { Start-Process -FilePath (Join-Path $out $exeName) -WorkingDirectory $out }
     exit 0
 }
