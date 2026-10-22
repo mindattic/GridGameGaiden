@@ -468,6 +468,9 @@ namespace GridGame.Core.Content
 
     public sealed class WaveDef
     {
+        /// <summary>An <see cref="EncounterGroupDef"/> id (encounters.json, GG-T184). When set, the loader fills
+        /// <see cref="Enemies"/> from that group (its mix, formation tiles and level); leave Enemies empty then.</summary>
+        public string Group;
         public List<SpawnDef> Enemies = new List<SpawnDef>();
         /// <summary>Guest allies met in this wave (§25.11): fight with you; standing at a victory (revived counts) and they join, down at the end and you'll meet them again (GG-T114).</summary>
         public List<SpawnDef> Guests = new List<SpawnDef>();
@@ -475,6 +478,23 @@ namespace GridGame.Core.Content
         public string SurpriseSpeaker;
         /// <summary>The line that speaker says. Null/empty = no dialogue beat, just the spawn (silent reinforcement).</summary>
         public string SurpriseLine;
+    }
+
+    /// <summary>One authored enemy group (GG-T184, encounters.json): a single-family mix of 1-5 foes, each on its
+    /// own tile of the enemy half (the <see cref="Formation"/>), pitched at <see cref="Level"/>. Campaign waves
+    /// reference groups by id (<see cref="WaveDef.Group"/>); the Crucible and endless encounters draw their waves
+    /// from them (<see cref="EncounterCatalog"/>). No two groups share the same mix on the same tiles.</summary>
+    public sealed class EncounterGroupDef
+    {
+        public string Id;
+        public string Name;
+        /// <summary>The formation's name (Pincer, Wedge, Crown ...): what the tiles in <see cref="Enemies"/> form.</summary>
+        public string Formation;
+        /// <summary>The campaign level the group is pitched at: a campaign wave spawns it at this level (still
+        /// floored by the stage's recommended level), and the generators prefer groups at or under the wave's level.</summary>
+        public int Level = 1;
+        /// <summary>The foes and their tiles (Level and DelayTicks are ignored here: the group's Level applies).</summary>
+        public List<SpawnDef> Enemies = new List<SpawnDef>();
     }
 
     public sealed class StageDef

@@ -143,26 +143,7 @@
     "IsTest": false,
     "Waves": [
       {
-        "Enemies": [
-          {
-            "Class": "wolf00",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          },
-          {
-            "Class": "wolf01",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          },
-          {
-            "Class": "bat00",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          }
-        ]
+        "Group": "wolf-line-3"
       },
       {
         "Enemies": [
@@ -1651,26 +1632,7 @@
     ],
     "Waves": [
       {
-        "Enemies": [
-          {
-            "Class": "undead00",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          },
-          {
-            "Class": "undead01",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          },
-          {
-            "Class": "ghost",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          }
-        ]
+        "Group": "undead-rearguard-3"
       },
       {
         "Enemies": [
@@ -2158,20 +2120,7 @@
     "IsTest": false,
     "Waves": [
       {
-        "Enemies": [
-          {
-            "Class": "slime00",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          },
-          {
-            "Class": "slime01",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          }
-        ]
+        "Group": "slime-stagger-2"
       },
       {
         "Enemies": [
@@ -2218,26 +2167,7 @@
         ]
       },
       {
-        "Enemies": [
-          {
-            "Class": "skelepede00",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          },
-          {
-            "Class": "skelepede01",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          },
-          {
-            "Class": "undead00",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          }
-        ]
+        "Group": "skelepede-spread-3"
       },
       {
         "Enemies": [
@@ -2279,48 +2209,10 @@
     "IsTest": false,
     "Waves": [
       {
-        "Enemies": [
-          {
-            "Class": "frog00",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          },
-          {
-            "Class": "frog01",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          },
-          {
-            "Class": "frog02",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          }
-        ]
+        "Group": "frog-line-3"
       },
       {
-        "Enemies": [
-          {
-            "Class": "ganger03",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          },
-          {
-            "Class": "ganger04",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          },
-          {
-            "Class": "ganger05",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          }
-        ]
+        "Group": "ganger-wedge-3"
       },
       {
         "Enemies": [
@@ -2422,26 +2314,7 @@
         ]
       },
       {
-        "Enemies": [
-          {
-            "Class": "soldier00",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          },
-          {
-            "Class": "soldier01",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          },
-          {
-            "Class": "soldier02",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          }
-        ]
+        "Group": "soldier-wedge-3"
       },
       {
         "Enemies": [
@@ -2460,26 +2333,7 @@
         ]
       },
       {
-        "Enemies": [
-          {
-            "Class": "vulture",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          },
-          {
-            "Class": "vulture",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          },
-          {
-            "Class": "flyingmonkey",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          }
-        ]
+        "Group": "desertflyer-spread-3"
       },
       {
         "Enemies": [
@@ -2559,26 +2413,7 @@
         ]
       },
       {
-        "Enemies": [
-          {
-            "Class": "scorpion",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          },
-          {
-            "Class": "scorpion",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          },
-          {
-            "Class": "vulture",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          }
-        ]
+        "Group": "scorpion-rearguard-3"
       },
       {
         "Enemies": [
@@ -2642,42 +2477,10 @@
     "IsTest": false,
     "Waves": [
       {
-        "Enemies": [
-          {
-            "Class": "toad00",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          },
-          {
-            "Class": "frog00",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          },
-          {
-            "Class": "frog01",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          }
-        ]
+        "Group": "frog-wedge-3"
       },
       {
-        "Enemies": [
-          {
-            "Class": "lurker00",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          },
-          {
-            "Class": "lurker01",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          }
-        ]
+        "Group": "lurker-diagonal-2"
       },
       {
         "Enemies": [
@@ -2702,20 +2505,7 @@
         ]
       },
       {
-        "Enemies": [
-          {
-            "Class": "treegolem00",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          },
-          {
-            "Class": "treegolem01",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          }
-        ]
+        "Group": "treegolem-pair-2"
       },
       {
         "Enemies": [
@@ -2751,26 +2541,7 @@
     "IsTest": false,
     "Waves": [
       {
-        "Enemies": [
-          {
-            "Class": "frog02",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          },
-          {
-            "Class": "frog03",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          },
-          {
-            "Class": "toad00",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          }
-        ]
+        "Group": "frog-line-4"
       },
       {
         "Enemies": [
@@ -2817,26 +2588,7 @@
         ]
       },
       {
-        "Enemies": [
-          {
-            "Class": "lurker00",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          },
-          {
-            "Class": "lurker01",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          },
-          {
-            "Class": "lurker02",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          }
-        ]
+        "Group": "lurker-echelon-3"
       },
       {
         "Enemies": [
@@ -2894,20 +2646,7 @@
         ]
       },
       {
-        "Enemies": [
-          {
-            "Class": "ceramicknight00",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          },
-          {
-            "Class": "ceramicknight01",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          }
-        ]
+        "Group": "ceramicknight-column-2"
       },
       {
         "Enemies": [
@@ -2926,26 +2665,7 @@
         ]
       },
       {
-        "Enemies": [
-          {
-            "Class": "cyclops00",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          },
-          {
-            "Class": "cyclops01",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          },
-          {
-            "Class": "mountaintroll",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          }
-        ]
+        "Group": "cyclops-echelon-3"
       },
       {
         "Enemies": [
@@ -3025,26 +2745,7 @@
         ]
       },
       {
-        "Enemies": [
-          {
-            "Class": "oni00",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          },
-          {
-            "Class": "oni01",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          },
-          {
-            "Class": "oni02",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          }
-        ]
+        "Group": "oni-pincer-3"
       },
       {
         "Enemies": [
@@ -3102,26 +2803,7 @@
     "IsTest": false,
     "Waves": [
       {
-        "Enemies": [
-          {
-            "Class": "undead00",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          },
-          {
-            "Class": "undead01",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          },
-          {
-            "Class": "ghost",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          }
-        ]
+        "Group": "undead-spread-3"
       },
       {
         "Enemies": [
@@ -3162,26 +2844,7 @@
         ]
       },
       {
-        "Enemies": [
-          {
-            "Class": "bat00",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          },
-          {
-            "Class": "bat01",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          },
-          {
-            "Class": "phantom",
-            "Level": 1,
-            "X": -1,
-            "Y": -1
-          }
-        ]
+        "Group": "bat-delta-3"
       },
       {
         "Enemies": [

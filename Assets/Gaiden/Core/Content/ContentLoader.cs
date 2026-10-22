@@ -30,7 +30,15 @@ namespace GridGame.Core.Content
             AddAll(db.Items, ReadList<ItemDef>(readText, "items"), c => c.Id);
             AddAll(db.Recipes, ReadList<RecipeDef>(readText, "recipes"), c => c.Id);
             AddAll(db.DropTables, ReadList<DropTableDef>(readText, "droptables"), c => c.Id);
+            var encounters = ReadList<EncounterGroupDef>(readText, "encounters");
+            AddAll(db.Encounters, encounters, x => x.Id);
+            db.EncounterOrder.AddRange(encounters);
             var stages = ReadList<StageDef>(readText, "stages");
+            // A wave that names a group (GG-T184) gets the group's foes, formation and level; Validate reports a bad id.
+            foreach (var st in stages)
+                foreach (var w in st.Waves)
+                    if (w.Group != null && w.Enemies.Count == 0 && db.TryEncounter(w.Group) is EncounterGroupDef g)
+                        w.Enemies = EncounterCatalog.Spawns(g, g.Level);
             AddAll(db.Stages, stages, c => c.Id);
             db.StageOrder.AddRange(stages);
             AddAll(db.Traps, ReadList<TrapDef>(readText, "traps"), c => c.Id);
@@ -215,6 +223,7 @@ namespace GridGame.Core.Content
             }
             foreach (var d in db.DialogueOrder) ValidateDialogue(db, d, portraitExists, p);
             foreach (var set in db.ArmorSetOrder) ValidateArmorSet(db, set, p);
+            EncounterCatalog.Validate(db, p);
             return p;
         }
 

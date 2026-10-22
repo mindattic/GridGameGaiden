@@ -530,3 +530,13 @@ updated: 2026-10-09
 - **Unaffected:** §1 (the biomechanical-plague/Longmother narrative merge, already landed GG-T120), §3
   (the dialogue engine, already landed GG-T117–120) and §4 (mid-battle recruitment, still open) — none of
   the three ever depended on an overworld.
+
+## 2026-10-22 — 100+ distinct enemy groups (owner direction, epic W, GG-T184)
+
+- **Added:** `encounters.json`, 182 authored enemy groups (one family's mix + a named formation of fixed
+  enemy-half tiles + a level). [BIBLE §4 content table, §22.3 campaign, §22.10 Crucible](BIBLE.md).
+- **Campaign:** the 19 waves that repeated an earlier wave now name a group of the same family; content
+  validation fails if two campaign waves are ever the same foes, levels and tiles again.
+- **Crucible / endless:** each wave is an authored group rather than a random handful of the family, so a
+  run shows its formations and no group repeats until its family's same-size groups are used up. Wave
+  sizes, levels and the one-family-per-wave rule are unchanged.

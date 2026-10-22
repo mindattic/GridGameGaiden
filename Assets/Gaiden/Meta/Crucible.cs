@@ -14,7 +14,7 @@ namespace GridGame.Meta
     /// <see cref="MaxWaves"/> waves, so the normal BattleEngine wave loop runs it (wounds, mana and consumables
     /// carry wave to wave because it is one battle) until the party falls or leaves. Each wave is one enemy family
     /// (ClassDef.DropTable) the save has already met or reached in the campaign, at a level that starts from the
-    /// party's and rises each wave. Unlike any other non-victory end, a wipe or retreat here keeps everything
+    /// party's and rises each wave, built from that family's authored encounter groups (GG-T184). Unlike any other non-victory end, a wipe or retreat here keeps everything
     /// earned (§22.2's exception, AMENDMENTS 2026-10-19), and the run never touches campaign progress, unlocks
     /// or the expedition.
     /// </summary>
@@ -111,6 +111,7 @@ namespace GridGame.Meta
                 Blocks = arena?.Blocks.Select(b => new Coord(b.X, b.Y)).ToList() ?? new List<Coord>(),
             };
             var order = new List<List<ClassDef>>();
+            var used = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             for (int i = 0; i < MaxWaves; i++)
             {
                 // Walk a fresh shuffle of every family, never the same family twice in a row (when there are two+).
@@ -124,8 +125,12 @@ namespace GridGame.Meta
                 var pool = order[0];
                 order.RemoveAt(0);
                 var wave = new WaveDef();
-                int level = WaveLevel(start, i);
-                for (int e = 0; e < WaveEnemies(i); e++) wave.Enemies.Add(new SpawnDef { Class = rng.Pick(pool).Id, Level = level });
+                int level = WaveLevel(start, i), count = WaveEnemies(i);
+                // GG-T184: the wave is one of the family's authored groups (mix + formation), each group used once
+                // before any repeats; a family with none, or none that big, tops up with random foes as before.
+                var group = EncounterCatalog.Pick(c, rng, pool[0].DropTable, count, level, used);
+                if (group != null) { wave.Group = group.Id; wave.Enemies.AddRange(EncounterCatalog.Spawns(group, level)); }
+                while (wave.Enemies.Count < count) wave.Enemies.Add(new SpawnDef { Class = rng.Pick(pool).Id, Level = level });
                 stage.Waves.Add(wave);
             }
             return stage;

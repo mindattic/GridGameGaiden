@@ -50,13 +50,16 @@ namespace GridGame.Core.Content
                 Blocks = donor.Blocks.Select(c => new Coord(c.X, c.Y)).ToList(),
             };
 
+            var used = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             for (int i = 0; i < WaveCount; i++)
             {
                 var pool = waveFamilies[i];
                 int enemyCount = rng.Range(2, 5); // 2-4, matching real stages' typical wave size
                 var wave = new WaveDef();
-                for (int e = 0; e < enemyCount; e++)
-                    wave.Enemies.Add(new SpawnDef { Class = rng.Pick(pool).Id, Level = levels[i] });
+                // GG-T184: an authored group of the family (mix + formation) when it has one that fits; else random foes.
+                var group = EncounterCatalog.Pick(db, rng, pool[0].DropTable, enemyCount, levels[i], used);
+                if (group != null) { wave.Group = group.Id; wave.Enemies.AddRange(EncounterCatalog.Spawns(group, levels[i])); }
+                else for (int e = 0; e < enemyCount; e++) wave.Enemies.Add(new SpawnDef { Class = rng.Pick(pool).Id, Level = levels[i] });
                 stage.Waves.Add(wave);
             }
 

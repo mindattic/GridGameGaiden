@@ -1,0 +1,4748 @@
+[
+  {
+    "Id": "bat-stagger-2",
+    "Name": "Bat Stagger",
+    "Formation": "Stagger",
+    "Level": 1,
+    "Enemies": [
+      {
+        "Class": "bat00",
+        "X": 1,
+        "Y": 1
+      },
+      {
+        "Class": "bat01",
+        "X": 4,
+        "Y": 3
+      }
+    ]
+  },
+  {
+    "Id": "bat-delta-3",
+    "Name": "Bat Delta",
+    "Formation": "Delta",
+    "Level": 2,
+    "Enemies": [
+      {
+        "Class": "bat00",
+        "X": 2,
+        "Y": 0
+      },
+      {
+        "Class": "bat01",
+        "X": 1,
+        "Y": 2
+      },
+      {
+        "Class": "bat02",
+        "X": 3,
+        "Y": 2
+      }
+    ]
+  },
+  {
+    "Id": "bat-arrow-4",
+    "Name": "Bat Arrow",
+    "Formation": "Arrow",
+    "Level": 3,
+    "Enemies": [
+      {
+        "Class": "bat00",
+        "X": 2,
+        "Y": 4
+      },
+      {
+        "Class": "bat01",
+        "X": 1,
+        "Y": 3
+      },
+      {
+        "Class": "bat02",
+        "X": 3,
+        "Y": 3
+      },
+      {
+        "Class": "bat00",
+        "X": 2,
+        "Y": 1
+      }
+    ]
+  },
+  {
+    "Id": "bat-scatter-5",
+    "Name": "Bat Scatter",
+    "Formation": "Scatter",
+    "Level": 4,
+    "Enemies": [
+      {
+        "Class": "bat00",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "bat01",
+        "X": 3,
+        "Y": 0
+      },
+      {
+        "Class": "bat02",
+        "X": 5,
+        "Y": 2
+      },
+      {
+        "Class": "bat00",
+        "X": 1,
+        "Y": 3
+      },
+      {
+        "Class": "bat01",
+        "X": 4,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "bat-column-3",
+    "Name": "Bat Column",
+    "Formation": "Column",
+    "Level": 2,
+    "Enemies": [
+      {
+        "Class": "bat02",
+        "X": 3,
+        "Y": 0
+      },
+      {
+        "Class": "bat00",
+        "X": 3,
+        "Y": 2
+      },
+      {
+        "Class": "bat01",
+        "X": 3,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "bat-shieldwall-5",
+    "Name": "Bat Shield Wall",
+    "Formation": "Shield Wall",
+    "Level": 4,
+    "Enemies": [
+      {
+        "Class": "bat02",
+        "X": 1,
+        "Y": 3
+      },
+      {
+        "Class": "bat00",
+        "X": 2,
+        "Y": 3
+      },
+      {
+        "Class": "bat01",
+        "X": 3,
+        "Y": 3
+      },
+      {
+        "Class": "bat02",
+        "X": 4,
+        "Y": 3
+      },
+      {
+        "Class": "bat00",
+        "X": 2,
+        "Y": 1
+      }
+    ]
+  },
+  {
+    "Id": "ceramicknight-column-2",
+    "Name": "Ceramic Knight Column",
+    "Formation": "Column",
+    "Level": 10,
+    "Enemies": [
+      {
+        "Class": "ceramicknight00",
+        "X": 2,
+        "Y": 0
+      },
+      {
+        "Class": "ceramicknight01",
+        "X": 2,
+        "Y": 2
+      }
+    ]
+  },
+  {
+    "Id": "ceramicknight-column-3",
+    "Name": "Ceramic Knight Column",
+    "Formation": "Column",
+    "Level": 11,
+    "Enemies": [
+      {
+        "Class": "ceramicknight00",
+        "X": 3,
+        "Y": 0
+      },
+      {
+        "Class": "ceramicknight01",
+        "X": 3,
+        "Y": 2
+      },
+      {
+        "Class": "ceramicknight02",
+        "X": 3,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "ceramicknight-stair-4",
+    "Name": "Ceramic Knight Stair",
+    "Formation": "Stair",
+    "Level": 12,
+    "Enemies": [
+      {
+        "Class": "ceramicknight00",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "ceramicknight01",
+        "X": 1,
+        "Y": 1
+      },
+      {
+        "Class": "ceramicknight02",
+        "X": 2,
+        "Y": 2
+      },
+      {
+        "Class": "ceramicknight03",
+        "X": 3,
+        "Y": 3
+      }
+    ]
+  },
+  {
+    "Id": "ceramicknight-shieldwall-5",
+    "Name": "Ceramic Knight Shield Wall",
+    "Formation": "Shield Wall",
+    "Level": 13,
+    "Enemies": [
+      {
+        "Class": "ceramicknight00",
+        "X": 1,
+        "Y": 3
+      },
+      {
+        "Class": "ceramicknight01",
+        "X": 2,
+        "Y": 3
+      },
+      {
+        "Class": "ceramicknight02",
+        "X": 3,
+        "Y": 3
+      },
+      {
+        "Class": "ceramicknight03",
+        "X": 4,
+        "Y": 3
+      },
+      {
+        "Class": "ceramicknight04",
+        "X": 2,
+        "Y": 1
+      }
+    ]
+  },
+  {
+    "Id": "ceramicknight-scatter-3",
+    "Name": "Ceramic Knight Scatter",
+    "Formation": "Scatter",
+    "Level": 11,
+    "Enemies": [
+      {
+        "Class": "ceramicknight02",
+        "X": 0,
+        "Y": 1
+      },
+      {
+        "Class": "ceramicknight03",
+        "X": 4,
+        "Y": 0
+      },
+      {
+        "Class": "ceramicknight04",
+        "X": 2,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "ceramicknight-horseshoe-5",
+    "Name": "Ceramic Knight Horseshoe",
+    "Formation": "Horseshoe",
+    "Level": 13,
+    "Enemies": [
+      {
+        "Class": "ceramicknight02",
+        "X": 1,
+        "Y": 0
+      },
+      {
+        "Class": "ceramicknight03",
+        "X": 4,
+        "Y": 0
+      },
+      {
+        "Class": "ceramicknight04",
+        "X": 1,
+        "Y": 2
+      },
+      {
+        "Class": "ceramicknight05",
+        "X": 4,
+        "Y": 2
+      },
+      {
+        "Class": "ceramicknight06",
+        "X": 2,
+        "Y": 3
+      }
+    ]
+  },
+  {
+    "Id": "cyberzombie-vanguard-2",
+    "Name": "Cyber Zombie Vanguard",
+    "Formation": "Vanguard",
+    "Level": 13,
+    "Enemies": [
+      {
+        "Class": "cyberzombie00",
+        "X": 1,
+        "Y": 4
+      },
+      {
+        "Class": "cyberzombie01",
+        "X": 4,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "cyberzombie-scatter-3",
+    "Name": "Cyber Zombie Scatter",
+    "Formation": "Scatter",
+    "Level": 14,
+    "Enemies": [
+      {
+        "Class": "cyberzombie00",
+        "X": 0,
+        "Y": 1
+      },
+      {
+        "Class": "cyberzombie01",
+        "X": 4,
+        "Y": 0
+      },
+      {
+        "Class": "cyberzombie02",
+        "X": 2,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "cyberzombie-scatter-4",
+    "Name": "Cyber Zombie Scatter",
+    "Formation": "Scatter",
+    "Level": 15,
+    "Enemies": [
+      {
+        "Class": "cyberzombie00",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "cyberzombie01",
+        "X": 5,
+        "Y": 1
+      },
+      {
+        "Class": "cyberzombie02",
+        "X": 1,
+        "Y": 4
+      },
+      {
+        "Class": "cyberzombie03",
+        "X": 4,
+        "Y": 3
+      }
+    ]
+  },
+  {
+    "Id": "cyberzombie-horseshoe-5",
+    "Name": "Cyber Zombie Horseshoe",
+    "Formation": "Horseshoe",
+    "Level": 16,
+    "Enemies": [
+      {
+        "Class": "cyberzombie00",
+        "X": 1,
+        "Y": 0
+      },
+      {
+        "Class": "cyberzombie01",
+        "X": 4,
+        "Y": 0
+      },
+      {
+        "Class": "cyberzombie02",
+        "X": 1,
+        "Y": 2
+      },
+      {
+        "Class": "cyberzombie03",
+        "X": 4,
+        "Y": 2
+      },
+      {
+        "Class": "cyberzombie04",
+        "X": 2,
+        "Y": 3
+      }
+    ]
+  },
+  {
+    "Id": "cyberzombie-echelon-3",
+    "Name": "Cyber Zombie Echelon",
+    "Formation": "Echelon",
+    "Level": 14,
+    "Enemies": [
+      {
+        "Class": "cyberzombie02",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "cyberzombie03",
+        "X": 2,
+        "Y": 2
+      },
+      {
+        "Class": "cyberzombie04",
+        "X": 4,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "cyberzombie-hourglass-5",
+    "Name": "Cyber Zombie Hourglass",
+    "Formation": "Hourglass",
+    "Level": 16,
+    "Enemies": [
+      {
+        "Class": "cyberzombie02",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "cyberzombie03",
+        "X": 5,
+        "Y": 0
+      },
+      {
+        "Class": "cyberzombie04",
+        "X": 2,
+        "Y": 2
+      },
+      {
+        "Class": "cyberzombie00",
+        "X": 0,
+        "Y": 4
+      },
+      {
+        "Class": "cyberzombie01",
+        "X": 5,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "cyclops-rearguard-2",
+    "Name": "Cyclops Rearguard",
+    "Formation": "Rearguard",
+    "Level": 10,
+    "Enemies": [
+      {
+        "Class": "cyclops03",
+        "X": 1,
+        "Y": 0
+      },
+      {
+        "Class": "cyclops04",
+        "X": 4,
+        "Y": 0
+      }
+    ]
+  },
+  {
+    "Id": "cyclops-echelon-3",
+    "Name": "Cyclops Echelon",
+    "Formation": "Echelon",
+    "Level": 11,
+    "Enemies": [
+      {
+        "Class": "cyclops03",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "cyclops04",
+        "X": 2,
+        "Y": 2
+      },
+      {
+        "Class": "cyclops06",
+        "X": 4,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "cyclops-twincolumns-4",
+    "Name": "Cyclops Twin Columns",
+    "Formation": "Twin Columns",
+    "Level": 12,
+    "Enemies": [
+      {
+        "Class": "cyclops03",
+        "X": 1,
+        "Y": 0
+      },
+      {
+        "Class": "cyclops04",
+        "X": 1,
+        "Y": 2
+      },
+      {
+        "Class": "cyclops06",
+        "X": 4,
+        "Y": 0
+      },
+      {
+        "Class": "cyclops03",
+        "X": 4,
+        "Y": 2
+      }
+    ]
+  },
+  {
+    "Id": "cyclops-hourglass-5",
+    "Name": "Cyclops Hourglass",
+    "Formation": "Hourglass",
+    "Level": 13,
+    "Enemies": [
+      {
+        "Class": "cyclops03",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "cyclops04",
+        "X": 5,
+        "Y": 0
+      },
+      {
+        "Class": "cyclops06",
+        "X": 2,
+        "Y": 2
+      },
+      {
+        "Class": "cyclops03",
+        "X": 0,
+        "Y": 4
+      },
+      {
+        "Class": "cyclops04",
+        "X": 5,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "cyclops-rearguard-3",
+    "Name": "Cyclops Rearguard",
+    "Formation": "Rearguard",
+    "Level": 11,
+    "Enemies": [
+      {
+        "Class": "cyclops06",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "cyclops03",
+        "X": 2,
+        "Y": 0
+      },
+      {
+        "Class": "cyclops04",
+        "X": 4,
+        "Y": 0
+      }
+    ]
+  },
+  {
+    "Id": "cyclops-crown-5",
+    "Name": "Cyclops Crown",
+    "Formation": "Crown",
+    "Level": 13,
+    "Enemies": [
+      {
+        "Class": "cyclops06",
+        "X": 2,
+        "Y": 0
+      },
+      {
+        "Class": "cyclops03",
+        "X": 0,
+        "Y": 2
+      },
+      {
+        "Class": "cyclops04",
+        "X": 4,
+        "Y": 2
+      },
+      {
+        "Class": "cyclops06",
+        "X": 1,
+        "Y": 4
+      },
+      {
+        "Class": "cyclops03",
+        "X": 3,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "demonlord-diagonal-2",
+    "Name": "Demon Lord Diagonal",
+    "Formation": "Diagonal",
+    "Level": 14,
+    "Enemies": [
+      {
+        "Class": "demonlord",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "demonlord",
+        "X": 5,
+        "Y": 3
+      }
+    ]
+  },
+  {
+    "Id": "demonlord-rearguard-3",
+    "Name": "Demon Lord Rearguard",
+    "Formation": "Rearguard",
+    "Level": 15,
+    "Enemies": [
+      {
+        "Class": "demonlord",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "demonlord",
+        "X": 2,
+        "Y": 0
+      },
+      {
+        "Class": "demonlord",
+        "X": 4,
+        "Y": 0
+      }
+    ]
+  },
+  {
+    "Id": "demonlord-screen-4",
+    "Name": "Demon Lord Screen",
+    "Formation": "Screen",
+    "Level": 16,
+    "Enemies": [
+      {
+        "Class": "demonlord",
+        "X": 0,
+        "Y": 3
+      },
+      {
+        "Class": "demonlord",
+        "X": 2,
+        "Y": 3
+      },
+      {
+        "Class": "demonlord",
+        "X": 4,
+        "Y": 3
+      },
+      {
+        "Class": "demonlord",
+        "X": 3,
+        "Y": 0
+      }
+    ]
+  },
+  {
+    "Id": "demonlord-crown-5",
+    "Name": "Demon Lord Crown",
+    "Formation": "Crown",
+    "Level": 17,
+    "Enemies": [
+      {
+        "Class": "demonlord",
+        "X": 2,
+        "Y": 0
+      },
+      {
+        "Class": "demonlord",
+        "X": 0,
+        "Y": 2
+      },
+      {
+        "Class": "demonlord",
+        "X": 4,
+        "Y": 2
+      },
+      {
+        "Class": "demonlord",
+        "X": 1,
+        "Y": 4
+      },
+      {
+        "Class": "demonlord",
+        "X": 3,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "desertflyer-sentries-2",
+    "Name": "Sky Raider Sentries",
+    "Formation": "Sentries",
+    "Level": 4,
+    "Enemies": [
+      {
+        "Class": "flyingmonkey",
+        "X": 0,
+        "Y": 4
+      },
+      {
+        "Class": "vulture",
+        "X": 5,
+        "Y": 0
+      }
+    ]
+  },
+  {
+    "Id": "desertflyer-spread-3",
+    "Name": "Sky Raider Spread",
+    "Formation": "Spread",
+    "Level": 5,
+    "Enemies": [
+      {
+        "Class": "flyingmonkey",
+        "X": 0,
+        "Y": 2
+      },
+      {
+        "Class": "vulture",
+        "X": 2,
+        "Y": 3
+      },
+      {
+        "Class": "flyingmonkey",
+        "X": 5,
+        "Y": 1
+      }
+    ]
+  },
+  {
+    "Id": "desertflyer-box-4",
+    "Name": "Sky Raider Box",
+    "Formation": "Box",
+    "Level": 6,
+    "Enemies": [
+      {
+        "Class": "flyingmonkey",
+        "X": 1,
+        "Y": 1
+      },
+      {
+        "Class": "vulture",
+        "X": 4,
+        "Y": 1
+      },
+      {
+        "Class": "flyingmonkey",
+        "X": 1,
+        "Y": 3
+      },
+      {
+        "Class": "vulture",
+        "X": 4,
+        "Y": 3
+      }
+    ]
+  },
+  {
+    "Id": "desertflyer-cross-5",
+    "Name": "Sky Raider Cross",
+    "Formation": "Cross",
+    "Level": 7,
+    "Enemies": [
+      {
+        "Class": "flyingmonkey",
+        "X": 2,
+        "Y": 0
+      },
+      {
+        "Class": "vulture",
+        "X": 1,
+        "Y": 1
+      },
+      {
+        "Class": "flyingmonkey",
+        "X": 2,
+        "Y": 1
+      },
+      {
+        "Class": "vulture",
+        "X": 3,
+        "Y": 1
+      },
+      {
+        "Class": "flyingmonkey",
+        "X": 2,
+        "Y": 2
+      }
+    ]
+  },
+  {
+    "Id": "frog-pair-2",
+    "Name": "Frog Pair",
+    "Formation": "Pair",
+    "Level": 1,
+    "Enemies": [
+      {
+        "Class": "frog00",
+        "X": 2,
+        "Y": 1
+      },
+      {
+        "Class": "frog01",
+        "X": 3,
+        "Y": 1
+      }
+    ]
+  },
+  {
+    "Id": "frog-line-3",
+    "Name": "Frog Line",
+    "Formation": "Line",
+    "Level": 2,
+    "Enemies": [
+      {
+        "Class": "frog00",
+        "X": 1,
+        "Y": 2
+      },
+      {
+        "Class": "frog01",
+        "X": 2,
+        "Y": 2
+      },
+      {
+        "Class": "frog02",
+        "X": 3,
+        "Y": 2
+      }
+    ]
+  },
+  {
+    "Id": "frog-line-4",
+    "Name": "Frog Line",
+    "Formation": "Line",
+    "Level": 3,
+    "Enemies": [
+      {
+        "Class": "frog00",
+        "X": 1,
+        "Y": 2
+      },
+      {
+        "Class": "frog01",
+        "X": 2,
+        "Y": 2
+      },
+      {
+        "Class": "frog02",
+        "X": 3,
+        "Y": 2
+      },
+      {
+        "Class": "frog03",
+        "X": 4,
+        "Y": 2
+      }
+    ]
+  },
+  {
+    "Id": "frog-phalanx-5",
+    "Name": "Frog Phalanx",
+    "Formation": "Phalanx",
+    "Level": 4,
+    "Enemies": [
+      {
+        "Class": "frog00",
+        "X": 0,
+        "Y": 1
+      },
+      {
+        "Class": "frog01",
+        "X": 1,
+        "Y": 1
+      },
+      {
+        "Class": "frog02",
+        "X": 2,
+        "Y": 1
+      },
+      {
+        "Class": "frog03",
+        "X": 3,
+        "Y": 1
+      },
+      {
+        "Class": "toad00",
+        "X": 4,
+        "Y": 1
+      }
+    ]
+  },
+  {
+    "Id": "frog-wedge-3",
+    "Name": "Frog Wedge",
+    "Formation": "Wedge",
+    "Level": 2,
+    "Enemies": [
+      {
+        "Class": "frog02",
+        "X": 2,
+        "Y": 3
+      },
+      {
+        "Class": "frog03",
+        "X": 1,
+        "Y": 2
+      },
+      {
+        "Class": "toad00",
+        "X": 3,
+        "Y": 2
+      }
+    ]
+  },
+  {
+    "Id": "frog-chevron-5",
+    "Name": "Frog Chevron",
+    "Formation": "Chevron",
+    "Level": 4,
+    "Enemies": [
+      {
+        "Class": "frog02",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "frog03",
+        "X": 1,
+        "Y": 1
+      },
+      {
+        "Class": "toad00",
+        "X": 2,
+        "Y": 2
+      },
+      {
+        "Class": "frog00",
+        "X": 3,
+        "Y": 1
+      },
+      {
+        "Class": "frog01",
+        "X": 4,
+        "Y": 0
+      }
+    ]
+  },
+  {
+    "Id": "ganger-flank-2",
+    "Name": "Ganger Flank",
+    "Formation": "Flank",
+    "Level": 1,
+    "Enemies": [
+      {
+        "Class": "ganger00",
+        "X": 0,
+        "Y": 2
+      },
+      {
+        "Class": "ganger01",
+        "X": 5,
+        "Y": 2
+      }
+    ]
+  },
+  {
+    "Id": "ganger-wedge-3",
+    "Name": "Ganger Wedge",
+    "Formation": "Wedge",
+    "Level": 2,
+    "Enemies": [
+      {
+        "Class": "ganger00",
+        "X": 2,
+        "Y": 3
+      },
+      {
+        "Class": "ganger01",
+        "X": 1,
+        "Y": 2
+      },
+      {
+        "Class": "ganger02",
+        "X": 3,
+        "Y": 2
+      }
+    ]
+  },
+  {
+    "Id": "ganger-diamond-4",
+    "Name": "Ganger Diamond",
+    "Formation": "Diamond",
+    "Level": 3,
+    "Enemies": [
+      {
+        "Class": "ganger00",
+        "X": 2,
+        "Y": 0
+      },
+      {
+        "Class": "ganger01",
+        "X": 1,
+        "Y": 2
+      },
+      {
+        "Class": "ganger02",
+        "X": 3,
+        "Y": 2
+      },
+      {
+        "Class": "ganger03",
+        "X": 2,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "ganger-chevron-5",
+    "Name": "Ganger Chevron",
+    "Formation": "Chevron",
+    "Level": 4,
+    "Enemies": [
+      {
+        "Class": "ganger00",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "ganger01",
+        "X": 1,
+        "Y": 1
+      },
+      {
+        "Class": "ganger02",
+        "X": 2,
+        "Y": 2
+      },
+      {
+        "Class": "ganger03",
+        "X": 3,
+        "Y": 1
+      },
+      {
+        "Class": "ganger04",
+        "X": 4,
+        "Y": 0
+      }
+    ]
+  },
+  {
+    "Id": "ganger-pincer-3",
+    "Name": "Ganger Pincer",
+    "Formation": "Pincer",
+    "Level": 2,
+    "Enemies": [
+      {
+        "Class": "ganger02",
+        "X": 0,
+        "Y": 3
+      },
+      {
+        "Class": "ganger03",
+        "X": 5,
+        "Y": 3
+      },
+      {
+        "Class": "ganger04",
+        "X": 2,
+        "Y": 0
+      }
+    ]
+  },
+  {
+    "Id": "ganger-pincer-5",
+    "Name": "Ganger Pincer",
+    "Formation": "Pincer",
+    "Level": 4,
+    "Enemies": [
+      {
+        "Class": "ganger02",
+        "X": 0,
+        "Y": 1
+      },
+      {
+        "Class": "ganger03",
+        "X": 0,
+        "Y": 3
+      },
+      {
+        "Class": "ganger04",
+        "X": 5,
+        "Y": 1
+      },
+      {
+        "Class": "ganger05",
+        "X": 5,
+        "Y": 3
+      },
+      {
+        "Class": "ganger06",
+        "X": 2,
+        "Y": 0
+      }
+    ]
+  },
+  {
+    "Id": "ghost-stagger-2",
+    "Name": "Ghost Stagger",
+    "Formation": "Stagger",
+    "Level": 13,
+    "Enemies": [
+      {
+        "Class": "ghost",
+        "X": 1,
+        "Y": 1
+      },
+      {
+        "Class": "ghost",
+        "X": 4,
+        "Y": 3
+      }
+    ]
+  },
+  {
+    "Id": "ghost-pincer-3",
+    "Name": "Ghost Pincer",
+    "Formation": "Pincer",
+    "Level": 14,
+    "Enemies": [
+      {
+        "Class": "ghost",
+        "X": 0,
+        "Y": 3
+      },
+      {
+        "Class": "ghost",
+        "X": 5,
+        "Y": 3
+      },
+      {
+        "Class": "ghost",
+        "X": 2,
+        "Y": 0
+      }
+    ]
+  },
+  {
+    "Id": "ghost-pincer-4",
+    "Name": "Ghost Pincer",
+    "Formation": "Pincer",
+    "Level": 15,
+    "Enemies": [
+      {
+        "Class": "ghost",
+        "X": 0,
+        "Y": 1
+      },
+      {
+        "Class": "ghost",
+        "X": 0,
+        "Y": 3
+      },
+      {
+        "Class": "ghost",
+        "X": 5,
+        "Y": 1
+      },
+      {
+        "Class": "ghost",
+        "X": 5,
+        "Y": 3
+      }
+    ]
+  },
+  {
+    "Id": "ghost-pincer-5",
+    "Name": "Ghost Pincer",
+    "Formation": "Pincer",
+    "Level": 16,
+    "Enemies": [
+      {
+        "Class": "ghost",
+        "X": 0,
+        "Y": 1
+      },
+      {
+        "Class": "ghost",
+        "X": 0,
+        "Y": 3
+      },
+      {
+        "Class": "ghost",
+        "X": 5,
+        "Y": 1
+      },
+      {
+        "Class": "ghost",
+        "X": 5,
+        "Y": 3
+      },
+      {
+        "Class": "ghost",
+        "X": 2,
+        "Y": 0
+      }
+    ]
+  },
+  {
+    "Id": "goblinthug00-column-2",
+    "Name": "Goblin Thug Column",
+    "Formation": "Column",
+    "Level": 1,
+    "Enemies": [
+      {
+        "Class": "goblinthug00",
+        "X": 2,
+        "Y": 0
+      },
+      {
+        "Class": "goblinthug00",
+        "X": 2,
+        "Y": 2
+      }
+    ]
+  },
+  {
+    "Id": "goblinthug00-delta-3",
+    "Name": "Goblin Thug Delta",
+    "Formation": "Delta",
+    "Level": 2,
+    "Enemies": [
+      {
+        "Class": "goblinthug00",
+        "X": 2,
+        "Y": 0
+      },
+      {
+        "Class": "goblinthug00",
+        "X": 1,
+        "Y": 2
+      },
+      {
+        "Class": "goblinthug00",
+        "X": 3,
+        "Y": 2
+      }
+    ]
+  },
+  {
+    "Id": "goblinthug00-arrow-4",
+    "Name": "Goblin Thug Arrow",
+    "Formation": "Arrow",
+    "Level": 3,
+    "Enemies": [
+      {
+        "Class": "goblinthug00",
+        "X": 2,
+        "Y": 4
+      },
+      {
+        "Class": "goblinthug00",
+        "X": 1,
+        "Y": 3
+      },
+      {
+        "Class": "goblinthug00",
+        "X": 3,
+        "Y": 3
+      },
+      {
+        "Class": "goblinthug00",
+        "X": 2,
+        "Y": 1
+      }
+    ]
+  },
+  {
+    "Id": "goblinthug00-scatter-5",
+    "Name": "Goblin Thug Scatter",
+    "Formation": "Scatter",
+    "Level": 4,
+    "Enemies": [
+      {
+        "Class": "goblinthug00",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "goblinthug00",
+        "X": 3,
+        "Y": 0
+      },
+      {
+        "Class": "goblinthug00",
+        "X": 5,
+        "Y": 2
+      },
+      {
+        "Class": "goblinthug00",
+        "X": 1,
+        "Y": 3
+      },
+      {
+        "Class": "goblinthug00",
+        "X": 4,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "hag-vanguard-2",
+    "Name": "Hag Vanguard",
+    "Formation": "Vanguard",
+    "Level": 7,
+    "Enemies": [
+      {
+        "Class": "hag00",
+        "X": 1,
+        "Y": 4
+      },
+      {
+        "Class": "hag01",
+        "X": 4,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "hag-column-3",
+    "Name": "Hag Column",
+    "Formation": "Column",
+    "Level": 8,
+    "Enemies": [
+      {
+        "Class": "hag00",
+        "X": 3,
+        "Y": 0
+      },
+      {
+        "Class": "hag01",
+        "X": 3,
+        "Y": 2
+      },
+      {
+        "Class": "hag02",
+        "X": 3,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "hag-stair-4",
+    "Name": "Hag Stair",
+    "Formation": "Stair",
+    "Level": 9,
+    "Enemies": [
+      {
+        "Class": "hag00",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "hag01",
+        "X": 1,
+        "Y": 1
+      },
+      {
+        "Class": "hag02",
+        "X": 2,
+        "Y": 2
+      },
+      {
+        "Class": "hag03",
+        "X": 3,
+        "Y": 3
+      }
+    ]
+  },
+  {
+    "Id": "hag-shieldwall-5",
+    "Name": "Hag Shield Wall",
+    "Formation": "Shield Wall",
+    "Level": 10,
+    "Enemies": [
+      {
+        "Class": "hag00",
+        "X": 1,
+        "Y": 3
+      },
+      {
+        "Class": "hag01",
+        "X": 2,
+        "Y": 3
+      },
+      {
+        "Class": "hag02",
+        "X": 3,
+        "Y": 3
+      },
+      {
+        "Class": "hag03",
+        "X": 4,
+        "Y": 3
+      },
+      {
+        "Class": "hag00",
+        "X": 2,
+        "Y": 1
+      }
+    ]
+  },
+  {
+    "Id": "hag-scatter-3",
+    "Name": "Hag Scatter",
+    "Formation": "Scatter",
+    "Level": 8,
+    "Enemies": [
+      {
+        "Class": "hag02",
+        "X": 0,
+        "Y": 1
+      },
+      {
+        "Class": "hag03",
+        "X": 4,
+        "Y": 0
+      },
+      {
+        "Class": "hag00",
+        "X": 2,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "hag-horseshoe-5",
+    "Name": "Hag Horseshoe",
+    "Formation": "Horseshoe",
+    "Level": 10,
+    "Enemies": [
+      {
+        "Class": "hag02",
+        "X": 1,
+        "Y": 0
+      },
+      {
+        "Class": "hag03",
+        "X": 4,
+        "Y": 0
+      },
+      {
+        "Class": "hag00",
+        "X": 1,
+        "Y": 2
+      },
+      {
+        "Class": "hag01",
+        "X": 4,
+        "Y": 2
+      },
+      {
+        "Class": "hag02",
+        "X": 2,
+        "Y": 3
+      }
+    ]
+  },
+  {
+    "Id": "icemauler-rearguard-2",
+    "Name": "Ice Mauler Rearguard",
+    "Formation": "Rearguard",
+    "Level": 10,
+    "Enemies": [
+      {
+        "Class": "icemauler",
+        "X": 1,
+        "Y": 0
+      },
+      {
+        "Class": "icemauler",
+        "X": 4,
+        "Y": 0
+      }
+    ]
+  },
+  {
+    "Id": "icemauler-scatter-3",
+    "Name": "Ice Mauler Scatter",
+    "Formation": "Scatter",
+    "Level": 11,
+    "Enemies": [
+      {
+        "Class": "icemauler",
+        "X": 0,
+        "Y": 1
+      },
+      {
+        "Class": "icemauler",
+        "X": 4,
+        "Y": 0
+      },
+      {
+        "Class": "icemauler",
+        "X": 2,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "icemauler-scatter-4",
+    "Name": "Ice Mauler Scatter",
+    "Formation": "Scatter",
+    "Level": 12,
+    "Enemies": [
+      {
+        "Class": "icemauler",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "icemauler",
+        "X": 5,
+        "Y": 1
+      },
+      {
+        "Class": "icemauler",
+        "X": 1,
+        "Y": 4
+      },
+      {
+        "Class": "icemauler",
+        "X": 4,
+        "Y": 3
+      }
+    ]
+  },
+  {
+    "Id": "icemauler-horseshoe-5",
+    "Name": "Ice Mauler Horseshoe",
+    "Formation": "Horseshoe",
+    "Level": 13,
+    "Enemies": [
+      {
+        "Class": "icemauler",
+        "X": 1,
+        "Y": 0
+      },
+      {
+        "Class": "icemauler",
+        "X": 4,
+        "Y": 0
+      },
+      {
+        "Class": "icemauler",
+        "X": 1,
+        "Y": 2
+      },
+      {
+        "Class": "icemauler",
+        "X": 4,
+        "Y": 2
+      },
+      {
+        "Class": "icemauler",
+        "X": 2,
+        "Y": 3
+      }
+    ]
+  },
+  {
+    "Id": "lurker-diagonal-2",
+    "Name": "Lurker Diagonal",
+    "Formation": "Diagonal",
+    "Level": 7,
+    "Enemies": [
+      {
+        "Class": "lurker00",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "lurker01",
+        "X": 5,
+        "Y": 3
+      }
+    ]
+  },
+  {
+    "Id": "lurker-echelon-3",
+    "Name": "Lurker Echelon",
+    "Formation": "Echelon",
+    "Level": 8,
+    "Enemies": [
+      {
+        "Class": "lurker00",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "lurker01",
+        "X": 2,
+        "Y": 2
+      },
+      {
+        "Class": "lurker02",
+        "X": 4,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "lurker-twincolumns-4",
+    "Name": "Lurker Twin Columns",
+    "Formation": "Twin Columns",
+    "Level": 9,
+    "Enemies": [
+      {
+        "Class": "lurker00",
+        "X": 1,
+        "Y": 0
+      },
+      {
+        "Class": "lurker01",
+        "X": 1,
+        "Y": 2
+      },
+      {
+        "Class": "lurker02",
+        "X": 4,
+        "Y": 0
+      },
+      {
+        "Class": "lurker00",
+        "X": 4,
+        "Y": 2
+      }
+    ]
+  },
+  {
+    "Id": "lurker-hourglass-5",
+    "Name": "Lurker Hourglass",
+    "Formation": "Hourglass",
+    "Level": 10,
+    "Enemies": [
+      {
+        "Class": "lurker00",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "lurker01",
+        "X": 5,
+        "Y": 0
+      },
+      {
+        "Class": "lurker02",
+        "X": 2,
+        "Y": 2
+      },
+      {
+        "Class": "lurker00",
+        "X": 0,
+        "Y": 4
+      },
+      {
+        "Class": "lurker01",
+        "X": 5,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "lurker-rearguard-3",
+    "Name": "Lurker Rearguard",
+    "Formation": "Rearguard",
+    "Level": 8,
+    "Enemies": [
+      {
+        "Class": "lurker02",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "lurker00",
+        "X": 2,
+        "Y": 0
+      },
+      {
+        "Class": "lurker01",
+        "X": 4,
+        "Y": 0
+      }
+    ]
+  },
+  {
+    "Id": "lurker-crown-5",
+    "Name": "Lurker Crown",
+    "Formation": "Crown",
+    "Level": 10,
+    "Enemies": [
+      {
+        "Class": "lurker02",
+        "X": 2,
+        "Y": 0
+      },
+      {
+        "Class": "lurker00",
+        "X": 0,
+        "Y": 2
+      },
+      {
+        "Class": "lurker01",
+        "X": 4,
+        "Y": 2
+      },
+      {
+        "Class": "lurker02",
+        "X": 1,
+        "Y": 4
+      },
+      {
+        "Class": "lurker00",
+        "X": 3,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "mannequin-sentries-2",
+    "Name": "Mannequin Sentries",
+    "Formation": "Sentries",
+    "Level": 13,
+    "Enemies": [
+      {
+        "Class": "mannequin",
+        "X": 0,
+        "Y": 4
+      },
+      {
+        "Class": "mannequin",
+        "X": 5,
+        "Y": 0
+      }
+    ]
+  },
+  {
+    "Id": "mannequin-rearguard-3",
+    "Name": "Mannequin Rearguard",
+    "Formation": "Rearguard",
+    "Level": 14,
+    "Enemies": [
+      {
+        "Class": "mannequin",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "mannequin",
+        "X": 2,
+        "Y": 0
+      },
+      {
+        "Class": "mannequin",
+        "X": 4,
+        "Y": 0
+      }
+    ]
+  },
+  {
+    "Id": "mannequin-screen-4",
+    "Name": "Mannequin Screen",
+    "Formation": "Screen",
+    "Level": 15,
+    "Enemies": [
+      {
+        "Class": "mannequin",
+        "X": 0,
+        "Y": 3
+      },
+      {
+        "Class": "mannequin",
+        "X": 2,
+        "Y": 3
+      },
+      {
+        "Class": "mannequin",
+        "X": 4,
+        "Y": 3
+      },
+      {
+        "Class": "mannequin",
+        "X": 3,
+        "Y": 0
+      }
+    ]
+  },
+  {
+    "Id": "mannequin-crown-5",
+    "Name": "Mannequin Crown",
+    "Formation": "Crown",
+    "Level": 16,
+    "Enemies": [
+      {
+        "Class": "mannequin",
+        "X": 2,
+        "Y": 0
+      },
+      {
+        "Class": "mannequin",
+        "X": 0,
+        "Y": 2
+      },
+      {
+        "Class": "mannequin",
+        "X": 4,
+        "Y": 2
+      },
+      {
+        "Class": "mannequin",
+        "X": 1,
+        "Y": 4
+      },
+      {
+        "Class": "mannequin",
+        "X": 3,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "marshshambler-pair-2",
+    "Name": "Marsh Shambler Pair",
+    "Formation": "Pair",
+    "Level": 7,
+    "Enemies": [
+      {
+        "Class": "marshshambler00",
+        "X": 2,
+        "Y": 1
+      },
+      {
+        "Class": "marshshambler01",
+        "X": 3,
+        "Y": 1
+      }
+    ]
+  },
+  {
+    "Id": "marshshambler-spread-3",
+    "Name": "Marsh Shambler Spread",
+    "Formation": "Spread",
+    "Level": 8,
+    "Enemies": [
+      {
+        "Class": "marshshambler00",
+        "X": 0,
+        "Y": 2
+      },
+      {
+        "Class": "marshshambler01",
+        "X": 2,
+        "Y": 3
+      },
+      {
+        "Class": "marshshambler03",
+        "X": 5,
+        "Y": 1
+      }
+    ]
+  },
+  {
+    "Id": "marshshambler-box-4",
+    "Name": "Marsh Shambler Box",
+    "Formation": "Box",
+    "Level": 9,
+    "Enemies": [
+      {
+        "Class": "marshshambler00",
+        "X": 1,
+        "Y": 1
+      },
+      {
+        "Class": "marshshambler01",
+        "X": 4,
+        "Y": 1
+      },
+      {
+        "Class": "marshshambler03",
+        "X": 1,
+        "Y": 3
+      },
+      {
+        "Class": "marshshambler00",
+        "X": 4,
+        "Y": 3
+      }
+    ]
+  },
+  {
+    "Id": "marshshambler-cross-5",
+    "Name": "Marsh Shambler Cross",
+    "Formation": "Cross",
+    "Level": 10,
+    "Enemies": [
+      {
+        "Class": "marshshambler00",
+        "X": 2,
+        "Y": 0
+      },
+      {
+        "Class": "marshshambler01",
+        "X": 1,
+        "Y": 1
+      },
+      {
+        "Class": "marshshambler03",
+        "X": 2,
+        "Y": 1
+      },
+      {
+        "Class": "marshshambler00",
+        "X": 3,
+        "Y": 1
+      },
+      {
+        "Class": "marshshambler01",
+        "X": 2,
+        "Y": 2
+      }
+    ]
+  },
+  {
+    "Id": "marshshambler-line-3",
+    "Name": "Marsh Shambler Line",
+    "Formation": "Line",
+    "Level": 8,
+    "Enemies": [
+      {
+        "Class": "marshshambler03",
+        "X": 1,
+        "Y": 2
+      },
+      {
+        "Class": "marshshambler00",
+        "X": 2,
+        "Y": 2
+      },
+      {
+        "Class": "marshshambler01",
+        "X": 3,
+        "Y": 2
+      }
+    ]
+  },
+  {
+    "Id": "marshshambler-phalanx-5",
+    "Name": "Marsh Shambler Phalanx",
+    "Formation": "Phalanx",
+    "Level": 10,
+    "Enemies": [
+      {
+        "Class": "marshshambler03",
+        "X": 0,
+        "Y": 1
+      },
+      {
+        "Class": "marshshambler00",
+        "X": 1,
+        "Y": 1
+      },
+      {
+        "Class": "marshshambler01",
+        "X": 2,
+        "Y": 1
+      },
+      {
+        "Class": "marshshambler03",
+        "X": 3,
+        "Y": 1
+      },
+      {
+        "Class": "marshshambler00",
+        "X": 4,
+        "Y": 1
+      }
+    ]
+  },
+  {
+    "Id": "mechaarmor-flank-2",
+    "Name": "Mecha Armor Flank",
+    "Formation": "Flank",
+    "Level": 4,
+    "Enemies": [
+      {
+        "Class": "mechaarmor00",
+        "X": 0,
+        "Y": 2
+      },
+      {
+        "Class": "mechaarmor01",
+        "X": 5,
+        "Y": 2
+      }
+    ]
+  },
+  {
+    "Id": "mechaarmor-line-3",
+    "Name": "Mecha Armor Line",
+    "Formation": "Line",
+    "Level": 5,
+    "Enemies": [
+      {
+        "Class": "mechaarmor00",
+        "X": 1,
+        "Y": 2
+      },
+      {
+        "Class": "mechaarmor01",
+        "X": 2,
+        "Y": 2
+      },
+      {
+        "Class": "mechaarmor02",
+        "X": 3,
+        "Y": 2
+      }
+    ]
+  },
+  {
+    "Id": "mechaarmor-line-4",
+    "Name": "Mecha Armor Line",
+    "Formation": "Line",
+    "Level": 6,
+    "Enemies": [
+      {
+        "Class": "mechaarmor00",
+        "X": 1,
+        "Y": 2
+      },
+      {
+        "Class": "mechaarmor01",
+        "X": 2,
+        "Y": 2
+      },
+      {
+        "Class": "mechaarmor02",
+        "X": 3,
+        "Y": 2
+      },
+      {
+        "Class": "mechaarmor00",
+        "X": 4,
+        "Y": 2
+      }
+    ]
+  },
+  {
+    "Id": "mechaarmor-phalanx-5",
+    "Name": "Mecha Armor Phalanx",
+    "Formation": "Phalanx",
+    "Level": 7,
+    "Enemies": [
+      {
+        "Class": "mechaarmor00",
+        "X": 0,
+        "Y": 1
+      },
+      {
+        "Class": "mechaarmor01",
+        "X": 1,
+        "Y": 1
+      },
+      {
+        "Class": "mechaarmor02",
+        "X": 2,
+        "Y": 1
+      },
+      {
+        "Class": "mechaarmor00",
+        "X": 3,
+        "Y": 1
+      },
+      {
+        "Class": "mechaarmor01",
+        "X": 4,
+        "Y": 1
+      }
+    ]
+  },
+  {
+    "Id": "mechaarmor-wedge-3",
+    "Name": "Mecha Armor Wedge",
+    "Formation": "Wedge",
+    "Level": 5,
+    "Enemies": [
+      {
+        "Class": "mechaarmor02",
+        "X": 2,
+        "Y": 3
+      },
+      {
+        "Class": "mechaarmor00",
+        "X": 1,
+        "Y": 2
+      },
+      {
+        "Class": "mechaarmor01",
+        "X": 3,
+        "Y": 2
+      }
+    ]
+  },
+  {
+    "Id": "mechaarmor-chevron-5",
+    "Name": "Mecha Armor Chevron",
+    "Formation": "Chevron",
+    "Level": 7,
+    "Enemies": [
+      {
+        "Class": "mechaarmor02",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "mechaarmor00",
+        "X": 1,
+        "Y": 1
+      },
+      {
+        "Class": "mechaarmor01",
+        "X": 2,
+        "Y": 2
+      },
+      {
+        "Class": "mechaarmor02",
+        "X": 3,
+        "Y": 1
+      },
+      {
+        "Class": "mechaarmor00",
+        "X": 4,
+        "Y": 0
+      }
+    ]
+  },
+  {
+    "Id": "mountaintroll-stagger-2",
+    "Name": "Mountain Troll Stagger",
+    "Formation": "Stagger",
+    "Level": 10,
+    "Enemies": [
+      {
+        "Class": "mountaintroll",
+        "X": 1,
+        "Y": 1
+      },
+      {
+        "Class": "mountaintroll",
+        "X": 4,
+        "Y": 3
+      }
+    ]
+  },
+  {
+    "Id": "mountaintroll-wedge-3",
+    "Name": "Mountain Troll Wedge",
+    "Formation": "Wedge",
+    "Level": 11,
+    "Enemies": [
+      {
+        "Class": "mountaintroll",
+        "X": 2,
+        "Y": 3
+      },
+      {
+        "Class": "mountaintroll",
+        "X": 1,
+        "Y": 2
+      },
+      {
+        "Class": "mountaintroll",
+        "X": 3,
+        "Y": 2
+      }
+    ]
+  },
+  {
+    "Id": "mountaintroll-diamond-4",
+    "Name": "Mountain Troll Diamond",
+    "Formation": "Diamond",
+    "Level": 12,
+    "Enemies": [
+      {
+        "Class": "mountaintroll",
+        "X": 2,
+        "Y": 0
+      },
+      {
+        "Class": "mountaintroll",
+        "X": 1,
+        "Y": 2
+      },
+      {
+        "Class": "mountaintroll",
+        "X": 3,
+        "Y": 2
+      },
+      {
+        "Class": "mountaintroll",
+        "X": 2,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "mountaintroll-chevron-5",
+    "Name": "Mountain Troll Chevron",
+    "Formation": "Chevron",
+    "Level": 13,
+    "Enemies": [
+      {
+        "Class": "mountaintroll",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "mountaintroll",
+        "X": 1,
+        "Y": 1
+      },
+      {
+        "Class": "mountaintroll",
+        "X": 2,
+        "Y": 2
+      },
+      {
+        "Class": "mountaintroll",
+        "X": 3,
+        "Y": 1
+      },
+      {
+        "Class": "mountaintroll",
+        "X": 4,
+        "Y": 0
+      }
+    ]
+  },
+  {
+    "Id": "oni-column-2",
+    "Name": "Oni Column",
+    "Formation": "Column",
+    "Level": 10,
+    "Enemies": [
+      {
+        "Class": "oni00",
+        "X": 2,
+        "Y": 0
+      },
+      {
+        "Class": "oni01",
+        "X": 2,
+        "Y": 2
+      }
+    ]
+  },
+  {
+    "Id": "oni-pincer-3",
+    "Name": "Oni Pincer",
+    "Formation": "Pincer",
+    "Level": 11,
+    "Enemies": [
+      {
+        "Class": "oni00",
+        "X": 0,
+        "Y": 3
+      },
+      {
+        "Class": "oni01",
+        "X": 5,
+        "Y": 3
+      },
+      {
+        "Class": "oni02",
+        "X": 2,
+        "Y": 0
+      }
+    ]
+  },
+  {
+    "Id": "oni-pincer-4",
+    "Name": "Oni Pincer",
+    "Formation": "Pincer",
+    "Level": 12,
+    "Enemies": [
+      {
+        "Class": "oni00",
+        "X": 0,
+        "Y": 1
+      },
+      {
+        "Class": "oni01",
+        "X": 0,
+        "Y": 3
+      },
+      {
+        "Class": "oni02",
+        "X": 5,
+        "Y": 1
+      },
+      {
+        "Class": "oni00",
+        "X": 5,
+        "Y": 3
+      }
+    ]
+  },
+  {
+    "Id": "oni-pincer-5",
+    "Name": "Oni Pincer",
+    "Formation": "Pincer",
+    "Level": 13,
+    "Enemies": [
+      {
+        "Class": "oni00",
+        "X": 0,
+        "Y": 1
+      },
+      {
+        "Class": "oni01",
+        "X": 0,
+        "Y": 3
+      },
+      {
+        "Class": "oni02",
+        "X": 5,
+        "Y": 1
+      },
+      {
+        "Class": "oni00",
+        "X": 5,
+        "Y": 3
+      },
+      {
+        "Class": "oni01",
+        "X": 2,
+        "Y": 0
+      }
+    ]
+  },
+  {
+    "Id": "oni-delta-3",
+    "Name": "Oni Delta",
+    "Formation": "Delta",
+    "Level": 11,
+    "Enemies": [
+      {
+        "Class": "oni02",
+        "X": 2,
+        "Y": 0
+      },
+      {
+        "Class": "oni00",
+        "X": 1,
+        "Y": 2
+      },
+      {
+        "Class": "oni01",
+        "X": 3,
+        "Y": 2
+      }
+    ]
+  },
+  {
+    "Id": "oni-scatter-5",
+    "Name": "Oni Scatter",
+    "Formation": "Scatter",
+    "Level": 13,
+    "Enemies": [
+      {
+        "Class": "oni02",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "oni00",
+        "X": 3,
+        "Y": 0
+      },
+      {
+        "Class": "oni01",
+        "X": 5,
+        "Y": 2
+      },
+      {
+        "Class": "oni02",
+        "X": 1,
+        "Y": 3
+      },
+      {
+        "Class": "oni00",
+        "X": 4,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "phantom-vanguard-2",
+    "Name": "Phantom Vanguard",
+    "Formation": "Vanguard",
+    "Level": 13,
+    "Enemies": [
+      {
+        "Class": "phantom",
+        "X": 1,
+        "Y": 4
+      },
+      {
+        "Class": "phantom",
+        "X": 4,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "phantom-delta-3",
+    "Name": "Phantom Delta",
+    "Formation": "Delta",
+    "Level": 14,
+    "Enemies": [
+      {
+        "Class": "phantom",
+        "X": 2,
+        "Y": 0
+      },
+      {
+        "Class": "phantom",
+        "X": 1,
+        "Y": 2
+      },
+      {
+        "Class": "phantom",
+        "X": 3,
+        "Y": 2
+      }
+    ]
+  },
+  {
+    "Id": "phantom-arrow-4",
+    "Name": "Phantom Arrow",
+    "Formation": "Arrow",
+    "Level": 15,
+    "Enemies": [
+      {
+        "Class": "phantom",
+        "X": 2,
+        "Y": 4
+      },
+      {
+        "Class": "phantom",
+        "X": 1,
+        "Y": 3
+      },
+      {
+        "Class": "phantom",
+        "X": 3,
+        "Y": 3
+      },
+      {
+        "Class": "phantom",
+        "X": 2,
+        "Y": 1
+      }
+    ]
+  },
+  {
+    "Id": "phantom-scatter-5",
+    "Name": "Phantom Scatter",
+    "Formation": "Scatter",
+    "Level": 16,
+    "Enemies": [
+      {
+        "Class": "phantom",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "phantom",
+        "X": 3,
+        "Y": 0
+      },
+      {
+        "Class": "phantom",
+        "X": 5,
+        "Y": 2
+      },
+      {
+        "Class": "phantom",
+        "X": 1,
+        "Y": 3
+      },
+      {
+        "Class": "phantom",
+        "X": 4,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "purpleprototype-rearguard-2",
+    "Name": "Purple Prototype Rearguard",
+    "Formation": "Rearguard",
+    "Level": 4,
+    "Enemies": [
+      {
+        "Class": "purpleprototype00",
+        "X": 1,
+        "Y": 0
+      },
+      {
+        "Class": "purpleprototype01",
+        "X": 4,
+        "Y": 0
+      }
+    ]
+  },
+  {
+    "Id": "purpleprototype-column-3",
+    "Name": "Purple Prototype Column",
+    "Formation": "Column",
+    "Level": 5,
+    "Enemies": [
+      {
+        "Class": "purpleprototype00",
+        "X": 3,
+        "Y": 0
+      },
+      {
+        "Class": "purpleprototype01",
+        "X": 3,
+        "Y": 2
+      },
+      {
+        "Class": "purpleprototype02",
+        "X": 3,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "purpleprototype-stair-4",
+    "Name": "Purple Prototype Stair",
+    "Formation": "Stair",
+    "Level": 6,
+    "Enemies": [
+      {
+        "Class": "purpleprototype00",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "purpleprototype01",
+        "X": 1,
+        "Y": 1
+      },
+      {
+        "Class": "purpleprototype02",
+        "X": 2,
+        "Y": 2
+      },
+      {
+        "Class": "purpleprototype03",
+        "X": 3,
+        "Y": 3
+      }
+    ]
+  },
+  {
+    "Id": "purpleprototype-shieldwall-5",
+    "Name": "Purple Prototype Shield Wall",
+    "Formation": "Shield Wall",
+    "Level": 7,
+    "Enemies": [
+      {
+        "Class": "purpleprototype00",
+        "X": 1,
+        "Y": 3
+      },
+      {
+        "Class": "purpleprototype01",
+        "X": 2,
+        "Y": 3
+      },
+      {
+        "Class": "purpleprototype02",
+        "X": 3,
+        "Y": 3
+      },
+      {
+        "Class": "purpleprototype03",
+        "X": 4,
+        "Y": 3
+      },
+      {
+        "Class": "purpleprototype04",
+        "X": 2,
+        "Y": 1
+      }
+    ]
+  },
+  {
+    "Id": "purpleprototype-scatter-3",
+    "Name": "Purple Prototype Scatter",
+    "Formation": "Scatter",
+    "Level": 5,
+    "Enemies": [
+      {
+        "Class": "purpleprototype02",
+        "X": 0,
+        "Y": 1
+      },
+      {
+        "Class": "purpleprototype03",
+        "X": 4,
+        "Y": 0
+      },
+      {
+        "Class": "purpleprototype04",
+        "X": 2,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "purpleprototype-horseshoe-5",
+    "Name": "Purple Prototype Horseshoe",
+    "Formation": "Horseshoe",
+    "Level": 7,
+    "Enemies": [
+      {
+        "Class": "purpleprototype02",
+        "X": 1,
+        "Y": 0
+      },
+      {
+        "Class": "purpleprototype03",
+        "X": 4,
+        "Y": 0
+      },
+      {
+        "Class": "purpleprototype04",
+        "X": 1,
+        "Y": 2
+      },
+      {
+        "Class": "purpleprototype00",
+        "X": 4,
+        "Y": 2
+      },
+      {
+        "Class": "purpleprototype01",
+        "X": 2,
+        "Y": 3
+      }
+    ]
+  },
+  {
+    "Id": "reaper-diagonal-2",
+    "Name": "Reaper Diagonal",
+    "Formation": "Diagonal",
+    "Level": 14,
+    "Enemies": [
+      {
+        "Class": "reaper",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "reaper",
+        "X": 5,
+        "Y": 3
+      }
+    ]
+  },
+  {
+    "Id": "reaper-scatter-3",
+    "Name": "Reaper Scatter",
+    "Formation": "Scatter",
+    "Level": 15,
+    "Enemies": [
+      {
+        "Class": "reaper",
+        "X": 0,
+        "Y": 1
+      },
+      {
+        "Class": "reaper",
+        "X": 4,
+        "Y": 0
+      },
+      {
+        "Class": "reaper",
+        "X": 2,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "reaper-scatter-4",
+    "Name": "Reaper Scatter",
+    "Formation": "Scatter",
+    "Level": 16,
+    "Enemies": [
+      {
+        "Class": "reaper",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "reaper",
+        "X": 5,
+        "Y": 1
+      },
+      {
+        "Class": "reaper",
+        "X": 1,
+        "Y": 4
+      },
+      {
+        "Class": "reaper",
+        "X": 4,
+        "Y": 3
+      }
+    ]
+  },
+  {
+    "Id": "reaper-horseshoe-5",
+    "Name": "Reaper Horseshoe",
+    "Formation": "Horseshoe",
+    "Level": 17,
+    "Enemies": [
+      {
+        "Class": "reaper",
+        "X": 1,
+        "Y": 0
+      },
+      {
+        "Class": "reaper",
+        "X": 4,
+        "Y": 0
+      },
+      {
+        "Class": "reaper",
+        "X": 1,
+        "Y": 2
+      },
+      {
+        "Class": "reaper",
+        "X": 4,
+        "Y": 2
+      },
+      {
+        "Class": "reaper",
+        "X": 2,
+        "Y": 3
+      }
+    ]
+  },
+  {
+    "Id": "sandmaw-sentries-2",
+    "Name": "Sand Maw Sentries",
+    "Formation": "Sentries",
+    "Level": 4,
+    "Enemies": [
+      {
+        "Class": "sandmaw",
+        "X": 0,
+        "Y": 4
+      },
+      {
+        "Class": "sandmaw",
+        "X": 5,
+        "Y": 0
+      }
+    ]
+  },
+  {
+    "Id": "sandmaw-echelon-3",
+    "Name": "Sand Maw Echelon",
+    "Formation": "Echelon",
+    "Level": 5,
+    "Enemies": [
+      {
+        "Class": "sandmaw",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "sandmaw",
+        "X": 2,
+        "Y": 2
+      },
+      {
+        "Class": "sandmaw",
+        "X": 4,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "sandmaw-twincolumns-4",
+    "Name": "Sand Maw Twin Columns",
+    "Formation": "Twin Columns",
+    "Level": 6,
+    "Enemies": [
+      {
+        "Class": "sandmaw",
+        "X": 1,
+        "Y": 0
+      },
+      {
+        "Class": "sandmaw",
+        "X": 1,
+        "Y": 2
+      },
+      {
+        "Class": "sandmaw",
+        "X": 4,
+        "Y": 0
+      },
+      {
+        "Class": "sandmaw",
+        "X": 4,
+        "Y": 2
+      }
+    ]
+  },
+  {
+    "Id": "sandmaw-hourglass-5",
+    "Name": "Sand Maw Hourglass",
+    "Formation": "Hourglass",
+    "Level": 7,
+    "Enemies": [
+      {
+        "Class": "sandmaw",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "sandmaw",
+        "X": 5,
+        "Y": 0
+      },
+      {
+        "Class": "sandmaw",
+        "X": 2,
+        "Y": 2
+      },
+      {
+        "Class": "sandmaw",
+        "X": 0,
+        "Y": 4
+      },
+      {
+        "Class": "sandmaw",
+        "X": 5,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "scorpion-pair-2",
+    "Name": "Scorpion Pair",
+    "Formation": "Pair",
+    "Level": 4,
+    "Enemies": [
+      {
+        "Class": "scorpion",
+        "X": 2,
+        "Y": 1
+      },
+      {
+        "Class": "scorpion",
+        "X": 3,
+        "Y": 1
+      }
+    ]
+  },
+  {
+    "Id": "scorpion-rearguard-3",
+    "Name": "Scorpion Rearguard",
+    "Formation": "Rearguard",
+    "Level": 5,
+    "Enemies": [
+      {
+        "Class": "scorpion",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "scorpion",
+        "X": 2,
+        "Y": 0
+      },
+      {
+        "Class": "scorpion",
+        "X": 4,
+        "Y": 0
+      }
+    ]
+  },
+  {
+    "Id": "scorpion-screen-4",
+    "Name": "Scorpion Screen",
+    "Formation": "Screen",
+    "Level": 6,
+    "Enemies": [
+      {
+        "Class": "scorpion",
+        "X": 0,
+        "Y": 3
+      },
+      {
+        "Class": "scorpion",
+        "X": 2,
+        "Y": 3
+      },
+      {
+        "Class": "scorpion",
+        "X": 4,
+        "Y": 3
+      },
+      {
+        "Class": "scorpion",
+        "X": 3,
+        "Y": 0
+      }
+    ]
+  },
+  {
+    "Id": "scorpion-crown-5",
+    "Name": "Scorpion Crown",
+    "Formation": "Crown",
+    "Level": 7,
+    "Enemies": [
+      {
+        "Class": "scorpion",
+        "X": 2,
+        "Y": 0
+      },
+      {
+        "Class": "scorpion",
+        "X": 0,
+        "Y": 2
+      },
+      {
+        "Class": "scorpion",
+        "X": 4,
+        "Y": 2
+      },
+      {
+        "Class": "scorpion",
+        "X": 1,
+        "Y": 4
+      },
+      {
+        "Class": "scorpion",
+        "X": 3,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "skelepede-flank-2",
+    "Name": "Skelepede Flank",
+    "Formation": "Flank",
+    "Level": 3,
+    "Enemies": [
+      {
+        "Class": "skelepede00",
+        "X": 0,
+        "Y": 2
+      },
+      {
+        "Class": "skelepede01",
+        "X": 5,
+        "Y": 2
+      }
+    ]
+  },
+  {
+    "Id": "skelepede-spread-3",
+    "Name": "Skelepede Spread",
+    "Formation": "Spread",
+    "Level": 4,
+    "Enemies": [
+      {
+        "Class": "skelepede00",
+        "X": 0,
+        "Y": 2
+      },
+      {
+        "Class": "skelepede01",
+        "X": 2,
+        "Y": 3
+      },
+      {
+        "Class": "skelepede02",
+        "X": 5,
+        "Y": 1
+      }
+    ]
+  },
+  {
+    "Id": "skelepede-box-4",
+    "Name": "Skelepede Box",
+    "Formation": "Box",
+    "Level": 5,
+    "Enemies": [
+      {
+        "Class": "skelepede00",
+        "X": 1,
+        "Y": 1
+      },
+      {
+        "Class": "skelepede01",
+        "X": 4,
+        "Y": 1
+      },
+      {
+        "Class": "skelepede02",
+        "X": 1,
+        "Y": 3
+      },
+      {
+        "Class": "skelepede00",
+        "X": 4,
+        "Y": 3
+      }
+    ]
+  },
+  {
+    "Id": "skelepede-cross-5",
+    "Name": "Skelepede Cross",
+    "Formation": "Cross",
+    "Level": 6,
+    "Enemies": [
+      {
+        "Class": "skelepede00",
+        "X": 2,
+        "Y": 0
+      },
+      {
+        "Class": "skelepede01",
+        "X": 1,
+        "Y": 1
+      },
+      {
+        "Class": "skelepede02",
+        "X": 2,
+        "Y": 1
+      },
+      {
+        "Class": "skelepede00",
+        "X": 3,
+        "Y": 1
+      },
+      {
+        "Class": "skelepede01",
+        "X": 2,
+        "Y": 2
+      }
+    ]
+  },
+  {
+    "Id": "skelepede-line-3",
+    "Name": "Skelepede Line",
+    "Formation": "Line",
+    "Level": 4,
+    "Enemies": [
+      {
+        "Class": "skelepede02",
+        "X": 1,
+        "Y": 2
+      },
+      {
+        "Class": "skelepede00",
+        "X": 2,
+        "Y": 2
+      },
+      {
+        "Class": "skelepede01",
+        "X": 3,
+        "Y": 2
+      }
+    ]
+  },
+  {
+    "Id": "skelepede-phalanx-5",
+    "Name": "Skelepede Phalanx",
+    "Formation": "Phalanx",
+    "Level": 6,
+    "Enemies": [
+      {
+        "Class": "skelepede02",
+        "X": 0,
+        "Y": 1
+      },
+      {
+        "Class": "skelepede00",
+        "X": 1,
+        "Y": 1
+      },
+      {
+        "Class": "skelepede01",
+        "X": 2,
+        "Y": 1
+      },
+      {
+        "Class": "skelepede02",
+        "X": 3,
+        "Y": 1
+      },
+      {
+        "Class": "skelepede00",
+        "X": 4,
+        "Y": 1
+      }
+    ]
+  },
+  {
+    "Id": "slime-stagger-2",
+    "Name": "Slime Stagger",
+    "Formation": "Stagger",
+    "Level": 1,
+    "Enemies": [
+      {
+        "Class": "slime00",
+        "X": 1,
+        "Y": 1
+      },
+      {
+        "Class": "slime01",
+        "X": 4,
+        "Y": 3
+      }
+    ]
+  },
+  {
+    "Id": "slime-line-3",
+    "Name": "Slime Line",
+    "Formation": "Line",
+    "Level": 2,
+    "Enemies": [
+      {
+        "Class": "slime00",
+        "X": 1,
+        "Y": 2
+      },
+      {
+        "Class": "slime01",
+        "X": 2,
+        "Y": 2
+      },
+      {
+        "Class": "slime02",
+        "X": 3,
+        "Y": 2
+      }
+    ]
+  },
+  {
+    "Id": "slime-line-4",
+    "Name": "Slime Line",
+    "Formation": "Line",
+    "Level": 3,
+    "Enemies": [
+      {
+        "Class": "slime00",
+        "X": 1,
+        "Y": 2
+      },
+      {
+        "Class": "slime01",
+        "X": 2,
+        "Y": 2
+      },
+      {
+        "Class": "slime02",
+        "X": 3,
+        "Y": 2
+      },
+      {
+        "Class": "slime03",
+        "X": 4,
+        "Y": 2
+      }
+    ]
+  },
+  {
+    "Id": "slime-phalanx-5",
+    "Name": "Slime Phalanx",
+    "Formation": "Phalanx",
+    "Level": 4,
+    "Enemies": [
+      {
+        "Class": "slime00",
+        "X": 0,
+        "Y": 1
+      },
+      {
+        "Class": "slime01",
+        "X": 1,
+        "Y": 1
+      },
+      {
+        "Class": "slime02",
+        "X": 2,
+        "Y": 1
+      },
+      {
+        "Class": "slime03",
+        "X": 3,
+        "Y": 1
+      },
+      {
+        "Class": "slime00",
+        "X": 4,
+        "Y": 1
+      }
+    ]
+  },
+  {
+    "Id": "slime-wedge-3",
+    "Name": "Slime Wedge",
+    "Formation": "Wedge",
+    "Level": 2,
+    "Enemies": [
+      {
+        "Class": "slime02",
+        "X": 2,
+        "Y": 3
+      },
+      {
+        "Class": "slime03",
+        "X": 1,
+        "Y": 2
+      },
+      {
+        "Class": "slime00",
+        "X": 3,
+        "Y": 2
+      }
+    ]
+  },
+  {
+    "Id": "slime-chevron-5",
+    "Name": "Slime Chevron",
+    "Formation": "Chevron",
+    "Level": 4,
+    "Enemies": [
+      {
+        "Class": "slime02",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "slime03",
+        "X": 1,
+        "Y": 1
+      },
+      {
+        "Class": "slime00",
+        "X": 2,
+        "Y": 2
+      },
+      {
+        "Class": "slime01",
+        "X": 3,
+        "Y": 1
+      },
+      {
+        "Class": "slime02",
+        "X": 4,
+        "Y": 0
+      }
+    ]
+  },
+  {
+    "Id": "soldier-column-2",
+    "Name": "Imperial Column",
+    "Formation": "Column",
+    "Level": 1,
+    "Enemies": [
+      {
+        "Class": "captain",
+        "X": 2,
+        "Y": 0
+      },
+      {
+        "Class": "soldier00",
+        "X": 2,
+        "Y": 2
+      }
+    ]
+  },
+  {
+    "Id": "soldier-wedge-3",
+    "Name": "Imperial Wedge",
+    "Formation": "Wedge",
+    "Level": 2,
+    "Enemies": [
+      {
+        "Class": "captain",
+        "X": 2,
+        "Y": 3
+      },
+      {
+        "Class": "soldier00",
+        "X": 1,
+        "Y": 2
+      },
+      {
+        "Class": "soldier01",
+        "X": 3,
+        "Y": 2
+      }
+    ]
+  },
+  {
+    "Id": "soldier-diamond-4",
+    "Name": "Imperial Diamond",
+    "Formation": "Diamond",
+    "Level": 3,
+    "Enemies": [
+      {
+        "Class": "captain",
+        "X": 2,
+        "Y": 0
+      },
+      {
+        "Class": "soldier00",
+        "X": 1,
+        "Y": 2
+      },
+      {
+        "Class": "soldier01",
+        "X": 3,
+        "Y": 2
+      },
+      {
+        "Class": "soldier02",
+        "X": 2,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "soldier-chevron-5",
+    "Name": "Imperial Chevron",
+    "Formation": "Chevron",
+    "Level": 4,
+    "Enemies": [
+      {
+        "Class": "captain",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "soldier00",
+        "X": 1,
+        "Y": 1
+      },
+      {
+        "Class": "soldier01",
+        "X": 2,
+        "Y": 2
+      },
+      {
+        "Class": "soldier02",
+        "X": 3,
+        "Y": 1
+      },
+      {
+        "Class": "soldier03",
+        "X": 4,
+        "Y": 0
+      }
+    ]
+  },
+  {
+    "Id": "soldier-pincer-3",
+    "Name": "Imperial Pincer",
+    "Formation": "Pincer",
+    "Level": 2,
+    "Enemies": [
+      {
+        "Class": "soldier01",
+        "X": 0,
+        "Y": 3
+      },
+      {
+        "Class": "soldier02",
+        "X": 5,
+        "Y": 3
+      },
+      {
+        "Class": "soldier03",
+        "X": 2,
+        "Y": 0
+      }
+    ]
+  },
+  {
+    "Id": "soldier-pincer-5",
+    "Name": "Imperial Pincer",
+    "Formation": "Pincer",
+    "Level": 4,
+    "Enemies": [
+      {
+        "Class": "soldier01",
+        "X": 0,
+        "Y": 1
+      },
+      {
+        "Class": "soldier02",
+        "X": 0,
+        "Y": 3
+      },
+      {
+        "Class": "soldier03",
+        "X": 5,
+        "Y": 1
+      },
+      {
+        "Class": "captain",
+        "X": 5,
+        "Y": 3
+      },
+      {
+        "Class": "soldier00",
+        "X": 2,
+        "Y": 0
+      }
+    ]
+  },
+  {
+    "Id": "steppinrazor-vanguard-2",
+    "Name": "Steppin Razor Vanguard",
+    "Formation": "Vanguard",
+    "Level": 5,
+    "Enemies": [
+      {
+        "Class": "steppinrazor00",
+        "X": 1,
+        "Y": 4
+      },
+      {
+        "Class": "steppinrazor01",
+        "X": 4,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "steppinrazor-pincer-3",
+    "Name": "Steppin Razor Pincer",
+    "Formation": "Pincer",
+    "Level": 6,
+    "Enemies": [
+      {
+        "Class": "steppinrazor00",
+        "X": 0,
+        "Y": 3
+      },
+      {
+        "Class": "steppinrazor01",
+        "X": 5,
+        "Y": 3
+      },
+      {
+        "Class": "steppinrazor02",
+        "X": 2,
+        "Y": 0
+      }
+    ]
+  },
+  {
+    "Id": "steppinrazor-pincer-4",
+    "Name": "Steppin Razor Pincer",
+    "Formation": "Pincer",
+    "Level": 7,
+    "Enemies": [
+      {
+        "Class": "steppinrazor00",
+        "X": 0,
+        "Y": 1
+      },
+      {
+        "Class": "steppinrazor01",
+        "X": 0,
+        "Y": 3
+      },
+      {
+        "Class": "steppinrazor02",
+        "X": 5,
+        "Y": 1
+      },
+      {
+        "Class": "steppinrazor04",
+        "X": 5,
+        "Y": 3
+      }
+    ]
+  },
+  {
+    "Id": "steppinrazor-pincer-5",
+    "Name": "Steppin Razor Pincer",
+    "Formation": "Pincer",
+    "Level": 8,
+    "Enemies": [
+      {
+        "Class": "steppinrazor00",
+        "X": 0,
+        "Y": 1
+      },
+      {
+        "Class": "steppinrazor01",
+        "X": 0,
+        "Y": 3
+      },
+      {
+        "Class": "steppinrazor02",
+        "X": 5,
+        "Y": 1
+      },
+      {
+        "Class": "steppinrazor04",
+        "X": 5,
+        "Y": 3
+      },
+      {
+        "Class": "steppinrazor05",
+        "X": 2,
+        "Y": 0
+      }
+    ]
+  },
+  {
+    "Id": "steppinrazor-delta-3",
+    "Name": "Steppin Razor Delta",
+    "Formation": "Delta",
+    "Level": 6,
+    "Enemies": [
+      {
+        "Class": "steppinrazor02",
+        "X": 2,
+        "Y": 0
+      },
+      {
+        "Class": "steppinrazor04",
+        "X": 1,
+        "Y": 2
+      },
+      {
+        "Class": "steppinrazor05",
+        "X": 3,
+        "Y": 2
+      }
+    ]
+  },
+  {
+    "Id": "steppinrazor-scatter-5",
+    "Name": "Steppin Razor Scatter",
+    "Formation": "Scatter",
+    "Level": 8,
+    "Enemies": [
+      {
+        "Class": "steppinrazor02",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "steppinrazor04",
+        "X": 3,
+        "Y": 0
+      },
+      {
+        "Class": "steppinrazor05",
+        "X": 5,
+        "Y": 2
+      },
+      {
+        "Class": "steppinrazor00",
+        "X": 1,
+        "Y": 3
+      },
+      {
+        "Class": "steppinrazor01",
+        "X": 4,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "swampmistress-rearguard-2",
+    "Name": "Swamp Mistress Rearguard",
+    "Formation": "Rearguard",
+    "Level": 9,
+    "Enemies": [
+      {
+        "Class": "swampmistress00",
+        "X": 1,
+        "Y": 0
+      },
+      {
+        "Class": "swampmistress00",
+        "X": 4,
+        "Y": 0
+      }
+    ]
+  },
+  {
+    "Id": "swampmistress-delta-3",
+    "Name": "Swamp Mistress Delta",
+    "Formation": "Delta",
+    "Level": 10,
+    "Enemies": [
+      {
+        "Class": "swampmistress00",
+        "X": 2,
+        "Y": 0
+      },
+      {
+        "Class": "swampmistress00",
+        "X": 1,
+        "Y": 2
+      },
+      {
+        "Class": "swampmistress00",
+        "X": 3,
+        "Y": 2
+      }
+    ]
+  },
+  {
+    "Id": "swampmistress-arrow-4",
+    "Name": "Swamp Mistress Arrow",
+    "Formation": "Arrow",
+    "Level": 11,
+    "Enemies": [
+      {
+        "Class": "swampmistress00",
+        "X": 2,
+        "Y": 4
+      },
+      {
+        "Class": "swampmistress00",
+        "X": 1,
+        "Y": 3
+      },
+      {
+        "Class": "swampmistress00",
+        "X": 3,
+        "Y": 3
+      },
+      {
+        "Class": "swampmistress00",
+        "X": 2,
+        "Y": 1
+      }
+    ]
+  },
+  {
+    "Id": "swampmistress-scatter-5",
+    "Name": "Swamp Mistress Scatter",
+    "Formation": "Scatter",
+    "Level": 12,
+    "Enemies": [
+      {
+        "Class": "swampmistress00",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "swampmistress00",
+        "X": 3,
+        "Y": 0
+      },
+      {
+        "Class": "swampmistress00",
+        "X": 5,
+        "Y": 2
+      },
+      {
+        "Class": "swampmistress00",
+        "X": 1,
+        "Y": 3
+      },
+      {
+        "Class": "swampmistress00",
+        "X": 4,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "techgremlin-diagonal-2",
+    "Name": "Tech Gremlin Diagonal",
+    "Formation": "Diagonal",
+    "Level": 4,
+    "Enemies": [
+      {
+        "Class": "techgremlin00",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "techgremlin01",
+        "X": 5,
+        "Y": 3
+      }
+    ]
+  },
+  {
+    "Id": "techgremlin-column-3",
+    "Name": "Tech Gremlin Column",
+    "Formation": "Column",
+    "Level": 5,
+    "Enemies": [
+      {
+        "Class": "techgremlin00",
+        "X": 3,
+        "Y": 0
+      },
+      {
+        "Class": "techgremlin01",
+        "X": 3,
+        "Y": 2
+      },
+      {
+        "Class": "techgremlin02",
+        "X": 3,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "techgremlin-stair-4",
+    "Name": "Tech Gremlin Stair",
+    "Formation": "Stair",
+    "Level": 6,
+    "Enemies": [
+      {
+        "Class": "techgremlin00",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "techgremlin01",
+        "X": 1,
+        "Y": 1
+      },
+      {
+        "Class": "techgremlin02",
+        "X": 2,
+        "Y": 2
+      },
+      {
+        "Class": "techgremlin00",
+        "X": 3,
+        "Y": 3
+      }
+    ]
+  },
+  {
+    "Id": "techgremlin-shieldwall-5",
+    "Name": "Tech Gremlin Shield Wall",
+    "Formation": "Shield Wall",
+    "Level": 7,
+    "Enemies": [
+      {
+        "Class": "techgremlin00",
+        "X": 1,
+        "Y": 3
+      },
+      {
+        "Class": "techgremlin01",
+        "X": 2,
+        "Y": 3
+      },
+      {
+        "Class": "techgremlin02",
+        "X": 3,
+        "Y": 3
+      },
+      {
+        "Class": "techgremlin00",
+        "X": 4,
+        "Y": 3
+      },
+      {
+        "Class": "techgremlin01",
+        "X": 2,
+        "Y": 1
+      }
+    ]
+  },
+  {
+    "Id": "techgremlin-scatter-3",
+    "Name": "Tech Gremlin Scatter",
+    "Formation": "Scatter",
+    "Level": 5,
+    "Enemies": [
+      {
+        "Class": "techgremlin02",
+        "X": 0,
+        "Y": 1
+      },
+      {
+        "Class": "techgremlin00",
+        "X": 4,
+        "Y": 0
+      },
+      {
+        "Class": "techgremlin01",
+        "X": 2,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "techgremlin-horseshoe-5",
+    "Name": "Tech Gremlin Horseshoe",
+    "Formation": "Horseshoe",
+    "Level": 7,
+    "Enemies": [
+      {
+        "Class": "techgremlin02",
+        "X": 1,
+        "Y": 0
+      },
+      {
+        "Class": "techgremlin00",
+        "X": 4,
+        "Y": 0
+      },
+      {
+        "Class": "techgremlin01",
+        "X": 1,
+        "Y": 2
+      },
+      {
+        "Class": "techgremlin02",
+        "X": 4,
+        "Y": 2
+      },
+      {
+        "Class": "techgremlin00",
+        "X": 2,
+        "Y": 3
+      }
+    ]
+  },
+  {
+    "Id": "templar-sentries-2",
+    "Name": "Templar Sentries",
+    "Formation": "Sentries",
+    "Level": 13,
+    "Enemies": [
+      {
+        "Class": "templar00",
+        "X": 0,
+        "Y": 4
+      },
+      {
+        "Class": "templar01",
+        "X": 5,
+        "Y": 0
+      }
+    ]
+  },
+  {
+    "Id": "templar-scatter-3",
+    "Name": "Templar Scatter",
+    "Formation": "Scatter",
+    "Level": 14,
+    "Enemies": [
+      {
+        "Class": "templar00",
+        "X": 0,
+        "Y": 1
+      },
+      {
+        "Class": "templar01",
+        "X": 4,
+        "Y": 0
+      },
+      {
+        "Class": "templar02",
+        "X": 2,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "templar-scatter-4",
+    "Name": "Templar Scatter",
+    "Formation": "Scatter",
+    "Level": 15,
+    "Enemies": [
+      {
+        "Class": "templar00",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "templar01",
+        "X": 5,
+        "Y": 1
+      },
+      {
+        "Class": "templar02",
+        "X": 1,
+        "Y": 4
+      },
+      {
+        "Class": "templar03",
+        "X": 4,
+        "Y": 3
+      }
+    ]
+  },
+  {
+    "Id": "templar-horseshoe-5",
+    "Name": "Templar Horseshoe",
+    "Formation": "Horseshoe",
+    "Level": 16,
+    "Enemies": [
+      {
+        "Class": "templar00",
+        "X": 1,
+        "Y": 0
+      },
+      {
+        "Class": "templar01",
+        "X": 4,
+        "Y": 0
+      },
+      {
+        "Class": "templar02",
+        "X": 1,
+        "Y": 2
+      },
+      {
+        "Class": "templar03",
+        "X": 4,
+        "Y": 2
+      },
+      {
+        "Class": "templar04",
+        "X": 2,
+        "Y": 3
+      }
+    ]
+  },
+  {
+    "Id": "templar-echelon-3",
+    "Name": "Templar Echelon",
+    "Formation": "Echelon",
+    "Level": 14,
+    "Enemies": [
+      {
+        "Class": "templar02",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "templar03",
+        "X": 2,
+        "Y": 2
+      },
+      {
+        "Class": "templar04",
+        "X": 4,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "templar-hourglass-5",
+    "Name": "Templar Hourglass",
+    "Formation": "Hourglass",
+    "Level": 16,
+    "Enemies": [
+      {
+        "Class": "templar02",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "templar03",
+        "X": 5,
+        "Y": 0
+      },
+      {
+        "Class": "templar04",
+        "X": 2,
+        "Y": 2
+      },
+      {
+        "Class": "templar05",
+        "X": 0,
+        "Y": 4
+      },
+      {
+        "Class": "templar00",
+        "X": 5,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "treegolem-pair-2",
+    "Name": "Tree Golem Pair",
+    "Formation": "Pair",
+    "Level": 7,
+    "Enemies": [
+      {
+        "Class": "treegolem00",
+        "X": 2,
+        "Y": 1
+      },
+      {
+        "Class": "treegolem01",
+        "X": 3,
+        "Y": 1
+      }
+    ]
+  },
+  {
+    "Id": "treegolem-echelon-3",
+    "Name": "Tree Golem Echelon",
+    "Formation": "Echelon",
+    "Level": 8,
+    "Enemies": [
+      {
+        "Class": "treegolem00",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "treegolem01",
+        "X": 2,
+        "Y": 2
+      },
+      {
+        "Class": "treegolem02",
+        "X": 4,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "treegolem-twincolumns-4",
+    "Name": "Tree Golem Twin Columns",
+    "Formation": "Twin Columns",
+    "Level": 9,
+    "Enemies": [
+      {
+        "Class": "treegolem00",
+        "X": 1,
+        "Y": 0
+      },
+      {
+        "Class": "treegolem01",
+        "X": 1,
+        "Y": 2
+      },
+      {
+        "Class": "treegolem02",
+        "X": 4,
+        "Y": 0
+      },
+      {
+        "Class": "treegolem03",
+        "X": 4,
+        "Y": 2
+      }
+    ]
+  },
+  {
+    "Id": "treegolem-hourglass-5",
+    "Name": "Tree Golem Hourglass",
+    "Formation": "Hourglass",
+    "Level": 10,
+    "Enemies": [
+      {
+        "Class": "treegolem00",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "treegolem01",
+        "X": 5,
+        "Y": 0
+      },
+      {
+        "Class": "treegolem02",
+        "X": 2,
+        "Y": 2
+      },
+      {
+        "Class": "treegolem03",
+        "X": 0,
+        "Y": 4
+      },
+      {
+        "Class": "treegolem04",
+        "X": 5,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "treegolem-rearguard-3",
+    "Name": "Tree Golem Rearguard",
+    "Formation": "Rearguard",
+    "Level": 8,
+    "Enemies": [
+      {
+        "Class": "treegolem02",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "treegolem03",
+        "X": 2,
+        "Y": 0
+      },
+      {
+        "Class": "treegolem04",
+        "X": 4,
+        "Y": 0
+      }
+    ]
+  },
+  {
+    "Id": "treegolem-crown-5",
+    "Name": "Tree Golem Crown",
+    "Formation": "Crown",
+    "Level": 10,
+    "Enemies": [
+      {
+        "Class": "treegolem02",
+        "X": 2,
+        "Y": 0
+      },
+      {
+        "Class": "treegolem03",
+        "X": 0,
+        "Y": 2
+      },
+      {
+        "Class": "treegolem04",
+        "X": 4,
+        "Y": 2
+      },
+      {
+        "Class": "treegolem06",
+        "X": 1,
+        "Y": 4
+      },
+      {
+        "Class": "treegolem00",
+        "X": 3,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "undead-flank-2",
+    "Name": "Undead Flank",
+    "Formation": "Flank",
+    "Level": 3,
+    "Enemies": [
+      {
+        "Class": "undead00",
+        "X": 0,
+        "Y": 2
+      },
+      {
+        "Class": "undead01",
+        "X": 5,
+        "Y": 2
+      }
+    ]
+  },
+  {
+    "Id": "undead-rearguard-3",
+    "Name": "Undead Rearguard",
+    "Formation": "Rearguard",
+    "Level": 4,
+    "Enemies": [
+      {
+        "Class": "undead00",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "undead01",
+        "X": 2,
+        "Y": 0
+      },
+      {
+        "Class": "undead02",
+        "X": 4,
+        "Y": 0
+      }
+    ]
+  },
+  {
+    "Id": "undead-screen-4",
+    "Name": "Undead Screen",
+    "Formation": "Screen",
+    "Level": 5,
+    "Enemies": [
+      {
+        "Class": "undead00",
+        "X": 0,
+        "Y": 3
+      },
+      {
+        "Class": "undead01",
+        "X": 2,
+        "Y": 3
+      },
+      {
+        "Class": "undead02",
+        "X": 4,
+        "Y": 3
+      },
+      {
+        "Class": "undead04",
+        "X": 3,
+        "Y": 0
+      }
+    ]
+  },
+  {
+    "Id": "undead-crown-5",
+    "Name": "Undead Crown",
+    "Formation": "Crown",
+    "Level": 6,
+    "Enemies": [
+      {
+        "Class": "undead00",
+        "X": 2,
+        "Y": 0
+      },
+      {
+        "Class": "undead01",
+        "X": 0,
+        "Y": 2
+      },
+      {
+        "Class": "undead02",
+        "X": 4,
+        "Y": 2
+      },
+      {
+        "Class": "undead04",
+        "X": 1,
+        "Y": 4
+      },
+      {
+        "Class": "undead00",
+        "X": 3,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "undead-spread-3",
+    "Name": "Undead Spread",
+    "Formation": "Spread",
+    "Level": 4,
+    "Enemies": [
+      {
+        "Class": "undead02",
+        "X": 0,
+        "Y": 2
+      },
+      {
+        "Class": "undead04",
+        "X": 2,
+        "Y": 3
+      },
+      {
+        "Class": "undead00",
+        "X": 5,
+        "Y": 1
+      }
+    ]
+  },
+  {
+    "Id": "undead-cross-5",
+    "Name": "Undead Cross",
+    "Formation": "Cross",
+    "Level": 6,
+    "Enemies": [
+      {
+        "Class": "undead02",
+        "X": 2,
+        "Y": 0
+      },
+      {
+        "Class": "undead04",
+        "X": 1,
+        "Y": 1
+      },
+      {
+        "Class": "undead00",
+        "X": 2,
+        "Y": 1
+      },
+      {
+        "Class": "undead01",
+        "X": 3,
+        "Y": 1
+      },
+      {
+        "Class": "undead02",
+        "X": 2,
+        "Y": 2
+      }
+    ]
+  },
+  {
+    "Id": "werewolf00-stagger-2",
+    "Name": "Werewolf Stagger",
+    "Formation": "Stagger",
+    "Level": 2,
+    "Enemies": [
+      {
+        "Class": "werewolf00",
+        "X": 1,
+        "Y": 1
+      },
+      {
+        "Class": "werewolf00",
+        "X": 4,
+        "Y": 3
+      }
+    ]
+  },
+  {
+    "Id": "werewolf00-spread-3",
+    "Name": "Werewolf Spread",
+    "Formation": "Spread",
+    "Level": 3,
+    "Enemies": [
+      {
+        "Class": "werewolf00",
+        "X": 0,
+        "Y": 2
+      },
+      {
+        "Class": "werewolf00",
+        "X": 2,
+        "Y": 3
+      },
+      {
+        "Class": "werewolf00",
+        "X": 5,
+        "Y": 1
+      }
+    ]
+  },
+  {
+    "Id": "werewolf00-box-4",
+    "Name": "Werewolf Box",
+    "Formation": "Box",
+    "Level": 4,
+    "Enemies": [
+      {
+        "Class": "werewolf00",
+        "X": 1,
+        "Y": 1
+      },
+      {
+        "Class": "werewolf00",
+        "X": 4,
+        "Y": 1
+      },
+      {
+        "Class": "werewolf00",
+        "X": 1,
+        "Y": 3
+      },
+      {
+        "Class": "werewolf00",
+        "X": 4,
+        "Y": 3
+      }
+    ]
+  },
+  {
+    "Id": "werewolf00-cross-5",
+    "Name": "Werewolf Cross",
+    "Formation": "Cross",
+    "Level": 5,
+    "Enemies": [
+      {
+        "Class": "werewolf00",
+        "X": 2,
+        "Y": 0
+      },
+      {
+        "Class": "werewolf00",
+        "X": 1,
+        "Y": 1
+      },
+      {
+        "Class": "werewolf00",
+        "X": 2,
+        "Y": 1
+      },
+      {
+        "Class": "werewolf00",
+        "X": 3,
+        "Y": 1
+      },
+      {
+        "Class": "werewolf00",
+        "X": 2,
+        "Y": 2
+      }
+    ]
+  },
+  {
+    "Id": "wolf-column-2",
+    "Name": "Wolf Column",
+    "Formation": "Column",
+    "Level": 1,
+    "Enemies": [
+      {
+        "Class": "wolf00",
+        "X": 2,
+        "Y": 0
+      },
+      {
+        "Class": "wolf01",
+        "X": 2,
+        "Y": 2
+      }
+    ]
+  },
+  {
+    "Id": "wolf-line-3",
+    "Name": "Wolf Line",
+    "Formation": "Line",
+    "Level": 2,
+    "Enemies": [
+      {
+        "Class": "wolf00",
+        "X": 1,
+        "Y": 2
+      },
+      {
+        "Class": "wolf01",
+        "X": 2,
+        "Y": 2
+      },
+      {
+        "Class": "wolf02",
+        "X": 3,
+        "Y": 2
+      }
+    ]
+  },
+  {
+    "Id": "wolf-line-4",
+    "Name": "Wolf Line",
+    "Formation": "Line",
+    "Level": 3,
+    "Enemies": [
+      {
+        "Class": "wolf00",
+        "X": 1,
+        "Y": 2
+      },
+      {
+        "Class": "wolf01",
+        "X": 2,
+        "Y": 2
+      },
+      {
+        "Class": "wolf02",
+        "X": 3,
+        "Y": 2
+      },
+      {
+        "Class": "wolf03",
+        "X": 4,
+        "Y": 2
+      }
+    ]
+  },
+  {
+    "Id": "wolf-phalanx-5",
+    "Name": "Wolf Phalanx",
+    "Formation": "Phalanx",
+    "Level": 4,
+    "Enemies": [
+      {
+        "Class": "wolf00",
+        "X": 0,
+        "Y": 1
+      },
+      {
+        "Class": "wolf01",
+        "X": 1,
+        "Y": 1
+      },
+      {
+        "Class": "wolf02",
+        "X": 2,
+        "Y": 1
+      },
+      {
+        "Class": "wolf03",
+        "X": 3,
+        "Y": 1
+      },
+      {
+        "Class": "wolf00",
+        "X": 4,
+        "Y": 1
+      }
+    ]
+  },
+  {
+    "Id": "wolf-wedge-3",
+    "Name": "Wolf Wedge",
+    "Formation": "Wedge",
+    "Level": 2,
+    "Enemies": [
+      {
+        "Class": "wolf02",
+        "X": 2,
+        "Y": 3
+      },
+      {
+        "Class": "wolf03",
+        "X": 1,
+        "Y": 2
+      },
+      {
+        "Class": "wolf00",
+        "X": 3,
+        "Y": 2
+      }
+    ]
+  },
+  {
+    "Id": "wolf-chevron-5",
+    "Name": "Wolf Chevron",
+    "Formation": "Chevron",
+    "Level": 4,
+    "Enemies": [
+      {
+        "Class": "wolf02",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "wolf03",
+        "X": 1,
+        "Y": 1
+      },
+      {
+        "Class": "wolf00",
+        "X": 2,
+        "Y": 2
+      },
+      {
+        "Class": "wolf01",
+        "X": 3,
+        "Y": 1
+      },
+      {
+        "Class": "wolf02",
+        "X": 4,
+        "Y": 0
+      }
+    ]
+  },
+  {
+    "Id": "yeti-vanguard-2",
+    "Name": "Yeti Vanguard",
+    "Formation": "Vanguard",
+    "Level": 11,
+    "Enemies": [
+      {
+        "Class": "yeti",
+        "X": 1,
+        "Y": 4
+      },
+      {
+        "Class": "yeti",
+        "X": 4,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "yeti-wedge-3",
+    "Name": "Yeti Wedge",
+    "Formation": "Wedge",
+    "Level": 12,
+    "Enemies": [
+      {
+        "Class": "yeti",
+        "X": 2,
+        "Y": 3
+      },
+      {
+        "Class": "yeti",
+        "X": 1,
+        "Y": 2
+      },
+      {
+        "Class": "yeti",
+        "X": 3,
+        "Y": 2
+      }
+    ]
+  },
+  {
+    "Id": "yeti-diamond-4",
+    "Name": "Yeti Diamond",
+    "Formation": "Diamond",
+    "Level": 13,
+    "Enemies": [
+      {
+        "Class": "yeti",
+        "X": 2,
+        "Y": 0
+      },
+      {
+        "Class": "yeti",
+        "X": 1,
+        "Y": 2
+      },
+      {
+        "Class": "yeti",
+        "X": 3,
+        "Y": 2
+      },
+      {
+        "Class": "yeti",
+        "X": 2,
+        "Y": 4
+      }
+    ]
+  },
+  {
+    "Id": "yeti-chevron-5",
+    "Name": "Yeti Chevron",
+    "Formation": "Chevron",
+    "Level": 14,
+    "Enemies": [
+      {
+        "Class": "yeti",
+        "X": 0,
+        "Y": 0
+      },
+      {
+        "Class": "yeti",
+        "X": 1,
+        "Y": 1
+      },
+      {
+        "Class": "yeti",
+        "X": 2,
+        "Y": 2
+      },
+      {
+        "Class": "yeti",
+        "X": 3,
+        "Y": 1
+      },
+      {
+        "Class": "yeti",
+        "X": 4,
+        "Y": 0
+      }
+    ]
+  }
+]

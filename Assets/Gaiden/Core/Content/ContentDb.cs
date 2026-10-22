@@ -32,6 +32,11 @@ namespace GridGame.Core.Content
         /// <summary>Armor piece item id → the set it belongs to (built at load; a piece is in at most one set).</summary>
         public readonly Dictionary<string, ArmorSetDef> SetByItem = new Dictionary<string, ArmorSetDef>(StringComparer.OrdinalIgnoreCase);
 
+        /// <summary>encounters.json (GG-T184), in file order, and by id.</summary>
+        public readonly List<EncounterGroupDef> EncounterOrder = new List<EncounterGroupDef>();
+        public readonly Dictionary<string, EncounterGroupDef> Encounters = new Dictionary<string, EncounterGroupDef>(StringComparer.OrdinalIgnoreCase);
+        public EncounterGroupDef TryEncounter(string id) => id != null && Encounters.TryGetValue(id, out var g) ? g : null;
+
         public ArmorSetDef TryArmorSetOf(string itemId) => itemId != null && SetByItem.TryGetValue(itemId, out var a) ? a : null;
 
         public ClassDef Class(string id) => Get(Classes, id, "class");
