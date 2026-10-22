@@ -4,6 +4,7 @@ game-icons.net silhouettes (CC BY 3.0; credits in Resources/Credits.txt and tool
 
     python tools/make_icons.py            # fetch any missing SVGs, then (re)build every icon
     python tools/make_icons.py --check    # fail if any ability/item/status has no icon mapping
+    python tools/make_icons.py --missing  # build only the icons that have no PNG yet (new content)
 
 Owner direction 2026-10-10: "icons that are memorable and identifiable … run through the pixel art process … a
 continuous effort of building up graphics that match the aesthetic." Adding content = adding a line to
@@ -89,7 +90,18 @@ def ensure_folder(path):
 # ── Items: one rule set maps all 167 (and future) items to a silhouette + palette ──
 WEAPON_SVG = {"Sword": "lorc/broadsword", "Greatsword": "delapouite/two-handed-sword", "Staff": "lorc/wizard-staff",
               "Bow": "delapouite/bow-arrow", "Hammer": "delapouite/warhammer", "Dagger": "lorc/plain-dagger",
-              "Wand": "lorc/fairy-wand", "Spear": "lorc/spear-hook", "Axe": "lorc/battle-axe", "Mace": "delapouite/flanged-mace"}
+              "Wand": "lorc/fairy-wand", "Spear": "lorc/spear-hook", "Axe": "lorc/battle-axe", "Mace": "delapouite/flanged-mace",
+              # GG-T181's weapon roster (tools/weapons.py)
+              "Club": "delapouite/wood-club", "Sickle": "delapouite/sickle", "Sling": "delapouite/sling",
+              "Quarterstaff": "delapouite/bo", "Knife": "lorc/bowie-knife", "Javelin": "lorc/thrown-spear",
+              "Rod": "lorc/crystal-wand", "Pitchfork": "delapouite/pitchfork", "Dart": "delapouite/dart",
+              "Lantern": "lorc/lantern-flame", "Bolas": "lorc/bolas", "Chakram": "delapouite/chakram",
+              "Knuckles": "delapouite/brass-knuckles", "Rapier": "lorc/stiletto", "Hatchet": "delapouite/hatchet",
+              "Crossbow": "carl-olsen/crossbow", "Flail": "delapouite/flail", "Halberd": "delapouite/war-axe",
+              "Whip": "lorc/whip", "Glaive": "delapouite/glaive", "Trident": "lorc/trident", "Katana": "delapouite/katana",
+              "Scythe": "lorc/scythe", "Morningstar": "lorc/spiked-mace", "Tome": "lorc/book-cover",
+              "Orb": "lorc/crystal-ball", "Totem": "delapouite/totem", "Scepter": "delapouite/winged-scepter",
+              "Skullstaff": "delapouite/skull-staff"}
 NAME_PALETTE = [("Rusty", "rust"), ("Iron", "iron"), ("Steel", "steel"), ("Bronze", "bronze"), ("Copper", "bronze"),
                 ("Silver", "silver"), ("Gold", "gold"), ("Bloodstone", "crimson"), ("Phantom", "shadow"), ("Shadow", "shadow"),
                 ("Flame", "fire"), ("Sunfire", "fire"), ("Crystal", "ice"), ("Serpent", "poison"), ("Rune", "arcane"),
@@ -98,6 +110,11 @@ NAME_PALETTE = [("Rusty", "rust"), ("Iron", "iron"), ("Steel", "steel"), ("Bronz
                 ("Wizard", "arcane"), ("Mage", "arcane"), ("Horned", "iron"), ("Wind", "teal"), ("Crown", "gold")]
 ENCHANT_PALETTE = {"(Flame)": "fire", "(Frost)": "ice", "(Spark)": "spark", "(Shadow)": "shadow",
                    "(Poison)": "poison", "(Holy)": "holy"}
+
+
+def weapon_base_id(iid):
+    """eq_x_plus2 / eq_x_ench_flame -> eq_x: an upgrade or enchant variant shares its base weapon's palette."""
+    return re.sub(r"_(plus\d|ench_[a-z]+)$", "", iid)
 
 
 def item_rule(it, manifest):
@@ -133,7 +150,9 @@ def item_rule(it, manifest):
             svg = "lorc/leather-vest"
         else:
             svg = "lorc/breastplate"
-        pal = next((p for k, p in ENCHANT_PALETTE.items() if k in name), None) or next((p for k, p in NAME_PALETTE if k in name), "steel")
+        pal = (next((p for k, p in ENCHANT_PALETTE.items() if k in name), None)
+               or manifest.get("weapon_palette", {}).get(weapon_base_id(iid))
+               or next((p for k, p in NAME_PALETTE if k in name), "steel"))
         return [svg, pal]
     return None
 
@@ -141,6 +160,7 @@ def item_rule(it, manifest):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--check", action="store_true")
+    ap.add_argument("--missing", action="store_true", help="only build icons whose PNG doesn't exist yet")
     args = ap.parse_args()
     m = json.load(open(MANIFEST, encoding="utf-8"))
     palettes = m["palettes"]
@@ -180,6 +200,8 @@ def main():
         rot = next((int(o[4:]) for o in opts if isinstance(o, str) and o.startswith("rot:")), 0)
         svg = fetch(ref)
         dst = os.path.join(RES, GROUP_DIR[group], iid + ".png")
+        if args.missing and os.path.exists(dst):
+            continue
         build(svg, palettes[pal], dst, flop, rot)
         write_meta(dst)
         built += 1

@@ -242,7 +242,7 @@ namespace GridGame.Tests
             var baseItems = c.Recipes.Values.Where(r => r.Station == CraftStation.Forge && r.BaseItem != null).Select(r => r.BaseItem).ToHashSet();
             var tops = c.Recipes.Values.Where(r => r.Station == CraftStation.Forge && r.BaseItem != null && !baseItems.Contains(r.Result))
                 .Select(r => r.Result).Distinct().ToList();
-            Assert.That(tops.Count, Is.EqualTo(13));
+            Assert.That(tops.Count, Is.EqualTo(100)); // one upgrade line per base weapon (GG-T181)
             foreach (var id in tops)
             {
                 var item = c.Items[id];

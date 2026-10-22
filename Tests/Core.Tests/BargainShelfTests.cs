@@ -76,9 +76,18 @@ namespace GridGame.Tests
             var c = Real;
             var s = Progression.NewGame(c, "Equip");
             s.Gold = 100000;
-            var offer = Bargains.Shelf(c, s).First(o => o.Item.Slot == EquipmentSlot.Weapon);
-            Assert.That(Bargains.Buy(c, s, offer.Item.Id).Ok, Is.True);
             var hero = s.Hero(s.Party[0]);
+            // A weapon this hero is trained for (GG-T52): rotate the shelf until one turns up.
+            var trained = Progression.EffectiveWeaponProficiencies(c, hero);
+            BargainOffer offer = null;
+            for (int i = 0; i < 200; i++)
+            {
+                offer = Bargains.Shelf(c, s).FirstOrDefault(o => o.Item.Slot == EquipmentSlot.Weapon && trained.Contains(o.Item.WeaponClass));
+                if (offer != null) break;
+                Bargains.Rotate(s);
+            }
+            Assert.That(offer, Is.Not.Null);
+            Assert.That(Bargains.Buy(c, s, offer.Item.Id).Ok, Is.True);
 
             var r = Equipment.Equip(c, s, hero, EquipmentSlot.Weapon, offer.Item.Id);
 

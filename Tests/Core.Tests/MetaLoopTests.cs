@@ -667,8 +667,9 @@ namespace GridGame.Tests
         public void Unequipping_a_masterwork_weapon_remembers_its_roll_and_requipping_restores_it()
         {
             var c = Real; var s = Progression.NewGame(c, "MW3");
+            var trained = Progression.EffectiveWeaponProficiencies(c, s.Hero(s.Party[0]));
             var recipe = Crafting.Recipes(c, CraftStation.Forge).First(r => r.BaseItem == null
-                && c.Item(r.Result).Slot == EquipmentSlot.Weapon && c.Item(r.Result).Durability > 1);
+                && c.Item(r.Result).Slot == EquipmentSlot.Weapon && c.Item(r.Result).Durability > 1 && trained.Contains(c.Item(r.Result).WeaponClass));
             var item = c.Item(recipe.Result);
             s.Gold += 10_000_000;
 

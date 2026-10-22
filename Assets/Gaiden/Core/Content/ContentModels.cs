@@ -347,7 +347,9 @@ namespace GridGame.Core.Content
         /// <summary>RecipeScroll only (§24.6.2, GG-T36): the recipe this item teaches when read at the Items screen.</summary>
         public string TeachesRecipe;
         /// <summary>Named upgrade passive (§24.6.1, GG-T47): flavor name of a weapon's fully-upgraded (Master-tier,
-        /// "+3") named passive, shown on the Equip compare panel. Null = no named passive (every step below the top).</summary>
+        /// "+3") named passive, shown on the Equip compare panel. A weapon whose base already carries an on-hit or
+        /// lifesteal trait (GG-T181) names that trait here on every step, and its "+3" passive is the same mechanic,
+        /// stronger. Null = no named passive.</summary>
         public string PassiveName;
         /// <summary>PassiveName's effect text for the compare panel, e.g. "Pincer strikes have a 20% chance to Burn."</summary>
         public string PassiveDescription;
