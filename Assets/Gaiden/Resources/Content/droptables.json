@@ -218,6 +218,12 @@
         "Chance": 0.15,
         "Min": 1,
         "Max": 1
+      },
+      {
+        "Item": "mat_essence_poison",
+        "Chance": 0.1,
+        "Min": 1,
+        "Max": 1
       }
     ]
   },
@@ -623,6 +629,12 @@
         "Chance": 0.15,
         "Min": 1,
         "Max": 1
+      },
+      {
+        "Item": "mat_essence_spark",
+        "Chance": 0.1,
+        "Min": 1,
+        "Max": 1
       }
     ]
   },
@@ -664,6 +676,12 @@
       },
       {
         "Item": "mat_arcane_dust",
+        "Chance": 0.1,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "mat_essence_poison",
         "Chance": 0.1,
         "Min": 1,
         "Max": 1
@@ -842,6 +860,12 @@
         "Chance": 0.15,
         "Min": 1,
         "Max": 1
+      },
+      {
+        "Item": "mat_essence_flame",
+        "Chance": 0.1,
+        "Min": 1,
+        "Max": 1
       }
     ]
   },
@@ -890,6 +914,12 @@
       {
         "Item": "mat_cloth",
         "Chance": 0.2,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "mat_essence_holy",
+        "Chance": 0.1,
         "Min": 1,
         "Max": 1
       }
@@ -955,6 +985,12 @@
         "Chance": 0.25,
         "Min": 1,
         "Max": 1
+      },
+      {
+        "Item": "mat_essence_shadow",
+        "Chance": 0.1,
+        "Min": 1,
+        "Max": 1
       }
     ]
   },
@@ -978,6 +1014,12 @@
       {
         "Item": "mat_arcane_dust",
         "Chance": 0.15,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "mat_essence_shadow",
+        "Chance": 0.1,
         "Min": 1,
         "Max": 1
       }

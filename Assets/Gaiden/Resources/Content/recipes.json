@@ -3021,5 +3021,100 @@
     "BaseItem": null,
     "Result": "eq_earring_starfall",
     "ResultCount": 1
+  },
+  {
+    "Id": "recipe_distill_flame",
+    "Station": "Alchemy",
+    "Inputs": [
+      {
+        "Item": "mat_oni_horn",
+        "Count": 2
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 1
+      }
+    ],
+    "Gold": 40,
+    "BaseItem": null,
+    "Result": "mat_essence_flame",
+    "ResultCount": 1,
+    "Tier": 2
+  },
+  {
+    "Id": "recipe_distill_spark",
+    "Station": "Alchemy",
+    "Inputs": [
+      {
+        "Item": "mat_scrap_circuit",
+        "Count": 2
+      },
+      {
+        "Item": "mat_gremlin_cog",
+        "Count": 1
+      }
+    ],
+    "Gold": 60,
+    "BaseItem": null,
+    "Result": "mat_essence_spark",
+    "ResultCount": 1,
+    "Tier": 2
+  },
+  {
+    "Id": "recipe_distill_shadow",
+    "Station": "Alchemy",
+    "Inputs": [
+      {
+        "Item": "mat_phantom_wisp",
+        "Count": 1
+      },
+      {
+        "Item": "mat_bat_wing",
+        "Count": 2
+      }
+    ],
+    "Gold": 60,
+    "BaseItem": null,
+    "Result": "mat_essence_shadow",
+    "ResultCount": 1,
+    "Tier": 2
+  },
+  {
+    "Id": "recipe_distill_poison",
+    "Station": "Alchemy",
+    "Inputs": [
+      {
+        "Item": "mat_swamp_ichor",
+        "Count": 2
+      },
+      {
+        "Item": "mat_frog_gland",
+        "Count": 1
+      }
+    ],
+    "Gold": 40,
+    "BaseItem": null,
+    "Result": "mat_essence_poison",
+    "ResultCount": 1,
+    "Tier": 2
+  },
+  {
+    "Id": "recipe_distill_holy",
+    "Station": "Alchemy",
+    "Inputs": [
+      {
+        "Item": "mat_templar_seal",
+        "Count": 2
+      },
+      {
+        "Item": "mat_enchanted_feather",
+        "Count": 1
+      }
+    ],
+    "Gold": 40,
+    "BaseItem": null,
+    "Result": "mat_essence_holy",
+    "ResultCount": 1,
+    "Tier": 2
   }
 ]
