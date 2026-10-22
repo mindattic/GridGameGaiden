@@ -21,7 +21,7 @@ namespace GridGame.Tests
             new HashSet<string>(C.DropTables.Values.SelectMany(d => d.Entries.Select(e => e.Item))
                 .Concat(C.Bounties.Values.Where(b => b.RewardItem != null).Select(b => b.RewardItem)), System.StringComparer.OrdinalIgnoreCase);
 
-        [Test, Ignore("GG-T176 turns the 36 unused monster trophies into alchemy potion inputs; remove this then")]
+        [Test]
         public void Every_dropped_crafting_material_feeds_at_least_one_recipe()
         {
             var inputs = RecipeInputs();
@@ -29,6 +29,40 @@ namespace GridGame.Tests
                 .Where(i => i != null && i.Type == ItemType.CraftingMaterial && !inputs.Contains(i.Id))
                 .Select(i => i.Id).OrderBy(x => x).ToList();
             Assert.That(orphans, Is.Empty, "dropped materials no recipe uses: " + string.Join(", ", orphans));
+        }
+
+        /// <summary>GG-T176 (§25.0.5): the Merchant sells Empty Bottles cheaply, and every bottle recipe brews from one
+        /// bottle plus looted trophies for less than the potion costs to buy — even with every input bought.</summary>
+        [Test]
+        public void Bottle_recipes_brew_from_loot_for_less_than_buying_the_potion()
+        {
+            var bottle = C.Item(ContentLoader.EmptyBottle);
+            Assert.That(Shop.Stock(C), Has.Member(bottle), "the Merchant sells Empty Bottles");
+            Assert.That(bottle.BaseCost, Is.InRange(1, 5), "cheaply");
+            var recipes = Brewing.BottleRecipes(C);
+            Assert.That(recipes.Count, Is.GreaterThanOrEqualTo(5));
+            Assert.That(recipes.Where(r => r.Tier <= 1), Is.Not.Empty, "a first brew is open from the start");
+            var dropped = Dropped();
+            foreach (var r in recipes)
+            {
+                Assert.That(C.Item(r.Result).Type, Is.EqualTo(ItemType.Consumable), r.Id);
+                Assert.That(r.Inputs.Where(i => i.Item == ContentLoader.EmptyBottle).Sum(i => i.Count), Is.EqualTo(1), r.Id + ": one bottle");
+                foreach (var i in r.Inputs.Where(i => i.Item != ContentLoader.EmptyBottle))
+                    Assert.That(dropped, Does.Contain(i.Item), $"{r.Id}: {i.Item} is looted from enemies");
+                Assert.That(Brewing.ShopCost(C, r), Is.LessThan(Brewing.BuyCost(C, r)), r.Id + ": cheaper than buying");
+            }
+        }
+
+        [Test]
+        public void The_camp_routine_buys_a_bottle_to_brew_its_loot()
+        {
+            var s = Progression.NewGame(C, "T");
+            CampNpcs.JoinAll(s);
+            s.Gold = 50;
+            s.AddItem("mat_wolf_pelt", 1); s.AddItem("mat_tattered_cloth", 1);
+            CampRoutine.Run(C, s);
+            Assert.That(s.Count("mat_wolf_pelt"), Is.EqualTo(0), "the pelt went into a Healing Potion");
+            Assert.That(s.Count(CampRoutine.StopgapPotion), Is.GreaterThanOrEqualTo(1));
         }
 
         [Test]

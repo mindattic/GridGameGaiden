@@ -3118,6 +3118,150 @@
     "Tier": 2
   },
   {
+    "Id": "recipe_bottle_healing",
+    "Station": "Alchemy",
+    "Inputs": [
+      {
+        "Item": "empty_bottle",
+        "Count": 1
+      },
+      {
+        "Item": "mat_wolf_pelt",
+        "Count": 1
+      },
+      {
+        "Item": "mat_tattered_cloth",
+        "Count": 1
+      }
+    ],
+    "Gold": 0,
+    "BaseItem": null,
+    "Result": "healing_potion_basic",
+    "ResultCount": 1
+  },
+  {
+    "Id": "recipe_bottle_mana",
+    "Station": "Alchemy",
+    "Inputs": [
+      {
+        "Item": "empty_bottle",
+        "Count": 1
+      },
+      {
+        "Item": "mat_bat_wing",
+        "Count": 2
+      }
+    ],
+    "Gold": 0,
+    "BaseItem": null,
+    "Result": "mana_potion_basic",
+    "ResultCount": 1
+  },
+  {
+    "Id": "recipe_bottle_antidote",
+    "Station": "Alchemy",
+    "Inputs": [
+      {
+        "Item": "empty_bottle",
+        "Count": 1
+      },
+      {
+        "Item": "mat_frog_gland",
+        "Count": 1
+      }
+    ],
+    "Gold": 0,
+    "BaseItem": null,
+    "Result": "antidote",
+    "ResultCount": 1
+  },
+  {
+    "Id": "recipe_bottle_eye_drops",
+    "Station": "Alchemy",
+    "Inputs": [
+      {
+        "Item": "empty_bottle",
+        "Count": 1
+      },
+      {
+        "Item": "mat_vulture_feather",
+        "Count": 1
+      }
+    ],
+    "Gold": 0,
+    "BaseItem": null,
+    "Result": "eye_drops",
+    "ResultCount": 1
+  },
+  {
+    "Id": "recipe_bottle_greater_antidote",
+    "Station": "Alchemy",
+    "Inputs": [
+      {
+        "Item": "empty_bottle",
+        "Count": 1
+      },
+      {
+        "Item": "mat_swamp_ichor",
+        "Count": 1
+      },
+      {
+        "Item": "mat_marsh_moss",
+        "Count": 1
+      }
+    ],
+    "Gold": 10,
+    "BaseItem": null,
+    "Result": "greater_antidote",
+    "ResultCount": 1
+  },
+  {
+    "Id": "recipe_bottle_hi_potion",
+    "Station": "Alchemy",
+    "Inputs": [
+      {
+        "Item": "empty_bottle",
+        "Count": 1
+      },
+      {
+        "Item": "mat_goblin_ear",
+        "Count": 2
+      },
+      {
+        "Item": "mat_scorpion_stinger",
+        "Count": 1
+      }
+    ],
+    "Gold": 15,
+    "BaseItem": null,
+    "Result": "hi_potion",
+    "ResultCount": 1,
+    "Tier": 2
+  },
+  {
+    "Id": "recipe_bottle_ether",
+    "Station": "Alchemy",
+    "Inputs": [
+      {
+        "Item": "empty_bottle",
+        "Count": 1
+      },
+      {
+        "Item": "mat_hag_claw",
+        "Count": 1
+      },
+      {
+        "Item": "mat_bat_wing",
+        "Count": 1
+      }
+    ],
+    "Gold": 5,
+    "BaseItem": null,
+    "Result": "ether",
+    "ResultCount": 1,
+    "Tier": 2
+  },
+  {
     "Id": "recipe_hammer_war",
     "Station": "Forge",
     "Inputs": [

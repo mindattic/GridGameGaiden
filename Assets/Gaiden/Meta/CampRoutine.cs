@@ -119,12 +119,18 @@ namespace GridGame.Meta
             // must add stock: a failed brew falls back to buying, and a pass where neither worked (or one
             // that "succeeded" without adding a potion) ends the loop instead of spinning forever (GG-T111).
             var potion = c.TryItem(StopgapPotion);
-            var brew = c.Recipes.Values.FirstOrDefault(r => r.Station == CraftStation.Alchemy && r.Result == StopgapPotion);
+            // Any recipe that makes it will do — the slime-gel brew or the Empty Bottle + wolf pelt one (GG-T176); a bottle
+            // recipe short only of its bottle buys one from the Merchant first, as a player would.
+            var brews = c.Recipes.Values.Where(r => r.Station == CraftStation.Alchemy && r.Result == StopgapPotion).ToList();
+            var bottle = c.TryItem(ContentLoader.EmptyBottle);
             while (potion != null && s.Count(potion.Id) < System.Math.Min(6, potion.MaxStack))
             {
                 int before = s.Count(potion.Id);
                 bool ok = false;
-                if (alchemist && brew != null && Crafting.IsUnlocked(s, brew) && Crafting.HasInputs(s, brew) && s.Gold >= brew.Gold)
+                var brew = alchemist ? brews.FirstOrDefault(r => Crafting.IsUnlocked(s, r) && Brewing.HasLoot(s, r) && s.Gold >= r.Gold) : null;
+                if (brew != null && !Crafting.HasInputs(s, brew) && merchant && bottle != null && Brewing.IsBottleRecipe(brew) && s.Gold >= bottle.BaseCost + brew.Gold)
+                    Note(Shop.Buy(c, s, new Dictionary<string, int> { [bottle.Id] = 1 }));
+                if (brew != null && Crafting.HasInputs(s, brew) && s.Gold >= brew.Gold)
                 {
                     var r = Crafting.Craft(c, s, brew); Note(r); ok = r.Ok;
                 }

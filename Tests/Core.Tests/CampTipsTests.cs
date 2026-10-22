@@ -58,6 +58,24 @@ namespace GridGame.Tests
         }
 
         [Test]
+        public void The_alchemist_tip_walks_the_first_bottle_brew()
+        {
+            var c = TestKit.Real;
+            var s = Progression.NewGame(c, "T");
+            var tip = CampTips.For("alchemist");
+            Assert.That(CampTips.Resolve(c, s, tip), Is.SameAs(tip), "no loot: the tip reads as written");
+            s.AddItem("mat_wolf_pelt", 1); s.AddItem("mat_tattered_cloth", 1);
+            var noBottle = CampTips.Resolve(c, s, tip);
+            Assert.That(noBottle.Target, Is.EqualTo("recipe-recipe_bottle_healing"));
+            Assert.That(noBottle.Text, Does.Contain("Empty Bottle").And.Contain("Merchant"));
+            s.AddItem(GridGame.Core.Content.ContentLoader.EmptyBottle, 1);
+            Assert.That(Brewing.FirstBrew(c, s)?.Id, Is.EqualTo("recipe_bottle_healing"));
+            var ready = CampTips.Resolve(c, s, tip);
+            Assert.That(ready.Target, Is.EqualTo(CampTips.CraftButton));
+            Assert.That(ready.Text, Does.Contain("Healing Potion").And.Contain("Wolf Pelt").And.Contain("Tap Brew"));
+        }
+
+        [Test]
         public void Every_tip_has_one_station_a_title_and_a_sentence()
         {
             Assert.That(CampTips.All.Select(t => t.Station).Distinct().Count(), Is.EqualTo(CampTips.All.Count));

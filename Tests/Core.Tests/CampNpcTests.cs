@@ -135,6 +135,30 @@ namespace GridGame.Tests
             Assert.That(CampNpcs.Joined(never, CampNpcs.Blacksmith), Is.True, "a party that never wears gear still meets him at the Sandsea");
         }
 
+        /// <summary>GG-T176 (§25.0.5): the Alchemist's beat fires once the bag holds the loot for a first bottle brew,
+        /// hands over an Empty Bottle so that brew can happen, and still fires at the Sandsea for a party that never loots.</summary>
+        [Test]
+        public void The_alchemist_joins_once_the_loot_for_a_first_brew_is_in_the_bag()
+        {
+            var c = Real;
+            var s = Progression.NewGame(c, "T");
+            DialogueRunner.PlayPendingBeatsHeadless(c, s, "greenvalley-01");
+            Assert.That(CampNpcs.Joined(s, CampNpcs.Alchemist), Is.False, "nothing looted yet");
+            s.AddItem("mat_wolf_pelt", 1);
+            DialogueRunner.PlayPendingBeatsHeadless(c, s, "greenvalley-01");
+            Assert.That(CampNpcs.Joined(s, CampNpcs.Alchemist), Is.False, "a pelt alone isn't a healing brew");
+            s.AddItem("mat_tattered_cloth", 1);
+            Assert.That(DialogueRunner.PendingBeat(c, s, "greenvalley-01")?.Id, Is.EqualTo("desert_alchemist"));
+            DialogueRunner.PlayPendingBeatsHeadless(c, s, "greenvalley-01");
+            Assert.That(CampNpcs.Joined(s, CampNpcs.Alchemist), Is.True);
+            Assert.That(s.Count(ContentLoader.EmptyBottle), Is.EqualTo(1), "he hands over the first bottle");
+            Assert.That(Crafting.HasInputs(s, c.Recipes["recipe_bottle_healing"]), Is.True, "so the first brew is ready");
+
+            var never = Progression.NewGame(c, "T");
+            DialogueRunner.PlayPendingBeatsHeadless(c, never, "desert-01");
+            Assert.That(CampNpcs.Joined(never, CampNpcs.Alchemist), Is.True, "a party that never loots still meets him at the Sandsea");
+        }
+
         [Test]
         public void Test_mode_saves_start_with_every_npc_joined()
         {

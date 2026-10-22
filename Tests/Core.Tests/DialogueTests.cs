@@ -229,8 +229,9 @@ namespace GridGame.Tests
             var s = NewSave();
             Assert.That(DialogueRunner.PendingBeat(Real, s, "greenvalley-01")?.Id, Is.EqualTo("greenvalley_road_merchant"));
             // A postgame theme (GG-T120) carries its own single party-talk beat, played the same way. (It's past the
-            // Blacksmith's fallback theme, so his GearWorn beat (GG-T175) would come first on a save that never met him.)
-            s.SeenDialogues.Add("greenvalley_smith");
+            // Blacksmith's and Alchemist's fallback theme, so their GearWorn (GG-T175) and CanBrew (GG-T176) beats would
+            // come first on a save that never met them.)
+            s.SeenDialogues.Add("greenvalley_smith"); s.SeenDialogues.Add("desert_alchemist");
             Assert.That(DialogueRunner.PendingBeat(Real, s, "greenvalley-04")?.Id, Is.EqualTo("greenvalley2_party_talk"));
             s.SeenDialogues.Add("greenvalley_road_merchant"); s.SeenDialogues.Add("greenvalley_party_talk");
             Assert.That(DialogueRunner.PendingBeat(Real, s, "greenvalley-01"), Is.Null);

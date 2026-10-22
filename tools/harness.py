@@ -620,6 +620,48 @@ def smithrepair(run="smithrepair"):
     return not fails
 
 
+def firstbrew(run="firstbrew"):
+    """GG-T176: onboarding step 3. With the Merchant and Alchemist met, a Wolf Pelt, Tattered Cloth and the Empty
+    Bottle he hands over in the bag, the Alchemist opens with the Healing Potion bottle recipe selected; his camp tip
+    names it and rings Brew; dismissing it and tapping Brew turns the loot and bottle into a Healing Potion."""
+    fails = []
+    launch(run, extra=("-campTips",), fresh=True)
+    call("newgame", slot=0, gold=100, npcs="merchant,alchemist"); time.sleep(1)
+    for item in ("mat_wolf_pelt", "mat_tattered_cloth", "empty_bottle"):
+        call("devgive", item=item)
+    def count(item):
+        return next((x["count"] for x in call("camp")["sellable"] if x["Id"] == item), 0)
+    potions = count("healing_potion_basic")
+    _goto("alchemist"); time.sleep(0.8)
+    shot("01-alchemist-tip")
+    if not call("names", prefix="camp-tip-card"):
+        fails.append("no Alchemist tip on first visit")
+    elif not call("names", prefix="camp-tip-ring"):
+        fails.append("Alchemist tip has no ring: Brew button not found (bottle recipe not preselected?)")
+    texts = " ".join(str(t) for t in call("texts"))
+    if "Healing Potion" not in texts or "Tap Brew" not in texts:
+        fails.append("tip doesn't name the Healing Potion brew")
+    probs = call("layout").get("problems")
+    if probs:
+        fails.append(f"layout {probs}")
+    call("click", name="camp-tip-ok"); time.sleep(0.5)
+    call("click", name="craft"); time.sleep(0.8)
+    shot("02-alchemist-brewed")
+    if count("healing_potion_basic") != potions + 1:
+        fails.append(f"Brew didn't make a Healing Potion ({potions} -> {count('healing_potion_basic')})")
+    if count("empty_bottle") or count("mat_wolf_pelt"):
+        fails.append("the bottle and pelt weren't used up")
+    errs = [l[:300] for l in call("logs") if l.startswith(("Error", "Exception"))]
+    if errs:
+        fails.append(f"log errors {errs[:3]}")
+    try:
+        call("quit", timeout=3)
+    except Exception:
+        pass
+    print("FAILURES:" if fails else "FIRST BREW OK", *fails, sep="\n  ")
+    return not fails
+
+
 def story_recruits(run="recruits", speed=3):
     """GG-T118: a new game starts small and grows at story beats. Picks the starting three through the real
     party select, clears Green Valley I on autoplay, then launches the next battle and checks that the
@@ -1313,6 +1355,8 @@ if __name__ == "__main__":
         sys.exit(0 if camptips() else 1)
     elif cmd == "smithrepair":
         sys.exit(0 if smithrepair() else 1)
+    elif cmd == "firstbrew":
+        sys.exit(0 if firstbrew() else 1)
     elif cmd == "fullloop":
         sys.exit(0 if fullloop(battles=int(sys.argv[2]) if len(sys.argv) > 2 else 4) else 1)
     elif cmd == "clips":

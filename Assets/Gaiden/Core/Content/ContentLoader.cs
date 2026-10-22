@@ -250,6 +250,10 @@ namespace GridGame.Core.Content
 
         public const string NpcFlagPrefix = "npc:";
 
+        /// <summary>The Merchant's cheap Empty Bottle (GG-T176): an Alchemy recipe that takes one is a "bottle recipe",
+        /// brewed from it plus looted monster trophies.</summary>
+        public const string EmptyBottle = "empty_bottle";
+
         /// <summary>Every hero Role a class (or a dialogue's JoinHero) may name.</summary>
         public static readonly HashSet<string> HeroRoles = new HashSet<string> { "Tank", "Healer", "Mage", "Striker", "Support", "Ranged" };
 
@@ -272,6 +276,11 @@ namespace GridGame.Core.Content
                 case DialogueTriggerKind.GearWorn:
                     if (trigger.Percent < 1 || trigger.Percent > 99) p.Add($"{w}: GearWorn needs a Percent of 1-99, has {trigger.Percent}");
                     if (trigger.Id != null && !db.Campaign.Themes.Exists(t => string.Equals(t.Id, trigger.Id, StringComparison.OrdinalIgnoreCase))) p.Add($"{w}: unknown GearWorn fallback theme '{trigger.Id}'");
+                    break;
+                case DialogueTriggerKind.CanBrew:
+                    if (!new List<RecipeDef>(db.Recipes.Values).Exists(r => r.Station == CraftStation.Alchemy && r.Tier <= 1 && r.Inputs.Exists(i => i.Item == EmptyBottle)))
+                        p.Add($"{w}: CanBrew needs an Apprentice-tier Alchemy recipe that takes an {EmptyBottle}");
+                    if (trigger.Id != null && !db.Campaign.Themes.Exists(t => string.Equals(t.Id, trigger.Id, StringComparison.OrdinalIgnoreCase))) p.Add($"{w}: unknown CanBrew fallback theme '{trigger.Id}'");
                     break;
                 case DialogueTriggerKind.Talk:
                     if (trigger.Id == "party") break;

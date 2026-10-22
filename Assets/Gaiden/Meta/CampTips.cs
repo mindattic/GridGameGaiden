@@ -62,7 +62,9 @@ namespace GridGame.Meta
         /// cart is repairing it. Every other tip is returned as written.</summary>
         public static CampTip Resolve(ContentDb c, SaveData s, CampTip tip)
         {
-            if (tip == null || c == null || tip.Station != "blacksmith") return tip;
+            if (tip == null || c == null) return tip;
+            if (tip.Station == "alchemist") return ResolveAlchemist(c, s, tip);
+            if (tip.Station != "blacksmith") return tip;
             var worn = Repair.MostWorn(c, s);
             if (worn == null || worn.Durability >= worn.Max) return tip;
             string hero = c.TryClass(worn.Hero.ClassId)?.Name ?? worn.Hero.ClassId;
@@ -73,6 +75,30 @@ namespace GridGame.Meta
                 Text = $"{hero}'s {worn.Item.Name} is worn down to {pct}%. Tap it to repair it before it shatters in battle.",
             };
         }
+
+        /// <summary>The Alchemist's tip (GG-T176, §25.0.5) walks the first brew: with a bottle recipe brewable now
+        /// (<see cref="Brewing.FirstBrew"/>, which his screen preselects) it names the potion and what goes in, says what
+        /// buying it would cost, and points at Brew; with only the bottle missing it sends the player to the Merchant.</summary>
+        private static CampTip ResolveAlchemist(ContentDb c, SaveData s, CampTip tip)
+        {
+            var r = Brewing.FirstBrew(c, s);
+            var result = r != null ? c.TryItem(r.Result) : null;
+            if (result == null) return tip;
+            string loot = string.Join(" and ", r.Inputs.Where(i => i.Item != ContentLoader.EmptyBottle)
+                .Select(i => (i.Count > 1 ? i.Count + " " : "") + (c.TryItem(i.Item)?.Name ?? i.Item)));
+            bool ready = Crafting.HasInputs(s, r) && s.Gold >= r.Gold;
+            return new CampTip
+            {
+                Station = tip.Station, Title = tip.Title,
+                Target = ready ? CraftButton : RecipeRowPrefix + r.Id,
+                Text = ready
+                    ? $"An Empty Bottle with your {loot} makes a {result.Name} (the Merchant charges {Brewing.BuyCost(c, r)} G). Tap Brew."
+                    : $"Your {loot} make a {result.Name}: buy an Empty Bottle from the Merchant for a few coins, then brew it here.",
+            };
+        }
+
+        /// <summary>Recipe stations' Brew/Craft button and recipe-row name prefix.</summary>
+        public const string CraftButton = "craft", RecipeRowPrefix = "recipe-";
 
         public static void MarkSeen(SaveData s, string station) { if (s != null && station != null) s.SeenCampTips.Add(station); }
 

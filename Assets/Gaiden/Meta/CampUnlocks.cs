@@ -40,7 +40,7 @@ namespace GridGame.Meta
             return "After " + stages[System.Math.Min(clears, stages.Count) - 1].Name;
         }
 
-        /// <summary>"Joins at Sandsea Reaches" / "Joins after Green Valley II" / "Joins when gear wears below 60%" — read from the story beat whose
+        /// <summary>"Joins at Sandsea Reaches" / "Joins after Green Valley II" / "Joins when gear wears below 60%" / "Joins once you've looted enough to brew" — read from the story beat whose
         /// JoinNpc recruits this keeper, so the hint follows the content.</summary>
         public static string JoinHint(ContentDb c, string npc)
         {
@@ -49,6 +49,8 @@ namespace GridGame.Meta
             if (beat == null) return "Joins later on the road";
             if (beat.Trigger.Kind == DialogueTriggerKind.GearWorn)
                 return $"Joins when gear wears below {beat.Trigger.Percent}%";
+            if (beat.Trigger.Kind == DialogueTriggerKind.CanBrew)
+                return "Joins once you've looted enough to brew";
             if (beat.Trigger.Kind == DialogueTriggerKind.ThemeStart)
                 return "Joins at " + (c.Campaign.Themes.FirstOrDefault(t => t.Id == beat.Trigger.Id)?.Name ?? beat.Trigger.Id);
             return "Joins after " + (c.Stages.TryGetValue(beat.Trigger.Id ?? "", out var st) ? st.Name : beat.Trigger.Id);

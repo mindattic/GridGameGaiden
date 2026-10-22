@@ -1793,6 +1793,36 @@
     "Icon": null
   },
   {
+    "Id": "empty_bottle",
+    "Name": "Empty Bottle",
+    "Description": "A stoppered glass bottle. The Alchemist brews a potion into one from what enemies drop.",
+    "Type": "CraftingMaterial",
+    "Rarity": "Common",
+    "Slot": "None",
+    "WeaponType": null,
+    "BaseCost": 4,
+    "SellValue": -1,
+    "MaxStack": 99,
+    "Durability": 0,
+    "BaseHealing": 0,
+    "BaseDamage": 0,
+    "Stats": {
+      "Strength": 0,
+      "Vitality": 0,
+      "Agility": 0,
+      "Speed": 0,
+      "Stamina": 0,
+      "Intelligence": 0,
+      "Wisdom": 0,
+      "Luck": 0
+    },
+    "BattleStartManaOrbs": 0,
+    "OnUseAbility": null,
+    "Resistances": {},
+    "SoldByVendor": true,
+    "Icon": null
+  },
+  {
     "Id": "mat_iron_ore",
     "Name": "Iron Ore",
     "Description": "A chunk of raw iron.",

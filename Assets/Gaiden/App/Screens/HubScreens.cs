@@ -957,7 +957,12 @@ namespace GridGame.App
         protected override string Subtitle => StationProgress.HeaderText(S, StationKind.Alchemist);
         protected override string Npc => CampNpcs.Alchemist;
 
-        protected override void BuildBody(VisualElement body) => StationBody(body, CraftStation.Alchemy, false, ref selected, this);
+        protected override void BuildBody(VisualElement body)
+        {
+            // GG-T176 (§25.0.5): on the first visit his camp tip walks the first brew, so that bottle recipe opens selected.
+            if (selected == null && CampTips.Pending(S, Id) != null) selected = Brewing.FirstBrew(C, S);
+            StationBody(body, CraftStation.Alchemy, false, ref selected, this);
+        }
 
         /// <summary>A recipe list over a detail pane — the Alchemist's Brew and the Enchantress's Enchant share it.</summary>
         internal static void StationBody(VisualElement body, CraftStation station, bool upgrades, ref RecipeDef selected, HubPage page)

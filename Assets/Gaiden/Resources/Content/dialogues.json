@@ -135,24 +135,24 @@
   },
   {
     "Id": "desert_alchemist",
-    "Title": "The alchemist in the dunes",
-    "Trigger": { "Kind": "ThemeStart", "Id": "desert" },
+    "Title": "An alchemist on the road",
+    "Trigger": { "Kind": "CanBrew", "Id": "desert" },
     "Speakers": [
       { "Id": "alchemist", "Name": "Alchemist", "Portrait": "alchemist" },
       { "Id": "lead", "Class": "$lead" }
     ],
     "Nodes": [
-      { "Id": "hail", "Speaker": "alchemist", "Text": "Careful with those flasks -- half of them are older than you, and the other half I'm honestly not sure what's in anymore.", "Next": "reply" },
+      { "Id": "hail", "Speaker": "alchemist", "Text": "Hold on -- what's that hanging off your packs? Pelts, wings, glands... Most crews sell those to the Merchant for coppers. Bottled right, they close a wound.", "Next": "reply" },
       { "Id": "reply", "Speaker": "lead", "Text": "What are you brewing all the way out here?", "Next": "ask" },
       {
-        "Id": "ask", "Speaker": "alchemist", "Text": "Whatever your crews pull off the things you kill. Venom, ichor, scale -- it's all reagent if you know how to read it. Need a brewer who isn't afraid of the green ones?",
+        "Id": "ask", "Speaker": "alchemist", "Text": "Whatever your crews pull off the things you kill. Venom, ichor, pelt -- it's all reagent if you know how to read it, and a potion brewed costs a fraction of one bought. Need a brewer?",
         "Choices": [
           { "Label": "Join us.", "Next": "joined", "Effects": [ { "Type": "JoinNpc", "Id": "alchemist" } ] },
           { "Label": "Is it safe?", "Next": "safe" }
         ]
       },
-      { "Id": "safe", "Speaker": "alchemist", "Text": "Mostly. I'm coming either way -- the desert's not safe for a brewer working alone, and lately neither is a clean spell.", "Effects": [ { "Type": "JoinNpc", "Id": "alchemist" } ], "Next": "joined" },
-      { "Id": "joined", "Speaker": "alchemist", "Text": "Good. Bring me what you find out there and I'll turn it into something that keeps you standing." }
+      { "Id": "safe", "Speaker": "alchemist", "Text": "Mostly. I'm coming either way -- the road's not safe for a brewer working alone, and lately neither is a clean spell.", "Effects": [ { "Type": "JoinNpc", "Id": "alchemist" } ], "Next": "joined" },
+      { "Id": "joined", "Speaker": "alchemist", "Text": "Good. Here -- a clean bottle for your first brew. Find me at camp with those trophies; the Merchant sells more bottles for a few coins.", "Effects": [ { "Type": "GrantItem", "Id": "empty_bottle", "Amount": 1 } ] }
     ]
   },
   {

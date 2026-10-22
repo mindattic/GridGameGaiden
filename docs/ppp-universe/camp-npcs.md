@@ -78,7 +78,7 @@ already moving.
 
 ## Alchemist
 
-**Joins:** at the start of Sandsea Reaches, `desert_alchemist`. **Service:** the Alchemist — Brew
+**Joins:** once the party has looted enough for a first brew (at the latest at the start of Sandsea Reaches), `desert_alchemist`. **Service:** the Alchemist — Brew
 (`docs/BIBLE.md` §25.3). *(Note: this is the Camp NPC, distinct from the playable `alchemist` hero class
 in `heroes.md`'s Healer → Aegis Wardens cluster — two characters, same craft, same name, never
 conflated in dialogue.)*

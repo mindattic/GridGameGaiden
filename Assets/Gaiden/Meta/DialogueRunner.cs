@@ -202,7 +202,7 @@ namespace GridGame.Meta
 
         /// <summary>The story beat to play before launching <paramref name="stageId"/>, or null: the first dialogue
         /// (file order) not yet seen whose ThemeStart names the stage's theme, whose StageCleared stage is
-        /// cleared, or whose GearWorn threshold some equipped piece has fallen below, and whose conditions hold. Test Mode saves never get story (GG-T93: bot-only).</summary>
+        /// cleared, whose GearWorn threshold some equipped piece has fallen below, or whose CanBrew loot is in the bag (GG-T176), and whose conditions hold. Test Mode saves never get story (GG-T93: bot-only).</summary>
         public static DialogueDef PendingBeat(ContentDb c, SaveData s, string stageId) =>
             s == null || s.TestMode ? null : NextBeat(c, s, stageId);
 
@@ -226,7 +226,8 @@ namespace GridGame.Meta
                 if (d.Trigger == null || s.SeenDialogues.Contains(d.Id) || !All(c, s, d.Conditions)) continue;
                 bool fires = d.Trigger.Kind == DialogueTriggerKind.ThemeStart && theme != null && string.Equals(d.Trigger.Id, theme.Id, StringComparison.OrdinalIgnoreCase)
                     || d.Trigger.Kind == DialogueTriggerKind.StageCleared && s.ClearedStages.Contains(d.Trigger.Id)
-                    || d.Trigger.Kind == DialogueTriggerKind.GearWorn && (Repair.AnyBelow(c, s, d.Trigger.Percent) || ReachedTheme(c, theme, d.Trigger.Id));
+                    || d.Trigger.Kind == DialogueTriggerKind.GearWorn && (Repair.AnyBelow(c, s, d.Trigger.Percent) || ReachedTheme(c, theme, d.Trigger.Id))
+                    || d.Trigger.Kind == DialogueTriggerKind.CanBrew && (Brewing.LootedForFirstBrew(c, s) || ReachedTheme(c, theme, d.Trigger.Id));
                 if (fires) return d;
             }
             return null;

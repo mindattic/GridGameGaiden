@@ -2025,7 +2025,7 @@ The Merchant, Blacksmith, Alchemist, Enchantress and Innkeeper are people the pa
 | Merchant | Merchant (§25.1) | `greenvalley_road_merchant` — ThemeStart Green Valley | Green Valley I |
 | Innkeeper | Inn (§25.3.1), incl. the Medic Wagon | `greenvalley_after_first` — StageCleared Green Valley I | Green Valley II |
 | Blacksmith | Blacksmith (§25.2) | `greenvalley_smith` — GearWorn 60%, fallback Sandsea Reaches (§25.0.4) | the first launch after a hero's gear wears below 60% (at the latest Sandsea Reaches I) |
-| Alchemist | Alchemist / Brew (§25.3) | `desert_alchemist` — ThemeStart Sandsea Reaches | Sandsea Reaches I |
+| Alchemist | Alchemist / Brew (§25.3) | `desert_alchemist` — CanBrew, fallback Sandsea Reaches (§25.0.5) | the first launch once the bag holds the loot for a first bottle brew (at the latest Sandsea Reaches I) |
 | Enchantress | Enchantress / Enchant (§25.3.4) | `swamp_enchantress` — ThemeStart Mireholt Fens | Mireholt Fens I |
 
 - **Always met, early:** a join beat has no conditions and every branch of it joins (the Blacksmith's fires on worn gear, with a theme fallback so a party that never wears gear still meets him) (nobody can be refused away), and everyone is met by the third expedition — the services the campaign leans on (shop, rest, repair) inside the first one. Every beat pending at a launch plays, one after another (§27.1), after Camp and before the battle, so a service opens at the next visit to Camp. *(Tests: `CampNpcTests` — `Every_npc_joins_on_every_branch_of_a_story_beat`, `Playing_the_campaign_in_order_meets_everyone_by_the_third_expedition`, `Every_npc_has_a_camp_talk`.)*
@@ -2056,11 +2056,20 @@ The Blacksmith arrives when he is first needed: his join beat (`greenvalley_smit
 - **Bots:** `CampRoutine` repairs once he has joined but forges and salvages only once the workshop is open, like the player.
 - *(Tests: `CampNpcTests.The_blacksmith_joins_once_gear_first_wears_below_sixty_percent`, `CampUnlocksTests.The_blacksmith_opens_with_only_repair_until_the_alchemist_joins`, `CampTipsTests.The_blacksmith_tip_names_and_points_at_the_most_worn_piece`; harness `smithrepair` — tip rings the worn row, Forge tap stays on Repair, tapping the row repairs it.)*
 
+### 25.0.5 Onboarding step 3: Alchemy potions from loot (GG-T176)
+
+The Merchant sells an **Empty Bottle** (`empty_bottle`, 4 G) and the Alchemist brews **bottle recipes**: one Empty Bottle plus monster trophies looted from enemies makes one potion — Healing Potion (Wolf Pelt + Tattered Cloth), Mana Potion (2 Bat Wing), Antidote (Frog Gland), Eye Drops (Vulture Feather), Greater Antidote (Swamp Ichor + Marsh Moss, 10 G), and at Journeyman tier Hi-Potion (2 Goblin Ear + Scorpion Stinger, 15 G) and Ether (Hag Claw + Bat Wing, 5 G). A bottle recipe always costs less than buying what it makes, even with every input bought at the Merchant (`Brewing.ShopCost` < `Brewing.BuyCost`); with loot it is just the bottle. The older slime-gel/arcane-dust recipes stay.
+
+- **The Alchemist joins at the first brew:** his join beat (`desert_alchemist`) has the story trigger **`CanBrew`** — it plays at the next launch once the bag holds every looted input (all but the bottle) of some Apprentice-tier bottle recipe (`Brewing.LootedForFirstBrew`). Its `Id` is a fallback theme (`desert`), as with GearWorn (§25.0.4), so a party that never loots still meets him at the Sandsea. He hands over one Empty Bottle on joining, so the first brew needs no shopping. The Camp row reads "Joins once you've looted enough to brew" while he is away. Joining him also opens the Blacksmith's workshop (§25.0.4).
+- **Guided prompt:** on the first visit `AlchemistScreen` opens with the first brewable bottle recipe selected (`Brewing.FirstBrew`) and his camp tip (`CampTips.Resolve`) names it and what goes in, says what the Merchant charges for the potion, and rings **Brew** (`craft`). With only the bottle missing it rings the recipe row and sends the player to the Merchant for one.
+- **Bots:** `CampRoutine`'s potion stock brews any recipe that makes its stopgap potion, buying a single bottle from the Merchant when a bottle recipe is short only of that.
+- *(Tests: `EconomyLoopTests` — `Every_dropped_crafting_material_feeds_at_least_one_recipe` (no looted material is a dead end), `Bottle_recipes_brew_from_loot_for_less_than_buying_the_potion`, `The_camp_routine_buys_a_bottle_to_brew_its_loot`; `CampNpcTests.The_alchemist_joins_once_the_loot_for_a_first_brew_is_in_the_bag`; `CampTipsTests.The_alchemist_tip_walks_the_first_bottle_brew`.)*
+
 ### 25.0.2 Camp tips (GG-T173)
 
 The first time the player opens a Camp station, a one-time **camp tip** points at the thing to do there: the screen dims, a gold outline and a bouncing pointing hand (`Art.Cursor`) mark the key control, and a card names the station and says what to do in one sentence, with **Got it**. The card sits at the bottom, or at the top when the control is in the lower half, so it never covers what it points at. Combined with the NPC join order above, stations — and their tips — arrive one at a time.
 
-- **Table:** `Meta/CampTips.cs` — station (the page's `Id`), title, sentence, target control name (a trailing `-` matches a prefix, e.g. `recipe-` = the first recipe row). Today: Merchant, Blacksmith (the most worn piece's repair row, §25.0.4), Alchemist, Enchantress, Abilities, Bounties. The onboarding chain (GG-T174…T180) refines wording and targets here.
+- **Table:** `Meta/CampTips.cs` — station (the page's `Id`), title, sentence, target control name (a trailing `-` matches a prefix, e.g. `recipe-` = the first recipe row). Today: Merchant, Blacksmith (the most worn piece's repair row, §25.0.4), Alchemist (the first bottle brew's Brew button, §25.0.5), Enchantress, Abilities, Bounties. The onboarding chain (GG-T174…T180) refines wording and targets here.
 - **Once per save:** dismissing records the station in `SaveData.SeenCampTips` (migrated to empty on older saves). Bot-played saves (`TestMode`) never get tips.
 - **Replay:** Settings › How to play › **Replay camp tips** clears the set.
 - **Automation:** demo, test mode, `-autobattle` and harness runs suppress tips so the UI drivers see the plain screens; `-campTips` turns them back on. `python tools/harness.py camptips` checks show / dismiss / never-again / replay and screenshots each tip. *(Tests: `CampTipsTests`.)*
@@ -2081,7 +2090,7 @@ The first time the player opens a Camp station, a one-time **camp tip** points a
 
 ### 25.3 Alchemist
 
-`AlchemistScreen`: **Brew** (Alchemy recipes). ~~**Enchant** (Enchant recipes), **Heal** (same service as the Inn).~~ **Amended 2026-10-19 (GG-T119):** enchanting moved to the Enchantress's own station (§25.3.4) and the Heal tab is gone — it was the Inn under another name, and resting is now the Innkeeper's (§25.0.1). The header shows the Alchemist's station level and XP to its next tier ([§24.6.1](#2461-tier-ladder-gg-t35-amended-2026-10-15)); a tier-locked recipe shows a 🔒 and the level required instead of its price; an undiscovered recipe shows as `???` or stays hidden, same convention as the Blacksmith ([§24.6.2](#2462-recipe-discovery-gg-t36-amended-2026-10-15)).
+`AlchemistScreen`: **Brew** (Alchemy recipes, including the Empty Bottle recipes of §25.0.5). ~~**Enchant** (Enchant recipes), **Heal** (same service as the Inn).~~ **Amended 2026-10-19 (GG-T119):** enchanting moved to the Enchantress's own station (§25.3.4) and the Heal tab is gone — it was the Inn under another name, and resting is now the Innkeeper's (§25.0.1). The header shows the Alchemist's station level and XP to its next tier ([§24.6.1](#2461-tier-ladder-gg-t35-amended-2026-10-15)); a tier-locked recipe shows a 🔒 and the level required instead of its price; an undiscovered recipe shows as `???` or stays hidden, same convention as the Blacksmith ([§24.6.2](#2462-recipe-discovery-gg-t36-amended-2026-10-15)).
 
 ### 25.3.1 Inn
 

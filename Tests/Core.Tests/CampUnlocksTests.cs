@@ -59,6 +59,7 @@ namespace GridGame.Tests
             Assert.That(CampUnlocks.JoinHint(c, CampNpcs.Merchant), Does.StartWith("Joins at "));
             Assert.That(CampUnlocks.JoinHint(c, CampNpcs.Innkeeper), Does.StartWith("Joins after "));
             Assert.That(CampUnlocks.JoinHint(c, CampNpcs.Blacksmith), Is.EqualTo("Joins when gear wears below 60%"));
+            Assert.That(CampUnlocks.JoinHint(c, CampNpcs.Alchemist), Is.EqualTo("Joins once you've looted enough to brew"));
             foreach (var npc in CampNpcs.All)
                 Assert.That(CampUnlocks.JoinHint(c, npc), Does.Not.Contain("later on the road"), npc + " has no join beat");
         }
