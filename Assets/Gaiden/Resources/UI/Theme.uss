@@ -37,7 +37,11 @@
     padding: 22px 28px;
     margin: 10px;
     background-size: 100% 100%;
+    flex-shrink: 0;
 }
+/* A window holding a scrolling list (Ui.List): fills the space left over and scrolls instead of squashing the
+   tabs and footers around it when its content runs long. */
+.window--scroller { flex-shrink: 1; flex-basis: 0; min-height: 160px; }
 .window--plain { background-color: rgba(10, 16, 52, 0.94); }
 .window-title {
     font-size: 44px;
@@ -149,7 +153,7 @@
 .header-gold { font-size: 46px; color: rgb(255, 214, 92); -unity-text-align: middle-right; margin-right: 12px; }
 
 /* ── Tabs ────────────────────────────────────────────────────────────────── */
-.tabs { flex-direction: row; margin: 10px 10px 0 10px; }
+.tabs { flex-direction: row; margin: 10px 10px 0 10px; flex-shrink: 0; }
 .tab {
     flex-grow: 1;
     height: 96px;

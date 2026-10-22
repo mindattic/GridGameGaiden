@@ -797,6 +797,16 @@ namespace GridGame.App.Automation
                 if (xy.Length == 2) list.Add(new Vector2(F(xy[0]), F(xy[1])));
             }
             return list;
+            // Squashed controls: a tab or button drawn well short of its own styled height means its column ran out
+            // of room and flex shrank it (the Merchant's tabs and footer, found by GG-T136's full loop).
+            foreach (var el in stage.Query<VisualElement>().Where(e => e.ClassListContains("tab") || e.ClassListContains("btn")).ToList())
+            {
+                if (el.resolvedStyle.display == DisplayStyle.None || el.worldBound.height < 1) continue;
+                float want = el.ClassListContains("tab") ? 96f : el.resolvedStyle.minHeight.value;
+                float got = el.worldBound.height * (GameApp.StageWidth / sb.width);
+                if (want > 0 && got < want * 0.8f)
+                    problems.Add($"squashed {(el.ClassListContains("tab") ? "tab" : "button")} '{Trim((el as TextElement)?.text ?? el.name ?? "")}' {got:0}px of {want:0}");
+            }
         }
 
         /// <summary>Strips any directory component/traversal from a request-supplied file name so it can't write or delete outside `artifacts`.</summary>

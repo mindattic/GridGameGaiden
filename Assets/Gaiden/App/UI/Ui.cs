@@ -176,6 +176,9 @@ namespace GridGame.App
             sv.horizontalScrollerVisibility = ScrollerVisibility.Hidden;
             sv.touchScrollBehavior = ScrollView.TouchScrollBehavior.Clamped;
             parent?.Add(sv);
+            // The window holding a list takes only the space left over and scrolls; it is the one that gives way
+            // when a screen runs long, never the tabs or footer around it.
+            if (parent != null && parent.ClassListContains("window")) parent.AddToClassList("window--scroller");
             return sv;
         }
 
