@@ -583,6 +583,7 @@ namespace GridGame.App
                 var n = Ui.Text(q.ToString(), "h2", row);
                 n.style.width = 70; n.style.unityTextAlign = TextAnchor.MiddleCenter;
                 var plus = Ui.Button("+", () => { Step(cart, item.Id, +1, max); }, "btn--small btn--icon", row);
+                plus.name = "cart-plus-" + item.Id;
                 Ui.SetEnabled(minus, q > 0);
                 Ui.SetEnabled(plus, q < max);
             }
@@ -596,6 +597,7 @@ namespace GridGame.App
                 if (r.Ok) cart.Clear();
                 Done(r);
             }, "btn--primary", fr);
+            commit.name = "shop-commit";
             Ui.SetEnabled(commit, total > 0 && (selling || total <= S.Gold));
         }
 
@@ -692,6 +694,7 @@ namespace GridGame.App
                     bool locked = !Crafting.IsUnlocked(s, r);
                     bool can = !locked && Crafting.HasInputs(s, r) && s.Gold >= r.Gold;
                     row = ItemUi.Row(result, locked ? $"🔒 {StationProgress.TierName(r.Tier)}" : $"{r.Gold} G", () => ShowRecipe(detail, c, s, rec, page), list, true);
+                    row.name = "recipe-" + r.Id;
                     if (!can) row.style.opacity = 0.55f;
                 }
                 else
@@ -763,6 +766,7 @@ namespace GridGame.App
                 if (res.Ok) GameApp.I.Persist();
                 page.Refresh();
             }, "btn--primary", w);
+            btn.name = "craft";
             Ui.SetEnabled(btn, !locked && Crafting.HasInputs(s, r) && s.Gold >= r.Gold);
 
             if (r.PotencyResult != null)
@@ -1039,6 +1043,7 @@ namespace GridGame.App
                 Ui.Text($"Progress {S.Bounty.Progress}/{act.Kills}", "h2 gold", a);
                 var row = Ui.El("row", a);
                 var claim = Ui.Button("Claim", () => Done(Bounties.Claim(C, S)), "btn--primary", row);
+                claim.name = "bounty-claim";
                 Ui.SetEnabled(claim, Bounties.IsComplete(C, S));
                 Ui.Button("Abandon", () => Confirm.Show("Abandon this bounty?", "Abandon", () => Done(Bounties.Abandon(S))), "btn--danger", row);
             }
@@ -1056,6 +1061,7 @@ namespace GridGame.App
                 Ui.Text(b.Name, "h2", col);
                 Ui.Text($"Defeat {b.Kills}× {target?.Name}.  Reward {Ui.Gold(b.RewardGold)}{(reward != null ? " + " + reward.Name : "")}", "tiny dim", col).style.whiteSpace = WhiteSpace.Normal;
                 var btn = Ui.Button(S.Bounty.ActiveId == b.Id ? "Active" : "Accept", () => Done(Bounties.Accept(C, S, bounty.Id)), "btn--small", card);
+                btn.name = "bounty-" + b.Id;
                 Ui.SetEnabled(btn, S.Bounty.ActiveId == null);
             }
         }

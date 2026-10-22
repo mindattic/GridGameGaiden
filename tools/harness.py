@@ -4,6 +4,7 @@ Self-play harness: launches the development player with the automation endpoint 
     python tools/harness.py smoke            # title → new game → hub → battle (autoplay) → results
     python tools/harness.py sweep            # screenshot + layout-audit every menu screen
     python tools/harness.py aspects          # GG-T169: title/hub/battle at 9:23..3:4; phones fill, tablets framed
+    python tools/harness.py fullloop [N]     # GG-T136: new game -> bounty -> N battles -> sell/forge/brew/enchant -> claim
     python tools/harness.py clips N          # generate N random-stage/random-wave battle clips
     python tools/harness.py boardaudit N     # GG-T97/T129: N autoplayed battles; fail if two tokens (or two items) are ever drawn on one tile
     python tools/harness.py pause            # GG-T126: pause mid-chain freezes playback (two identical frames), resume finishes it
@@ -385,6 +386,138 @@ def campaign(run="campaign", stages=6, speed=3, extra=(), max_loss_retries=3):
     logs = call("logs")
     print(json.dumps(results, indent=1))
     print("errors:", [l[:300] for l in logs if l.startswith(("Error", "Exception")) and "first mouse" not in l])
+
+
+def _inv():
+    return dict(call("state").get("save", {}).get("inventory") or {})
+
+
+def _goto(screen):
+    call("goto", screen=screen); time.sleep(0.9)
+    return call("state")["screen"] == screen
+
+
+def fullloop(run="fullloop", battles=4, speed=3):
+    """GG-T136: one fresh save through every system in order, asserting each hands off to the next: New Game
+    (real UI) -> accept a bounty -> story beats + several battles on autoplay -> back to camp -> sell a drop ->
+    forge / brew / enchant whatever the drops now allow -> claim the bounty if done. Fails on a battle that
+    stalls, a hand-off whose numbers don't move (fights pay no gold, a sale pays nothing, a craft makes nothing),
+    or any logged error. Skill points (GG-T53) are parked with the build epic and not exercised yet."""
+    fails, notes = [], []
+    launch(run, fresh=True)
+    _wait_screen("title"); time.sleep(0.6)
+    _tap_until(lambda: call("clicktext", text="New Game"), lambda: any("Slot 1" in t for t in call("texts")), tries=4)
+    _tap_until(lambda: call("clicktext", text="Slot 1"), lambda: call("state")["screen"] == "charselect", tries=4, wait=1.0)
+    if not pick_party():
+        print("FAIL: party select"); return False
+    call("speed", x=speed)
+    gold0, inv0 = call("camp")["Gold"], _inv()
+    shot("01-hub-start")
+
+    # Bounty board: take the first contract so the fights below can progress it.
+    if _goto("bounties"):
+        posted = call("camp")["bounty"]["posted"]
+        if posted:
+            call("click", name=f"bounty-{posted[0]}"); time.sleep(0.6)
+            if not call("camp")["bounty"]["active"]:
+                fails.append(f"accepting bounty {posted[0]} didn't make it active")
+        else:
+            notes.append("no bounties posted on a fresh save")
+        call("back"); time.sleep(0.6)
+
+    # Fights: Adventure -> first stage, story beats, then `battles` battles in a row.
+    call("clicktext", text="Adventure"); time.sleep(0.8)
+    call("clicktext", text="Green Valley I"); time.sleep(1.2)
+    through_story(wait=1.2)
+    for n in range(battles):
+        outcome, st = _play_battle(f"02-battle{n}-mid")
+        if outcome != "ended":
+            fails.append(f"battle {n}: {outcome}"); break
+        time.sleep(1.2)
+        st = _skip_levelups(call("state"))
+        for attempt in range(3):
+            r = call("clicktext", text="Retry")
+            if isinstance(r, dict) and r.get("error"):
+                break
+            notes.append(f"battle {n}: lost, retry {attempt + 1}")
+            time.sleep(1.5); _wait_screen("battle", 8)
+            outcome, st = _play_battle(f"02-battle{n}-retry{attempt}")
+            time.sleep(1.2); st = _skip_levelups(call("state"))
+        shot(f"03-result{n}")
+        last = n == battles - 1
+        call("click" if not last else "clicktext", **({"name": "next"} if not last else {"text": "Continue"}))
+        time.sleep(1.5)
+        if not last:
+            through_story(wait=1.2)
+    if not _wait_screen("hub", 10):
+        call("goto", screen="hub"); time.sleep(1)
+    camp = call("camp")
+    gold1, inv1 = camp["Gold"], _inv()
+    gained = {k: v - inv0.get(k, 0) for k, v in inv1.items() if v > inv0.get(k, 0)}
+    if gold1 <= gold0:
+        fails.append(f"fights paid no gold ({gold0} -> {gold1})")
+    if not gained:
+        fails.append("fights dropped nothing into the inventory")
+    shot("04-hub-after-fights")
+
+    # Merchant: sell one of something the fights dropped (fall back to anything sellable).
+    sellable = camp["sellable"]
+    pick = next((s for s in sellable if s["Id"] in gained), sellable[0] if sellable else None)
+    if pick and _goto("shop"):
+        call("clicktext", text="Sell"); time.sleep(0.6)
+        call("click", name=f"cart-plus-{pick['Id']}"); time.sleep(0.4)
+        call("click", name="shop-commit"); time.sleep(0.8)
+        after = call("camp")["Gold"]
+        if after != gold1 + pick["price"]:
+            fails.append(f"selling 1x {pick['Id']} @ {pick['price']} moved gold {gold1} -> {after}")
+        shot("05-shop-sold")
+        call("back"); time.sleep(0.6)
+    elif not pick:
+        fails.append("nothing sellable after the fights")
+
+    # Crafting stations: make the first thing each one can make now.
+    crafted = 0
+    for station, screen in (("forge", "blacksmith"), ("alchemy", "alchemist"), ("enchant", "enchantress")):
+        options = call("camp")[station]
+        if not options:
+            notes.append(f"{screen}: nothing craftable yet")
+            continue
+        r = options[0]
+        before = _inv().get(r["Result"], 0)
+        if not _goto(screen):
+            fails.append(f"couldn't open {screen}"); continue
+        call("click", name=f"recipe-{r['Id']}"); time.sleep(0.5)
+        call("click", name="craft"); time.sleep(0.8)
+        if _inv().get(r["Result"], 0) <= before:
+            fails.append(f"{screen}: crafting {r['Id']} produced no {r['Result']}")
+        else:
+            crafted += 1
+        shot(f"06-{screen}")
+        call("back"); time.sleep(0.6)
+    if crafted == 0:
+        notes.append("no station could craft anything from these drops (check drop tables vs. tier-1 recipes)")
+
+    # Bounty: claim if the fights finished it.
+    b = call("camp")["bounty"]
+    if b["active"] and b["complete"] and _goto("bounties"):
+        g = call("camp")["Gold"]
+        call("click", name="bounty-claim"); time.sleep(0.8)
+        if call("camp")["Gold"] <= g:
+            fails.append("claiming a finished bounty paid nothing")
+        call("back"); time.sleep(0.6)
+    elif b["active"]:
+        notes.append(f"bounty {b['active']} at {b['progress']} after {battles} battles (not complete)")
+
+    errs = [l[:300] for l in call("logs") if l.startswith(("Error", "Exception")) and "first mouse" not in l]
+    if errs:
+        fails.append(f"log errors: {errs[:3]}")
+    try:
+        call("quit", timeout=3)
+    except Exception:
+        pass
+    print(json.dumps({"gold": [gold0, gold1], "dropped": gained, "crafted": crafted, "notes": notes}, indent=1))
+    print("FAILURES:" if fails else "FULL LOOP OK", *fails, sep="\n  ")
+    return not fails
 
 
 def story_recruits(run="recruits", speed=3):
@@ -1076,6 +1209,8 @@ if __name__ == "__main__":
         sweep(sys.argv[2] if len(sys.argv) > 2 else "sweep")
     elif cmd == "aspects":
         sys.exit(0 if aspects() else 1)
+    elif cmd == "fullloop":
+        sys.exit(0 if fullloop(battles=int(sys.argv[2]) if len(sys.argv) > 2 else 4) else 1)
     elif cmd == "clips":
         battle_clips(count=int(sys.argv[2]) if len(sys.argv) > 2 else 10)
     elif cmd == "boardaudit":

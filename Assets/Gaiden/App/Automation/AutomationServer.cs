@@ -484,6 +484,23 @@ namespace GridGame.App.Automation
                         : new { ok = true, error = (string)null, target = up.Target })));
                     return Pending;
                 }
+                case "camp":
+                {
+                    // GG-T136 full-loop harness: what each camp system can actually do with this save right now.
+                    var c = app.Content; var s = app.Save;
+                    if (s == null) return new { error = "no save" };
+                    object Craftable(CraftStation st) => Crafting.Recipes(c, st)
+                        .Where(r => RecipeDiscovery.IsDiscovered(s, r) && Crafting.IsUnlocked(s, r) && Crafting.HasInputs(s, r) && s.Gold >= r.Gold)
+                        .Select(r => new { r.Id, r.Result, upgrade = r.BaseItem != null }).ToList();
+                    var active = Bounties.Active(c, s);
+                    return new
+                    {
+                        s.Gold,
+                        sellable = Shop.Sellable(c, s).Select(i => new { i.Id, type = i.Type.ToString(), price = Shop.SellPrice(i), count = s.Count(i.Id) }).ToList(),
+                        forge = Craftable(CraftStation.Forge), alchemy = Craftable(CraftStation.Alchemy), enchant = Craftable(CraftStation.Enchant),
+                        bounty = new { active = active?.Id, progress = s.Bounty.Progress, complete = active != null && Bounties.IsComplete(c, s), posted = Bounties.Posted(c, s).Select(b => b.Id).ToList() },
+                    };
+                }
                 case "stagebounds":
                 {
                     var sb = app.Stage.worldBound;
@@ -780,6 +797,16 @@ namespace GridGame.App.Automation
                 if (l.resolvedStyle.whiteSpace == WhiteSpace.NoWrap && size.x > l.contentRect.width + 4 && l.contentRect.width > 0)
                     problems.Add($"text overflows ({size.x:0}>{l.contentRect.width:0}) '{Trim(l.text)}'");
             }
+            // Squashed controls: a tab or button drawn well short of its own styled height means its column ran out
+            // of room and flex shrank it (the Merchant's tabs and footer, found by GG-T136's full loop).
+            foreach (var el in stage.Query<VisualElement>().Where(e => e.ClassListContains("tab") || e.ClassListContains("btn")).ToList())
+            {
+                if (el.resolvedStyle.display == DisplayStyle.None || el.worldBound.height < 1) continue;
+                float want = el.ClassListContains("tab") ? 96f : el.resolvedStyle.minHeight.value;
+                float got = el.worldBound.height * (GameApp.StageWidth / sb.width);
+                if (want > 0 && got < want * 0.8f)
+                    problems.Add($"squashed {(el.ClassListContains("tab") ? "tab" : "button")} '{Trim((el as TextElement)?.text ?? el.name ?? "")}' {got:0}px of {want:0}");
+            }
             return new { screen = GameApp.I.Router.Current?.Id, labels, problems };
         }
 
@@ -797,16 +824,6 @@ namespace GridGame.App.Automation
                 if (xy.Length == 2) list.Add(new Vector2(F(xy[0]), F(xy[1])));
             }
             return list;
-            // Squashed controls: a tab or button drawn well short of its own styled height means its column ran out
-            // of room and flex shrank it (the Merchant's tabs and footer, found by GG-T136's full loop).
-            foreach (var el in stage.Query<VisualElement>().Where(e => e.ClassListContains("tab") || e.ClassListContains("btn")).ToList())
-            {
-                if (el.resolvedStyle.display == DisplayStyle.None || el.worldBound.height < 1) continue;
-                float want = el.ClassListContains("tab") ? 96f : el.resolvedStyle.minHeight.value;
-                float got = el.worldBound.height * (GameApp.StageWidth / sb.width);
-                if (want > 0 && got < want * 0.8f)
-                    problems.Add($"squashed {(el.ClassListContains("tab") ? "tab" : "button")} '{Trim((el as TextElement)?.text ?? el.name ?? "")}' {got:0}px of {want:0}");
-            }
         }
 
         /// <summary>Strips any directory component/traversal from a request-supplied file name so it can't write or delete outside `artifacts`.</summary>
