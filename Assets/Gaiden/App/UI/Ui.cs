@@ -189,6 +189,7 @@ namespace GridGame.App
             {
                 int idx = i;
                 var t = Text(names[i], "tab" + (i == active ? " tab--active" : ""), bar);
+                t.name = "tab-" + names[i].ToLowerInvariant().Replace(' ', '-');
                 t.pickingMode = PickingMode.Position;
                 Tappable(t, () => onPick(idx));
             }

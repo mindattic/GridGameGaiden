@@ -1224,6 +1224,13 @@ namespace GridGame.App
                 "• Fallen enemies sometimes drop a pickup. Walk a hero over it before it fades.\n" +
                 "• The shield skips to the next enemy turn and guards everyone.", "small", help);
             t.style.whiteSpace = WhiteSpace.Normal;
+            if (S != null)
+            {
+                var replay = Ui.Button("Replay camp tips", () => { CampTips.ResetAll(S); Done(Result.Success("Camp tips will show again")); }, "btn--small", help);
+                replay.name = "replay-camp-tips";
+                replay.style.marginTop = 14;
+                replay.style.alignSelf = Align.FlexStart;
+            }
         }
     }
 }

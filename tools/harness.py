@@ -520,6 +520,48 @@ def fullloop(run="fullloop", battles=4, speed=3):
     return not fails
 
 
+def camptips(run="camptips"):
+    """GG-T173: the first visit to a Camp station shows its tip (veil + pointing hand + card); "Got it" dismisses it
+    for good; Settings > How to play > Replay camp tips brings it back. Launches with -campTips (harness runs
+    suppress tips otherwise)."""
+    fails = []
+    launch(run, extra=("-campTips",), fresh=True)
+    call("newgame", slot=0, gold=500, npcs=1); time.sleep(1)
+    tip = lambda: bool(call("names", prefix="camp-tip-card"))
+    for station in ("shop", "blacksmith", "alchemist", "bounties"):
+        _goto(station); time.sleep(0.5)
+        shot(f"tip-{station}")
+        if not tip():
+            fails.append(f"{station}: no tip on first visit")
+        else:
+            probs = call("layout").get("problems")
+            if probs:
+                fails.append(f"{station}: layout {probs}")
+        call("click", name="camp-tip-ok"); time.sleep(0.5)
+        if tip():
+            fails.append(f"{station}: Got it didn't dismiss the tip")
+        call("back"); time.sleep(0.5)
+    _goto("shop"); time.sleep(0.5)
+    if tip():
+        fails.append("shop: tip came back after being dismissed")
+    call("back"); time.sleep(0.5)
+    _goto("settings"); call("scrollto", name="replay-camp-tips"); time.sleep(0.3)
+    call("click", name="replay-camp-tips"); time.sleep(0.6); call("back"); time.sleep(0.5)
+    _goto("shop"); time.sleep(0.5)
+    if not tip():
+        fails.append("shop: Replay camp tips didn't bring the tip back")
+    shot("tip-shop-replayed")
+    errs = [l[:300] for l in call("logs") if l.startswith(("Error", "Exception"))]
+    if errs:
+        fails.append(f"log errors {errs[:3]}")
+    try:
+        call("quit", timeout=3)
+    except Exception:
+        pass
+    print("FAILURES:" if fails else "CAMP TIPS OK", *fails, sep="\n  ")
+    return not fails
+
+
 def story_recruits(run="recruits", speed=3):
     """GG-T118: a new game starts small and grows at story beats. Picks the starting three through the real
     party select, clears Green Valley I on autoplay, then launches the next battle and checks that the
@@ -1209,6 +1251,8 @@ if __name__ == "__main__":
         sweep(sys.argv[2] if len(sys.argv) > 2 else "sweep")
     elif cmd == "aspects":
         sys.exit(0 if aspects() else 1)
+    elif cmd == "camptips":
+        sys.exit(0 if camptips() else 1)
     elif cmd == "fullloop":
         sys.exit(0 if fullloop(battles=int(sys.argv[2]) if len(sys.argv) > 2 else 4) else 1)
     elif cmd == "clips":

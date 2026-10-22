@@ -47,6 +47,7 @@ namespace GridGame.App
             Body.style.paddingBottom = 30;
             BuildBody(Body);
             UpdateGold();
+            CampTipOverlay.ShowIfPending(this, Id);
         }
 
         protected abstract void BuildBody(VisualElement body);

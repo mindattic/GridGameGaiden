@@ -1970,6 +1970,16 @@ The Merchant, Blacksmith, Alchemist, Enchantress and Innkeeper are people the pa
 - **Old saves:** save version 4's migration joins every NPC on any older save (they had been using every service). New Game+ keeps flags, so nobody leaves.
 - Abilities/Learn, the Summon Circle, Bounties, the Caravan and the Crucible (§22.10) have no keeper and are always open.
 
+### 25.0.2 Camp tips (GG-T173)
+
+The first time the player opens a Camp station, a one-time **camp tip** points at the thing to do there: the screen dims, a gold outline and a bouncing pointing hand (`Art.Cursor`) mark the key control, and a card names the station and says what to do in one sentence, with **Got it**. The card sits at the bottom, or at the top when the control is in the lower half, so it never covers what it points at. Combined with the NPC join order above, stations — and their tips — arrive one at a time.
+
+- **Table:** `Meta/CampTips.cs` — station (the page's `Id`), title, sentence, target control name (a trailing `-` matches a prefix, e.g. `recipe-` = the first recipe row). Today: Merchant, Blacksmith (Repair tab), Alchemist, Enchantress, Abilities, Bounties. The onboarding chain (GG-T174…T180) refines wording and targets here.
+- **Once per save:** dismissing records the station in `SaveData.SeenCampTips` (migrated to empty on older saves). Bot-played saves (`TestMode`) never get tips.
+- **Replay:** Settings › How to play › **Replay camp tips** clears the set.
+- **Automation:** demo, test mode, `-autobattle` and harness runs suppress tips so the UI drivers see the plain screens; `-campTips` turns them back on. `python tools/harness.py camptips` checks show / dismiss / never-again / replay and screenshots each tip. *(Tests: `CampTipsTests`.)*
+- Tab buttons are named `tab-<label>` (`Ui.Tabs`) so tips and harnesses can target them.
+
 ### 25.1 Merchant
 
 `ShopScreen` / `Meta.Shop`. Buy / Sell / Bargain tabs; Buy and Sell use separate carts with rows showing name (rarity color), unit price, owned count and a − n + stepper; the footer shows "Pay" (red if unaffordable) or "Receive" and commits the whole cart.
