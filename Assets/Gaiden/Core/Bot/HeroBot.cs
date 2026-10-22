@@ -225,6 +225,8 @@ namespace GridGame.Core.Bot
                     if (a.ApplyBuff != null && !t.HasBuff(a.ApplyBuff)) score += 3f;
                     if (a.StealsMana) score += s.Bank.IsFull ? 0f : 3f;
                     if (a.HastenU > 0) score -= 5f;
+                    if (a.DelayU > 0f) score += 3f; // GG-T183: shoving a foe back on the timeline buys the party a turn
+                    if (a.BaseHeal > 0 && a.Filter == TargetFilter.EnemyOnly) score += Math.Min(caster.MaxHp - caster.Hp, a.BaseHeal) * 0.3f; // drain
                 }
                 else
                 {
@@ -252,7 +254,7 @@ namespace GridGame.Core.Bot
                         else if (gift.OutgoingDamageMultiplier > 1f) score += close ? 1.2f : 0f;
                         else score += close ? 1f : 0.3f;
                     }
-                    if (a.BaseDamage > 0 || (a.ApplyBuff != null && s.Content.TryBuff(a.ApplyBuff)?.Kind == BuffKind.Debuff)) score -= 20f;
+                    if ((a.BaseDamage > 0 && a.BaseHeal <= 0) || (a.ApplyBuff != null && s.Content.TryBuff(a.ApplyBuff)?.Kind == BuffKind.Debuff)) score -= 20f; // harm+heal spares friends (GG-T183)
                 }
             }
             // A lone hero's bar is its only way to hurt anything (no pincers with one hero): spend mana and items on

@@ -244,6 +244,17 @@ namespace GridGame.Core.Content
         public int Knockback;
         /// <summary>The pick must be cardinally adjacent to the caster (melee skills).</summary>
         public bool AdjacentOnly;
+        /// <summary>Timeline (GG-T183): each target's turn icon slides back this fraction of the bar; a held cast slips
+        /// by the same amount (it is never cancelled by it). The inverse of <see cref="HastenU"/>.</summary>
+        public float DelayU;
+        /// <summary>Movement (GG-T183): each target is dragged up to this many tiles straight toward the caster, stopping
+        /// beside it or at the first thing in the way. Bosses and snakes don't budge.</summary>
+        public int Pull;
+        /// <summary>Movement (GG-T183): the caster and its (one-tile) target trade tiles.</summary>
+        public bool SwapsPlaces;
+        /// <summary>Movement (GG-T183): once it resolves, the caster steps up to this many tiles straight away from the
+        /// nearest foe (Disengage, Hit and Run).</summary>
+        public int StepBack;
         public bool IsScan;
         /// <summary>Random WUBRG orbs added to the bank on resolve (ethers).</summary>
         public int GrantsOrbs;

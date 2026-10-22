@@ -896,10 +896,14 @@ Invariant: while the event player is busy (`BattleScreen.Busy`) no command can b
    3. **Fire × Frozen / Wet**: a damaging Fire hit force-expires Frozen (its chain applies Wet), then strips Wet ("Steam!").
    4. **Steal** (`StealsMana`) roll → random orb or "Missed!"; **Mug** adds a fixed physical hit (`MugDamage` 10 × physical resistance × incoming multiplier).
    5. **Damage** (`BaseDamage > 0`) → `Formulas.SpellDamage` (Lightning on Wet ×1.5, note "Shock!"), × `BonusMultiplier` vs `BonusVsTag`; then **Lightning blind roll** 30% → Blinded.
-   6. **Heal** (`BaseHeal`).
-   7. **Hasten** (`HastenU`).
-   8. **Buff** (`ApplyBuff`, chance `ApplyBuffChance`): Sleep on a Warm target lasts ×1.5 (ceil).
-5. Battle-end check.
+   6. **Knockback** (`Knockback`, [§6.6](#66-knockback-added-2026-10-10-owner-direction)), then **Pull** (`Pull`) and **Swap** (`SwapsPlaces`) ([§6.7](#67-movement-timeline-and-drain-gg-t183)).
+   7. **Heal** (`BaseHeal`). **Amended 2026-10-22 (GG-T183):** a heal only ever lands on the caster's side. On a foe it is a **drain** when the ability's filter is `EnemyOnly` (the caster is mended instead), and nothing when the filter is `Any`; and an ability that both harms and heals never harms a friend (before this, Soul Feast, Collect the Debt, Bloodletting and Blood Harvest healed the foe they hit, and Harm into Hope scorched allies and mended enemies).
+   8. **Hasten** (`HastenU`), then **Delay** (`DelayU`).
+   9. **Buff** (`ApplyBuff`, chance `ApplyBuffChance`): Sleep on a Warm target lasts ×1.5 (ceil).
+5. **Step back** (`StepBack`): the caster backs away from the nearest foe.
+6. Battle-end check.
+
+**Amended 2026-10-22 (GG-T183):** a teleport with `HastenU` (Fade Step) also hastens the caster when it lands.
 
 `Damage()` is the single damage choke-point: armor (snake), Sleep-break, HP, threat, death + loot, then (hero source, non-miss) pushback and cast stagger ([§13](#13-combat-resolution)).
 
@@ -950,6 +954,19 @@ Owner: "certain abilities would have pushbacks like a shield bash that pushes an
 
 `AbilityDef.Knockback` = tiles the target is shoved straight away from the caster (dominant axis); `AdjacentOnly` limits the pick to a cardinally adjacent foe. Per tile: into stone or the board edge → **Slam** (`18 + blow` to the target, stop); into another unit → **Crash** (`8 + ½ blow` to the target and, if it's a foe, to the unit hit; stop); into a movable tile → it is pushed ahead if there's room, else a crash; otherwise the target slides (`DisplacedEvent`). 2×2 bosses and snake segments don't budge. **Shield Bash** (Skill, cooldown 2, 12 physical, knockback 2, adjacent only) is learnable by Paladin, Knight and Defender and sits in the Paladin's third bar slot. *(Tests: `Shield_bash_shoves_the_target_two_tiles_away`, `Bashing_into_a_unit_crashes_both_and_into_stone_slams_hard`, `Shield_bash_needs_an_adjacent_target`.)*
 
+### 6.7 Movement, timeline and drain (GG-T183)
+
+Added 2026-10-22 so abilities can differ in more than damage and status ([§7.1](#71-reskin-audit-gg-t183)). Four `AbilityDef` fields, each resolved per target by the dispatcher above:
+
+| Field | Mechanic | Rule | Event |
+|---|---|---|---|
+| `Pull` (tiles) | movement | The target is dragged toward the caster one tile at a time along the longer axis. It stops beside the caster, or before any unit, block, movable or board edge. A hero dragged onto a trap springs it. | `DisplacedEvent` per tile |
+| `SwapsPlaces` | movement | The caster and the target trade tiles. Both are one-tile units, so the board stays one actor per tile ([§1.1.3](#113-one-actor-per-tile--the-occupancy-guarantee-added-2026-10-19-owner-direction-gg-t97)). A hero moved onto a trap springs it. | two `DisplacedEvent`s |
+| `StepBack` (tiles) | movement | After every target resolves, the caster backs straight away from the nearest foe onto free, trap-free tiles. | `DisplacedEvent` per tile |
+| `DelayU` (bar fraction) | timeline | The inverse of Hasten ([§2.7.1](#271-hasten--quicken--the-inverse)): the target's turn icon slides back by `DelayU × BarLength` (to no less than 0). A target that is holding a cast has the cast slip by the same amount in ticks instead. That counts as a stagger, but it never cancels the cast. | `PushedBackEvent` / `CastStaggeredEvent` |
+
+2×2 bosses, snake segments and remains don't budge ("Won't budge"). None of the moves is a hero step, so none of them forms a pincer: movement never deals damage ([GG-LAW-1](#GG-LAW-1)). *(Tests: `AbilityAuditTests`: `Pull_reels_a_foe_in_toward_the_caster`, `Pull_stops_beside_the_caster`, `Swap_trades_tiles_with_the_target`, `Step_back_puts_distance_between_the_caster_and_the_nearest_foe`, `Delay_slides_the_foes_turn_icon_back`, `A_heal_aimed_at_a_foe_drains_into_the_caster`, `Harm_and_heal_in_one_burst_hurts_only_foes_and_mends_only_friends`.)*
+
 ## 7. The Spell Catalog
 
 All entries in `abilities.json`. Every spell has base cast time **1.5 s** (scaled by WIS+INT, [§13.1.4](#1314-cast-time)).
@@ -986,6 +1003,39 @@ Enemy-only entries: `charge_fireball` (Fire), `charge_ice` (Ice), `charge_thunde
 - **Mug** = Steal's roll + its row's `BaseDamage` 10 Physical, one hit per target (fixed 2026-10-09; `Mug_steals_and_hits_exactly_once_per_target`).
 - **Silence** blocks hero spell slots and stops a silenced enemy from starting a charge (`EnemyPlanner.PlanCast`; `Silenced_caster_does_not_start_a_charge`).
 - Spell damage never misses or crits ([§13.1.2](#1312-spell-damage-dispatcher)).
+
+### 7.1 Reskin audit (GG-T183)
+
+Owner direction (2026-10-21, epic W): there should be **at least 100 hero abilities that differ in mechanic, each learnable at the Learn screen**. A reskin is an ability with the same shape and effect as another under a different name.
+
+**How "mechanic" is measured.** `Abilities.MechanicKey` (`Meta/MetaServices.cs`) removes the name, the numbers (damage, heal, cost, cooldown, cast time, hasten/delay amount, buff chance) and the art. What remains is the key:
+- **Payment and timing:** a skill on a cooldown, a spell cast on the timeline, or an instant spell.
+- **Footprint:** shape (with its radius for Square/Diamond/Cross), auto or pick mode, filter, and whether it is adjacent-only. Mode and filter are ignored for Self and All* shapes, where they change nothing.
+- **Effects:** damage, with Fire and Lightning counted apart because they thaw/steam and shock/blind, while every other element only meets a different resistance. Then heal or drain, the status it applies, cleanse/cure, steal, orbs, scan, revive, escape, bonus-vs-tag, movement (teleport, knockback, pull, swap, step back) and timeline (hasten, delay).
+
+**Learnable** = `Abilities.LearnableByAnyHero`: a hero-usable Spell or Skill (never a passive, an enemy charge or `enrage`) that is a spell, a universal skill, or on a hero class's `Abilities` list. That is the union of what `Abilities.Learnable` offers across all hero classes.
+
+**Before (197 rows):** 169 learnable hero abilities, **95 distinct keys**. Five of them did nothing when they resolved (only 92 of the 95 keys had an effect at all), and seven more were wired wrong:
+- **No-ops:** `sprint`, `shake_it_off`, `tempoweave_shortcut`, `tempoweave_swap`, `shadowstep_fade_step` (a "teleport" that wasn't one).
+- **`disengage`:** a self knockback, which the dispatcher skips.
+- **Drains that healed the foe:** `attrition_soulfeast`, `opportunist_collect_the_debt`, `attrition_bloodletting`, `hexweaver_bloodharvest`.
+- **`hexmenders_harmintohope`:** burned allies and healed enemies.
+- **Unlearnable:** nine ranger skills (`marksman_*`, `trapper_*`, `skirmisher_covering_volley/retreat_shot/rapid_barrage`) were only granted by a skill-tree node, so no Learn screen offered them.
+
+The biggest reskin family was the plain adjacent strike: 21 rows (Cleave, Killing Blow, Iaijutsu, Flurry, Riposte, Fleche, Knockout Punch, Wild Swing, Hit and Run…).
+
+**What GG-T183 changed:**
+
+| Change | Abilities |
+|---|---|
+| No-ops made real, using the mechanic each one's text already promised | Sprint (self hasten), Shake It Off (self cleanse), Shortcut (instant ally hasten), Swift Swap (swap places with an ally + cleanse), Fade Step (teleport + hasten), Disengage (step back 2) |
+| Text the data didn't do | Followthrough now hastens as it says; Cleansing Vigil now cleanses as it says |
+| Drain / harm-and-heal fixed in the dispatcher ([§6](#6-the-spell-dispatcher)) | Soul Feast, Collect the Debt, Bloodletting, Blood Harvest, Harm into Hope |
+| Reskins given the mechanic their name describes | Fleche (lunge through: swap with the foe), Riposte (+ delay), Hit and Run (+ step back), Wild Swing (all 8 tiles around you), Knockout Punch (50% sleep), Retreat Shot (+ step back), Covering Volley (column + delay) |
+| Skill-tree-only ranger skills put on the ranger class lists | Hexsniper: Deadeye Shot, Piercing Volley, Execution Shot, Covering Volley, Retreat Shot, Rapid Barrage. Hexwarden: Binding Shot, Pitfall Volley, Snare Net |
+| **12 new abilities** | Spells, which every hero can learn: **Hinder** (delay 0.3), **Stasis** (all foes, delay 0.12), **Haste Field** (all allies, hasten), **Drain Life** (cast drain), **Undertow** (column, Ice + Wet + pull 2), **Drench** (instant 3×3 Wet, setting up Lightning ×1.5), **Flame Lance** (row, Fire + burning). Class skills: **Grappling Hook** (pull 3: Lancer, Raider, Panda Girl, Hexwarden), **Meditate** (+1 orb: Monk, Sage, Martial Artist, White Ninja), **Shove** (adjacent knockback, no blade: Defender, Knight, Tank, Myrmidon), **Disrupt** (silence + delay: Sage, Operative, Drifter, Harbinger), **Pinning Shot** (ranged hit + delay: Hexsniper, Hexwarden) |
+
+**After (209 rows):** 190 learnable hero abilities, **120 distinct mechanics**, and none of them is a no-op. The remaining reskin families are left on purpose, because each class keeps its own flavour of a staple move. The largest are the plain adjacent strike (16), adjacent strike + slowed (8), adjacent strike + knockback (8), adjacent strike + blinded (6), adjacent strike + poisoned (5), ranged strike (5) and self-empower (4). *(Tests: `AbilityAuditTests`: `At_least_100_learnable_hero_abilities_differ_in_mechanic` prints every remaining family, `Every_learnable_hero_ability_does_something`, `Every_counted_ability_is_offered_at_some_heros_Learn_screen`, `Reskins_share_a_key_and_new_mechanics_do_not`; `CatalogTests.Every_hero_ability_resolves_against_a_live_board` runs all 12 new rows through the engine.)*
 
 ---
 

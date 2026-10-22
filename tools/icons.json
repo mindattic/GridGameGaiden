@@ -992,6 +992,54 @@
   "arcane_focus_proficiency": [
    "lorc/rune-stone",
    "arcane"
+  ],
+  "hinder": [
+   "lorc/snail",
+   "arcane"
+  ],
+  "stasis": [
+   "lorc/frozen-orb",
+   "arcane"
+  ],
+  "haste_field": [
+   "lorc/sprint",
+   "gold"
+  ],
+  "drain_life": [
+   "delapouite/vampire-dracula",
+   "crimson"
+  ],
+  "undertow": [
+   "lorc/droplets",
+   "water"
+  ],
+  "drench": [
+   "lorc/drop",
+   "water"
+  ],
+  "flame_lance": [
+   "carl-olsen/flame",
+   "fire"
+  ],
+  "grappling_hook": [
+   "lorc/spear-hook",
+   "iron"
+  ],
+  "meditate": [
+   "lorc/aura",
+   "gold"
+  ],
+  "shove": [
+   "delapouite/shield-bash",
+   "steel"
+  ],
+  "disrupt": [
+   "lorc/silence",
+   "arcane"
+  ],
+  "pinning_shot": [
+   "lorc/thrown-spear",
+   "steel"
   ]
  },
  "item": {

@@ -170,6 +170,7 @@ namespace GridGame.Core.Battle
                 Emit(new AbilityResolvedEvent { CasterId = caster.Id, AbilityId = a.Id, Anchor = anchor, Tiles = { anchor } });
                 Emit(new TeleportedEvent { UnitId = caster.Id, From = from, To = anchor });
                 TriggerTrap(caster);
+                if (a.HastenU > 0f && caster.Alive) Hasten(caster, a.HastenU); // Fade Step: arrive already ahead (GG-T183)
                 if (caster.Alive && caster.IsHero) ResolvePincers(Team.Hero, caster);
                 return;
             }
@@ -218,7 +219,10 @@ namespace GridGame.Core.Battle
                 if (a.RemovesDebuffs) RemoveBuffsWhere(t, b => b.Def.Kind == BuffKind.Debuff, "cleansed");
                 if (a.RemovesBuff != null) RemoveBuffsWhere(t, b => b.Def.Id == a.RemovesBuff, "cured");
 
-                bool deals = a.BaseDamage > 0;
+                // An ability that both harms and heals harms only foes and mends only friends (GG-T183: Harm into Hope
+                // was scorching allies and knitting enemies).
+                bool friend = t.Team == caster.Team;
+                bool deals = a.BaseDamage > 0 && !(a.BaseHeal > 0 && friend);
                 if (deals && a.DamageType == DamageType.Fire)
                 {
                     if (t.HasBuff("frozen")) ForceExpire(t, "frozen");
@@ -254,10 +258,19 @@ namespace GridGame.Core.Battle
                 }
 
                 if (a.Knockback > 0 && t.Alive && t.Team != caster.Team) Knockback(caster, t, a.Knockback, a.BaseDamage);
+                if (a.Pull > 0 && t.Alive && t != caster) Pull(caster, t, a.Pull);
+                if (a.SwapsPlaces && t.Alive && t != caster && caster.Alive) SwapPlaces(caster, t);
 
-                if (a.BaseHeal > 0 && t.Alive) Heal(t, a.Kind == AbilityKind.Item ? a.BaseHeal : Math.Max(1, (int)Math.Round(a.BaseHeal * Formulas.HealPower(caster))), caster);
+                // A heal aimed at a foe (Soul Feast, Blood Harvest) is a drain: it mends the caster, never the foe (GG-T183).
+                if (a.BaseHeal > 0)
+                {
+                    var mended = friend ? t : a.Filter == TargetFilter.EnemyOnly ? caster : null;
+                    if (mended != null && mended.Alive)
+                        Heal(mended, a.Kind == AbilityKind.Item ? a.BaseHeal : Math.Max(1, (int)Math.Round(a.BaseHeal * Formulas.HealPower(caster))), caster);
+                }
 
                 if (a.HastenU > 0f && t.Alive) Hasten(t, a.HastenU);
+                if (a.DelayU > 0f && t.Alive) Delay(t, a.DelayU);
 
                 var buff = C.TryBuff(a.ApplyBuff);
                 if (buff != null && t.Alive && S.Rng.Chance(a.ApplyBuffChance <= 0f ? 1f : a.ApplyBuffChance))
@@ -266,6 +279,93 @@ namespace GridGame.Core.Battle
                     if (buff.Id == "sleep" && t.HasBuff("warm")) dur = (int)Math.Ceiling(dur * BattleConfig.SleepWhenWarmMultiplier);
                     ApplyBuff(t, buff, dur);
                 }
+            }
+
+            if (a.StepBack > 0 && caster.Alive && !S.IsOver) StepAway(caster, a.StepBack);
+        }
+
+        /// <summary>Delay (GG-T183, the inverse of <see cref="Hasten"/>): slide a turn icon back, or make a held cast slip.</summary>
+        private void Delay(Unit t, float amountU)
+        {
+            var turn = S.TurnEntryOf(t.Id);
+            if (turn != null)
+            {
+                float from = turn.U;
+                turn.Ip = Math.Max(0, turn.Ip - (int)Math.Round(amountU * BattleConfig.BarLength));
+                Emit(new PushedBackEvent { UnitId = t.Id, FromU = from, ToU = turn.U, StunTicks = turn.StunTicks });
+                return;
+            }
+            var cast = S.CastEntryOf(t.Id);
+            if (cast != null)
+            {
+                int ticks = Math.Max(1, (int)Math.Round(amountU * BattleConfig.BarLength / BattleConfig.ReferencePacePerTick));
+                cast.RemainingTicks += ticks;
+                Emit(new CastStaggeredEvent { EntryId = cast.Id, CasterId = t.Id, DelayTicks = ticks });
+            }
+        }
+
+        /// <summary>Movers an ability may shove about: one-tile, living, not a snake segment or remains.</summary>
+        private static bool Budges(Unit u) => u.Alive && !u.IsMultiTile && !u.IsSnakeMember && !u.IsRemains;
+
+        /// <summary>Unit-direction (one axis) from <paramref name="from"/> toward <paramref name="to"/>, the longer axis first.</summary>
+        private static Coord AxisToward(Coord from, Coord to)
+        {
+            int dx = to.X - from.X, dy = to.Y - from.Y;
+            return Math.Abs(dx) >= Math.Abs(dy) ? new Coord(Math.Sign(dx), 0) : new Coord(0, Math.Sign(dy));
+        }
+
+        /// <summary>Pull (GG-T183): drag <paramref name="t"/> toward the caster a tile at a time onto free ground, stopping beside it.</summary>
+        private void Pull(Unit caster, Unit t, int tiles)
+        {
+            if (!Budges(t)) { Announce("Won't budge", t.Id); return; }
+            for (int i = 0; i < tiles && t.Alive && !S.IsOver; i++)
+            {
+                if (caster.IsAdjacentTo(t)) return;
+                var dir = AxisToward(t.Pos, caster.Pos);
+                if (dir.X == 0 && dir.Y == 0) return;
+                var next = t.Pos + dir;
+                if (!S.FreeForSpawn(next)) return;
+                var from = t.Pos;
+                if (!Relocate(t, next)) return;
+                Emit(new DisplacedEvent { UnitId = t.Id, From = from, To = next, ByUnitId = caster.Id });
+                if (t.IsHero) TriggerTrap(t);
+            }
+        }
+
+        /// <summary>Swap (GG-T183): caster and target trade tiles — both one-tile, so the board stays one actor per tile.</summary>
+        private void SwapPlaces(Unit caster, Unit t)
+        {
+            if (!Budges(t) || !Budges(caster)) { Announce("Won't budge", t.Id); return; }
+            Coord a = caster.Pos, b = t.Pos;
+            caster.Pos = b;
+            t.Pos = a;
+            Emit(new DisplacedEvent { UnitId = caster.Id, From = a, To = b, ByUnitId = caster.Id });
+            Emit(new DisplacedEvent { UnitId = t.Id, From = b, To = a, ByUnitId = caster.Id });
+            if (caster.IsHero) TriggerTrap(caster);
+            if (t.Alive && t.IsHero) TriggerTrap(t);
+        }
+
+        /// <summary>Step back (GG-T183): the caster backs straight away from the nearest foe onto free, trap-free ground.</summary>
+        private void StepAway(Unit u, int tiles)
+        {
+            if (!Budges(u)) return;
+            Unit nearest = null; int best = int.MaxValue;
+            foreach (var o in S.Units)
+            {
+                if (!o.Alive || !o.OnBoard || o.Team == u.Team) continue;
+                int d = o.DistanceTo(u);
+                if (d < best) { best = d; nearest = o; }
+            }
+            if (nearest == null) return;
+            var away = AxisToward(nearest.Pos, u.Pos);
+            if (away.X == 0 && away.Y == 0) return;
+            for (int i = 0; i < tiles && u.Alive && !S.IsOver; i++)
+            {
+                var next = u.Pos + away;
+                if (!S.FreeForSpawn(next) || S.TrapAt(next) != null) return;
+                var from = u.Pos;
+                if (!Relocate(u, next)) return;
+                Emit(new DisplacedEvent { UnitId = u.Id, From = from, To = next, ByUnitId = u.Id });
             }
         }
 

@@ -4124,7 +4124,8 @@
       "defender_wall",
       "aegisguard_sacred_challenge",
       "aegisguard_judgment_of_warding",
-      "aegisguard_hands_of_mercy"
+      "aegisguard_hands_of_mercy",
+      "shove"
     ],
     "DefaultLoadout": [
       "taunt",
@@ -4602,7 +4603,8 @@
       "drifter_frostnova",
       "fieldcaster_trapline",
       "fieldcaster_wardgrid",
-      "fieldcaster_resupplydrone"
+      "fieldcaster_resupplydrone",
+      "disrupt"
     ],
     "DefaultLoadout": [
       "frost",
@@ -7243,7 +7245,8 @@
       "harbinger_omen",
       "spellblade_quickstrike",
       "spellblade_overchannel",
-      "spellblade_followthrough"
+      "spellblade_followthrough",
+      "disrupt"
     ],
     "DefaultLoadout": [
       "poison",
@@ -7599,7 +7602,8 @@
       "knight_oath",
       "aegisguard_sacred_challenge",
       "aegisguard_judgment_of_warding",
-      "aegisguard_hands_of_mercy"
+      "aegisguard_hands_of_mercy",
+      "shove"
     ],
     "DefaultLoadout": [
       "taunt",
@@ -7723,7 +7727,8 @@
       "lancer_chargeline",
       "skirmisher_blindside",
       "skirmisher_hitandrun",
-      "skirmisher_runningriot"
+      "skirmisher_runningriot",
+      "grappling_hook"
     ],
     "DefaultLoadout": [
       "cleave",
@@ -8709,7 +8714,8 @@
       "martialartist_palm",
       "combobrawler_openingjab",
       "combobrawler_onetwoflurry",
-      "combobrawler_knockoutcombo"
+      "combobrawler_knockoutcombo",
+      "meditate"
     ],
     "DefaultLoadout": [
       "cleave",
@@ -9156,7 +9162,8 @@
       "monk_peace",
       "skirmishmenders_guardiansrush",
       "skirmishmenders_flowingcurrent",
-      "skirmishmenders_coveringwithdrawal"
+      "skirmishmenders_coveringwithdrawal",
+      "meditate"
     ],
     "DefaultLoadout": [
       "heal",
@@ -9383,7 +9390,8 @@
       "myrmidon_phalanx",
       "juggernaut_war_stomp",
       "juggernaut_unstoppable_momentum",
-      "juggernaut_overrun"
+      "juggernaut_overrun",
+      "shove"
     ],
     "DefaultLoadout": [
       "taunt",
@@ -10184,7 +10192,8 @@
       "operative_shock",
       "fieldcaster_trapline",
       "fieldcaster_wardgrid",
-      "fieldcaster_resupplydrone"
+      "fieldcaster_resupplydrone",
+      "disrupt"
     ],
     "DefaultLoadout": [
       "poison",
@@ -10432,7 +10441,8 @@
       "pandagirl_slam",
       "berserker_wildswing",
       "berserker_skullrattle",
-      "berserker_lastmanswinging"
+      "berserker_lastmanswinging",
+      "grappling_hook"
     ],
     "DefaultLoadout": [
       "cleave",
@@ -11431,7 +11441,8 @@
       "raider_plunder",
       "skirmisher_blindside",
       "skirmisher_hitandrun",
-      "skirmisher_runningriot"
+      "skirmisher_runningriot",
+      "grappling_hook"
     ],
     "DefaultLoadout": [
       "cleave",
@@ -12290,7 +12301,9 @@
       "sage_insight",
       "hexmenders_thornedhex",
       "hexmenders_harmintohope",
-      "hexmenders_mirrorcurse"
+      "hexmenders_mirrorcurse",
+      "meditate",
+      "disrupt"
     ],
     "DefaultLoadout": [
       "heal",
@@ -15397,7 +15410,8 @@
       "tank_juggernaut",
       "juggernaut_war_stomp",
       "juggernaut_unstoppable_momentum",
-      "juggernaut_overrun"
+      "juggernaut_overrun",
+      "shove"
     ],
     "DefaultLoadout": [
       "taunt",
@@ -18511,7 +18525,8 @@
       "whiteninja_moonlit",
       "skirmishmenders_guardiansrush",
       "skirmishmenders_flowingcurrent",
-      "skirmishmenders_coveringwithdrawal"
+      "skirmishmenders_coveringwithdrawal",
+      "meditate"
     ],
     "DefaultLoadout": [
       "heal",
@@ -19961,7 +19976,14 @@
       "ranged_quickshot",
       "ranged_calledshot",
       "ranged_suppressingfire",
-      "hexsniper_piercingshot"
+      "hexsniper_piercingshot",
+      "marksman_deadeye_shot",
+      "marksman_piercing_volley",
+      "marksman_execution_shot",
+      "skirmisher_covering_volley",
+      "skirmisher_retreat_shot",
+      "skirmisher_rapid_barrage",
+      "pinning_shot"
     ],
     "DefaultLoadout": [
       "ranged_quickshot",
@@ -20078,7 +20100,12 @@
       "ranged_quickshot",
       "ranged_calledshot",
       "ranged_suppressingfire",
-      "hexwarden_snareshot"
+      "hexwarden_snareshot",
+      "trapper_binding_shot",
+      "trapper_pitfall_volley",
+      "trapper_snare_net",
+      "grappling_hook",
+      "pinning_shot"
     ],
     "DefaultLoadout": [
       "ranged_quickshot",

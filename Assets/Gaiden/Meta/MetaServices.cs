@@ -1507,6 +1507,69 @@ namespace GridGame.Meta
 
         public static int Price(AbilityDef a) => a.Kind == AbilityKind.Skill ? 300 : 120 + 80 * a.Cost;
 
+        /// <summary>Every hero-usable ability some hero can buy at the Learn screen: any spell, any universal skill, and
+        /// every skill on a hero class's list (the union of <see cref="Learnable"/> over the hero classes).</summary>
+        public static List<AbilityDef> LearnableByAnyHero(ContentDb c)
+        {
+            var onHeroLists = new HashSet<string>();
+            foreach (var cls in c.Classes.Values)
+                if (cls.Team == Team.Hero) foreach (var id in cls.Abilities) onHeroLists.Add(id);
+            return c.Abilities.Values
+                .Where(a => IsHeroUsable(a) && (a.Kind == AbilityKind.Spell || a.Universal || onHeroLists.Contains(a.Id)))
+                .OrderBy(a => a.Id).ToList();
+        }
+
+        /// <summary>
+        /// GG-T183 reskin audit: the mechanic an ability plays, with its name, numbers (damage, heal, cost, cooldown,
+        /// hasten amount, chance) and art stripped away. Two abilities with the same key are the same move with a
+        /// different coat of paint. The key is: how it is paid and timed (skill on a cooldown, spell cast on the
+        /// timeline, instant spell), its footprint (shape, radius where it changes the footprint, auto/pick, who it
+        /// filters, adjacent-only), and each effect it carries — damage (Fire and Lightning separately, since they
+        /// thaw/steam and shock/blind), heal or drain, the status it applies or clears, steal, orbs, scan, revive,
+        /// bonus-vs-tag, the movement it causes (teleport, knockback, pull, swap, step back) and the timeline change
+        /// (hasten, delay). Other elements are resistance-only, so they count as the same mechanic.
+        /// </summary>
+        public static string MechanicKey(AbilityDef a)
+        {
+            string pay = a.Kind == AbilityKind.Spell ? (a.CastTime > 0f ? "cast" : "instant") : "skill";
+            bool area = a.Shape == TargetShape.Square || a.Shape == TargetShape.Diamond || a.Shape == TargetShape.Cross;
+            bool self = a.Shape == TargetShape.Self;
+            bool all = a.Shape == TargetShape.AllAllies || a.Shape == TargetShape.AllEnemies;
+            var k = new List<string>
+            {
+                pay,
+                a.Shape + (area ? a.Radius.ToString() : ""),
+                self || all ? "-" : a.Mode.ToString(),
+                self || all ? "-" : a.Filter.ToString(),
+                a.AdjacentOnly ? "adj" : "",
+            };
+            if (a.BaseDamage > 0) k.Add("dmg" + (a.DamageType == DamageType.Fire || a.DamageType == DamageType.Lightning ? ":" + a.DamageType : ""));
+            if (a.BaseHeal > 0) k.Add(a.Filter == TargetFilter.EnemyOnly && !self ? "drain" : "heal");
+            if (a.ApplyBuff != null) k.Add("buff:" + a.ApplyBuff);
+            if (a.RemovesDebuffs) k.Add("cleanse");
+            if (a.RemovesBuff != null) k.Add("cure:" + a.RemovesBuff);
+            if (a.StealsMana) k.Add("steal");
+            if (a.GrantsOrbs > 0) k.Add("orbs");
+            if (a.IsScan) k.Add("scan");
+            if (a.Revives) k.Add("revive");
+            if (a.Escape) k.Add("escape");
+            if (a.BonusVsTag != null) k.Add("vs:" + a.BonusVsTag);
+            if (a.IsTeleport) k.Add("teleport");
+            if (a.Knockback > 0) k.Add("knockback");
+            if (a.Pull > 0) k.Add("pull");
+            if (a.SwapsPlaces) k.Add("swap");
+            if (a.StepBack > 0) k.Add("stepback");
+            if (a.HastenU > 0f) k.Add("hasten");
+            if (a.DelayU > 0f) k.Add("delay");
+            return string.Join("|", k);
+        }
+
+        /// <summary>Does the ability do anything at all when it resolves? (GG-T183 found four that did nothing.)</summary>
+        public static bool HasEffect(AbilityDef a) =>
+            a.BaseDamage > 0 || a.BaseHeal > 0 || a.ApplyBuff != null || a.RemovesDebuffs || a.RemovesBuff != null || a.StealsMana ||
+            a.GrantsOrbs > 0 || a.IsScan || a.Revives || a.Escape || a.IsTeleport || a.Knockback > 0 || a.Pull > 0 || a.SwapsPlaces ||
+            a.StepBack > 0 || a.HastenU > 0f || a.DelayU > 0f;
+
         public static Result Learn(ContentDb c, SaveData s, HeroSave h, string abilityId)
         {
             var a = c.TryAbility(abilityId);
