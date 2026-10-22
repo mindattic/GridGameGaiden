@@ -2,7 +2,7 @@
 Self-play harness: launches the development player with the automation endpoint and drives it.
 
     python tools/harness.py smoke            # title → new game → hub → battle (autoplay) → results
-    python tools/harness.py sweep            # screenshot + layout-audit every menu screen
+    python tools/harness.py sweep [RUN [THEME]]  # screenshot + layout-audit every menu screen (THEME: a menu theme, e.g. Slate)
     python tools/harness.py aspects          # GG-T169: title/hub/battle at 9:23..3:4; phones fill, tablets framed
     python tools/harness.py fullloop [N]     # GG-T136: new game -> bounty -> N battles -> sell/forge/brew/enchant -> claim
     python tools/harness.py clips N          # generate N random-stage/random-wave battle clips
@@ -199,9 +199,11 @@ def smoke(run="smoke"):
     print("\n".join(files))
 
 
-def sweep(run="sweep"):
+def sweep(run="sweep", theme=None):
     launch(run)
     call("newgame", slot=0, gold=5000, npcs=1)  # npcs: every Camp station on the hub shot (GG-T119)
+    if theme:  # GG-T185: sweep a menu theme (Art.Themes name, e.g. Slate)
+        print(call("setting", key="menutheme", value=theme))
     time.sleep(1)
     report = {}
     for screen in ["hub", "stages", "items", "status", "equip", "abilities", "party", "shop", "blacksmith",
@@ -1304,7 +1306,7 @@ if __name__ == "__main__":
     elif cmd == "campaign":
         campaign(stages=int(sys.argv[2]) if len(sys.argv) > 2 else 6)
     elif cmd == "sweep":
-        sweep(sys.argv[2] if len(sys.argv) > 2 else "sweep")
+        sweep(sys.argv[2] if len(sys.argv) > 2 else "sweep", sys.argv[3] if len(sys.argv) > 3 else None)
     elif cmd == "aspects":
         sys.exit(0 if aspects() else 1)
     elif cmd == "camptips":

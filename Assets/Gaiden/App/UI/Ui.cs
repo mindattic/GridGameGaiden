@@ -40,9 +40,31 @@ namespace GridGame.App
         {
             var w = El("window " + (classes ?? ""), parent);
             w.style.backgroundImage = new StyleBackground(Art.Window);
-            w.style.borderTopColor = w.style.borderBottomColor = w.style.borderLeftColor = w.style.borderRightColor = Art.ThemeAccent;
+            TintWindow(w);
             if (title != null) Text(title, "window-title", w);
             return w;
+        }
+
+        /// <summary>A gradient-only theme tints the window frame inline with its derived accent; a theme with a USS
+        /// class (Art.ThemeUssClass) owns the frame in Theme.uss, so the inline colors are cleared for it.</summary>
+        private static void TintWindow(VisualElement w)
+        {
+            StyleColor c = Art.ThemeUssClass == null ? new StyleColor(Art.ThemeAccent) : new StyleColor(StyleKeyword.Null);
+            w.style.borderTopColor = w.style.borderBottomColor = w.style.borderLeftColor = w.style.borderRightColor = c;
+        }
+
+        /// <summary>
+        /// Applies the active menu theme (Art.ApplyTheme) live to everything already on screen (GG-T185): puts the
+        /// theme's root class on <paramref name="root"/> (removing every other theme's) so Theme.uss's scoped
+        /// <c>.theme-* .window/.tab/.btn</c> rules take over, and re-tints every open window's frame. The window
+        /// gradient texture is repainted in place by Art.ApplyTheme itself.
+        /// </summary>
+        public static void ApplyMenuTheme(VisualElement root)
+        {
+            if (root == null) return;
+            foreach (var t in Art.Themes)
+                if (t.UssClass != null) root.EnableInClassList(t.UssClass, t.UssClass == Art.ThemeUssClass);
+            root.Query(className: "window").ForEach(TintWindow);
         }
 
         public static Button Button(string text, Action onClick, string classes = null, VisualElement parent = null)

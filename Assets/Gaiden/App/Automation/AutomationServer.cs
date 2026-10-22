@@ -396,6 +396,7 @@ namespace GridGame.App.Automation
                         case "mutesfx": st.MuteSfx = on; break;
                         case "cutins": st.PincerCutIns = on; break;
                         case "confirm": st.ConfirmActions = on; break;
+                        case "menutheme": st.MenuTheme = q["value"]; break; // GG-T185: value=Slate|Classic|...
                         default: return new { error = "unknown key" };
                     }
                     app.ApplySettings();

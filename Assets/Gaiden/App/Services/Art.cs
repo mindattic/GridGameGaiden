@@ -112,16 +112,23 @@ namespace GridGame.App
         /// them by color theory, never hand-picked, so every theme — including future ones — looks coherent
         /// with zero extra tuning: hue-average the two bases (shortest arc around the wheel), then take its
         /// complement (+180°) for a third hue guaranteed to stand apart from both, pushed toward full
-        /// saturation/brightness since it's used for thin borders and highlights, not large fills.</summary>
+        /// saturation/brightness since it's used for thin borders and highlights, not large fills.
+        /// A theme may also name a <see cref="UssClass"/> (GG-T185): <c>Ui.ApplyMenuTheme</c> puts it on the UI root, and
+        /// Theme.uss scopes that theme's window frame, tabs and buttons under it (<c>.theme-slate .tab { … }</c>), so the
+        /// whole look switches live with no screen rebuild. A theme with a class owns its window frame in USS (no inline
+        /// accent border). Adding a theme = one row in <see cref="Themes"/> plus, if it restyles more than the gradient,
+        /// one <c>.theme-&lt;name&gt;</c> block at the end of Theme.uss.</summary>
         public readonly struct MenuTheme
         {
             public readonly string Name;
             public readonly Color32 ColorA, ColorB;
             public readonly Color32 Accent;
+            /// <summary>Root USS class that scopes this theme's stylesheet overrides; null for gradient-only themes.</summary>
+            public readonly string UssClass;
 
-            public MenuTheme(string name, Color32 a, Color32 b)
+            public MenuTheme(string name, Color32 a, Color32 b, string ussClass = null)
             {
-                Name = name; ColorA = a; ColorB = b;
+                Name = name; ColorA = a; ColorB = b; UssClass = ussClass;
                 Color.RGBToHSV(a, out var ha, out var sa, out var va);
                 Color.RGBToHSV(b, out var hb, out var sb, out var vb);
                 float arc = Mathf.DeltaAngle(ha * 360f, hb * 360f) / 360f; // shortest signed hue distance a→b
@@ -139,10 +146,15 @@ namespace GridGame.App
             new MenuTheme("Cyberpunk", new Color32(255, 0, 200, 255), new Color32(0, 220, 255, 255)),
             new MenuTheme("Ember", new Color32(239, 83, 80, 255), new Color32(38, 166, 154, 255)),
             new MenuTheme("Verdant", new Color32(46, 125, 50, 255), new Color32(7, 20, 8, 255)),
+            // Chrono Trigger's default window (GG-T185): a gray-blue slate gradient in a light bevelled frame, white text.
+            new MenuTheme("Slate", new Color32(118, 128, 158, 255), new Color32(46, 52, 78, 255), "theme-slate"),
         };
 
         private static MenuTheme CurrentTheme = Themes[0];
         public static Color ThemeAccent => CurrentTheme.Accent;
+        /// <summary>The active theme's root USS class, or null when it only recolors the window gradient.</summary>
+        public static string ThemeUssClass => CurrentTheme.UssClass;
+        public static string ThemeName => CurrentTheme.Name;
 
         /// <summary>Switches the active theme, regenerating any already-created textures in place (same
         /// Texture2D instance, so every <c>VisualElement</c> already pointing at it updates with no rebuild).

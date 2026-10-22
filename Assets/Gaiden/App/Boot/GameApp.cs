@@ -291,6 +291,7 @@ namespace GridGame.App
             Audio.Apply(Save.Settings);
             Tween.Speed = Mathf.Clamp(Save.Settings.BattleSpeed, 0.5f, 3f);
             Art.ApplyTheme(Save.Settings.MenuTheme);
+            Ui.ApplyMenuTheme(Document?.rootVisualElement);
             Fonts.ApplyFont(Save.Settings.FontName);
         }
     }

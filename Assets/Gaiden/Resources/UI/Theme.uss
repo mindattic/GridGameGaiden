@@ -245,3 +245,70 @@
 .rarity-Rare { color: rgb(100, 170, 255); }
 .rarity-Epic { color: rgb(200, 120, 255); }
 .rarity-Legendary { color: rgb(255, 200, 70); }
+
+/* ══ Menu themes (GG-T185) ══════════════════════════════════════════════════
+   Ui.ApplyMenuTheme puts the active theme's class (Art.MenuTheme.UssClass) on the UI root, so each theme is one
+   block of rules scoped under it, switched live with no rebuild. The window body is the generated gradient
+   (Art.Window); these rules restyle the frame, tabs, buttons and the few fixed-color surfaces. Rules here must
+   come after the base rules (equal specificity: the later one wins), and a theme that recolors .btn re-declares
+   .btn--primary/.btn--danger and the :hover/.is-pressed states, which its .btn rule would otherwise outrank.
+   A new theme = one row in Art.Themes + one block like this. */
+
+/* ── Slate: Chrono Trigger's default window — gray-blue gradient, light bevel frame, white text ── */
+.theme-slate .window {
+    border-width: 6px;
+    border-radius: 10px;
+    border-top-color: rgb(236, 238, 246);
+    border-left-color: rgb(214, 218, 232);
+    border-right-color: rgb(128, 136, 162);
+    border-bottom-color: rgb(104, 110, 136);
+}
+.theme-slate .window--plain { background-color: rgba(56, 62, 90, 0.94); }
+.theme-slate .window-title { color: rgb(255, 255, 255); }
+.theme-slate .window-sub { color: rgb(208, 214, 232); }
+.theme-slate .dim { color: rgb(178, 186, 212); }
+.theme-slate .menu-row--selected { background-color: rgba(255, 255, 255, 0.16); }
+.theme-slate .menu-row.is-pressed { background-color: rgba(255, 255, 255, 0.26); }
+.theme-slate .card--selected { background-color: rgba(255, 255, 255, 0.16); }
+
+.theme-slate .header {
+    background-color: rgba(52, 58, 86, 0.92);
+    border-color: rgb(214, 218, 232);
+}
+.theme-slate .toast {
+    background-color: rgba(64, 70, 102, 0.97);
+    border-top-color: rgb(236, 238, 246);
+    border-left-color: rgb(214, 218, 232);
+    border-right-color: rgb(128, 136, 162);
+    border-bottom-color: rgb(104, 110, 136);
+}
+
+.theme-slate .tab {
+    border-radius: 0;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-top-color: rgb(236, 238, 246);
+    border-left-color: rgb(214, 218, 232);
+    border-right-color: rgb(128, 136, 162);
+    background-color: rgb(62, 68, 98);
+    color: rgb(190, 198, 222);
+}
+.theme-slate .tab--active { background-color: rgb(112, 122, 154); color: rgb(255, 255, 255); }
+
+.theme-slate .btn {
+    border-radius: 10px;
+    border-top-color: rgb(236, 238, 246);
+    border-left-color: rgb(214, 218, 232);
+    border-right-color: rgb(128, 136, 162);
+    border-bottom-color: rgb(74, 80, 106);
+    background-color: rgb(92, 100, 132);
+    color: rgb(255, 255, 255);
+}
+.theme-slate .btn:hover { background-color: rgb(108, 118, 152); }
+.theme-slate .btn.is-pressed { background-color: rgb(70, 76, 104); }
+.theme-slate .btn--primary { background-color: rgb(196, 120, 24); border-top-color: rgb(255, 232, 170); border-left-color: rgb(255, 232, 170); border-right-color: rgb(255, 232, 170); border-bottom-color: rgb(150, 92, 30); }
+.theme-slate .btn--primary:hover { background-color: rgb(226, 146, 40); }
+.theme-slate .btn--primary.is-pressed { background-color: rgb(150, 88, 14); }
+.theme-slate .btn--danger { background-color: rgb(150, 30, 40); border-bottom-color: rgb(96, 18, 26); }
+.theme-slate .btn--danger:hover { background-color: rgb(178, 40, 52); }
+.theme-slate .btn--danger.is-pressed { background-color: rgb(110, 20, 28); }
