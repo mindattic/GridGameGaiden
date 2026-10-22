@@ -26,8 +26,8 @@ namespace GridGame.Meta
         public static readonly IReadOnlyList<CampTip> All = new[]
         {
             new CampTip { Station = "shop", Title = "The Merchant",
-                Text = "Spend your battle gold here: tap + on what you need, then Buy. The Sell tab turns spare drops back into gold.",
-                Target = "cart-plus-" },
+                Text = "Spend your first battle gold on Healing Potions: tap + to add some, then Buy. The Sell tab turns spare drops back into gold.",
+                Target = "cart-plus-healing_potion_basic" },
             new CampTip { Station = "blacksmith", Title = "The Blacksmith",
                 Text = "Gear wears down in battle. Open Repair and mend anything running low before it shatters.",
                 Target = "tab-repair" },

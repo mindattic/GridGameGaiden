@@ -414,16 +414,9 @@ def fullloop(run="fullloop", battles=4, speed=3):
     gold0, inv0 = call("camp")["Gold"], _inv()
     shot("01-hub-start")
 
-    # Bounty board: take the first contract so the fights below can progress it.
-    if _goto("bounties"):
-        posted = call("camp")["bounty"]["posted"]
-        if posted:
-            call("click", name=f"bounty-{posted[0]}"); time.sleep(0.6)
-            if not call("camp")["bounty"]["active"]:
-                fails.append(f"accepting bounty {posted[0]} didn't make it active")
-        else:
-            notes.append("no bounties posted on a fresh save")
-        call("back"); time.sleep(0.6)
+    # GG-T174: a fresh camp opens stations one at a time — the Bounty board starts locked.
+    if not call("names", prefix="locked-bounties"):
+        fails.append("fresh camp: Bounties should be a locked row")
 
     # Fights: Adventure -> first stage, story beats, then `battles` battles in a row.
     call("clicktext", text="Adventure"); time.sleep(0.8)
@@ -459,6 +452,19 @@ def fullloop(run="fullloop", battles=4, speed=3):
     if not gained:
         fails.append("fights dropped nothing into the inventory")
     shot("04-hub-after-fights")
+
+    # Bounty board: opened by now (GG-T174 milestone); take the first contract.
+    if call("names", prefix="locked-bounties"):
+        fails.append(f"Bounties still locked after {battles} battles")
+    elif _goto("bounties"):
+        posted = call("camp")["bounty"]["posted"]
+        if posted:
+            call("click", name=f"bounty-{posted[0]}"); time.sleep(0.6)
+            if not call("camp")["bounty"]["active"]:
+                fails.append(f"accepting bounty {posted[0]} didn't make it active")
+        else:
+            notes.append("no bounties posted")
+        call("back"); time.sleep(0.6)
 
     # Merchant: sell one of something the fights dropped (fall back to anything sellable).
     sellable = camp["sellable"]

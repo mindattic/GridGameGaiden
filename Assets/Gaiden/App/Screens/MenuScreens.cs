@@ -478,11 +478,23 @@ namespace GridGame.App
             menu.style.flexGrow = 1;
             var list = Ui.List(menu);
             void Item(string label, Func<GameScreen> screen, string value = "") => Ui.MenuRow(label, value, () => App.Router.Push(screen()), list.contentContainer);
+            // Stations open one at a time (GG-T174, §25.0.3): a closed one is a dimmed row saying when it arrives.
+            void Station(string label, bool open, string hint, Func<GameScreen> screen, string value = "")
+            {
+                if (open) { Item(label, screen, value); return; }
+                var row = Ui.MenuRow(label, hint, null, list.contentContainer, null, false);
+                row.name = "locked-" + label.ToLowerInvariant().Replace(' ', '-');
+                row.Q<Label>("value").AddToClassList("small");
+            }
             Item("Adventure", () => new StageSelectScreen(), $"Stage {Math.Min(s.HighestClearedStage + 2, c.CampaignStages().Count)}");
             // The Crucible (§22.10): endless waves for XP and loot. Closed mid-expedition — the row says why.
-            bool crucibleOpen = Crucible.CanLaunch(c, s, out var crucibleWhy);
-            var crucible = Ui.MenuRow("Crucible", crucibleOpen ? CrucibleScreen.RecordText(s) : crucibleWhy, () => App.Router.Push(new CrucibleScreen()), list.contentContainer, null, crucibleOpen);
-            crucible.name = "camp-crucible";
+            if (CampUnlocks.CrucibleOpen(s))
+            {
+                bool crucibleOpen = Crucible.CanLaunch(c, s, out var crucibleWhy);
+                var crucible = Ui.MenuRow("Crucible", crucibleOpen ? CrucibleScreen.RecordText(s) : crucibleWhy, () => App.Router.Push(new CrucibleScreen()), list.contentContainer, null, crucibleOpen);
+                crucible.name = "camp-crucible";
+            }
+            else Station("Crucible", false, CampUnlocks.MilestoneHint(c, CampUnlocks.CrucibleAfter), null);
             Item("Items", () => new ItemsScreen());
             Item("Status", () => new StatusScreen(s.Party.FirstOrDefault()));
             Item("Equip", () => new EquipScreen(s.Party.FirstOrDefault()));
@@ -491,20 +503,22 @@ namespace GridGame.App
             // Talk (§27.1, GG-T117): chat with party members and joined Camp NPCs.
             int newTalks = DialogueRunner.TalkPartners(s).Count(p => { var t = DialogueRunner.TalkTopic(c, s, p); return t != null && !s.SeenDialogues.Contains(t.Id); });
             Item("Talk", () => new TalkScreen(), newTalks > 0 ? $"{newTalks} new" : "");
-            // Camp NPCs (GG-T119): each station appears once its keeper has joined the caravan at a story beat.
-            if (CampNpcs.Joined(s, CampNpcs.Merchant)) Item("Merchant", () => new ShopScreen());
-            if (CampNpcs.Joined(s, CampNpcs.Blacksmith)) Item("Blacksmith", () => new BlacksmithScreen());
-            if (CampNpcs.Joined(s, CampNpcs.Alchemist)) Item("Alchemist", () => new AlchemistScreen());
-            if (CampNpcs.Joined(s, CampNpcs.Enchantress)) Item("Enchantress", () => new EnchantressScreen());
-            if (CampNpcs.Joined(s, CampNpcs.Innkeeper))
+            // Camp NPCs (GG-T119): each station opens once its keeper has joined the caravan at a story beat.
+            Station("Merchant", CampUnlocks.NpcOpen(s, CampNpcs.Merchant), CampUnlocks.JoinHint(c, CampNpcs.Merchant), () => new ShopScreen());
+            if (CampUnlocks.NpcOpen(s, CampNpcs.Innkeeper))
             {
                 if (Expeditions.InnOpen(s)) Ui.MenuRow(s.Expedition != null ? "Inn (Medic Wagon)" : "Inn", Inn.Cost(c, s) > 0 ? Ui.Gold(Inn.Cost(c, s)) : "Rested", Rest, list.contentContainer);
                 else Ui.MenuRow("Inn", "On the road", null, list.contentContainer, null, false);
             }
+            else Station("Inn", false, CampUnlocks.JoinHint(c, CampNpcs.Innkeeper), null);
+            Station("Blacksmith", CampUnlocks.NpcOpen(s, CampNpcs.Blacksmith), CampUnlocks.JoinHint(c, CampNpcs.Blacksmith), () => new BlacksmithScreen());
+            Station("Alchemist", CampUnlocks.NpcOpen(s, CampNpcs.Alchemist), CampUnlocks.JoinHint(c, CampNpcs.Alchemist), () => new AlchemistScreen());
+            Station("Enchantress", CampUnlocks.NpcOpen(s, CampNpcs.Enchantress), CampUnlocks.JoinHint(c, CampNpcs.Enchantress), () => new EnchantressScreen());
+            Station("Bounties", CampUnlocks.BountiesOpen(s), CampUnlocks.MilestoneHint(c, CampUnlocks.BountiesAfter), () => new BountyScreen(),
+                Bounties.Active(c, s) != null ? $"{s.Bounty.Progress}/{Bounties.Active(c, s).Kills}" : "");
+            Station("Summon Circle", CampUnlocks.SummonOpen(s), CampUnlocks.MilestoneHint(c, CampUnlocks.SummonAfter), () => new SummonScreen());
             int caravanLevels = c.Caravan.Keys.Sum(k => CaravanUpgrades.Level(s, k));
-            Item("Caravan", () => new CaravanScreen(), caravanLevels > 0 ? $"{caravanLevels} upgrades" : "");
-            Item("Summon Circle", () => new SummonScreen());
-            Item("Bounties", () => new BountyScreen(), Bounties.Active(c, s) != null ? $"{s.Bounty.Progress}/{Bounties.Active(c, s).Kills}" : "");
+            Station("Caravan", CampUnlocks.CaravanOpen(s), CampUnlocks.MilestoneHint(c, CampUnlocks.CaravanAfter), () => new CaravanScreen(), caravanLevels > 0 ? $"{caravanLevels} upgrades" : "");
             Item("Bestiary", () => new BestiaryScreen());
             Item("Settings", () => new SettingsScreen());
             if (Progression.CanStartNewGamePlus(c, s))

@@ -1974,6 +1974,19 @@ The Merchant, Blacksmith, Alchemist, Enchantress and Innkeeper are people the pa
 - **Old saves:** save version 4's migration joins every NPC on any older save (they had been using every service). New Game+ keeps flags, so nobody leaves.
 - Abilities/Learn, the Summon Circle, Bounties, the Caravan and the Crucible (§22.10) have no keeper and are always open.
 
+### 25.0.3 Stations open one at a time (GG-T174)
+
+A new player meets the Camp one system at a time. Every station is always **listed** on the Camp menu, but a closed one is a dimmed row saying when it arrives (`CampUnlocks`):
+
+| Station | Opens | Row while closed |
+|---|---|---|
+| Merchant, Inn, Blacksmith, Alchemist, Enchantress | when their keeper joins (§25.0.1) | "Joins at Mireholt Fens" / "Joins after Green Valley II" — read from the join beat in content |
+| Bounties | 2 campaign stages cleared | "After Green Valley II" |
+| Summon Circle, Crucible | 5 cleared (the first expedition) | "After …" |
+| Caravan | 10 cleared | "After …" |
+
+So after the first win the Merchant is the one shop open (the Inn opens alongside it — rest is upkeep, not a system to learn), and its camp tip (§25.0.2) points at the Healing Potion, scrolled into view, to spend the first battle gold on. A station the save has already used — an active bounty, a recruit, a Crucible run, a caravan upgrade — never locks again, so older saves are unaffected; Test Mode and New Game+ saves see everything. *(Tests: `CampUnlocksTests`; harness `fullloop` asserts Bounties starts locked and is open by battle 4.)* Long menu values wrap instead of clipping.
+
 ### 25.0.2 Camp tips (GG-T173)
 
 The first time the player opens a Camp station, a one-time **camp tip** points at the thing to do there: the screen dims, a gold outline and a bouncing pointing hand (`Art.Cursor`) mark the key control, and a card names the station and says what to do in one sentence, with **Got it**. The card sits at the bottom, or at the top when the control is in the lower half, so it never covers what it points at. Combined with the NPC join order above, stations — and their tips — arrive one at a time.

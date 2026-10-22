@@ -77,10 +77,11 @@
 .menu-row:hover { background-color: rgba(255, 255, 255, 0.06); }
 .menu-row--selected { background-color: rgba(140, 170, 255, 0.20); }
 .menu-row--disabled { opacity: 0.42; }
-.menu-cursor { width: 56px; height: 56px; margin-right: 8px; opacity: 0; background-size: contain; }
+.menu-cursor { width: 56px; height: 56px; margin-right: 8px; opacity: 0; background-size: contain; flex-shrink: 0; }
 .menu-row--selected > .menu-cursor { opacity: 1; }
-.menu-label { flex-grow: 1; font-size: 42px; }
-.menu-value { font-size: 40px; -unity-text-align: middle-right; margin-left: 16px; }
+.menu-label { flex-grow: 1; font-size: 42px; flex-shrink: 0; }
+/* A long value (a locked station's "Opens after …" hint) wraps rather than clipping or squeezing the label. */
+.menu-value { font-size: 40px; -unity-text-align: middle-right; margin-left: 16px; flex-shrink: 1; white-space: normal; }
 .menu-icon { width: 64px; height: 64px; margin-right: 18px; background-size: contain; }
 
 /* ── Buttons ─────────────────────────────────────────────────────────────── */

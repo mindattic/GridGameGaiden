@@ -34,9 +34,17 @@ namespace GridGame.App
                                                          && e.resolvedStyle.display != DisplayStyle.None && e.worldBound.height > 0).First();
         }
 
-        private static void Show(VisualElement root, CampTip tip)
+        private static void Show(VisualElement root, CampTip tip, bool scrolled = false)
         {
             if (root.Q("camp-tip") != null) return;
+            // A target below the fold of a list is scrolled into view first, then pointed at once the list settles.
+            var inList = FindTarget(root, tip.Target)?.GetFirstAncestorOfType<ScrollView>();
+            if (inList != null && !scrolled)
+            {
+                inList.ScrollTo(FindTarget(root, tip.Target));
+                root.schedule.Execute(() => Show(root, tip, true)).ExecuteLater(80);
+                return;
+            }
             var veil = Ui.El("fill", root);
             veil.name = "camp-tip";
             veil.style.backgroundColor = new Color(0f, 0f, 0.04f, 0.55f);
