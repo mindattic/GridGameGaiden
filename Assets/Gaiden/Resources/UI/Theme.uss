@@ -312,3 +312,74 @@
 .theme-slate .btn--danger { background-color: rgb(150, 30, 40); border-bottom-color: rgb(96, 18, 26); }
 .theme-slate .btn--danger:hover { background-color: rgb(178, 40, 52); }
 .theme-slate .btn--danger.is-pressed { background-color: rgb(110, 20, 28); }
+
+/* ── Menu theme: Dark (GG-T186) ────────────────────────────────────────────────
+   The DocFX modern dark docs / mindattic.com look, on MindAttic.Components' web/themes/Dark/dark.css tokens:
+   near-black surfaces (--bg #0d0f12, --bg2 #13161b, --bg3 #1a1e25), a subtle hairline border (--border #2a2f3a),
+   one accent (--accent #6ba3e8, hover --accent2 #90bbf0), text #e8eaf0 / #9aa0b0. Flat windows (Art "Dark" paints
+   the window texture one solid --bg2), no white bevel frames, no drop-shadowed text. Ui.ApplyMenuTheme puts
+   .theme-dark on the panel root while the theme is picked; gold / good / bad / rarity stay semantic. */
+.theme-dark .stage { background-color: rgb(13, 15, 18); color: rgb(232, 234, 240); }
+.theme-dark .letterbox { background-color: rgb(11, 14, 20); }
+.theme-dark .stage-frame { border-width: 2px; border-color: rgb(42, 47, 58); border-radius: 12px; background-color: rgb(13, 15, 18); }
+
+.theme-dark .window { border-width: 2px; border-radius: 10px; border-color: rgb(42, 47, 58); }
+.theme-dark .window--plain { background-color: rgba(19, 22, 27, 0.97); }
+.theme-dark .window-title { color: rgb(232, 234, 240); }
+.theme-dark .window-sub { color: rgb(154, 160, 176); }
+.theme-dark .title { color: rgb(232, 234, 240); }
+.theme-dark .h1, .theme-dark .h2 { color: rgb(232, 234, 240); }
+.theme-dark .dim { color: rgb(154, 160, 176); }
+.theme-dark .shadow { text-shadow: 0 0 0 rgba(0, 0, 0, 0); }
+
+.theme-dark .menu-row { border-radius: 6px; }
+.theme-dark .menu-row:hover { background-color: rgba(255, 255, 255, 0.04); }
+.theme-dark .menu-row--selected { background-color: rgba(107, 163, 232, 0.14); }
+.theme-dark .menu-row.is-pressed { background-color: rgba(107, 163, 232, 0.26); }
+
+/* Buttons keep a thin dark lip so the shared press feel still has something to sink onto. */
+.theme-dark .btn {
+    border-width: 2px;
+    border-bottom-width: 7px;
+    border-radius: 8px;
+    border-color: rgb(42, 47, 58);
+    border-bottom-color: rgb(8, 10, 13);
+    background-color: rgb(26, 30, 37);
+    color: rgb(232, 234, 240);
+}
+.theme-dark .btn:hover { background-color: rgb(34, 39, 48); border-color: rgb(61, 111, 163); border-bottom-color: rgb(8, 10, 13); }
+.theme-dark .btn--primary { background-color: rgb(107, 163, 232); border-color: rgb(107, 163, 232); border-bottom-color: rgb(61, 111, 163); color: rgb(13, 15, 18); }
+.theme-dark .btn--primary:hover { background-color: rgb(144, 187, 240); border-color: rgb(144, 187, 240); border-bottom-color: rgb(61, 111, 163); }
+.theme-dark .btn--danger { background-color: rgb(58, 24, 30); border-color: rgb(110, 42, 52); border-bottom-color: rgb(30, 10, 14); color: rgb(255, 160, 160); }
+.theme-dark .btn--danger:hover { background-color: rgb(78, 30, 38); border-color: rgb(140, 52, 64); border-bottom-color: rgb(30, 10, 14); }
+.theme-dark .btn.is-pressed { border-bottom-width: 2px; translate: 0 5px; background-color: rgb(19, 22, 27); }
+.theme-dark .btn--primary.is-pressed { background-color: rgb(84, 140, 210); }
+.theme-dark .btn--danger.is-pressed { background-color: rgb(44, 18, 22); }
+.theme-dark .btn--small { border-bottom-width: 5px; }
+.theme-dark .btn--small.is-pressed { border-bottom-width: 2px; translate: 0 3px; }
+
+.theme-dark .role-badge { background-color: rgb(13, 15, 18); border-width: 2px; border-radius: 6px; }
+
+.theme-dark .header { background-color: rgba(13, 15, 18, 0.94); border-bottom-width: 2px; border-color: rgb(42, 47, 58); }
+.theme-dark .header-title { color: rgb(232, 234, 240); }
+
+.theme-dark .tab {
+    border-width: 2px 2px 0 2px;
+    border-color: rgb(42, 47, 58);
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    background-color: rgb(19, 22, 27);
+    color: rgb(154, 160, 176);
+}
+.theme-dark .tab--active { background-color: rgb(26, 30, 37); color: rgb(232, 234, 240); border-top-color: rgb(107, 163, 232); border-top-width: 4px; }
+
+.theme-dark .gauge { background-color: rgb(13, 15, 18); border-color: rgb(42, 47, 58); }
+
+.theme-dark .toast { background-color: rgba(19, 22, 27, 0.97); border-width: 2px; border-radius: 10px; border-color: rgb(42, 47, 58); color: rgb(232, 234, 240); }
+.theme-dark .veil { background-color: rgba(5, 6, 8, 0.72); }
+
+.theme-dark .list .unity-scroller__slider .unity-base-slider__dragger { background-color: rgba(154, 160, 176, 0.45); border-radius: 6px; }
+
+.theme-dark .card { background-color: rgba(255, 255, 255, 0.03); border-radius: 8px; }
+.theme-dark .card--selected { background-color: rgba(107, 163, 232, 0.14); }
+.theme-dark .thumb { border-width: 2px; border-radius: 8px; border-color: rgb(42, 47, 58); background-color: rgb(26, 30, 37); }

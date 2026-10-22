@@ -148,6 +148,10 @@ namespace GridGame.App
             new MenuTheme("Verdant", new Color32(46, 125, 50, 255), new Color32(7, 20, 8, 255)),
             // Chrono Trigger's default window (GG-T185): a gray-blue slate gradient in a light bevelled frame, white text.
             new MenuTheme("Slate", new Color32(118, 128, 158, 255), new Color32(46, 52, 78, 255), "theme-slate"),
+            // GG-T186: the DocFX modern dark docs / mindattic.com look on MindAttic.Components' web/themes/Dark/dark.css
+            // tokens: flat near-black windows (both stops --bg2 #13161b); the hairline --border #2a2f3a frame and the one
+            // --accent #6ba3e8 live in Theme.uss's .theme-dark block.
+            new MenuTheme("Dark", new Color32(0x13, 0x16, 0x1b, 255), new Color32(0x13, 0x16, 0x1b, 255), "theme-dark"),
         };
 
         private static MenuTheme CurrentTheme = Themes[0];
