@@ -3116,5 +3116,166 @@
     "Result": "mat_essence_holy",
     "ResultCount": 1,
     "Tier": 2
+  },
+  {
+    "Id": "recipe_hammer_war",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 4
+      },
+      {
+        "Item": "mat_goblin_scrap_iron",
+        "Count": 2
+      },
+      {
+        "Item": "mat_broken_blade",
+        "Count": 2
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": null,
+    "Result": "eq_hammer_war",
+    "ResultCount": 1,
+    "Tier": 1
+  },
+  {
+    "Id": "recipe_spear_serpent",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_wood_plank",
+        "Count": 2
+      },
+      {
+        "Item": "mat_iron_ore",
+        "Count": 2
+      },
+      {
+        "Item": "mat_scorpion_stinger",
+        "Count": 2
+      }
+    ],
+    "Gold": 70,
+    "BaseItem": null,
+    "Result": "eq_spear_serpent",
+    "ResultCount": 1,
+    "Tier": 1
+  },
+  {
+    "Id": "recipe_wand_crystal",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_heartwood",
+        "Count": 2
+      },
+      {
+        "Item": "mat_frost_core",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 1
+      }
+    ],
+    "Gold": 120,
+    "BaseItem": null,
+    "Result": "eq_wand_crystal",
+    "ResultCount": 1,
+    "Tier": 2
+  },
+  {
+    "Id": "recipe_axe_rune",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 3
+      },
+      {
+        "Item": "mat_troll_hide",
+        "Count": 1
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      }
+    ],
+    "Gold": 170,
+    "BaseItem": null,
+    "Result": "eq_axe_rune",
+    "ResultCount": 1,
+    "Tier": 2
+  },
+  {
+    "Id": "recipe_sword_flame",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 4
+      },
+      {
+        "Item": "mat_oni_horn",
+        "Count": 2
+      },
+      {
+        "Item": "mat_demon_shard",
+        "Count": 1
+      }
+    ],
+    "Gold": 260,
+    "BaseItem": null,
+    "Result": "eq_sword_flame",
+    "ResultCount": 1,
+    "Tier": 2
+  },
+  {
+    "Id": "recipe_sword_shadow",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 5
+      },
+      {
+        "Item": "mat_reaper_shroud",
+        "Count": 1
+      },
+      {
+        "Item": "mat_phantom_wisp",
+        "Count": 2
+      }
+    ],
+    "Gold": 300,
+    "BaseItem": null,
+    "Result": "eq_sword_shadow",
+    "ResultCount": 1,
+    "Tier": 3
+  },
+  {
+    "Id": "recipe_mace_starfall",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 6
+      },
+      {
+        "Item": "mat_templar_seal",
+        "Count": 3
+      },
+      {
+        "Item": "mat_dragon_scale",
+        "Count": 1
+      }
+    ],
+    "Gold": 520,
+    "BaseItem": null,
+    "Result": "eq_mace_starfall",
+    "ResultCount": 1,
+    "Tier": 3
   }
 ]
