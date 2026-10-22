@@ -24,6 +24,14 @@ namespace GridGame.Meta
         public static bool CrucibleOpen(SaveData s) => s != null && (Veteran(s) || Cleared(s) >= CrucibleAfter || (s.Crucible?.Runs ?? 0) > 0);
         public static bool CaravanOpen(SaveData s) => s != null && (Veteran(s) || Cleared(s) >= CaravanAfter || (s.Caravan?.Values.Sum() ?? 0) > 0);
 
+        /// <summary>The Blacksmith's Forge, Upgrade and Salvage tabs (GG-T175, §25.0.4). He joins to mend worn gear, so
+        /// Repair is his only tab at first; the workshop opens a step later in the onboarding chain — once the Alchemist
+        /// has joined (GG-T177 hands it the first forge). Old saves joined everyone (v4 migration), so they keep it.</summary>
+        public static bool SmithWorkshopOpen(SaveData s) => s != null && (Veteran(s) || CampNpcs.Joined(s, CampNpcs.Alchemist));
+
+        /// <summary>The locked workshop tab's hint.</summary>
+        public const string SmithWorkshopHint = "Opens once the Alchemist joins";
+
         /// <summary>"After Green Valley II" — the stage whose clear opens a milestone station.</summary>
         public static string MilestoneHint(ContentDb c, int clears)
         {
@@ -32,13 +40,15 @@ namespace GridGame.Meta
             return "After " + stages[System.Math.Min(clears, stages.Count) - 1].Name;
         }
 
-        /// <summary>"Joins at Sandsea Reaches" / "Joins after Green Valley II" — read from the story beat whose
+        /// <summary>"Joins at Sandsea Reaches" / "Joins after Green Valley II" / "Joins when gear wears below 60%" — read from the story beat whose
         /// JoinNpc recruits this keeper, so the hint follows the content.</summary>
         public static string JoinHint(ContentDb c, string npc)
         {
             var beat = c.Dialogues.Values.FirstOrDefault(d => d.Trigger != null && d.Trigger.Kind != DialogueTriggerKind.Talk
                                                               && d.AllEffects().Any(e => e.Type == DialogueEffectType.JoinNpc && e.Id == npc));
             if (beat == null) return "Joins later on the road";
+            if (beat.Trigger.Kind == DialogueTriggerKind.GearWorn)
+                return $"Joins when gear wears below {beat.Trigger.Percent}%";
             if (beat.Trigger.Kind == DialogueTriggerKind.ThemeStart)
                 return "Joins at " + (c.Campaign.Themes.FirstOrDefault(t => t.Id == beat.Trigger.Id)?.Name ?? beat.Trigger.Id);
             return "Joins after " + (c.Stages.TryGetValue(beat.Trigger.Id ?? "", out var st) ? st.Name : beat.Trigger.Id);

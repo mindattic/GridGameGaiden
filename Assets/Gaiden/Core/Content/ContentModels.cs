@@ -620,16 +620,21 @@ namespace GridGame.Core.Content
     // interpreter over these shapes; conditions and effects are the save's own vocabulary, not a script.
     // ─────────────────────────────────────────────────────────────────────────────
 
-    /// <summary>When a dialogue plays. Story beats (ThemeStart, StageCleared) play once, between battles,
-    /// from StageLauncher; Talk dialogues are picked from Camp's Talk row and may repeat unless <see cref="DialogueDef.Once"/>.</summary>
-    public enum DialogueTriggerKind { ThemeStart, StageCleared, Talk }
+    /// <summary>When a dialogue plays. Story beats (ThemeStart, StageCleared, GearWorn) play once, between battles,
+    /// from StageLauncher; Talk dialogues are picked from Camp's Talk row and may repeat unless <see cref="DialogueDef.Once"/>.
+    /// GearWorn (GG-T175) fires once any hero's equipped weapon or armor first falls below <see cref="DialogueTrigger.Percent"/>
+    /// of its max durability — the moment a repair first matters — or, if <see cref="DialogueTrigger.Id"/> names a theme,
+    /// at the latest on launching any stage of that theme or a later one (so a party that never wears gear still meets him).</summary>
+    public enum DialogueTriggerKind { ThemeStart, StageCleared, Talk, GearWorn }
 
     public sealed class DialogueTrigger
     {
         public DialogueTriggerKind Kind;
         /// <summary>ThemeStart: the theme id. StageCleared: the stage id. Talk: who it's with — a hero class id,
-        /// "party" (any party member; speaker class "$with" is them) or "npc:&lt;id&gt;" (a joined Camp NPC).</summary>
+        /// "party" (any party member; speaker class "$with" is them) or "npc:&lt;id&gt;" (a joined Camp NPC). GearWorn: optional fallback theme id.</summary>
         public string Id;
+        /// <summary>GearWorn only: the durability percentage (1-99) a piece must fall below.</summary>
+        public int Percent;
     }
 
     public enum DialogueConditionType { FlagSet, FlagNotSet, HasItem, GoldAtLeast, PartyHas, RosterHas, RosterLacks, NpcJoined }

@@ -81,8 +81,9 @@ namespace GridGame.Tests
         }
 
         /// <summary>Launching the campaign in order (every pending beat per launch, as StageLauncher does) meets every NPC
-        /// early: the Merchant before battle 1, the Innkeeper and Blacksmith inside the Green Valley expedition, the
-        /// Alchemist at the Sandsea and the Enchantress at the Fens — well before the end of the first act.</summary>
+        /// early: the Merchant before battle 1, the Innkeeper and Blacksmith inside the Green Valley expedition (the
+        /// Blacksmith once a hero's gear first wears below 60%, GG-T175 — here after two stages), the Alchemist at the
+        /// Sandsea and the Enchantress at the Fens — well before the end of the first act.</summary>
         [Test]
         public void Playing_the_campaign_in_order_meets_everyone_by_the_third_expedition()
         {
@@ -94,6 +95,7 @@ namespace GridGame.Tests
                 DialogueRunner.PlayPendingBeatsHeadless(c, s, stage.Id);
                 foreach (var n in Npcs) if (CampNpcs.Joined(s, n) && !met.ContainsKey(n)) met[n] = stage.Id;
                 s.ClearedStages.Add(stage.Id);
+                if (stage.Id == "greenvalley-02") WearLeadWeapon(c, s, 0.5f);
             }
             Assert.That(met.Keys, Is.EquivalentTo(Npcs), "someone is never met");
             Assert.That(met[CampNpcs.Merchant], Is.EqualTo("greenvalley-01"));
@@ -101,6 +103,36 @@ namespace GridGame.Tests
             Assert.That(met[CampNpcs.Blacksmith], Is.EqualTo("greenvalley-03"));
             Assert.That(met[CampNpcs.Alchemist], Is.EqualTo("desert-01"));
             Assert.That(met[CampNpcs.Enchantress], Is.EqualTo("swamp-01"));
+        }
+
+        /// <summary>Gives the lead a weapon worn to <paramref name="fraction"/> of its max, as battles would.</summary>
+        internal static Repair.WornPiece WearLeadWeapon(ContentDb c, SaveData s, float fraction)
+        {
+            var w = c.Items.Values.First(i => i.Type == ItemType.Equipment && i.Slot == EquipmentSlot.Weapon && i.Durability >= 10);
+            var h = s.Hero(s.Party[0]);
+            h.WeaponId = w.Id;
+            h.WeaponDurability = (int)(w.Durability * fraction);
+            return Repair.MostWorn(c, s);
+        }
+
+        [Test]
+        public void The_blacksmith_joins_once_gear_first_wears_below_sixty_percent()
+        {
+            var c = Real;
+            var s = Progression.NewGame(c, "T");
+            DialogueRunner.PlayPendingBeatsHeadless(c, s, "greenvalley-01");
+            Assert.That(CampNpcs.Joined(s, CampNpcs.Blacksmith), Is.False, "no gear yet: nothing to mend");
+            WearLeadWeapon(c, s, 0.7f);
+            DialogueRunner.PlayPendingBeatsHeadless(c, s, "greenvalley-01");
+            Assert.That(CampNpcs.Joined(s, CampNpcs.Blacksmith), Is.False, "70% is still fine");
+            WearLeadWeapon(c, s, 0.55f);
+            Assert.That(DialogueRunner.PendingBeat(c, s, "greenvalley-01")?.Id, Is.EqualTo("greenvalley_smith"));
+            DialogueRunner.PlayPendingBeatsHeadless(c, s, "greenvalley-01");
+            Assert.That(CampNpcs.Joined(s, CampNpcs.Blacksmith), Is.True);
+
+            var never = Progression.NewGame(c, "T");
+            DialogueRunner.PlayPendingBeatsHeadless(c, never, "desert-01");
+            Assert.That(CampNpcs.Joined(never, CampNpcs.Blacksmith), Is.True, "a party that never wears gear still meets him at the Sandsea");
         }
 
         [Test]

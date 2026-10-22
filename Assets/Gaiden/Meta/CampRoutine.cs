@@ -31,10 +31,12 @@ namespace GridGame.Meta
             // from the player, so the routine doesn't use it either. Bounties, the Summon Circle and Learn have no keeper.
             bool smith = CampNpcs.Joined(s, CampNpcs.Blacksmith), merchant = CampNpcs.Joined(s, CampNpcs.Merchant);
             bool alchemist = CampNpcs.Joined(s, CampNpcs.Alchemist), inn = CampNpcs.Joined(s, CampNpcs.Innkeeper);
+            // The Blacksmith only repairs until his workshop opens (GG-T175): no forging or salvage before then.
+            bool workshop = smith && CampUnlocks.SmithWorkshopOpen(s);
 
             // Broken fragments (GG-T41) can't be equipped or repaired — only scrapped — so there's never a
             // reason to let them sit in the bag; salvage every copy of every one.
-            foreach (var itemId in smith ? s.Broken.Keys.ToList() : new List<string>())
+            foreach (var itemId in workshop ? s.Broken.Keys.ToList() : new List<string>())
             {
                 // Stops on a failed call, or one that didn't use up a fragment, rather than spinning (GG-T111).
                 Result r;
@@ -50,14 +52,14 @@ namespace GridGame.Meta
                 if (h.WeaponId != null)
                 {
                     var w = c.TryItem(h.WeaponId);
-                    if (w != null && Repair.IsUneconomical(w, h.WeaponDurability, h.WeaponRepairs, h.WeaponMastery)) Note(Crafting.SalvageEquipped(c, s, h, EquipmentSlot.Weapon));
+                    if (workshop && w != null && Repair.IsUneconomical(w, h.WeaponDurability, h.WeaponRepairs, h.WeaponMastery)) Note(Crafting.SalvageEquipped(c, s, h, EquipmentSlot.Weapon));
                     else Note(Repair.RepairWeapon(c, s, h));
                 }
                 foreach (var slot in BattleEngine.ArmorSlots)
                 {
                     if (!h.Armor.TryGetValue(slot, out var piece)) continue;
                     var a = c.TryItem(piece.ItemId);
-                    if (a != null && Repair.IsUneconomical(a, piece.Durability, piece.Repairs, piece.Mastery)) Note(Crafting.SalvageEquipped(c, s, h, slot));
+                    if (workshop && a != null && Repair.IsUneconomical(a, piece.Durability, piece.Repairs, piece.Mastery)) Note(Crafting.SalvageEquipped(c, s, h, slot));
                     else Note(Repair.RepairArmor(c, s, h, slot));
                 }
             }
@@ -88,7 +90,7 @@ namespace GridGame.Meta
                 {
                     float current = MetaHeuristics.Score(c.TryItem(Equipment.Equipped(h, slot)));
                     var owned = MetaHeuristics.BestFirst(Equipment.Candidates(c, s, slot, h)).FirstOrDefault();
-                    if (smith && (owned == null || MetaHeuristics.Score(owned) <= current))
+                    if (workshop && (owned == null || MetaHeuristics.Score(owned) <= current))
                     {
                         var recipe = Crafting.Recipes(c, CraftStation.Forge)
                             .Where(r => r.BaseItem == null && Equipment.Fits(c, h, c.Item(r.Result), slot) && Crafting.HasInputs(s, r) && r.Gold <= s.Gold / 2)

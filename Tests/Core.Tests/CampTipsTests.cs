@@ -44,6 +44,20 @@ namespace GridGame.Tests
         }
 
         [Test]
+        public void The_blacksmith_tip_names_and_points_at_the_most_worn_piece()
+        {
+            var c = TestKit.Real;
+            var s = Progression.NewGame(c, "T");
+            var tip = CampTips.For("blacksmith");
+            Assert.That(CampTips.Resolve(c, s, tip), Is.SameAs(tip), "no worn gear: the tip reads as written");
+            var worn = CampNpcTests.WearLeadWeapon(c, s, 0.5f);
+            var resolved = CampTips.Resolve(c, s, tip);
+            Assert.That(resolved.Target, Is.EqualTo(Repair.RowNameFor(s.Party[0], GridGame.Core.Content.EquipmentSlot.Weapon)));
+            Assert.That(resolved.Text, Does.Contain(worn.Item.Name).And.Contain((int)System.Math.Round(worn.Fraction * 100) + "%"));
+            Assert.That(CampTips.Resolve(c, s, CampTips.For("shop")), Is.SameAs(CampTips.For("shop")), "other tips are untouched");
+        }
+
+        [Test]
         public void Every_tip_has_one_station_a_title_and_a_sentence()
         {
             Assert.That(CampTips.All.Select(t => t.Station).Distinct().Count(), Is.EqualTo(CampTips.All.Count));

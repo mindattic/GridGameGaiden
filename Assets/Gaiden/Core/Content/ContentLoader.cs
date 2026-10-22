@@ -269,6 +269,10 @@ namespace GridGame.Core.Content
                 case DialogueTriggerKind.StageCleared:
                     if (trigger.Id == null || !db.Stages.ContainsKey(trigger.Id)) p.Add($"{w}: unknown trigger stage '{trigger.Id}'");
                     break;
+                case DialogueTriggerKind.GearWorn:
+                    if (trigger.Percent < 1 || trigger.Percent > 99) p.Add($"{w}: GearWorn needs a Percent of 1-99, has {trigger.Percent}");
+                    if (trigger.Id != null && !db.Campaign.Themes.Exists(t => string.Equals(t.Id, trigger.Id, StringComparison.OrdinalIgnoreCase))) p.Add($"{w}: unknown GearWorn fallback theme '{trigger.Id}'");
+                    break;
                 case DialogueTriggerKind.Talk:
                     if (trigger.Id == "party") break;
                     if (trigger.Id != null && trigger.Id.StartsWith(NpcFlagPrefix)) { if (!IsNpc(trigger.Id.Substring(NpcFlagPrefix.Length))) p.Add($"{w}: unknown Talk NPC '{trigger.Id}'"); }

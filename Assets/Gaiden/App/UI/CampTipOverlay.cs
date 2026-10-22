@@ -20,7 +20,7 @@ namespace GridGame.App
         public static void ShowIfPending(GameScreen page, string station)
         {
             var save = GameApp.I.Save;
-            var tip = CampTips.Pending(save, station);
+            var tip = CampTips.Resolve(GameApp.I.Content, save, CampTips.Pending(save, station));
             if (tip == null || Suppressed || page.Root == null) return;
             // Wait one layout pass so the target control has a size and position to point at.
             page.Root.schedule.Execute(() => Show(page.Root, tip)).ExecuteLater(60);

@@ -568,6 +568,56 @@ def camptips(run="camptips"):
     return not fails
 
 
+def smithrepair(run="smithrepair"):
+    """GG-T175: onboarding step 2. With only the Merchant and Blacksmith met and a hero's weapon worn to 50%, the
+    Blacksmith opens on Repair (Forge/Upgrade/Salvage dimmed and refusing taps), his camp tip names the worn piece
+    and rings its repair row; dismissing it and tapping that row repairs it to full."""
+    fails = []
+    launch(run, extra=("-campTips",), fresh=True)
+    call("newgame", slot=0, gold=500, npcs="merchant,blacksmith"); time.sleep(1)
+    call("devequipall", item="eq_sword_iron", wear=0.5); time.sleep(0.3)
+    worn = call("camp").get("worn")
+    if not worn or worn["Durability"] >= worn["Max"]:
+        fails.append(f"devequipall wear=0.5 left nothing worn: {worn}")
+    if call("camp").get("workshop"):
+        fails.append("workshop should be closed before the Alchemist joins")
+    _goto("blacksmith"); time.sleep(0.8)
+    shot("01-smith-tip")
+    if not call("names", prefix="camp-tip-card"):
+        fails.append("no Blacksmith tip on first visit")
+    elif not call("names", prefix="camp-tip-ring"):
+        fails.append("Blacksmith tip has no ring: worn row not found")
+    if worn and not call("names", prefix=worn["row"]):
+        fails.append(f"worn piece row {worn['row']} not on screen (Repair should be the open tab)")
+    probs = call("layout").get("problems")
+    if probs:
+        fails.append(f"layout {probs}")
+    call("click", name="camp-tip-ok"); time.sleep(0.5)
+    call("click", name="tab-forge"); time.sleep(0.5)
+    if worn and not call("names", prefix=worn["row"]):
+        fails.append("tapping the locked Forge tab left Repair")
+    shot("02-smith-forge-locked")
+    if worn:
+        g = call("camp")["Gold"]
+        call("click", name=worn["row"]); time.sleep(0.8)
+        after = call("camp")
+        w2 = after.get("worn")
+        if after["Gold"] >= g:
+            fails.append("repairing the worn piece cost nothing")
+        if w2 and w2["row"] == worn["row"] and w2["Durability"] < w2["Max"]:
+            fails.append(f"worn piece not repaired: {w2}")
+        shot("03-smith-repaired")
+    errs = [l[:300] for l in call("logs") if l.startswith(("Error", "Exception"))]
+    if errs:
+        fails.append(f"log errors {errs[:3]}")
+    try:
+        call("quit", timeout=3)
+    except Exception:
+        pass
+    print("FAILURES:" if fails else "SMITH REPAIR OK", *fails, sep="\n  ")
+    return not fails
+
+
 def story_recruits(run="recruits", speed=3):
     """GG-T118: a new game starts small and grows at story beats. Picks the starting three through the real
     party select, clears Green Valley I on autoplay, then launches the next battle and checks that the
@@ -1259,6 +1309,8 @@ if __name__ == "__main__":
         sys.exit(0 if aspects() else 1)
     elif cmd == "camptips":
         sys.exit(0 if camptips() else 1)
+    elif cmd == "smithrepair":
+        sys.exit(0 if smithrepair() else 1)
     elif cmd == "fullloop":
         sys.exit(0 if fullloop(battles=int(sys.argv[2]) if len(sys.argv) > 2 else 4) else 1)
     elif cmd == "clips":

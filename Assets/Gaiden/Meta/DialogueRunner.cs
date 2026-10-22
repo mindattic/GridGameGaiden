@@ -201,8 +201,8 @@ namespace GridGame.Meta
         // ── triggers ────────────────────────────────────────────────────────────────
 
         /// <summary>The story beat to play before launching <paramref name="stageId"/>, or null: the first dialogue
-        /// (file order) not yet seen whose ThemeStart names the stage's theme, or whose StageCleared stage is
-        /// cleared, and whose conditions hold. Test Mode saves never get story (GG-T93: bot-only).</summary>
+        /// (file order) not yet seen whose ThemeStart names the stage's theme, whose StageCleared stage is
+        /// cleared, or whose GearWorn threshold some equipped piece has fallen below, and whose conditions hold. Test Mode saves never get story (GG-T93: bot-only).</summary>
         public static DialogueDef PendingBeat(ContentDb c, SaveData s, string stageId) =>
             s == null || s.TestMode ? null : NextBeat(c, s, stageId);
 
@@ -225,10 +225,19 @@ namespace GridGame.Meta
             {
                 if (d.Trigger == null || s.SeenDialogues.Contains(d.Id) || !All(c, s, d.Conditions)) continue;
                 bool fires = d.Trigger.Kind == DialogueTriggerKind.ThemeStart && theme != null && string.Equals(d.Trigger.Id, theme.Id, StringComparison.OrdinalIgnoreCase)
-                    || d.Trigger.Kind == DialogueTriggerKind.StageCleared && s.ClearedStages.Contains(d.Trigger.Id);
+                    || d.Trigger.Kind == DialogueTriggerKind.StageCleared && s.ClearedStages.Contains(d.Trigger.Id)
+                    || d.Trigger.Kind == DialogueTriggerKind.GearWorn && (Repair.AnyBelow(c, s, d.Trigger.Percent) || ReachedTheme(c, theme, d.Trigger.Id));
                 if (fires) return d;
             }
             return null;
+        }
+
+        /// <summary>True when <paramref name="theme"/> is <paramref name="fallbackThemeId"/> or comes after it in the campaign.</summary>
+        private static bool ReachedTheme(ContentDb c, ThemeDef theme, string fallbackThemeId)
+        {
+            if (theme == null || fallbackThemeId == null) return false;
+            int at = c.Campaign.Themes.FindIndex(t => string.Equals(t.Id, fallbackThemeId, StringComparison.OrdinalIgnoreCase));
+            return at >= 0 && c.Campaign.Themes.IndexOf(theme) >= at;
         }
 
         /// <summary>Who Camp's Talk row offers: the party, then every joined NPC ("npc:&lt;id&gt;").</summary>

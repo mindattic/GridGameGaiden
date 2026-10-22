@@ -93,13 +93,13 @@
   {
     "Id": "greenvalley_smith",
     "Title": "A smith at the ford",
-    "Trigger": { "Kind": "StageCleared", "Id": "greenvalley-02" },
+    "Trigger": { "Kind": "GearWorn", "Percent": 60, "Id": "desert" },
     "Speakers": [
       { "Id": "smith", "Name": "Blacksmith", "Portrait": "tinkerer" },
       { "Id": "lead", "Class": "$lead" }
     ],
     "Nodes": [
-      { "Id": "hail", "Speaker": "smith", "Text": "Those edges are chewed to the hilt. Whatever you've been fighting, it's eating your steel faster than you can swing it.", "Next": "reply" },
+      { "Id": "hail", "Speaker": "smith", "Text": "That gear of yours is chewed half through. Whatever you've been fighting, it's eating your steel faster than you can swing it.", "Next": "reply" },
       { "Id": "reply", "Speaker": "lead", "Text": "Faster than we'd like. Can it be mended?", "Next": "ask" },
       {
         "Id": "ask", "Speaker": "smith", "Text": "Mended, reforged, melted down for something better -- whatever it needs. Take me along and you'll never fight on a notched blade again. Well?",
@@ -108,8 +108,8 @@
           { "Label": "Prove it first.", "Next": "proof" }
         ]
       },
-      { "Id": "proof", "Speaker": "smith", "Text": "Fair. Hold still... there. Edge restored, and better balanced than it was new. Satisfied?", "Effects": [ { "Type": "JoinNpc", "Id": "blacksmith" } ], "Next": "joined" },
-      { "Id": "joined", "Speaker": "smith", "Text": "Good. Find me at the forge-cart whenever something breaks -- and with this caravan's company, something always breaks." }
+      { "Id": "proof", "Speaker": "smith", "Text": "Fair. Bring the worst of it to my forge-cart at camp and watch -- it'll come back whole before your stew's cold.", "Effects": [ { "Type": "JoinNpc", "Id": "blacksmith" } ], "Next": "joined" },
+      { "Id": "joined", "Speaker": "smith", "Text": "Good. Find me at the forge-cart before something breaks -- once it shatters, there's nothing left to mend." }
     ]
   },
   {

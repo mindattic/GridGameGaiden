@@ -245,7 +245,10 @@ namespace GridGame.App.Automation
                     app.Save = Progression.NewGame(app.Content, q["name"] ?? "Bot");
                     app.Slot = slot;
                     if (q["gold"] != null) app.Save.Gold = (int)F(q["gold"]);
-                    if (q["npcs"] != null) CampNpcs.JoinAll(app.Save); // every Camp NPC already met (GG-T119)
+                    // npcs=1: every Camp NPC already met (GG-T119); npcs=merchant,blacksmith: just those (GG-T175).
+                    if (q["npcs"] == "1") CampNpcs.JoinAll(app.Save);
+                    else if (q["npcs"] != null)
+                        foreach (var n in q["npcs"].Split(',')) app.Save.Flags.Add(ContentLoader.NpcFlagPrefix + n.Trim());
                     app.ApplySettings();
                     app.Persist();
                     app.Router.ResetTo(new HubScreen());
@@ -264,7 +267,11 @@ namespace GridGame.App.Automation
                     foreach (var h in app.Save.Roster)
                     {
                         app.Save.AddItem(itemId, 1);
-                        if (Equipment.Equip(app.Content, app.Save, h, equipSlot, itemId).Ok) equipped++;
+                        if (!Equipment.Equip(app.Content, app.Save, h, equipSlot, itemId).Ok) continue;
+                        equipped++;
+                        // wear=0.5: battle-worn to that fraction of max (GG-T175's Blacksmith onboarding check).
+                        if (q["wear"] != null && equipSlot == EquipmentSlot.Weapon)
+                            h.WeaponDurability = Math.Max(1, (int)(Repair.EffectiveMax(app.Content.Item(itemId), h.WeaponRepairs, h.WeaponMastery) * F(q["wear"])));
                     }
                     return new { ok = equipped > 0, equipped };
                 }
@@ -491,7 +498,12 @@ namespace GridGame.App.Automation
                     // GG-T136 full-loop harness: what each camp system can actually do with this save right now.
                     var c = app.Content; var s = app.Save;
                     if (s == null) return new { error = "no save" };
+                    // Only stations the player can use now (GG-T174/T175): a keeper who hasn't joined, or the Blacksmith's
+                    // still-closed workshop, offers nothing.
+                    bool StationOpen(CraftStation st) => st == CraftStation.Forge ? CampUnlocks.NpcOpen(s, CampNpcs.Blacksmith) && CampUnlocks.SmithWorkshopOpen(s)
+                        : CampUnlocks.NpcOpen(s, st == CraftStation.Alchemy ? CampNpcs.Alchemist : CampNpcs.Enchantress);
                     object Craftable(CraftStation st) => Crafting.Recipes(c, st)
+                        .Where(r => StationOpen(st))
                         .Where(r => RecipeDiscovery.IsDiscovered(s, r) && Crafting.IsUnlocked(s, r) && Crafting.HasInputs(s, r) && s.Gold >= r.Gold)
                         .Select(r => new { r.Id, r.Result, upgrade = r.BaseItem != null }).ToList();
                     var active = Bounties.Active(c, s);
@@ -500,6 +512,8 @@ namespace GridGame.App.Automation
                         s.Gold,
                         sellable = Shop.Sellable(c, s).Select(i => new { i.Id, type = i.Type.ToString(), price = Shop.SellPrice(i), count = s.Count(i.Id) }).ToList(),
                         forge = Craftable(CraftStation.Forge), alchemy = Craftable(CraftStation.Alchemy), enchant = Craftable(CraftStation.Enchant),
+                        worn = Repair.MostWorn(c, s) is var mw && mw != null ? new { row = mw.RowName, mw.Durability, mw.Max } : null,
+                        smith = CampUnlocks.NpcOpen(s, CampNpcs.Blacksmith), workshop = CampUnlocks.SmithWorkshopOpen(s),
                         bounty = new { active = active?.Id, progress = s.Bounty.Progress, complete = active != null && Bounties.IsComplete(c, s), posted = Bounties.Posted(c, s).Select(b => b.Id).ToList() },
                     };
                 }

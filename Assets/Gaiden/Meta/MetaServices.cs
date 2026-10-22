@@ -1249,6 +1249,45 @@ namespace GridGame.Meta
 
         public static bool IsUneconomical(ItemDef item, int current, int repairs, float mastery = 1f) => Cost(item, current, repairs, mastery) >= item.BaseCost;
 
+        /// <summary>One equipped piece that wears (weapon or armor) and how worn it is.</summary>
+        public sealed class WornPiece
+        {
+            public HeroSave Hero;
+            public EquipmentSlot Slot;
+            public ItemDef Item;
+            public int Durability, Max;
+            public float Fraction => Max <= 0 ? 1f : (float)Durability / Max;
+            /// <summary>The Repair tab row's element name ("repair-knight-Weapon") — what the Blacksmith's camp tip points at.</summary>
+            public string RowName => RowNameFor(Hero.ClassId, Slot);
+        }
+
+        public static string RowNameFor(string classId, EquipmentSlot slot) => $"repair-{classId}-{slot}";
+
+        /// <summary>Every equipped weapon and armor piece across the roster that has durability.</summary>
+        public static IEnumerable<WornPiece> Pieces(ContentDb c, SaveData s)
+        {
+            if (s == null) yield break;
+            foreach (var h in s.Roster)
+            {
+                var w = c.TryItem(h.WeaponId);
+                if (w != null && w.Durability > 0)
+                    yield return new WornPiece { Hero = h, Slot = EquipmentSlot.Weapon, Item = w, Durability = h.WeaponDurability, Max = EffectiveMax(w, h.WeaponRepairs, h.WeaponMastery) };
+                foreach (var slot in BattleEngine.ArmorSlots)
+                {
+                    if (!h.Armor.TryGetValue(slot, out var piece)) continue;
+                    var a = c.TryItem(piece.ItemId);
+                    if (a != null && a.Durability > 0)
+                        yield return new WornPiece { Hero = h, Slot = slot, Item = a, Durability = piece.Durability, Max = EffectiveMax(a, piece.Repairs, piece.Mastery) };
+                }
+            }
+        }
+
+        /// <summary>The most worn equipped piece (lowest durability fraction), or null when nobody wears gear that wears.</summary>
+        public static WornPiece MostWorn(ContentDb c, SaveData s) => Pieces(c, s).OrderBy(p => p.Fraction).FirstOrDefault();
+
+        /// <summary>True once any equipped piece is below <paramref name="percent"/>% of its max — the GearWorn story trigger (GG-T175).</summary>
+        public static bool AnyBelow(ContentDb c, SaveData s, int percent) => Pieces(c, s).Any(p => p.Durability * 100 < p.Max * percent);
+
         public static Result RepairWeapon(ContentDb c, SaveData s, HeroSave h)
         {
             var item = c.TryItem(h.WeaponId);

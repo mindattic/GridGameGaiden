@@ -713,7 +713,9 @@ namespace GridGame.App
 
     public sealed class BlacksmithScreen : HubPage
     {
-        private int tab;
+        private const int RepairTab = 3;
+        /// <summary>-1 until first built: then Repair if the workshop is still closed or his camp tip is due (GG-T175), else Forge.</summary>
+        private int tab = -1;
         private RecipeDef selected;
         public override string Id => "blacksmith";
         protected override string Title => "Blacksmith";
@@ -723,7 +725,19 @@ namespace GridGame.App
 
         protected override void BuildBody(VisualElement body)
         {
-            Ui.Tabs(new[] { "Forge", "Upgrade", "Salvage", "Repair" }, tab, i => { tab = i; selected = null; Refresh(); }, body);
+            // GG-T175 (§25.0.4): he joins to mend worn gear, so Repair is his only open tab at first; Forge, Upgrade and
+            // Salvage are dimmed and say when they arrive.
+            bool workshop = CampUnlocks.SmithWorkshopOpen(S);
+            if (tab < 0) tab = workshop && CampTips.Pending(S, Id) == null ? 0 : RepairTab;
+            if (!workshop) tab = RepairTab;
+            var bar = Ui.Tabs(new[] { "Forge", "Upgrade", "Salvage", "Repair" }, tab, i =>
+            {
+                if (!workshop && i != RepairTab) { App.Toast(CampUnlocks.SmithWorkshopHint); App.Audio.Sfx("ui.error"); return; }
+                tab = i; selected = null; Refresh();
+            }, body);
+            if (!workshop)
+                for (int i = 0; i < bar.childCount; i++)
+                    if (i != RepairTab) { bar[i].style.opacity = 0.4f; bar[i].AddToClassList("tab--locked"); }
             var w = Ui.Window(null, body);
             w.style.flexGrow = 1; w.style.marginTop = 0;
             var list = Ui.List(w).contentContainer;
@@ -877,7 +891,8 @@ namespace GridGame.App
 
         private void RepairList(VisualElement list, VisualElement detail)
         {
-            Ui.Text("Each repair lowers the piece's max durability by 1, and costs more every time. An uneconomical repair offers salvage instead.", "small dim", detail).style.whiteSpace = WhiteSpace.Normal;
+            bool salvage = CampUnlocks.SmithWorkshopOpen(S); // "Salvage instead" waits for the Salvage tab (GG-T175)
+            Ui.Text("Each repair lowers the piece's max durability by 1, and costs more every time." + (salvage ? " An uneconomical repair offers salvage instead." : ""), "small dim", detail).style.whiteSpace = WhiteSpace.Normal;
             bool any = false;
             foreach (var h in S.Roster)
             {
@@ -891,8 +906,9 @@ namespace GridGame.App
                     string name = (h.WeaponMastery > 1f ? "★ " : "") + w.Name;
                     var row = Ui.MenuRow($"{C.Class(h.ClassId).Name} — {name}  {h.WeaponDurability}/{Repair.EffectiveMax(w, h.WeaponRepairs, h.WeaponMastery)}", cost > 0 ? Ui.Gold(cost) : "OK",
                         () => Done(Repair.RepairWeapon(C, S, hero)), list, null, cost > 0);
+                    row.name = Repair.RowNameFor(h.ClassId, EquipmentSlot.Weapon);
                     if (bad) row.Q<Label>("value").AddToClassList("warn");
-                    if (bad) SalvageInsteadRow(list, hero, EquipmentSlot.Weapon, w, h.WeaponDurability, cost);
+                    if (bad && salvage) SalvageInsteadRow(list, hero, EquipmentSlot.Weapon, w, h.WeaponDurability, cost);
                 }
                 foreach (var slot in BattleEngine.ArmorSlots)
                 {
@@ -906,8 +922,9 @@ namespace GridGame.App
                     string name = (piece.Mastery > 1f ? "★ " : "") + a.Name;
                     var row = Ui.MenuRow($"{C.Class(h.ClassId).Name} — {name}  {piece.Durability}/{Repair.EffectiveMax(a, piece.Repairs, piece.Mastery)}", cost > 0 ? Ui.Gold(cost) : "OK",
                         () => Done(Repair.RepairArmor(C, S, hero, armorSlot)), list, null, cost > 0);
+                    row.name = Repair.RowNameFor(h.ClassId, armorSlot);
                     if (bad) row.Q<Label>("value").AddToClassList("warn");
-                    if (bad) SalvageInsteadRow(list, hero, armorSlot, a, piece.Durability, cost);
+                    if (bad && salvage) SalvageInsteadRow(list, hero, armorSlot, a, piece.Durability, cost);
                 }
             }
             if (!any) Ui.Text("Nobody has gear that wears out. Equip forged weapons first.", "small dim", list).style.whiteSpace = WhiteSpace.Normal;

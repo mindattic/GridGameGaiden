@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using GridGame.Core.Content;
 
 namespace GridGame.Meta
 {
@@ -29,8 +30,8 @@ namespace GridGame.Meta
                 Text = "Spend your first battle gold on Healing Potions: tap + to add some, then Buy. The Sell tab turns spare drops back into gold.",
                 Target = "cart-plus-healing_potion_basic" },
             new CampTip { Station = "blacksmith", Title = "The Blacksmith",
-                Text = "Gear wears down in battle. Open Repair and mend anything running low before it shatters.",
-                Target = "tab-repair" },
+                Text = "Gear wears down in battle. Tap a worn piece to mend it before it shatters.",
+                Target = "repair-" },
             new CampTip { Station = "alchemist", Title = "The Alchemist",
                 Text = "Brew potions from what enemies drop — far cheaper than buying them. Pick a recipe, then Brew.",
                 Target = "recipe-" },
@@ -54,6 +55,23 @@ namespace GridGame.Meta
             if (s == null || s.TestMode || station == null) return null;
             var tip = For(station);
             return tip != null && !s.SeenCampTips.Contains(station) ? tip : null;
+        }
+
+        /// <summary>The tip as it should read for this save right now. The Blacksmith's (GG-T175) names and points at the
+        /// most worn equipped piece — the one whose wear brought him to the caravan — so the first thing done at his
+        /// cart is repairing it. Every other tip is returned as written.</summary>
+        public static CampTip Resolve(ContentDb c, SaveData s, CampTip tip)
+        {
+            if (tip == null || c == null || tip.Station != "blacksmith") return tip;
+            var worn = Repair.MostWorn(c, s);
+            if (worn == null || worn.Durability >= worn.Max) return tip;
+            string hero = c.TryClass(worn.Hero.ClassId)?.Name ?? worn.Hero.ClassId;
+            int pct = (int)System.Math.Round(worn.Fraction * 100);
+            return new CampTip
+            {
+                Station = tip.Station, Title = tip.Title, Target = worn.RowName,
+                Text = $"{hero}'s {worn.Item.Name} is worn down to {pct}%. Tap it to repair it before it shatters in battle.",
+            };
         }
 
         public static void MarkSeen(SaveData s, string station) { if (s != null && station != null) s.SeenCampTips.Add(station); }
