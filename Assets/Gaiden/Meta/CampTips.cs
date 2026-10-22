@@ -32,6 +32,9 @@ namespace GridGame.Meta
             new CampTip { Station = "blacksmith", Title = "The Blacksmith",
                 Text = "Gear wears down in battle. Tap a worn piece to mend it before it shatters.",
                 Target = "repair-" },
+            new CampTip { Station = Forging.TipStation, Title = "The Forge",
+                Text = "Forge gear from what enemies drop. Pick a recipe, then Craft.",
+                Target = "recipe-" },
             new CampTip { Station = "alchemist", Title = "The Alchemist",
                 Text = "Brew potions from what enemies drop — far cheaper than buying them. Pick a recipe, then Brew.",
                 Target = "recipe-" },
@@ -64,6 +67,7 @@ namespace GridGame.Meta
         {
             if (tip == null || c == null) return tip;
             if (tip.Station == "alchemist") return ResolveAlchemist(c, s, tip);
+            if (tip.Station == Forging.TipStation) return ResolveForge(c, s, tip);
             if (tip.Station != "blacksmith") return tip;
             var worn = Repair.MostWorn(c, s);
             if (worn == null || worn.Durability >= worn.Max) return tip;
@@ -94,6 +98,33 @@ namespace GridGame.Meta
                 Text = ready
                     ? $"An Empty Bottle with your {loot} makes a {result.Name} (the Merchant charges {Brewing.BuyCost(c, r)} G). Tap Brew."
                     : $"Your {loot} make a {result.Name}: buy an Empty Bottle from the Merchant for a few coins, then brew it here.",
+            };
+        }
+
+        /// <summary>The Forge tab's tip (GG-T177, §25.0.6) walks the first forge: the starter weapon <see cref="Forging.First"/>
+        /// picks (the Forge preselects it), what goes in, and the hero it suits, who equips it on forging. With materials
+        /// still to find it rings the recipe row and says what to bring back.</summary>
+        private static CampTip ResolveForge(ContentDb c, SaveData s, CampTip tip)
+        {
+            var plan = Forging.First(c, s);
+            if (plan == null) return tip;
+            string hero = c.TryClass(plan.Hero.ClassId)?.Name ?? plan.Hero.ClassId;
+            string Name(ItemCount i) => c.TryItem(i.Item)?.Name ?? i.Item;
+            if (plan.Ready)
+            {
+                string loot = string.Join(" and ", plan.Recipe.Inputs.Select(i => (i.Count > 1 ? i.Count + " " : "") + Name(i)));
+                return new CampTip
+                {
+                    Station = tip.Station, Title = tip.Title, Target = CraftButton,
+                    Text = $"Your {loot} make a {plan.Weapon.Name} for the {hero}, and the smith charges nothing for a first weapon. Tap Craft and the {hero} equips it.",
+                };
+            }
+            string missing = string.Join(" and ", plan.Recipe.Inputs.Where(i => s.Count(i.Item) < i.Count)
+                .Select(i => (i.Count - s.Count(i.Item)) + " more " + Name(i)));
+            return new CampTip
+            {
+                Station = tip.Station, Title = tip.Title, Target = RecipeRowPrefix + plan.Recipe.Id,
+                Text = $"A {plan.Weapon.Name} would suit the {hero}, free to forge from battle drops. Bring back {missing}, then Craft it here.",
             };
         }
 

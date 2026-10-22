@@ -662,6 +662,57 @@ def firstbrew(run="firstbrew"):
     return not fails
 
 
+def firstforge(run="firstforge"):
+    """GG-T177: onboarding step 4. With the Blacksmith's repair tip behind him and the Alchemist met (the workshop is
+    open), and 2 Slime Gel + a Tattered Cloth in the bag, the Blacksmith opens on Forge with the Tallow Lantern starter
+    recipe selected; the Forge tip names it and the Cleric and rings Craft; dismissing it and tapping Craft forges the
+    lantern for no gold and the Cleric equips it."""
+    fails = []
+    launch(run, extra=("-campTips",), fresh=True)
+    call("newgame", slot=0, gold=100, npcs="merchant,blacksmith,alchemist", seen="blacksmith"); time.sleep(1)
+    for item, n in (("mat_slime_gel", 2), ("mat_tattered_cloth", 1)):
+        for _ in range(n):
+            call("devgive", item=item)
+    camp = call("camp")
+    ff = camp.get("firstForge")
+    if not camp.get("workshop"):
+        fails.append("workshop should be open once the Alchemist has joined")
+    if not ff or ff["recipe"] != "recipe_starter_lantern" or ff["hero"] != "cleric" or not ff["ready"]:
+        fails.append(f"first forge should be the ready Tallow Lantern for the Cleric: {ff}")
+    _goto("blacksmith"); time.sleep(0.8)
+    shot("01-forge-tip")
+    if not call("names", prefix="camp-tip-card"):
+        fails.append("no Forge tip on opening the workshop")
+    elif not call("names", prefix="camp-tip-ring"):
+        fails.append("Forge tip has no ring: Craft button not found (starter recipe not preselected?)")
+    texts = " ".join(str(t) for t in call("texts"))
+    if "Tallow Lantern" not in texts or "Cleric" not in texts or "Tap Craft" not in texts:
+        fails.append("tip doesn't name the Tallow Lantern for the Cleric")
+    probs = call("layout").get("problems")
+    if probs:
+        fails.append(f"layout {probs}")
+    call("click", name="camp-tip-ok"); time.sleep(0.5)
+    gold = call("camp")["Gold"]
+    call("click", name="craft"); time.sleep(0.8)
+    shot("02-forged-and-equipped")
+    after = call("camp")
+    if after["weapons"].get("cleric") != "eq_lantern_tallow":
+        fails.append(f"the Cleric didn't equip the lantern: {after['weapons']}")
+    if after["Gold"] != gold:
+        fails.append(f"the first forge cost gold ({gold} -> {after['Gold']})")
+    if after.get("firstForge"):
+        fails.append("first forge still pending after forging")
+    errs = [l[:300] for l in call("logs") if l.startswith(("Error", "Exception"))]
+    if errs:
+        fails.append(f"log errors {errs[:3]}")
+    try:
+        call("quit", timeout=3)
+    except Exception:
+        pass
+    print("FAILURES:" if fails else "FIRST FORGE OK", *fails, sep="\n  ")
+    return not fails
+
+
 def story_recruits(run="recruits", speed=3):
     """GG-T118: a new game starts small and grows at story beats. Picks the starting three through the real
     party select, clears Green Valley I on autoplay, then launches the next battle and checks that the
@@ -1357,6 +1408,8 @@ if __name__ == "__main__":
         sys.exit(0 if smithrepair() else 1)
     elif cmd == "firstbrew":
         sys.exit(0 if firstbrew() else 1)
+    elif cmd == "firstforge":
+        sys.exit(0 if firstforge() else 1)
     elif cmd == "fullloop":
         sys.exit(0 if fullloop(battles=int(sys.argv[2]) if len(sys.argv) > 2 else 4) else 1)
     elif cmd == "clips":

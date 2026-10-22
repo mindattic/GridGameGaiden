@@ -20,6 +20,8 @@ namespace GridGame.App
         protected virtual string Subtitle => null;
         /// <summary>The Camp NPC who keeps this station (GG-T119), or null: the header gets a Talk button for them.</summary>
         protected virtual string Npc => null;
+        /// <summary>The camp tip this page shows (GG-T173): its own Id, unless a tab has its own tip (the Blacksmith's Forge, GG-T177).</summary>
+        protected virtual string TipStation => Id;
 
         protected override void Build(VisualElement root)
         {
@@ -47,7 +49,7 @@ namespace GridGame.App
             Body.style.paddingBottom = 30;
             BuildBody(Body);
             UpdateGold();
-            CampTipOverlay.ShowIfPending(this, Id);
+            CampTipOverlay.ShowIfPending(this, TipStation);
         }
 
         protected abstract void BuildBody(VisualElement body);

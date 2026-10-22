@@ -430,6 +430,9 @@ namespace GridGame.Core.Content
         /// <summary>Tier ladder rung (§24.6.1): 1 Apprentice (from the start), 2 Journeyman, 3 Master —
         /// gated by the crafting station's level (GG-T35). Missing from content = 1.</summary>
         public int Tier = 1;
+        /// <summary>A starter weapon recipe (GG-T177, §25.0.6): the Forge's guided first forge. An Apprentice Forge
+        /// recipe for a weapon, no gold, inputs from the first theme's drops; forging one equips it on the hero it suits.</summary>
+        public bool Starter;
         /// <summary>Reagent quality (GG-T45): brewing with these inputs instead of <see cref="Inputs"/> — swapping
         /// in a higher-rarity reagent for the recipe's key material — yields <see cref="PotencyResult"/> instead
         /// of <see cref="Result"/>. Same recipe, better inputs, better output. Null/empty = no potency variant.</summary>

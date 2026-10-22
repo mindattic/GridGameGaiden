@@ -1,5 +1,65 @@
 [
   {
+    "Id": "recipe_starter_club",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_wolf_pelt",
+        "Count": 1
+      },
+      {
+        "Item": "mat_cracked_fang",
+        "Count": 2
+      }
+    ],
+    "Gold": 0,
+    "BaseItem": null,
+    "Result": "eq_club_oak",
+    "ResultCount": 1,
+    "Tier": 1,
+    "Starter": true
+  },
+  {
+    "Id": "recipe_starter_rapier",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_broken_blade",
+        "Count": 2
+      },
+      {
+        "Item": "mat_iron_ore",
+        "Count": 1
+      }
+    ],
+    "Gold": 0,
+    "BaseItem": null,
+    "Result": "eq_rapier_training",
+    "ResultCount": 1,
+    "Tier": 1,
+    "Starter": true
+  },
+  {
+    "Id": "recipe_starter_lantern",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_slime_gel",
+        "Count": 2
+      },
+      {
+        "Item": "mat_tattered_cloth",
+        "Count": 1
+      }
+    ],
+    "Gold": 0,
+    "BaseItem": null,
+    "Result": "eq_lantern_tallow",
+    "ResultCount": 1,
+    "Tier": 1,
+    "Starter": true
+  },
+  {
     "Id": "recipe_sword_iron",
     "Station": "Forge",
     "Inputs": [

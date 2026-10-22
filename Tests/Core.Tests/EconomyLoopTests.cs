@@ -65,6 +65,55 @@ namespace GridGame.Tests
             Assert.That(s.Count(CampRoutine.StopgapPotion), Is.GreaterThanOrEqualTo(1));
         }
 
+        /// <summary>GG-T177 (§25.0.6): the Forge's starter weapon recipes are always affordable (no gold) and take only
+        /// materials the first theme's enemies drop, and between them they suit every starting hero.</summary>
+        [Test]
+        public void Starter_weapon_recipes_cost_no_gold_and_take_only_first_theme_drops()
+        {
+            var starters = Forging.StarterRecipes(C);
+            Assert.That(starters.Count, Is.GreaterThanOrEqualTo(3));
+            var first = C.Campaign.Themes[0];
+            var early = new HashSet<string>(first.Stages.Select(id => C.Stages[id]).SelectMany(st => st.Waves).SelectMany(w => w.Enemies)
+                .Select(e => C.TryClass(e.Class)?.DropTable).Where(t => t != null && C.DropTables.ContainsKey(t))
+                .SelectMany(t => C.DropTables[t].Entries.Select(e => e.Item)));
+            foreach (var r in starters)
+            {
+                Assert.That(r.Gold, Is.EqualTo(0), r.Id);
+                Assert.That(r.Tier, Is.EqualTo(1), r.Id);
+                Assert.That(C.Item(r.Result).Slot, Is.EqualTo(EquipmentSlot.Weapon), r.Id);
+                foreach (var i in r.Inputs) Assert.That(early, Does.Contain(i.Item), $"{r.Id}: {i.Item} drops in {first.Name}");
+            }
+            var s = Progression.NewGame(C, "T");
+            foreach (var r in starters) foreach (var i in r.Inputs) s.AddItem(i.Item, i.Count);
+            foreach (var id in Progression.StartingRoster)
+                Assert.That(starters.Any(r => Forging.SuitedHero(C, s, C.Item(r.Result))?.ClassId == id), Is.True, $"a starter weapon suits the {id}");
+        }
+
+        /// <summary>GG-T177: the guided first forge makes the starter weapon the Forge walks and equips it on the hero it suits;
+        /// the next forge is an ordinary one.</summary>
+        [Test]
+        public void The_first_forge_equips_the_starter_weapon_on_the_hero_it_suits()
+        {
+            var s = Progression.NewGame(C, "T");
+            CampNpcs.JoinAll(s);
+            Assert.That(Forging.First(C, s).Ready, Is.False, "nothing looted yet");
+            s.AddItem("mat_slime_gel", 2); s.AddItem("mat_tattered_cloth", 1);
+            var plan = Forging.First(C, s);
+            Assert.That(plan.Recipe.Id, Is.EqualTo("recipe_starter_lantern"));
+            Assert.That(plan.Ready, Is.True);
+            Assert.That(plan.Hero.ClassId, Is.EqualTo("cleric"), "a Wisdom lantern suits the Cleric");
+            int gold = s.Gold;
+            var r = Forging.Forge(C, s, plan.Recipe);
+            Assert.That(r.Ok, Is.True, r.Message);
+            Assert.That(r.Message, Does.Contain("Cleric equips it"));
+            Assert.That(s.Hero("cleric").WeaponId, Is.EqualTo("eq_lantern_tallow"));
+            Assert.That(s.Gold, Is.EqualTo(gold), "free");
+            Assert.That(Forging.First(C, s), Is.Null, "the first forge is done");
+            s.AddItem("mat_wolf_pelt", 1); s.AddItem("mat_cracked_fang", 2);
+            Forging.Forge(C, s, C.Recipes["recipe_starter_club"]);
+            Assert.That(s.Count("eq_club_oak"), Is.EqualTo(1), "later forges go to the bag");
+        }
+
         [Test]
         public void Every_recipe_input_can_be_obtained()
         {

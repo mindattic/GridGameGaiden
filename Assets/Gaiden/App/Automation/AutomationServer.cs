@@ -249,6 +249,9 @@ namespace GridGame.App.Automation
                     if (q["npcs"] == "1") CampNpcs.JoinAll(app.Save);
                     else if (q["npcs"] != null)
                         foreach (var n in q["npcs"].Split(',')) app.Save.Flags.Add(ContentLoader.NpcFlagPrefix + n.Trim());
+                    // seen=blacksmith,shop: those camp tips already dismissed, to reach a later onboarding step (GG-T177).
+                    if (q["seen"] != null)
+                        foreach (var t in q["seen"].Split(',')) CampTips.MarkSeen(app.Save, t.Trim());
                     app.ApplySettings();
                     app.Persist();
                     app.Router.ResetTo(new HubScreen());
@@ -515,6 +518,8 @@ namespace GridGame.App.Automation
                         forge = Craftable(CraftStation.Forge), alchemy = Craftable(CraftStation.Alchemy), enchant = Craftable(CraftStation.Enchant),
                         worn = Repair.MostWorn(c, s) is var mw && mw != null ? new { row = mw.RowName, mw.Durability, mw.Max } : null,
                         smith = CampUnlocks.NpcOpen(s, CampNpcs.Blacksmith), workshop = CampUnlocks.SmithWorkshopOpen(s),
+                        weapons = s.Party.Select(s.Hero).Where(h => h != null).ToDictionary(h => h.ClassId, h => h.WeaponId),
+                        firstForge = Forging.First(c, s) is var ff && ff != null ? new { recipe = ff.Recipe.Id, weapon = ff.Weapon.Id, hero = ff.Hero.ClassId, ready = ff.Ready } : null,
                         bounty = new { active = active?.Id, progress = s.Bounty.Progress, complete = active != null && Bounties.IsComplete(c, s), posted = Bounties.Posted(c, s).Select(b => b.Id).ToList() },
                     };
                 }

@@ -722,6 +722,8 @@ namespace GridGame.App
         protected override string Backdrop => "cave";
         protected override string Subtitle => StationProgress.HeaderText(S, StationKind.Blacksmith);
         protected override string Npc => CampNpcs.Blacksmith;
+        /// <summary>The Forge tab has its own tip, the first forge (GG-T177); Repair keeps the Blacksmith's.</summary>
+        protected override string TipStation => tab == 0 ? Forging.TipStation : Id;
 
         protected override void BuildBody(VisualElement body)
         {
@@ -743,6 +745,8 @@ namespace GridGame.App
             var list = Ui.List(w).contentContainer;
             var detail = Ui.Window(null, body);
             detail.style.minHeight = 330;
+            // GG-T177 (§25.0.6): until the first forge is made, the Forge opens on the starter weapon its tip walks.
+            if (tab == 0 && selected == null) selected = Forging.First(C, S)?.Recipe;
             if (tab <= 1) RecipeList(list, detail, C, S, CraftStation.Forge, tab == 1, ref selected, this);
             else if (tab == 2) SalvageList(list, detail);
             else RepairList(list, detail);
@@ -830,10 +834,13 @@ namespace GridGame.App
             Ui.Text($"{(s.Gold >= r.Gold ? "✔" : "✘")} {Ui.Gold(r.Gold)}", "small " + (s.Gold >= r.Gold ? "good" : "bad"), need);
             if (r.Station == CraftStation.Forge)
                 Ui.Text($"★ {Math.Round(Crafting.MasterworkChance(c, s) * 100)}% chance of a Masterwork result", "small gold", need).style.whiteSpace = WhiteSpace.Normal;
+            if (Forging.IsGuided(s, r) && Forging.SuitedHero(c, s, result) is HeroSave suited)
+                Ui.Text($"First forge: free, and the {c.TryClass(suited.ClassId)?.Name ?? suited.ClassId} equips it", "small gold", need).style.whiteSpace = WhiteSpace.Normal;
             string verb = r.Station == CraftStation.Alchemy ? "Brew" : r.Station == CraftStation.Enchant ? "Enchant" : "Craft";
             var btn = Ui.Button(verb, () =>
             {
-                var res = Crafting.Craft(c, s, r);
+                // The guided first forge (GG-T177) also equips the starter weapon on the hero it suits.
+                var res = Forging.Forge(c, s, r);
                 GameApp.I.Toast(res.Message);
                 GameApp.I.Audio.Sfx(res.Ok ? "ui.buy" : "ui.error");
                 if (res.Ok) GameApp.I.Persist();

@@ -139,6 +139,10 @@ namespace GridGame.Core.Content
                 foreach (var ic in r.Inputs) NeedItem(ic.Item, $"recipe {r.Id}");
                 NeedItem(r.PotencyResult, $"recipe {r.Id} potency");
                 foreach (var ic in r.PotencyInputs) NeedItem(ic.Item, $"recipe {r.Id} potency");
+                // GG-T177 (§25.0.6): a starter recipe is the guided first forge — always affordable, so no gold.
+                if (r.Starter && (r.Station != CraftStation.Forge || r.BaseItem != null || r.Tier > 1 || r.Gold != 0 || r.ResultCount != 1
+                                  || (db.Items.TryGetValue(r.Result ?? "", out var made) && made.Slot != EquipmentSlot.Weapon)))
+                    p.Add($"recipe {r.Id}: a Starter recipe is an Apprentice Forge recipe for one weapon that costs no gold");
             }
             foreach (var d in db.DropTables.Values)
                 foreach (var e in d.Entries) NeedItem(e.Item, $"droptable {d.Id}");

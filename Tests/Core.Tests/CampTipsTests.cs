@@ -76,6 +76,27 @@ namespace GridGame.Tests
         }
 
         [Test]
+        public void The_forge_tip_walks_the_first_forge()
+        {
+            var c = TestKit.Real;
+            var s = Progression.NewGame(c, "T");
+            CampNpcs.JoinAll(s);
+            var tip = CampTips.For(Forging.TipStation);
+            Assert.That(CampTips.Pending(s, Forging.TipStation), Is.Not.Null, "the Forge tab has its own tip");
+            s.AddItem("mat_broken_blade", 1);
+            var short1 = CampTips.Resolve(c, s, tip);
+            Assert.That(short1.Target, Does.StartWith(CampTips.RecipeRowPrefix + "recipe_starter_"));
+            Assert.That(short1.Text, Does.Contain("Bring back"));
+            s.AddItem("mat_broken_blade", 1); s.AddItem("mat_iron_ore", 1);
+            var ready = CampTips.Resolve(c, s, tip);
+            Assert.That(ready.Target, Is.EqualTo(CampTips.CraftButton));
+            Assert.That(ready.Text, Does.Contain("Training Rapier").And.Contain("2 Broken Blade").And.Contain("Tap Craft"));
+            Assert.That(ready.Text, Does.Contain(c.Class(Forging.First(c, s).Hero.ClassId).Name));
+            s.Flags.Add(Forging.FirstForgeFlag);
+            Assert.That(CampTips.Resolve(c, s, tip), Is.SameAs(tip), "after the first forge the tip reads as written");
+        }
+
+        [Test]
         public void Every_tip_has_one_station_a_title_and_a_sentence()
         {
             Assert.That(CampTips.All.Select(t => t.Station).Distinct().Count(), Is.EqualTo(CampTips.All.Count));
