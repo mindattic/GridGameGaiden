@@ -1298,6 +1298,406 @@
   "scroll_recipe_holy_enchant": [
    "lorc/scroll-unfurled",
    "holy"
+  ],
+  "eq_wayfarer_head": [
+   "lorc/cowled",
+   "leather"
+  ],
+  "eq_wayfarer_torso": [
+   "lorc/leather-vest",
+   "leather"
+  ],
+  "eq_wayfarer_legs": [
+   "delapouite/leg-armor",
+   "leather"
+  ],
+  "eq_wayfarer_gloves": [
+   "delapouite/gloves",
+   "leather"
+  ],
+  "eq_wayfarer_boots": [
+   "lorc/boots",
+   "leather"
+  ],
+  "eq_militia_head": [
+   "lorc/visored-helm",
+   "iron"
+  ],
+  "eq_militia_torso": [
+   "delapouite/chest-armor",
+   "iron"
+  ],
+  "eq_militia_legs": [
+   "delapouite/leg-armor",
+   "iron"
+  ],
+  "eq_militia_gloves": [
+   "delapouite/gloves",
+   "iron"
+  ],
+  "eq_militia_boots": [
+   "lorc/boots",
+   "iron"
+  ],
+  "eq_bramblehide_head": [
+   "lorc/cowled",
+   "green"
+  ],
+  "eq_bramblehide_torso": [
+   "lorc/leather-vest",
+   "green"
+  ],
+  "eq_bramblehide_legs": [
+   "delapouite/leg-armor",
+   "green"
+  ],
+  "eq_bramblehide_gloves": [
+   "delapouite/gloves",
+   "green"
+  ],
+  "eq_bramblehide_boots": [
+   "lorc/boots",
+   "green"
+  ],
+  "eq_gutterscrap_head": [
+   "lorc/visored-helm",
+   "rust"
+  ],
+  "eq_gutterscrap_torso": [
+   "delapouite/chest-armor",
+   "rust"
+  ],
+  "eq_gutterscrap_legs": [
+   "delapouite/leg-armor",
+   "rust"
+  ],
+  "eq_gutterscrap_gloves": [
+   "delapouite/gloves",
+   "rust"
+  ],
+  "eq_gutterscrap_boots": [
+   "lorc/boots",
+   "rust"
+  ],
+  "eq_sandstrider_head": [
+   "lorc/cowled",
+   "earth"
+  ],
+  "eq_sandstrider_torso": [
+   "lorc/leather-vest",
+   "earth"
+  ],
+  "eq_sandstrider_legs": [
+   "delapouite/leg-armor",
+   "earth"
+  ],
+  "eq_sandstrider_gloves": [
+   "delapouite/gloves",
+   "earth"
+  ],
+  "eq_sandstrider_boots": [
+   "lorc/boots",
+   "earth"
+  ],
+  "eq_chitinguard_head": [
+   "lorc/barbute",
+   "bronze"
+  ],
+  "eq_chitinguard_torso": [
+   "lorc/breastplate",
+   "bronze"
+  ],
+  "eq_chitinguard_legs": [
+   "delapouite/leg-armor",
+   "bronze"
+  ],
+  "eq_chitinguard_gloves": [
+   "delapouite/gloves",
+   "bronze"
+  ],
+  "eq_chitinguard_boots": [
+   "delapouite/metal-boot",
+   "bronze"
+  ],
+  "eq_cogwright_head": [
+   "lorc/visored-helm",
+   "spark"
+  ],
+  "eq_cogwright_torso": [
+   "delapouite/chest-armor",
+   "spark"
+  ],
+  "eq_cogwright_legs": [
+   "delapouite/leg-armor",
+   "spark"
+  ],
+  "eq_cogwright_gloves": [
+   "delapouite/gloves",
+   "spark"
+  ],
+  "eq_cogwright_boots": [
+   "lorc/boots",
+   "spark"
+  ],
+  "eq_fenwalker_head": [
+   "lorc/cowled",
+   "poison"
+  ],
+  "eq_fenwalker_torso": [
+   "lorc/leather-vest",
+   "poison"
+  ],
+  "eq_fenwalker_legs": [
+   "delapouite/leg-armor",
+   "poison"
+  ],
+  "eq_fenwalker_gloves": [
+   "delapouite/gloves",
+   "poison"
+  ],
+  "eq_fenwalker_boots": [
+   "lorc/boots",
+   "poison"
+  ],
+  "eq_hagbound_head": [
+   "lorc/pointy-hat",
+   "shadow"
+  ],
+  "eq_hagbound_torso": [
+   "lorc/robe",
+   "shadow"
+  ],
+  "eq_hagbound_legs": [
+   "delapouite/leg-armor",
+   "shadow"
+  ],
+  "eq_hagbound_gloves": [
+   "delapouite/gloves",
+   "shadow"
+  ],
+  "eq_hagbound_boots": [
+   "lorc/boots",
+   "shadow"
+  ],
+  "eq_heartwood_head": [
+   "lorc/visored-helm",
+   "wood"
+  ],
+  "eq_heartwood_torso": [
+   "delapouite/chest-armor",
+   "wood"
+  ],
+  "eq_heartwood_legs": [
+   "delapouite/leg-armor",
+   "wood"
+  ],
+  "eq_heartwood_gloves": [
+   "delapouite/gloves",
+   "wood"
+  ],
+  "eq_heartwood_boots": [
+   "lorc/boots",
+   "wood"
+  ],
+  "eq_bonewarden_head": [
+   "lorc/barbute",
+   "bone"
+  ],
+  "eq_bonewarden_torso": [
+   "lorc/breastplate",
+   "bone"
+  ],
+  "eq_bonewarden_legs": [
+   "delapouite/leg-armor",
+   "bone"
+  ],
+  "eq_bonewarden_gloves": [
+   "delapouite/gloves",
+   "bone"
+  ],
+  "eq_bonewarden_boots": [
+   "delapouite/metal-boot",
+   "bone"
+  ],
+  "eq_frostmaw_head": [
+   "lorc/barbute",
+   "ice"
+  ],
+  "eq_frostmaw_torso": [
+   "lorc/breastplate",
+   "ice"
+  ],
+  "eq_frostmaw_legs": [
+   "delapouite/leg-armor",
+   "ice"
+  ],
+  "eq_frostmaw_gloves": [
+   "delapouite/gloves",
+   "ice"
+  ],
+  "eq_frostmaw_boots": [
+   "delapouite/metal-boot",
+   "ice"
+  ],
+  "eq_cyclopean_head": [
+   "lorc/barbute",
+   "steel"
+  ],
+  "eq_cyclopean_torso": [
+   "lorc/breastplate",
+   "steel"
+  ],
+  "eq_cyclopean_legs": [
+   "delapouite/leg-armor",
+   "steel"
+  ],
+  "eq_cyclopean_gloves": [
+   "delapouite/gloves",
+   "steel"
+  ],
+  "eq_cyclopean_boots": [
+   "delapouite/metal-boot",
+   "steel"
+  ],
+  "eq_onikin_head": [
+   "lorc/visored-helm",
+   "crimson"
+  ],
+  "eq_onikin_torso": [
+   "delapouite/chest-armor",
+   "crimson"
+  ],
+  "eq_onikin_legs": [
+   "delapouite/leg-armor",
+   "crimson"
+  ],
+  "eq_onikin_gloves": [
+   "delapouite/gloves",
+   "crimson"
+  ],
+  "eq_onikin_boots": [
+   "lorc/boots",
+   "crimson"
+  ],
+  "eq_porcelain_head": [
+   "lorc/barbute",
+   "silver"
+  ],
+  "eq_porcelain_torso": [
+   "lorc/breastplate",
+   "silver"
+  ],
+  "eq_porcelain_legs": [
+   "delapouite/leg-armor",
+   "silver"
+  ],
+  "eq_porcelain_gloves": [
+   "delapouite/gloves",
+   "silver"
+  ],
+  "eq_porcelain_boots": [
+   "delapouite/metal-boot",
+   "silver"
+  ],
+  "eq_wispweave_head": [
+   "lorc/pointy-hat",
+   "arcane"
+  ],
+  "eq_wispweave_torso": [
+   "lorc/robe",
+   "arcane"
+  ],
+  "eq_wispweave_legs": [
+   "delapouite/leg-armor",
+   "arcane"
+  ],
+  "eq_wispweave_gloves": [
+   "delapouite/gloves",
+   "arcane"
+  ],
+  "eq_wispweave_boots": [
+   "lorc/boots",
+   "arcane"
+  ],
+  "eq_templar_head": [
+   "lorc/barbute",
+   "holy"
+  ],
+  "eq_templar_torso": [
+   "lorc/breastplate",
+   "holy"
+  ],
+  "eq_templar_legs": [
+   "delapouite/leg-armor",
+   "holy"
+  ],
+  "eq_templar_gloves": [
+   "delapouite/gloves",
+   "holy"
+  ],
+  "eq_templar_boots": [
+   "delapouite/metal-boot",
+   "holy"
+  ],
+  "eq_reaper_head": [
+   "lorc/cowled",
+   "gray"
+  ],
+  "eq_reaper_torso": [
+   "lorc/leather-vest",
+   "gray"
+  ],
+  "eq_reaper_legs": [
+   "delapouite/leg-armor",
+   "gray"
+  ],
+  "eq_reaper_gloves": [
+   "delapouite/gloves",
+   "gray"
+  ],
+  "eq_reaper_boots": [
+   "lorc/boots",
+   "gray"
+  ],
+  "eq_sanguine_head": [
+   "lorc/visored-helm",
+   "crimson"
+  ],
+  "eq_sanguine_torso": [
+   "delapouite/chest-armor",
+   "crimson"
+  ],
+  "eq_sanguine_legs": [
+   "delapouite/leg-armor",
+   "crimson"
+  ],
+  "eq_sanguine_gloves": [
+   "delapouite/gloves",
+   "crimson"
+  ],
+  "eq_sanguine_boots": [
+   "lorc/boots",
+   "crimson"
+  ],
+  "eq_dreadwyrm_head": [
+   "lorc/barbute",
+   "fire"
+  ],
+  "eq_dreadwyrm_torso": [
+   "lorc/breastplate",
+   "fire"
+  ],
+  "eq_dreadwyrm_legs": [
+   "delapouite/leg-armor",
+   "fire"
+  ],
+  "eq_dreadwyrm_gloves": [
+   "delapouite/gloves",
+   "fire"
+  ],
+  "eq_dreadwyrm_boots": [
+   "delapouite/metal-boot",
+   "fire"
   ]
  },
  "ui": {

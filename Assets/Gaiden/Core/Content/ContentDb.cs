@@ -26,6 +26,14 @@ namespace GridGame.Core.Content
         public readonly List<DialogueDef> DialogueOrder = new List<DialogueDef>();
         public readonly Dictionary<string, DialogueDef> Dialogues = new Dictionary<string, DialogueDef>(StringComparer.OrdinalIgnoreCase);
 
+        /// <summary>armorsets.json (GG-T182), in file order (campaign level order).</summary>
+        public readonly List<ArmorSetDef> ArmorSetOrder = new List<ArmorSetDef>();
+        public readonly Dictionary<string, ArmorSetDef> ArmorSets = new Dictionary<string, ArmorSetDef>(StringComparer.OrdinalIgnoreCase);
+        /// <summary>Armor piece item id → the set it belongs to (built at load; a piece is in at most one set).</summary>
+        public readonly Dictionary<string, ArmorSetDef> SetByItem = new Dictionary<string, ArmorSetDef>(StringComparer.OrdinalIgnoreCase);
+
+        public ArmorSetDef TryArmorSetOf(string itemId) => itemId != null && SetByItem.TryGetValue(itemId, out var a) ? a : null;
+
         public ClassDef Class(string id) => Get(Classes, id, "class");
         public AbilityDef Ability(string id) => Get(Abilities, id, "ability");
         public BuffDef Buff(string id) => Get(Buffs, id, "buff");

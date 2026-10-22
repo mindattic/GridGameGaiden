@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using GridGame.Core.Battle;
 using GridGame.Core.Content;
+using GridGame.Core.Rules;
 using GridGame.Meta;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -75,7 +76,7 @@ namespace GridGame.App
             return row;
         }
 
-        public static void Detail(VisualElement w, ItemDef i)
+        public static void Detail(VisualElement w, ItemDef i, ContentDb c = null)
         {
             w.Clear();
             if (i == null) { Ui.Text("Select an item.", "small dim", w); return; }
@@ -86,6 +87,35 @@ namespace GridGame.App
             d.style.whiteSpace = WhiteSpace.Normal;
             var st = StatsText(i);
             if (st.Length > 0) { var l = Ui.Text(st, "small gold", w); l.style.whiteSpace = WhiteSpace.Normal; l.style.marginTop = 8; }
+            var set = c?.TryArmorSetOf(i.Id);
+            if (set != null)
+            {
+                var head = Ui.Text($"{set.Name} set · {set.Weight} · Lv {set.Level}", "small", w);
+                head.style.marginTop = 8;
+                foreach (var b in set.Bonuses) Wrap(Ui.Text($"{b.Pieces} pieces: {ArmorSets.Describe(b)}", "tiny dim", w));
+            }
+        }
+
+        private static void Wrap(Label l) => l.style.whiteSpace = WhiteSpace.Normal;
+
+        /// <summary>Armor set progress lines (GG-T182): "Wayfarer's set 2/5" (or "2/5 → 3/5" for an Equip preview)
+        /// then one line per bonus tier, ✔ and green once that many pieces are worn.</summary>
+        /// <remarks><paramref name="compact"/> folds the tiers onto one wrapped line so the Equip screen's bag list
+        /// keeps its room (GG-T193).</remarks>
+        public static void SetLines(VisualElement parent, SetProgress progress, int nowWorn, bool compact = false)
+        {
+            int worn = progress.Worn;
+            var set = progress.Set;
+            string count = nowWorn == worn ? $"{worn}/5" : $"{nowWorn}/5 → {worn}/5";
+            string cls = worn > nowWorn ? "small good" : worn < nowWorn ? "small bad" : "small gold";
+            string Tier(SetBonusDef b) => $"{(worn >= b.Pieces ? "✔ " : "")}{b.Pieces} pieces: {ArmorSets.Describe(b)}";
+            if (compact)
+            {
+                Wrap(Ui.Text($"{set.Name} set  {count}   ·   " + string.Join("   ·   ", set.Bonuses.Select(Tier)), "tiny " + cls.Substring(6), parent));
+                return;
+            }
+            Wrap(Ui.Text($"{set.Name} set  {count}", cls, parent));
+            foreach (var b in set.Bonuses) Wrap(Ui.Text(Tier(b), worn >= b.Pieces ? "tiny good" : "tiny dim", parent));
         }
     }
 
@@ -144,7 +174,7 @@ namespace GridGame.App
 
         private void ShowDetail(VisualElement detail, ItemDef it, bool broken)
         {
-            ItemUi.Detail(detail, it);
+            ItemUi.Detail(detail, it, C);
             if (broken)
             {
                 var note = Ui.Text("Broken. Can't be equipped or repaired — salvage it at the Blacksmith for materials.", "small bad", detail);
@@ -293,6 +323,19 @@ namespace GridGame.App
             buildArea.style.flexGrow = 1;
             var buildList = Ui.List(buildArea).contentContainer;
 
+            // GG-T182: armor set progress — every set this hero wears a piece of, with each bonus tier lit once reached.
+            var setsWindow = Ui.Window("Armor Sets", buildList);
+            setsWindow.name = "status-armor-sets";
+            var worn = Equipment.WornSets(C, h);
+            if (worn.Count == 0)
+                Ui.Text("No set pieces worn. Two or five pieces of one named set unlock its bonuses.", "small dim", setsWindow).style.whiteSpace = WhiteSpace.Normal;
+            foreach (var p in worn)
+            {
+                var block = Ui.El("col", setsWindow);
+                block.style.marginBottom = 8;
+                ItemUi.SetLines(block, p, p.Worn);
+            }
+
             var abilitiesWindow = Ui.Window($"Known Abilities ({h.Known.Count})", buildList);
             abilitiesWindow.name = "status-known-abilities";
             if (h.Known.Count == 0) Ui.Text("None learned yet.", "small dim", abilitiesWindow);
@@ -375,6 +418,22 @@ namespace GridGame.App
                     Ui.Text($"Now: {curItem.PassiveName} — {curItem.PassiveDescription}", "small dim", prow).style.whiteSpace = WhiteSpace.Normal;
                 if (!string.IsNullOrEmpty(thenItem?.PassiveName) && thenId != curId)
                     Ui.Text($"Then: {thenItem.PassiveName} — {thenItem.PassiveDescription}", "small gold", prow).style.whiteSpace = WhiteSpace.Normal;
+            }
+            // GG-T182: set progress for the set(s) this slot's current and previewed pieces belong to — "2/5 → 3/5"
+            // when the preview would change it, with each bonus tier lit once it's reached.
+            if (Array.IndexOf(BattleEngine.ArmorSlots, slot) >= 0)
+            {
+                var nowSets = Equipment.WornSets(C, h);
+                var thenSets = Equipment.WornSetsWith(C, h, slot, thenId);
+                var shown = new[] { C.TryArmorSetOf(curId), C.TryArmorSetOf(thenId) }.Where(x => x != null).Distinct();
+                foreach (var set in shown)
+                {
+                    var preview = thenSets.FirstOrDefault(p => p.Set == set) ?? new SetProgress { Set = set };
+                    int nowWorn = nowSets.FirstOrDefault(p => p.Set == set)?.Worn ?? 0;
+                    var block = Ui.El("col", cmp);
+                    block.style.marginTop = 6;
+                    ItemUi.SetLines(block, preview, nowWorn, compact: true);
+                }
             }
 
             var w = Ui.Window($"{ItemUi.SlotName(slot)} — your bag", body);
@@ -576,7 +635,7 @@ namespace GridGame.App
                 cart.TryGetValue(item.Id, out var q);
                 int price = selling ? Shop.SellPrice(item) : item.BaseCost;
                 int max = selling ? S.Count(item.Id) : Shop.MaxBuy(S, item);
-                var row = ItemUi.Row(item, $"{price} G", () => ItemUi.Detail(detail, item), list);
+                var row = ItemUi.Row(item, $"{price} G", () => ItemUi.Detail(detail, item, C), list);
                 var owned = Ui.Text($"own {S.Count(item.Id)}", "tiny dim", row);
                 owned.style.marginLeft = 12; owned.style.width = 110;
                 var minus = Ui.Button("−", () => { Step(cart, item.Id, -1, max); }, "btn--small btn--icon", row);
@@ -633,7 +692,7 @@ namespace GridGame.App
 
         private void ShowBargain(VisualElement w, BargainOffer offer)
         {
-            ItemUi.Detail(w, offer.Item);
+            ItemUi.Detail(w, offer.Item, C);
             var row = Ui.El("row", w); row.style.marginTop = 12;
             Ui.Text($"Durability {offer.Durability}/{offer.Item.Durability}", "small dim grow", row);
             Ui.Gauge((float)offer.Durability / offer.Item.Durability, w, 320).style.marginBottom = 10;
@@ -734,7 +793,7 @@ namespace GridGame.App
                 return;
             }
             var result = c.Item(r.Result);
-            ItemUi.Detail(w, result);
+            ItemUi.Detail(w, result, c);
             bool locked = !Crafting.IsUnlocked(s, r);
             if (locked)
             {

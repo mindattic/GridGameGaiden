@@ -372,6 +372,34 @@ namespace GridGame.Core.Content
         public bool IsRing => Slot == EquipmentSlot.Ring1 || Slot == EquipmentSlot.Ring2;
     }
 
+    /// <summary>One tier of a named armor set's bonus (GG-T182): active while the hero wears at least
+    /// <see cref="Pieces"/> of the set's five pieces. Every field stacks onto the hero exactly like the same
+    /// field on an <see cref="ItemDef"/> (stats add, resistances multiply, relic passives add).</summary>
+    public sealed class SetBonusDef
+    {
+        public int Pieces;
+        public Stats Stats = new Stats();
+        public Dictionary<DamageType, float> Resistances = new Dictionary<DamageType, float>();
+        public float PincerDamageBonus;
+        public int RegenPerTurn;
+        public int BattleStartManaOrbs;
+        public bool StartsProtected;
+    }
+
+    /// <summary>A named five-piece armor set (GG-T182, armorsets.json): one Head/Torso/Legs/Gloves/Boots piece
+    /// each, all of one <see cref="ArmorWeight"/>, with 2- and 5-piece bonuses resolved by
+    /// <see cref="GridGame.Core.Rules.ArmorSets"/>. <see cref="Level"/> is the campaign level it's pitched at.</summary>
+    public sealed class ArmorSetDef
+    {
+        public string Id;
+        public string Name;
+        public ArmorWeight Weight;
+        public int Level = 1;
+        public string Description;
+        public List<string> Pieces = new List<string>();
+        public List<SetBonusDef> Bonuses = new List<SetBonusDef>();
+    }
+
     public sealed class ItemCount
     {
         public string Item;

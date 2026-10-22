@@ -14,6 +14,7 @@ Authors: carl-olsen, darkzaitzev, delapouite, faithtoken, lorc, sbed, skoll, zer
 - delapouite/bow-arrow
 - delapouite/brass-knuckles
 - delapouite/chakram
+- delapouite/chest-armor
 - delapouite/dart
 - delapouite/drop-earrings
 - delapouite/elf-ear
@@ -30,6 +31,7 @@ Authors: carl-olsen, darkzaitzev, delapouite, faithtoken, lorc, sbed, skoll, zer
 - delapouite/leg-armor
 - delapouite/log
 - delapouite/magic-potion
+- delapouite/metal-boot
 - delapouite/night-sleep
 - delapouite/pitchfork
 - delapouite/ring
@@ -53,6 +55,7 @@ Authors: carl-olsen, darkzaitzev, delapouite, faithtoken, lorc, sbed, skoll, zer
 - faithtoken/ore
 - lorc/aura
 - lorc/axe-swing
+- lorc/barbute
 - lorc/battle-axe
 - lorc/beams-aura
 - lorc/bolas
@@ -62,6 +65,7 @@ Authors: carl-olsen, darkzaitzev, delapouite, faithtoken, lorc, sbed, skoll, zer
 - lorc/breastplate
 - lorc/broadsword
 - lorc/checked-shield
+- lorc/cowled
 - lorc/crossed-bones
 - lorc/crossed-swords
 - lorc/crown

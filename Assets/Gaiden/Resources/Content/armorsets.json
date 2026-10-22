@@ -1,0 +1,630 @@
+[
+  {
+    "Id": "wayfarer",
+    "Name": "Wayfarer's",
+    "Weight": "Light",
+    "Level": 1,
+    "Description": "Plain road leathers, patched by every traveller who wore them before you.",
+    "Pieces": [
+      "eq_wayfarer_head",
+      "eq_wayfarer_torso",
+      "eq_wayfarer_legs",
+      "eq_wayfarer_gloves",
+      "eq_wayfarer_boots"
+    ],
+    "Bonuses": [
+      {
+        "Pieces": 2,
+        "Stats": {
+          "Agility": 1
+        }
+      },
+      {
+        "Pieces": 5,
+        "Stats": {
+          "Agility": 2,
+          "Speed": 1
+        },
+        "RegenPerTurn": 2
+      }
+    ]
+  },
+  {
+    "Id": "militia",
+    "Name": "Militia",
+    "Weight": "Medium",
+    "Level": 2,
+    "Description": "Town-watch issue: dented, dependable, stamped with a garrison mark.",
+    "Pieces": [
+      "eq_militia_head",
+      "eq_militia_torso",
+      "eq_militia_legs",
+      "eq_militia_gloves",
+      "eq_militia_boots"
+    ],
+    "Bonuses": [
+      {
+        "Pieces": 2,
+        "Stats": {
+          "Vitality": 1
+        }
+      },
+      {
+        "Pieces": 5,
+        "Stats": {
+          "Vitality": 2,
+          "Strength": 1
+        },
+        "PincerDamageBonus": 0.05
+      }
+    ]
+  },
+  {
+    "Id": "bramblehide",
+    "Name": "Bramblehide",
+    "Weight": "Light",
+    "Level": 3,
+    "Description": "Pelts stitched with thorny vine; it snags whatever brushes past.",
+    "Pieces": [
+      "eq_bramblehide_head",
+      "eq_bramblehide_torso",
+      "eq_bramblehide_legs",
+      "eq_bramblehide_gloves",
+      "eq_bramblehide_boots"
+    ],
+    "Bonuses": [
+      {
+        "Pieces": 2,
+        "Stats": {
+          "Agility": 1
+        }
+      },
+      {
+        "Pieces": 5,
+        "Stats": {
+          "Agility": 2,
+          "Luck": 1
+        },
+        "PincerDamageBonus": 0.05
+      }
+    ]
+  },
+  {
+    "Id": "gutterscrap",
+    "Name": "Gutterscrap",
+    "Weight": "Medium",
+    "Level": 4,
+    "Description": "Goblin junk hammered flat and wired together. Ugly, and harder than it looks.",
+    "Pieces": [
+      "eq_gutterscrap_head",
+      "eq_gutterscrap_torso",
+      "eq_gutterscrap_legs",
+      "eq_gutterscrap_gloves",
+      "eq_gutterscrap_boots"
+    ],
+    "Bonuses": [
+      {
+        "Pieces": 2,
+        "Stats": {
+          "Strength": 1
+        }
+      },
+      {
+        "Pieces": 5,
+        "Stats": {
+          "Strength": 3,
+          "Vitality": 1
+        },
+        "RegenPerTurn": 3
+      }
+    ]
+  },
+  {
+    "Id": "sandstrider",
+    "Name": "Sandstrider",
+    "Weight": "Light",
+    "Level": 5,
+    "Description": "Layered desert wraps that keep out sun, sand and stinger venom.",
+    "Pieces": [
+      "eq_sandstrider_head",
+      "eq_sandstrider_torso",
+      "eq_sandstrider_legs",
+      "eq_sandstrider_gloves",
+      "eq_sandstrider_boots"
+    ],
+    "Bonuses": [
+      {
+        "Pieces": 2,
+        "Stats": {
+          "Agility": 1
+        }
+      },
+      {
+        "Pieces": 5,
+        "Stats": {
+          "Agility": 3,
+          "Speed": 1
+        },
+        "Resistances": {
+          "Poison": 0.7
+        }
+      }
+    ]
+  },
+  {
+    "Id": "chitinguard",
+    "Name": "Chitinguard",
+    "Weight": "Heavy",
+    "Level": 6,
+    "Description": "Sandmaw shell plates, lacquered and buckled over padding. Heavy as a grudge.",
+    "Pieces": [
+      "eq_chitinguard_head",
+      "eq_chitinguard_torso",
+      "eq_chitinguard_legs",
+      "eq_chitinguard_gloves",
+      "eq_chitinguard_boots"
+    ],
+    "Bonuses": [
+      {
+        "Pieces": 2,
+        "Stats": {
+          "Vitality": 2
+        }
+      },
+      {
+        "Pieces": 5,
+        "Stats": {
+          "Vitality": 3,
+          "Stamina": 2
+        },
+        "RegenPerTurn": 4
+      }
+    ]
+  },
+  {
+    "Id": "cogwright",
+    "Name": "Cogwright",
+    "Weight": "Medium",
+    "Level": 7,
+    "Description": "Gremlin gearwork rigged into a harness that hums with stored charge.",
+    "Pieces": [
+      "eq_cogwright_head",
+      "eq_cogwright_torso",
+      "eq_cogwright_legs",
+      "eq_cogwright_gloves",
+      "eq_cogwright_boots"
+    ],
+    "Bonuses": [
+      {
+        "Pieces": 2,
+        "Stats": {
+          "Intelligence": 2
+        }
+      },
+      {
+        "Pieces": 5,
+        "Stats": {
+          "Intelligence": 3,
+          "Agility": 2
+        },
+        "Resistances": {
+          "Lightning": 0.7
+        },
+        "BattleStartManaOrbs": 1
+      }
+    ]
+  },
+  {
+    "Id": "fenwalker",
+    "Name": "Fenwalker",
+    "Weight": "Light",
+    "Level": 8,
+    "Description": "Oiled moss-cloth that sheds bog water and the worst of the fen's poisons.",
+    "Pieces": [
+      "eq_fenwalker_head",
+      "eq_fenwalker_torso",
+      "eq_fenwalker_legs",
+      "eq_fenwalker_gloves",
+      "eq_fenwalker_boots"
+    ],
+    "Bonuses": [
+      {
+        "Pieces": 2,
+        "Stats": {
+          "Wisdom": 2
+        }
+      },
+      {
+        "Pieces": 5,
+        "Stats": {
+          "Wisdom": 4,
+          "Vitality": 2
+        },
+        "Resistances": {
+          "Poison": 0.6
+        },
+        "RegenPerTurn": 3
+      }
+    ]
+  },
+  {
+    "Id": "hagbound",
+    "Name": "Hagbound",
+    "Weight": "Light",
+    "Level": 9,
+    "Description": "A swamp witch's ritual garb. It whispers when the moon is up.",
+    "Pieces": [
+      "eq_hagbound_head",
+      "eq_hagbound_torso",
+      "eq_hagbound_legs",
+      "eq_hagbound_gloves",
+      "eq_hagbound_boots"
+    ],
+    "Bonuses": [
+      {
+        "Pieces": 2,
+        "Stats": {
+          "Intelligence": 2
+        }
+      },
+      {
+        "Pieces": 5,
+        "Stats": {
+          "Intelligence": 4,
+          "Wisdom": 2
+        },
+        "Resistances": {
+          "Dark": 0.75
+        },
+        "BattleStartManaOrbs": 1
+      }
+    ]
+  },
+  {
+    "Id": "heartwood",
+    "Name": "Heartwood",
+    "Weight": "Medium",
+    "Level": 10,
+    "Description": "Living bark grown into plates. It knits its wearer's wounds as it knits itself.",
+    "Pieces": [
+      "eq_heartwood_head",
+      "eq_heartwood_torso",
+      "eq_heartwood_legs",
+      "eq_heartwood_gloves",
+      "eq_heartwood_boots"
+    ],
+    "Bonuses": [
+      {
+        "Pieces": 2,
+        "Stats": {
+          "Vitality": 2
+        }
+      },
+      {
+        "Pieces": 5,
+        "Stats": {
+          "Vitality": 4,
+          "Wisdom": 2
+        },
+        "RegenPerTurn": 5
+      }
+    ]
+  },
+  {
+    "Id": "bonewarden",
+    "Name": "Bonewarden",
+    "Weight": "Heavy",
+    "Level": 11,
+    "Description": "Ossuary plate: the dead lend their bones, and their indifference to curses.",
+    "Pieces": [
+      "eq_bonewarden_head",
+      "eq_bonewarden_torso",
+      "eq_bonewarden_legs",
+      "eq_bonewarden_gloves",
+      "eq_bonewarden_boots"
+    ],
+    "Bonuses": [
+      {
+        "Pieces": 2,
+        "Stats": {
+          "Vitality": 2
+        }
+      },
+      {
+        "Pieces": 5,
+        "Stats": {
+          "Vitality": 4,
+          "Strength": 2
+        },
+        "Resistances": {
+          "Dark": 0.7
+        }
+      }
+    ]
+  },
+  {
+    "Id": "frostmaw",
+    "Name": "Frostmaw",
+    "Weight": "Heavy",
+    "Level": 12,
+    "Description": "Fur-lined plate forged in the caverns' cold; frost slides right off it.",
+    "Pieces": [
+      "eq_frostmaw_head",
+      "eq_frostmaw_torso",
+      "eq_frostmaw_legs",
+      "eq_frostmaw_gloves",
+      "eq_frostmaw_boots"
+    ],
+    "Bonuses": [
+      {
+        "Pieces": 2,
+        "Stats": {
+          "Vitality": 3
+        }
+      },
+      {
+        "Pieces": 5,
+        "Stats": {
+          "Vitality": 5,
+          "Stamina": 3
+        },
+        "Resistances": {
+          "Ice": 0.6
+        }
+      }
+    ]
+  },
+  {
+    "Id": "cyclopean",
+    "Name": "Cyclopean",
+    "Weight": "Heavy",
+    "Level": 13,
+    "Description": "Giant-sized plate cut down to fit. Every blow lands with a giant's weight.",
+    "Pieces": [
+      "eq_cyclopean_head",
+      "eq_cyclopean_torso",
+      "eq_cyclopean_legs",
+      "eq_cyclopean_gloves",
+      "eq_cyclopean_boots"
+    ],
+    "Bonuses": [
+      {
+        "Pieces": 2,
+        "Stats": {
+          "Strength": 3
+        }
+      },
+      {
+        "Pieces": 5,
+        "Stats": {
+          "Strength": 5,
+          "Vitality": 3
+        },
+        "PincerDamageBonus": 0.1
+      }
+    ]
+  },
+  {
+    "Id": "onikin",
+    "Name": "Oni-Kin",
+    "Weight": "Medium",
+    "Level": 14,
+    "Description": "Lacquered lamellar in the demon-hunters' style, horned and fire-red.",
+    "Pieces": [
+      "eq_onikin_head",
+      "eq_onikin_torso",
+      "eq_onikin_legs",
+      "eq_onikin_gloves",
+      "eq_onikin_boots"
+    ],
+    "Bonuses": [
+      {
+        "Pieces": 2,
+        "Stats": {
+          "Strength": 3
+        }
+      },
+      {
+        "Pieces": 5,
+        "Stats": {
+          "Strength": 5,
+          "Agility": 3
+        },
+        "Resistances": {
+          "Fire": 0.7
+        },
+        "PincerDamageBonus": 0.08
+      }
+    ]
+  },
+  {
+    "Id": "porcelain",
+    "Name": "Porcelain",
+    "Weight": "Heavy",
+    "Level": 15,
+    "Description": "Glazed ceramic plate, eerily perfect. Hits skate off its polished face.",
+    "Pieces": [
+      "eq_porcelain_head",
+      "eq_porcelain_torso",
+      "eq_porcelain_legs",
+      "eq_porcelain_gloves",
+      "eq_porcelain_boots"
+    ],
+    "Bonuses": [
+      {
+        "Pieces": 2,
+        "Stats": {
+          "Vitality": 3
+        }
+      },
+      {
+        "Pieces": 5,
+        "Stats": {
+          "Vitality": 5,
+          "Stamina": 3
+        },
+        "StartsProtected": true
+      }
+    ]
+  },
+  {
+    "Id": "wispweave",
+    "Name": "Wispweave",
+    "Weight": "Light",
+    "Level": 16,
+    "Description": "Cloth spun from captured wisps. It glows faintly and feeds its wearer's magic.",
+    "Pieces": [
+      "eq_wispweave_head",
+      "eq_wispweave_torso",
+      "eq_wispweave_legs",
+      "eq_wispweave_gloves",
+      "eq_wispweave_boots"
+    ],
+    "Bonuses": [
+      {
+        "Pieces": 2,
+        "Stats": {
+          "Intelligence": 3
+        }
+      },
+      {
+        "Pieces": 5,
+        "Stats": {
+          "Intelligence": 6,
+          "Wisdom": 3
+        },
+        "BattleStartManaOrbs": 2
+      }
+    ]
+  },
+  {
+    "Id": "templar",
+    "Name": "Templar's",
+    "Weight": "Heavy",
+    "Level": 18,
+    "Description": "Consecrated plate of the fallen order, its seals still warm with old vows.",
+    "Pieces": [
+      "eq_templar_head",
+      "eq_templar_torso",
+      "eq_templar_legs",
+      "eq_templar_gloves",
+      "eq_templar_boots"
+    ],
+    "Bonuses": [
+      {
+        "Pieces": 2,
+        "Stats": {
+          "Vitality": 4
+        }
+      },
+      {
+        "Pieces": 5,
+        "Stats": {
+          "Vitality": 6,
+          "Wisdom": 4
+        },
+        "Resistances": {
+          "Dark": 0.6
+        },
+        "StartsProtected": true
+      }
+    ]
+  },
+  {
+    "Id": "reaper",
+    "Name": "Reaper's",
+    "Weight": "Light",
+    "Level": 20,
+    "Description": "Cut from a reaper's own shroud. Its wearer moves like a rumor of death.",
+    "Pieces": [
+      "eq_reaper_head",
+      "eq_reaper_torso",
+      "eq_reaper_legs",
+      "eq_reaper_gloves",
+      "eq_reaper_boots"
+    ],
+    "Bonuses": [
+      {
+        "Pieces": 2,
+        "Stats": {
+          "Agility": 4
+        }
+      },
+      {
+        "Pieces": 5,
+        "Stats": {
+          "Agility": 7,
+          "Luck": 4
+        },
+        "PincerDamageBonus": 0.12,
+        "Resistances": {
+          "Dark": 0.8
+        }
+      }
+    ]
+  },
+  {
+    "Id": "sanguine",
+    "Name": "Sanguine",
+    "Weight": "Medium",
+    "Level": 22,
+    "Description": "Blood-dark leather and steel from a vampire's armory. It drinks to its wearer's health.",
+    "Pieces": [
+      "eq_sanguine_head",
+      "eq_sanguine_torso",
+      "eq_sanguine_legs",
+      "eq_sanguine_gloves",
+      "eq_sanguine_boots"
+    ],
+    "Bonuses": [
+      {
+        "Pieces": 2,
+        "Stats": {
+          "Strength": 4
+        }
+      },
+      {
+        "Pieces": 5,
+        "Stats": {
+          "Strength": 7,
+          "Vitality": 4
+        },
+        "RegenPerTurn": 8
+      }
+    ]
+  },
+  {
+    "Id": "dreadwyrm",
+    "Name": "Dreadwyrm",
+    "Weight": "Heavy",
+    "Level": 25,
+    "Description": "Dragonscale over demon-forged plate: the last armor anyone in this land will need.",
+    "Pieces": [
+      "eq_dreadwyrm_head",
+      "eq_dreadwyrm_torso",
+      "eq_dreadwyrm_legs",
+      "eq_dreadwyrm_gloves",
+      "eq_dreadwyrm_boots"
+    ],
+    "Bonuses": [
+      {
+        "Pieces": 2,
+        "Stats": {
+          "Strength": 5
+        }
+      },
+      {
+        "Pieces": 5,
+        "Stats": {
+          "Strength": 8,
+          "Vitality": 5
+        },
+        "Resistances": {
+          "Fire": 0.6
+        },
+        "StartsProtected": true,
+        "PincerDamageBonus": 0.1
+      }
+    ]
+  }
+]

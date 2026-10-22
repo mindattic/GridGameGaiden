@@ -85,6 +85,9 @@ namespace GridGame.Core.Battle
         public float PincerDamageBonus;
         public int RegenPerTurn;
         public Dictionary<DamageType, float> GearResist = new Dictionary<DamageType, float>();
+        /// <summary>Armor set bonus tiers currently folded into GearStats/GearResist/PincerDamageBonus/RegenPerTurn
+        /// (GG-T182) — kept so a piece breaking mid-battle can take back exactly the tiers it switches off.</summary>
+        public List<SetBonusDef> SetBonuses = new List<SetBonusDef>();
 
         // Snake chain (segmented boss): head has SnakeIndex 0; segments 1..n follow.
         public int SnakeHeadId = -1;
@@ -237,6 +240,7 @@ namespace GridGame.Core.Battle
             u.Bar = new List<AbilitySlot>(Bar.Count);
             foreach (var s in Bar) u.Bar.Add(s.Clone());
             u.GearResist = new Dictionary<DamageType, float>(GearResist);
+            u.SetBonuses = new List<SetBonusDef>(SetBonuses);
             u.Gear = new Dictionary<EquipmentSlot, EquippedPiece>();
             foreach (var kv in Gear) u.Gear[kv.Key] = kv.Value.Clone();
             return u;

@@ -1463,6 +1463,19 @@ namespace GridGame.Meta
             else copy.Armor[slot] = new EquippedArmor { ItemId = itemId, Mastery = 1f };
             return (now, Progression.Preview(c, copy).Effective);
         }
+
+        /// <summary>The armor sets this hero is wearing pieces of, most pieces first (GG-T182, Status/Equip screens).</summary>
+        public static List<SetProgress> WornSets(ContentDb c, HeroSave h) =>
+            ArmorSets.Progress(c, h.Armor.Values.Where(a => a?.ItemId != null).Select(a => a.ItemId));
+
+        /// <summary>Set progress if <paramref name="itemId"/> (null = empty) replaced whatever is in <paramref name="slot"/>
+        /// — the Equip screen's "3/5 → 4/5" preview.</summary>
+        public static List<SetProgress> WornSetsWith(ContentDb c, HeroSave h, EquipmentSlot slot, string itemId)
+        {
+            var ids = h.Armor.Where(kv => kv.Key != slot && kv.Value?.ItemId != null).Select(kv => kv.Value.ItemId).ToList();
+            if (itemId != null && IsArmorSlot(slot)) ids.Add(itemId);
+            return ArmorSets.Progress(c, ids);
+        }
     }
 
     // ─────────────────────────────────────────────────────────────────────────────

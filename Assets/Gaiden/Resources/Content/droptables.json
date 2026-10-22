@@ -27,6 +27,18 @@
         "Chance": 0.005,
         "Min": 1,
         "Max": 1
+      },
+      {
+        "Item": "eq_cyclopean_head",
+        "Chance": 0.04,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_cyclopean_gloves",
+        "Chance": 0.04,
+        "Min": 1,
+        "Max": 1
       }
     ]
   },
@@ -82,6 +94,18 @@
         "Chance": 0.03,
         "Min": 1,
         "Max": 1
+      },
+      {
+        "Item": "eq_dreadwyrm_head",
+        "Chance": 0.1,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_dreadwyrm_boots",
+        "Chance": 0.1,
+        "Min": 1,
+        "Max": 1
       }
     ]
   },
@@ -131,6 +155,18 @@
         "Chance": 0.06,
         "Min": 1,
         "Max": 1
+      },
+      {
+        "Item": "eq_gutterscrap_head",
+        "Chance": 0.05,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_gutterscrap_gloves",
+        "Chance": 0.05,
+        "Min": 1,
+        "Max": 1
       }
     ]
   },
@@ -160,6 +196,18 @@
       {
         "Item": "mat_enchanted_feather",
         "Chance": 0.12,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_heartwood_head",
+        "Chance": 0.04,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_heartwood_gloves",
+        "Chance": 0.04,
         "Min": 1,
         "Max": 1
       }
@@ -211,6 +259,18 @@
         "Chance": 0.03,
         "Min": 1,
         "Max": 1
+      },
+      {
+        "Item": "eq_cyclopean_head",
+        "Chance": 0.04,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_cyclopean_gloves",
+        "Chance": 0.04,
+        "Min": 1,
+        "Max": 1
       }
     ]
   },
@@ -246,6 +306,30 @@
       {
         "Item": "mat_essence_poison",
         "Chance": 0.1,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_sandstrider_head",
+        "Chance": 0.05,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_sandstrider_gloves",
+        "Chance": 0.05,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_chitinguard_head",
+        "Chance": 0.05,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_chitinguard_gloves",
+        "Chance": 0.05,
         "Min": 1,
         "Max": 1
       }
@@ -320,6 +404,18 @@
       {
         "Item": "scroll_recipe_holy_water",
         "Chance": 0.06,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_wispweave_head",
+        "Chance": 0.04,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_wispweave_gloves",
+        "Chance": 0.04,
         "Min": 1,
         "Max": 1
       }
@@ -409,6 +505,18 @@
         "Chance": 0.32,
         "Min": 1,
         "Max": 2
+      },
+      {
+        "Item": "eq_bramblehide_head",
+        "Chance": 0.05,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_bramblehide_gloves",
+        "Chance": 0.05,
+        "Min": 1,
+        "Max": 1
       }
     ]
   },
@@ -446,6 +554,18 @@
         "Chance": 0.04,
         "Min": 1,
         "Max": 1
+      },
+      {
+        "Item": "eq_bonewarden_head",
+        "Chance": 0.04,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_bonewarden_gloves",
+        "Chance": 0.04,
+        "Min": 1,
+        "Max": 1
       }
     ]
   },
@@ -475,6 +595,18 @@
       {
         "Item": "mat_tattered_cloth",
         "Chance": 0.15,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_fenwalker_head",
+        "Chance": 0.05,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_fenwalker_gloves",
+        "Chance": 0.05,
         "Min": 1,
         "Max": 1
       }
@@ -558,6 +690,18 @@
         "Chance": 0.2,
         "Min": 1,
         "Max": 1
+      },
+      {
+        "Item": "eq_gutterscrap_head",
+        "Chance": 0.05,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_gutterscrap_gloves",
+        "Chance": 0.05,
+        "Min": 1,
+        "Max": 1
       }
     ]
   },
@@ -583,6 +727,18 @@
         "Chance": 0.1,
         "Min": 1,
         "Max": 1
+      },
+      {
+        "Item": "eq_bramblehide_head",
+        "Chance": 0.05,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_bramblehide_gloves",
+        "Chance": 0.05,
+        "Min": 1,
+        "Max": 1
       }
     ]
   },
@@ -602,6 +758,18 @@
         "Chance": 0.25,
         "Min": 1,
         "Max": 1
+      },
+      {
+        "Item": "eq_sandstrider_head",
+        "Chance": 0.05,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_sandstrider_gloves",
+        "Chance": 0.05,
+        "Min": 1,
+        "Max": 1
       }
     ]
   },
@@ -619,6 +787,18 @@
       {
         "Item": "mat_iron_ore",
         "Chance": 0.2,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_chitinguard_head",
+        "Chance": 0.05,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_chitinguard_gloves",
+        "Chance": 0.05,
         "Min": 1,
         "Max": 1
       }
@@ -677,6 +857,18 @@
         "Chance": 0.1,
         "Min": 1,
         "Max": 1
+      },
+      {
+        "Item": "eq_cogwright_head",
+        "Chance": 0.05,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_cogwright_gloves",
+        "Chance": 0.05,
+        "Min": 1,
+        "Max": 1
       }
     ]
   },
@@ -696,6 +888,18 @@
         "Chance": 0.35,
         "Min": 1,
         "Max": 2
+      },
+      {
+        "Item": "eq_cogwright_head",
+        "Chance": 0.05,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_cogwright_gloves",
+        "Chance": 0.05,
+        "Min": 1,
+        "Max": 1
       }
     ]
   },
@@ -727,6 +931,18 @@
         "Chance": 0.1,
         "Min": 1,
         "Max": 1
+      },
+      {
+        "Item": "eq_hagbound_head",
+        "Chance": 0.05,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_hagbound_gloves",
+        "Chance": 0.05,
+        "Min": 1,
+        "Max": 1
       }
     ]
   },
@@ -750,6 +966,18 @@
       {
         "Item": "mat_leather",
         "Chance": 0.15,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_fenwalker_head",
+        "Chance": 0.05,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_fenwalker_gloves",
+        "Chance": 0.05,
         "Min": 1,
         "Max": 1
       }
@@ -781,6 +1009,18 @@
       {
         "Item": "eq_totem_hag",
         "Chance": 0.03,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_hagbound_head",
+        "Chance": 0.05,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_hagbound_gloves",
+        "Chance": 0.05,
         "Min": 1,
         "Max": 1
       }
@@ -839,6 +1079,18 @@
         "Chance": 0.15,
         "Min": 1,
         "Max": 1
+      },
+      {
+        "Item": "eq_bonewarden_head",
+        "Chance": 0.04,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_bonewarden_gloves",
+        "Chance": 0.04,
+        "Min": 1,
+        "Max": 1
       }
     ]
   },
@@ -864,6 +1116,18 @@
         "Chance": 0.15,
         "Min": 1,
         "Max": 1
+      },
+      {
+        "Item": "eq_porcelain_head",
+        "Chance": 0.04,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_porcelain_gloves",
+        "Chance": 0.04,
+        "Min": 1,
+        "Max": 1
       }
     ]
   },
@@ -887,6 +1151,18 @@
       {
         "Item": "mat_essence_frost",
         "Chance": 0.08,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_frostmaw_head",
+        "Chance": 0.04,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_frostmaw_gloves",
+        "Chance": 0.04,
         "Min": 1,
         "Max": 1
       }
@@ -926,6 +1202,18 @@
         "Chance": 0.03,
         "Min": 1,
         "Max": 1
+      },
+      {
+        "Item": "eq_onikin_head",
+        "Chance": 0.04,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_onikin_gloves",
+        "Chance": 0.04,
+        "Min": 1,
+        "Max": 1
       }
     ]
   },
@@ -949,6 +1237,18 @@
       {
         "Item": "mat_essence_frost",
         "Chance": 0.08,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_frostmaw_head",
+        "Chance": 0.04,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_frostmaw_gloves",
+        "Chance": 0.04,
         "Min": 1,
         "Max": 1
       }
@@ -982,6 +1282,18 @@
         "Chance": 0.1,
         "Min": 1,
         "Max": 1
+      },
+      {
+        "Item": "eq_templar_head",
+        "Chance": 0.04,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_templar_boots",
+        "Chance": 0.04,
+        "Min": 1,
+        "Max": 1
       }
     ]
   },
@@ -1007,6 +1319,18 @@
         "Chance": 0.2,
         "Min": 1,
         "Max": 1
+      },
+      {
+        "Item": "eq_sanguine_head",
+        "Chance": 0.04,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_sanguine_boots",
+        "Chance": 0.04,
+        "Min": 1,
+        "Max": 1
       }
     ]
   },
@@ -1024,6 +1348,18 @@
       {
         "Item": "mat_cloth",
         "Chance": 0.3,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_porcelain_head",
+        "Chance": 0.04,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_porcelain_gloves",
+        "Chance": 0.04,
         "Min": 1,
         "Max": 1
       }
@@ -1055,6 +1391,18 @@
       {
         "Item": "eq_totem_phantom",
         "Chance": 0.015,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_wispweave_head",
+        "Chance": 0.04,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_wispweave_gloves",
+        "Chance": 0.04,
         "Min": 1,
         "Max": 1
       }
@@ -1100,6 +1448,18 @@
         "Chance": 0.008,
         "Min": 1,
         "Max": 1
+      },
+      {
+        "Item": "eq_reaper_head",
+        "Chance": 0.04,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_reaper_boots",
+        "Chance": 0.04,
+        "Min": 1,
+        "Max": 1
       }
     ]
   },
@@ -1135,6 +1495,18 @@
       {
         "Item": "eq_whip_vampire",
         "Chance": 0.015,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_sanguine_head",
+        "Chance": 0.04,
+        "Min": 1,
+        "Max": 1
+      },
+      {
+        "Item": "eq_sanguine_boots",
+        "Chance": 0.04,
         "Min": 1,
         "Max": 1
       }

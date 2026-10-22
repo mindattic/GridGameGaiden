@@ -258,11 +258,13 @@ namespace GridGame.App.Automation
                     // first. Mirrors Meta.Equipment.Equip (grants + equips) across the whole roster.
                     if (app.Save == null) return new { error = "no save" };
                     var itemId = q["item"] ?? "eq_sword_iron";
+                    // Equips into the item's own slot, so armor set pieces (GG-T182) work too.
+                    var equipSlot = app.Content.TryItem(itemId)?.Slot ?? EquipmentSlot.Weapon;
                     int equipped = 0;
                     foreach (var h in app.Save.Roster)
                     {
                         app.Save.AddItem(itemId, 1);
-                        if (Equipment.Equip(app.Content, app.Save, h, EquipmentSlot.Weapon, itemId).Ok) equipped++;
+                        if (Equipment.Equip(app.Content, app.Save, h, equipSlot, itemId).Ok) equipped++;
                     }
                     return new { ok = equipped > 0, equipped };
                 }

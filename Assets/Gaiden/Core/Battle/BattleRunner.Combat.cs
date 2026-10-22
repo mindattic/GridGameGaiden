@@ -433,6 +433,9 @@ namespace GridGame.Core.Battle
                 Announce($"{armor?.Name ?? "Armor"} broken!", hero.Id);
                 RecordBroken(S.Results.BrokenArmors, hero.Def.Id, piece.ItemId);
                 hero.Gear.Remove(slot);
+                // GG-T182: a broken piece no longer counts toward its set, so any tier it was holding up goes too.
+                var set = C.TryArmorSetOf(piece.ItemId);
+                if (set != null && ResolveSetBonuses(hero).Count > 0) Announce($"{set.Name} set bonus lost", hero.Id);
             }
         }
 

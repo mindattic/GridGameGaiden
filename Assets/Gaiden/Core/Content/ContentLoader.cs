@@ -44,6 +44,13 @@ namespace GridGame.Core.Content
             var dialogues = ReadList<DialogueDef>(readText, "dialogues");
             AddAll(db.Dialogues, dialogues, x => x.Id);
             db.DialogueOrder.AddRange(dialogues);
+            var sets = ReadList<ArmorSetDef>(readText, "armorsets");
+            AddAll(db.ArmorSets, sets, x => x.Id);
+            db.ArmorSetOrder.AddRange(sets);
+            // First set wins a piece listed twice; Validate reports the clash.
+            foreach (var set in sets)
+                foreach (var piece in set.Pieces)
+                    if (piece != null && !db.SetByItem.ContainsKey(piece)) db.SetByItem[piece] = set;
             return db;
         }
 
@@ -207,8 +214,39 @@ namespace GridGame.Core.Content
                 else if (!db.SkillTrees.ContainsKey(c.HomeTree)) p.Add($"class {c.Id}: unknown home tree '{c.HomeTree}'");
             }
             foreach (var d in db.DialogueOrder) ValidateDialogue(db, d, portraitExists, p);
+            foreach (var set in db.ArmorSetOrder) ValidateArmorSet(db, set, p);
             return p;
         }
+
+        /// <summary>Armor sets (GG-T182): five real armor pieces, one per armor slot, all the set's weight, no piece in
+        /// two sets, and bonuses at distinct piece counts between 2 and 5.</summary>
+        private static void ValidateArmorSet(ContentDb db, ArmorSetDef set, List<string> p)
+        {
+            string w = $"armor set {set.Id}";
+            if (string.IsNullOrWhiteSpace(set.Name)) p.Add($"{w}: needs a Name");
+            if (set.Pieces.Count != 5) p.Add($"{w}: needs exactly 5 pieces, has {set.Pieces.Count}");
+            var slots = new HashSet<EquipmentSlot>();
+            foreach (var id in set.Pieces)
+            {
+                var item = db.TryItem(id);
+                if (item == null) { p.Add($"{w}: unknown item '{id}'"); continue; }
+                if (item.Type != ItemType.Equipment || !IsArmorSlot(item.Slot)) { p.Add($"{w}: '{id}' isn't a Head/Torso/Legs/Gloves/Boots piece"); continue; }
+                if (!slots.Add(item.Slot)) p.Add($"{w}: two pieces for {item.Slot}");
+                if (item.ArmorWeight != set.Weight) p.Add($"{w}: '{id}' is {item.ArmorWeight}, set is {set.Weight}");
+                if (db.TryArmorSetOf(id) != set) p.Add($"{w}: '{id}' already belongs to set '{db.TryArmorSetOf(id)?.Id}'");
+            }
+            var counts = new HashSet<int>();
+            foreach (var b in set.Bonuses)
+            {
+                if (b == null) { p.Add($"{w}: null bonus"); continue; }
+                if (b.Pieces < 2 || b.Pieces > 5) p.Add($"{w}: bonus at {b.Pieces} pieces (must be 2-5)");
+                if (!counts.Add(b.Pieces)) p.Add($"{w}: two bonuses at {b.Pieces} pieces");
+            }
+            if (set.Bonuses.Count == 0) p.Add($"{w}: has no bonuses");
+        }
+
+        private static bool IsArmorSlot(EquipmentSlot s) =>
+            s == EquipmentSlot.Head || s == EquipmentSlot.Torso || s == EquipmentSlot.Legs || s == EquipmentSlot.Gloves || s == EquipmentSlot.Boots;
 
         public const string NpcFlagPrefix = "npc:";
 

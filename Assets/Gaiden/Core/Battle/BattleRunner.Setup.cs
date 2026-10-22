@@ -130,6 +130,12 @@ namespace GridGame.Core.Battle
                     Mastery = piece.Mastery,
                 };
             }
+            ResolveSetBonuses(u);
+            foreach (var b in u.SetBonuses)
+            {
+                pendingStartOrbs += Math.Max(0, b.BattleStartManaOrbs);
+                if (b.StartsProtected && !startProtected.Contains(u.Id)) startProtected.Add(u.Id);
+            }
             u.MaxHp = Formulas.MaxHp(u.Effective, u.Level);
             u.Hp = spec.Hp > 0 ? Math.Min(spec.Hp, u.MaxHp) : u.MaxHp;
 
@@ -177,6 +183,45 @@ namespace GridGame.Core.Battle
             }
             if (C.TryAbility(entry) != null) slot.AbilityId = entry;
             return slot;
+        }
+
+        /// <summary>Armor set bonuses (GG-T182): re-reads which set tiers the hero's intact armor switches on and
+        /// folds the difference into its gear numbers — every tier newly on is added, every tier no longer on is
+        /// taken back out (a piece broke). Battle-start orbs/Protection are read once at spawn, not here.
+        /// Returns the tiers that just switched off.</summary>
+        private List<SetBonusDef> ResolveSetBonuses(Unit u)
+        {
+            var worn = new List<string>();
+            foreach (var piece in u.Gear.Values) if (piece.Durability > 0) worn.Add(piece.ItemId);
+            var now = ArmorSets.ActiveBonuses(C, worn);
+            var lost = new List<SetBonusDef>();
+            foreach (var b in u.SetBonuses)
+            {
+                if (now.Contains(b)) continue;
+                lost.Add(b);
+                u.GearStats = u.GearStats + b.Stats * -1f;
+                u.PincerDamageBonus -= b.PincerDamageBonus;
+                u.RegenPerTurn -= b.RegenPerTurn;
+                foreach (var kv in b.Resistances)
+                {
+                    if (!u.GearResist.TryGetValue(kv.Key, out var cur)) continue;
+                    u.GearResist[kv.Key] = kv.Value != 0f ? cur / kv.Value : 1f; // same rule as a broken armor piece
+                }
+            }
+            foreach (var b in now)
+            {
+                if (u.SetBonuses.Contains(b)) continue;
+                u.GearStats = u.GearStats + b.Stats;
+                u.PincerDamageBonus += b.PincerDamageBonus;
+                u.RegenPerTurn += b.RegenPerTurn;
+                foreach (var kv in b.Resistances)
+                {
+                    float cur = u.GearResist.TryGetValue(kv.Key, out var existing) ? existing : 1f;
+                    u.GearResist[kv.Key] = cur * kv.Value;
+                }
+            }
+            u.SetBonuses = now;
+            return lost;
         }
 
         private int pendingStartOrbs;

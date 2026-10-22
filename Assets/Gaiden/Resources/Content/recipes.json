@@ -20025,5 +20025,1365 @@
     "Result": "eq_orb_dragoneye_ench_holy",
     "ResultCount": 1,
     "Tier": 3
+  },
+  {
+    "Id": "recipe_wayfarer_torso",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_leather",
+        "Count": 4
+      },
+      {
+        "Item": "mat_wolf_pelt",
+        "Count": 2
+      }
+    ],
+    "Gold": 20,
+    "BaseItem": null,
+    "Result": "eq_wayfarer_torso",
+    "ResultCount": 1,
+    "Tier": 1
+  },
+  {
+    "Id": "recipe_wayfarer_legs",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_leather",
+        "Count": 2
+      },
+      {
+        "Item": "mat_wolf_pelt",
+        "Count": 1
+      }
+    ],
+    "Gold": 15,
+    "BaseItem": null,
+    "Result": "eq_wayfarer_legs",
+    "ResultCount": 1,
+    "Tier": 1
+  },
+  {
+    "Id": "recipe_militia_legs",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 2
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 1
+      },
+      {
+        "Item": "mat_military_insignia",
+        "Count": 1
+      }
+    ],
+    "Gold": 25,
+    "BaseItem": null,
+    "Result": "eq_militia_legs",
+    "ResultCount": 1,
+    "Tier": 1
+  },
+  {
+    "Id": "recipe_militia_gloves",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 2
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 1
+      },
+      {
+        "Item": "mat_military_insignia",
+        "Count": 1
+      }
+    ],
+    "Gold": 20,
+    "BaseItem": null,
+    "Result": "eq_militia_gloves",
+    "ResultCount": 1,
+    "Tier": 1
+  },
+  {
+    "Id": "recipe_bramblehide_torso",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_leather",
+        "Count": 4
+      },
+      {
+        "Item": "mat_wolf_pelt",
+        "Count": 4
+      },
+      {
+        "Item": "mat_bat_wing",
+        "Count": 2
+      }
+    ],
+    "Gold": 35,
+    "BaseItem": null,
+    "Result": "eq_bramblehide_torso",
+    "ResultCount": 1,
+    "Tier": 1
+  },
+  {
+    "Id": "recipe_bramblehide_legs",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_leather",
+        "Count": 2
+      },
+      {
+        "Item": "mat_wolf_pelt",
+        "Count": 2
+      },
+      {
+        "Item": "mat_bat_wing",
+        "Count": 1
+      }
+    ],
+    "Gold": 30,
+    "BaseItem": null,
+    "Result": "eq_bramblehide_legs",
+    "ResultCount": 1,
+    "Tier": 1
+  },
+  {
+    "Id": "recipe_gutterscrap_torso",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 4
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 2
+      },
+      {
+        "Item": "mat_goblin_scrap_iron",
+        "Count": 4
+      },
+      {
+        "Item": "mat_razor_wire",
+        "Count": 2
+      }
+    ],
+    "Gold": 50,
+    "BaseItem": null,
+    "Result": "eq_gutterscrap_torso",
+    "ResultCount": 1,
+    "Tier": 1
+  },
+  {
+    "Id": "recipe_gutterscrap_legs",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 2
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 1
+      },
+      {
+        "Item": "mat_goblin_scrap_iron",
+        "Count": 2
+      },
+      {
+        "Item": "mat_razor_wire",
+        "Count": 1
+      }
+    ],
+    "Gold": 40,
+    "BaseItem": null,
+    "Result": "eq_gutterscrap_legs",
+    "ResultCount": 1,
+    "Tier": 1
+  },
+  {
+    "Id": "recipe_sandstrider_torso",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_leather",
+        "Count": 4
+      },
+      {
+        "Item": "mat_vulture_feather",
+        "Count": 4
+      },
+      {
+        "Item": "mat_scorpion_stinger",
+        "Count": 2
+      }
+    ],
+    "Gold": 50,
+    "BaseItem": null,
+    "Result": "eq_sandstrider_torso",
+    "ResultCount": 1,
+    "Tier": 1
+  },
+  {
+    "Id": "recipe_sandstrider_legs",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_leather",
+        "Count": 2
+      },
+      {
+        "Item": "mat_vulture_feather",
+        "Count": 2
+      },
+      {
+        "Item": "mat_scorpion_stinger",
+        "Count": 1
+      }
+    ],
+    "Gold": 45,
+    "BaseItem": null,
+    "Result": "eq_sandstrider_legs",
+    "ResultCount": 1,
+    "Tier": 1
+  },
+  {
+    "Id": "recipe_sandstrider_boots",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_leather",
+        "Count": 2
+      },
+      {
+        "Item": "mat_vulture_feather",
+        "Count": 2
+      },
+      {
+        "Item": "mat_scorpion_stinger",
+        "Count": 1
+      }
+    ],
+    "Gold": 35,
+    "BaseItem": null,
+    "Result": "eq_sandstrider_boots",
+    "ResultCount": 1,
+    "Tier": 1
+  },
+  {
+    "Id": "recipe_chitinguard_torso",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 9
+      },
+      {
+        "Item": "mat_sand_chitin",
+        "Count": 6
+      },
+      {
+        "Item": "mat_scorpion_stinger",
+        "Count": 2
+      }
+    ],
+    "Gold": 85,
+    "BaseItem": null,
+    "Result": "eq_chitinguard_torso",
+    "ResultCount": 1,
+    "Tier": 1
+  },
+  {
+    "Id": "recipe_chitinguard_legs",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 6
+      },
+      {
+        "Item": "mat_sand_chitin",
+        "Count": 3
+      },
+      {
+        "Item": "mat_scorpion_stinger",
+        "Count": 1
+      }
+    ],
+    "Gold": 70,
+    "BaseItem": null,
+    "Result": "eq_chitinguard_legs",
+    "ResultCount": 1,
+    "Tier": 1
+  },
+  {
+    "Id": "recipe_chitinguard_boots",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 6
+      },
+      {
+        "Item": "mat_sand_chitin",
+        "Count": 3
+      },
+      {
+        "Item": "mat_scorpion_stinger",
+        "Count": 1
+      }
+    ],
+    "Gold": 55,
+    "BaseItem": null,
+    "Result": "eq_chitinguard_boots",
+    "ResultCount": 1,
+    "Tier": 1
+  },
+  {
+    "Id": "recipe_cogwright_torso",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 6
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 3
+      },
+      {
+        "Item": "mat_gremlin_cog",
+        "Count": 4
+      },
+      {
+        "Item": "mat_mecha_plating",
+        "Count": 2
+      }
+    ],
+    "Gold": 80,
+    "BaseItem": null,
+    "Result": "eq_cogwright_torso",
+    "ResultCount": 1,
+    "Tier": 2
+  },
+  {
+    "Id": "recipe_cogwright_legs",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 4
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 2
+      },
+      {
+        "Item": "mat_gremlin_cog",
+        "Count": 2
+      },
+      {
+        "Item": "mat_mecha_plating",
+        "Count": 1
+      }
+    ],
+    "Gold": 70,
+    "BaseItem": null,
+    "Result": "eq_cogwright_legs",
+    "ResultCount": 1,
+    "Tier": 2
+  },
+  {
+    "Id": "recipe_cogwright_boots",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 4
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 2
+      },
+      {
+        "Item": "mat_gremlin_cog",
+        "Count": 2
+      },
+      {
+        "Item": "mat_mecha_plating",
+        "Count": 1
+      }
+    ],
+    "Gold": 55,
+    "BaseItem": null,
+    "Result": "eq_cogwright_boots",
+    "ResultCount": 1,
+    "Tier": 2
+  },
+  {
+    "Id": "recipe_fenwalker_torso",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_leather",
+        "Count": 6
+      },
+      {
+        "Item": "mat_marsh_moss",
+        "Count": 4
+      },
+      {
+        "Item": "mat_frog_gland",
+        "Count": 4
+      }
+    ],
+    "Gold": 85,
+    "BaseItem": null,
+    "Result": "eq_fenwalker_torso",
+    "ResultCount": 1,
+    "Tier": 2
+  },
+  {
+    "Id": "recipe_fenwalker_legs",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_leather",
+        "Count": 4
+      },
+      {
+        "Item": "mat_marsh_moss",
+        "Count": 2
+      },
+      {
+        "Item": "mat_frog_gland",
+        "Count": 2
+      }
+    ],
+    "Gold": 75,
+    "BaseItem": null,
+    "Result": "eq_fenwalker_legs",
+    "ResultCount": 1,
+    "Tier": 2
+  },
+  {
+    "Id": "recipe_fenwalker_boots",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_leather",
+        "Count": 4
+      },
+      {
+        "Item": "mat_marsh_moss",
+        "Count": 2
+      },
+      {
+        "Item": "mat_frog_gland",
+        "Count": 2
+      }
+    ],
+    "Gold": 55,
+    "BaseItem": null,
+    "Result": "eq_fenwalker_boots",
+    "ResultCount": 1,
+    "Tier": 2
+  },
+  {
+    "Id": "recipe_hagbound_torso",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_cloth",
+        "Count": 6
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 3
+      },
+      {
+        "Item": "mat_hag_claw",
+        "Count": 4
+      },
+      {
+        "Item": "mat_swamp_ichor",
+        "Count": 2
+      }
+    ],
+    "Gold": 100,
+    "BaseItem": null,
+    "Result": "eq_hagbound_torso",
+    "ResultCount": 1,
+    "Tier": 2
+  },
+  {
+    "Id": "recipe_hagbound_legs",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_cloth",
+        "Count": 4
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      },
+      {
+        "Item": "mat_hag_claw",
+        "Count": 2
+      },
+      {
+        "Item": "mat_swamp_ichor",
+        "Count": 1
+      }
+    ],
+    "Gold": 85,
+    "BaseItem": null,
+    "Result": "eq_hagbound_legs",
+    "ResultCount": 1,
+    "Tier": 2
+  },
+  {
+    "Id": "recipe_hagbound_boots",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_cloth",
+        "Count": 4
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 2
+      },
+      {
+        "Item": "mat_hag_claw",
+        "Count": 2
+      },
+      {
+        "Item": "mat_swamp_ichor",
+        "Count": 1
+      }
+    ],
+    "Gold": 65,
+    "BaseItem": null,
+    "Result": "eq_hagbound_boots",
+    "ResultCount": 1,
+    "Tier": 2
+  },
+  {
+    "Id": "recipe_heartwood_torso",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 6
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 3
+      },
+      {
+        "Item": "mat_heartwood",
+        "Count": 6
+      },
+      {
+        "Item": "mat_enchanted_feather",
+        "Count": 3
+      }
+    ],
+    "Gold": 130,
+    "BaseItem": null,
+    "Result": "eq_heartwood_torso",
+    "ResultCount": 1,
+    "Tier": 2
+  },
+  {
+    "Id": "recipe_heartwood_legs",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 4
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 2
+      },
+      {
+        "Item": "mat_heartwood",
+        "Count": 4
+      },
+      {
+        "Item": "mat_enchanted_feather",
+        "Count": 2
+      }
+    ],
+    "Gold": 110,
+    "BaseItem": null,
+    "Result": "eq_heartwood_legs",
+    "ResultCount": 1,
+    "Tier": 2
+  },
+  {
+    "Id": "recipe_heartwood_boots",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 4
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 2
+      },
+      {
+        "Item": "mat_heartwood",
+        "Count": 4
+      },
+      {
+        "Item": "mat_enchanted_feather",
+        "Count": 2
+      }
+    ],
+    "Gold": 85,
+    "BaseItem": null,
+    "Result": "eq_heartwood_boots",
+    "ResultCount": 1,
+    "Tier": 2
+  },
+  {
+    "Id": "recipe_bonewarden_torso",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 9
+      },
+      {
+        "Item": "mat_undead_bone",
+        "Count": 9
+      },
+      {
+        "Item": "mat_bone_dust",
+        "Count": 6
+      }
+    ],
+    "Gold": 175,
+    "BaseItem": null,
+    "Result": "eq_bonewarden_torso",
+    "ResultCount": 1,
+    "Tier": 2
+  },
+  {
+    "Id": "recipe_bonewarden_legs",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 6
+      },
+      {
+        "Item": "mat_undead_bone",
+        "Count": 6
+      },
+      {
+        "Item": "mat_bone_dust",
+        "Count": 4
+      }
+    ],
+    "Gold": 150,
+    "BaseItem": null,
+    "Result": "eq_bonewarden_legs",
+    "ResultCount": 1,
+    "Tier": 2
+  },
+  {
+    "Id": "recipe_bonewarden_boots",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 6
+      },
+      {
+        "Item": "mat_undead_bone",
+        "Count": 6
+      },
+      {
+        "Item": "mat_bone_dust",
+        "Count": 4
+      }
+    ],
+    "Gold": 115,
+    "BaseItem": null,
+    "Result": "eq_bonewarden_boots",
+    "ResultCount": 1,
+    "Tier": 2
+  },
+  {
+    "Id": "recipe_frostmaw_torso",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 12
+      },
+      {
+        "Item": "mat_yeti_fur",
+        "Count": 6
+      },
+      {
+        "Item": "mat_frost_core",
+        "Count": 3
+      }
+    ],
+    "Gold": 195,
+    "BaseItem": null,
+    "Result": "eq_frostmaw_torso",
+    "ResultCount": 1,
+    "Tier": 2
+  },
+  {
+    "Id": "recipe_frostmaw_legs",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 9
+      },
+      {
+        "Item": "mat_yeti_fur",
+        "Count": 4
+      },
+      {
+        "Item": "mat_frost_core",
+        "Count": 2
+      }
+    ],
+    "Gold": 170,
+    "BaseItem": null,
+    "Result": "eq_frostmaw_legs",
+    "ResultCount": 1,
+    "Tier": 2
+  },
+  {
+    "Id": "recipe_frostmaw_boots",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 9
+      },
+      {
+        "Item": "mat_yeti_fur",
+        "Count": 4
+      },
+      {
+        "Item": "mat_frost_core",
+        "Count": 2
+      }
+    ],
+    "Gold": 130,
+    "BaseItem": null,
+    "Result": "eq_frostmaw_boots",
+    "ResultCount": 1,
+    "Tier": 2
+  },
+  {
+    "Id": "recipe_cyclopean_torso",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 12
+      },
+      {
+        "Item": "mat_troll_hide",
+        "Count": 6
+      },
+      {
+        "Item": "mat_cyclops_eye",
+        "Count": 3
+      }
+    ],
+    "Gold": 220,
+    "BaseItem": null,
+    "Result": "eq_cyclopean_torso",
+    "ResultCount": 1,
+    "Tier": 2
+  },
+  {
+    "Id": "recipe_cyclopean_legs",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 9
+      },
+      {
+        "Item": "mat_troll_hide",
+        "Count": 4
+      },
+      {
+        "Item": "mat_cyclops_eye",
+        "Count": 2
+      }
+    ],
+    "Gold": 190,
+    "BaseItem": null,
+    "Result": "eq_cyclopean_legs",
+    "ResultCount": 1,
+    "Tier": 2
+  },
+  {
+    "Id": "recipe_cyclopean_boots",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 9
+      },
+      {
+        "Item": "mat_troll_hide",
+        "Count": 4
+      },
+      {
+        "Item": "mat_cyclops_eye",
+        "Count": 2
+      }
+    ],
+    "Gold": 145,
+    "BaseItem": null,
+    "Result": "eq_cyclopean_boots",
+    "ResultCount": 1,
+    "Tier": 2
+  },
+  {
+    "Id": "recipe_onikin_torso",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 8
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 4
+      },
+      {
+        "Item": "mat_oni_horn",
+        "Count": 6
+      },
+      {
+        "Item": "mat_essence_flame",
+        "Count": 3
+      }
+    ],
+    "Gold": 205,
+    "BaseItem": null,
+    "Result": "eq_onikin_torso",
+    "ResultCount": 1,
+    "Tier": 2
+  },
+  {
+    "Id": "recipe_onikin_legs",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 6
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 3
+      },
+      {
+        "Item": "mat_oni_horn",
+        "Count": 4
+      },
+      {
+        "Item": "mat_essence_flame",
+        "Count": 2
+      }
+    ],
+    "Gold": 175,
+    "BaseItem": null,
+    "Result": "eq_onikin_legs",
+    "ResultCount": 1,
+    "Tier": 2
+  },
+  {
+    "Id": "recipe_onikin_boots",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 6
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 3
+      },
+      {
+        "Item": "mat_oni_horn",
+        "Count": 4
+      },
+      {
+        "Item": "mat_essence_flame",
+        "Count": 2
+      }
+    ],
+    "Gold": 130,
+    "BaseItem": null,
+    "Result": "eq_onikin_boots",
+    "ResultCount": 1,
+    "Tier": 2
+  },
+  {
+    "Id": "recipe_porcelain_torso",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 12
+      },
+      {
+        "Item": "mat_ceramic_shard",
+        "Count": 9
+      },
+      {
+        "Item": "mat_mannequin_joint",
+        "Count": 6
+      }
+    ],
+    "Gold": 270,
+    "BaseItem": null,
+    "Result": "eq_porcelain_torso",
+    "ResultCount": 1,
+    "Tier": 3
+  },
+  {
+    "Id": "recipe_porcelain_legs",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 9
+      },
+      {
+        "Item": "mat_ceramic_shard",
+        "Count": 6
+      },
+      {
+        "Item": "mat_mannequin_joint",
+        "Count": 4
+      }
+    ],
+    "Gold": 230,
+    "BaseItem": null,
+    "Result": "eq_porcelain_legs",
+    "ResultCount": 1,
+    "Tier": 3
+  },
+  {
+    "Id": "recipe_porcelain_boots",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 9
+      },
+      {
+        "Item": "mat_ceramic_shard",
+        "Count": 6
+      },
+      {
+        "Item": "mat_mannequin_joint",
+        "Count": 4
+      }
+    ],
+    "Gold": 175,
+    "BaseItem": null,
+    "Result": "eq_porcelain_boots",
+    "ResultCount": 1,
+    "Tier": 3
+  },
+  {
+    "Id": "recipe_wispweave_torso",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_cloth",
+        "Count": 8
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 4
+      },
+      {
+        "Item": "mat_phantom_wisp",
+        "Count": 6
+      },
+      {
+        "Item": "mat_ghost_ectoplasm",
+        "Count": 3
+      }
+    ],
+    "Gold": 225,
+    "BaseItem": null,
+    "Result": "eq_wispweave_torso",
+    "ResultCount": 1,
+    "Tier": 3
+  },
+  {
+    "Id": "recipe_wispweave_legs",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_cloth",
+        "Count": 6
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 3
+      },
+      {
+        "Item": "mat_phantom_wisp",
+        "Count": 4
+      },
+      {
+        "Item": "mat_ghost_ectoplasm",
+        "Count": 2
+      }
+    ],
+    "Gold": 190,
+    "BaseItem": null,
+    "Result": "eq_wispweave_legs",
+    "ResultCount": 1,
+    "Tier": 3
+  },
+  {
+    "Id": "recipe_wispweave_boots",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_cloth",
+        "Count": 6
+      },
+      {
+        "Item": "mat_arcane_dust",
+        "Count": 3
+      },
+      {
+        "Item": "mat_phantom_wisp",
+        "Count": 4
+      },
+      {
+        "Item": "mat_ghost_ectoplasm",
+        "Count": 2
+      }
+    ],
+    "Gold": 145,
+    "BaseItem": null,
+    "Result": "eq_wispweave_boots",
+    "ResultCount": 1,
+    "Tier": 3
+  },
+  {
+    "Id": "recipe_templar_torso",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 15
+      },
+      {
+        "Item": "mat_templar_seal",
+        "Count": 9
+      },
+      {
+        "Item": "mat_essence_holy",
+        "Count": 3
+      }
+    ],
+    "Gold": 360,
+    "BaseItem": null,
+    "Result": "eq_templar_torso",
+    "ResultCount": 1,
+    "Tier": 3
+  },
+  {
+    "Id": "recipe_templar_legs",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 12
+      },
+      {
+        "Item": "mat_templar_seal",
+        "Count": 6
+      },
+      {
+        "Item": "mat_essence_holy",
+        "Count": 2
+      }
+    ],
+    "Gold": 305,
+    "BaseItem": null,
+    "Result": "eq_templar_legs",
+    "ResultCount": 1,
+    "Tier": 3
+  },
+  {
+    "Id": "recipe_templar_gloves",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 12
+      },
+      {
+        "Item": "mat_templar_seal",
+        "Count": 6
+      },
+      {
+        "Item": "mat_essence_holy",
+        "Count": 2
+      }
+    ],
+    "Gold": 230,
+    "BaseItem": null,
+    "Result": "eq_templar_gloves",
+    "ResultCount": 1,
+    "Tier": 3
+  },
+  {
+    "Id": "recipe_reaper_torso",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_leather",
+        "Count": 10
+      },
+      {
+        "Item": "mat_reaper_shroud",
+        "Count": 8
+      },
+      {
+        "Item": "mat_essence_shadow",
+        "Count": 4
+      }
+    ],
+    "Gold": 315,
+    "BaseItem": null,
+    "Result": "eq_reaper_torso",
+    "ResultCount": 1,
+    "Tier": 3
+  },
+  {
+    "Id": "recipe_reaper_legs",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_leather",
+        "Count": 8
+      },
+      {
+        "Item": "mat_reaper_shroud",
+        "Count": 6
+      },
+      {
+        "Item": "mat_essence_shadow",
+        "Count": 3
+      }
+    ],
+    "Gold": 270,
+    "BaseItem": null,
+    "Result": "eq_reaper_legs",
+    "ResultCount": 1,
+    "Tier": 3
+  },
+  {
+    "Id": "recipe_reaper_gloves",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_leather",
+        "Count": 8
+      },
+      {
+        "Item": "mat_reaper_shroud",
+        "Count": 6
+      },
+      {
+        "Item": "mat_essence_shadow",
+        "Count": 3
+      }
+    ],
+    "Gold": 205,
+    "BaseItem": null,
+    "Result": "eq_reaper_gloves",
+    "ResultCount": 1,
+    "Tier": 3
+  },
+  {
+    "Id": "recipe_sanguine_torso",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 10
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 5
+      },
+      {
+        "Item": "mat_vampire_fang",
+        "Count": 8
+      },
+      {
+        "Item": "mat_cyber_core",
+        "Count": 4
+      }
+    ],
+    "Gold": 410,
+    "BaseItem": null,
+    "Result": "eq_sanguine_torso",
+    "ResultCount": 1,
+    "Tier": 3
+  },
+  {
+    "Id": "recipe_sanguine_legs",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 8
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 4
+      },
+      {
+        "Item": "mat_vampire_fang",
+        "Count": 6
+      },
+      {
+        "Item": "mat_cyber_core",
+        "Count": 3
+      }
+    ],
+    "Gold": 350,
+    "BaseItem": null,
+    "Result": "eq_sanguine_legs",
+    "ResultCount": 1,
+    "Tier": 3
+  },
+  {
+    "Id": "recipe_sanguine_gloves",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 8
+      },
+      {
+        "Item": "mat_leather",
+        "Count": 4
+      },
+      {
+        "Item": "mat_vampire_fang",
+        "Count": 6
+      },
+      {
+        "Item": "mat_cyber_core",
+        "Count": 3
+      }
+    ],
+    "Gold": 265,
+    "BaseItem": null,
+    "Result": "eq_sanguine_gloves",
+    "ResultCount": 1,
+    "Tier": 3
+  },
+  {
+    "Id": "recipe_dreadwyrm_torso",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 18
+      },
+      {
+        "Item": "mat_dragon_scale",
+        "Count": 1
+      },
+      {
+        "Item": "mat_demon_shard",
+        "Count": 8
+      }
+    ],
+    "Gold": 610,
+    "BaseItem": null,
+    "Result": "eq_dreadwyrm_torso",
+    "ResultCount": 1,
+    "Tier": 3
+  },
+  {
+    "Id": "recipe_dreadwyrm_legs",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 15
+      },
+      {
+        "Item": "mat_dragon_scale",
+        "Count": 1
+      },
+      {
+        "Item": "mat_demon_shard",
+        "Count": 6
+      }
+    ],
+    "Gold": 515,
+    "BaseItem": null,
+    "Result": "eq_dreadwyrm_legs",
+    "ResultCount": 1,
+    "Tier": 3
+  },
+  {
+    "Id": "recipe_dreadwyrm_gloves",
+    "Station": "Forge",
+    "Inputs": [
+      {
+        "Item": "mat_iron_ore",
+        "Count": 15
+      },
+      {
+        "Item": "mat_dragon_scale",
+        "Count": 1
+      },
+      {
+        "Item": "mat_demon_shard",
+        "Count": 6
+      }
+    ],
+    "Gold": 395,
+    "BaseItem": null,
+    "Result": "eq_dreadwyrm_gloves",
+    "ResultCount": 1,
+    "Tier": 3
   }
 ]
