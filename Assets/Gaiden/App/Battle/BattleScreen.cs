@@ -27,9 +27,13 @@ namespace GridGame.App
         public override string Id => "battle";
         public override string Music => "Crusade";
 
-        // Layout (design pixels)
-        private const float BoardLeft = 45f, BoardTop = 450f;
-        private const float TimelineLeft = 40f, TimelineWidth = 940f, TimelineY = 250f;
+        // Layout (design pixels). Vertical positions are fixed from the top; horizontal ones follow the live stage
+        // width (bible §26.3) so a wider phone centres the board and stretches the timeline instead of leaving a gap.
+        private const float BoardTop = 450f;
+        private static float BoardLeft => (GameApp.StageWidth - BoardView.Tile * BattleConfig.Cols) / 2f;
+        private const float TimelineLeft = 40f, TimelineY = 250f;
+        private static float TimelineWidth => GameApp.StageWidth - 230f;
+        private VisualElement timelineFrame;
         /// <summary>The track line's y inside the timeline frame; every icon centres on it.</summary>
         private const float TrackY = 50f;
 
@@ -104,6 +108,7 @@ namespace GridGame.App
         /// own root — remove it explicitly so it doesn't linger on top of whatever screen comes next.</summary>
         public override void OnHidden()
         {
+            GameApp.StageResized -= OnStageResized;
             if (pauseVeil != null) { pauseVeil.RemoveFromHierarchy(); pauseVeil = null; ResumeBattle(); }
             // The billboard lives on the Overlay too; without this, each battle left one behind (lines from the
             // last ~1.6 s showing over the PostBattle screen) and they piled up battle after battle (GG-T70).
@@ -173,7 +178,7 @@ namespace GridGame.App
 
             boardHost = Ui.El("", shake);
             boardHost.style.position = Position.Absolute;
-            boardHost.style.left = BoardLeft; boardHost.style.top = BoardTop;
+            boardHost.style.top = BoardTop;
             board = new BoardView(boardHost, State.Stage.Theme);
             board.Root.pickingMode = PickingMode.Position;
             // The pincer outline (board.Lines) stays inside the board, so it inherits every camera twist, zoom,
@@ -184,8 +189,7 @@ namespace GridGame.App
             // Board order: tiles, units, marks, fx, cut-in cards, lines.
             cutInLayer = new VisualElement { name = "card-layer", pickingMode = PickingMode.Ignore };
             cutInLayer.style.position = Position.Absolute;
-            cutInLayer.style.left = -BoardLeft; cutInLayer.style.top = -BoardTop;
-            cutInLayer.style.width = GameApp.DesignWidth; cutInLayer.style.height = GameApp.DesignHeight;
+            cutInLayer.style.top = -BoardTop;
             board.Root.Add(cutInLayer);
             board.Lines.BringToFront();
             board.Root.RegisterCallback<PointerDownEvent>(OnPointerDown);
@@ -197,7 +201,7 @@ namespace GridGame.App
             feed.name = "feed";
             feed.pickingMode = PickingMode.Ignore;
             feed.style.position = Position.Absolute;
-            feed.style.left = BoardLeft + 14; feed.style.top = BoardTop + BoardView.Tile * BattleConfig.Rows - 140;
+            feed.style.top = BoardTop + BoardView.Tile * BattleConfig.Rows - 140;
             feed.style.width = 640;
             feed.style.backgroundColor = new Color(0f, 0f, 0.05f, 0.35f);
             feed.style.borderTopRightRadius = 12;
@@ -211,6 +215,7 @@ namespace GridGame.App
             panel.style.marginTop = panel.style.marginBottom = 0;
             panel.style.paddingTop = panel.style.paddingBottom = 14;
 
+            ApplyStageLayout();
             foreach (var u in State.Units) if (u.Alive) board.Add(u);
             SelectedHeroId = State.Units.FirstOrDefault(u => u.IsHero && u.Alive)?.Id ?? -1;
             if (firstBuild && setupOverride == null && !InCrucible && App.Save != null && !App.Save.TutorialDone && App.Save.HighestClearedStage < 0 && !CommandLine.Has("-autobattle") && !DemoMode.Active && !TestMode.Active) TutorialStep = 0;
@@ -242,11 +247,31 @@ namespace GridGame.App
             timerLabel.style.right = 40; timerLabel.style.top = 318;
         }
 
+        /// <summary>Re-applies the positions that depend on the stage width (build time and on resize).</summary>
+        private void ApplyStageLayout()
+        {
+            if (boardHost == null) return;
+            boardHost.style.left = BoardLeft;
+            cutInLayer.style.left = -BoardLeft;
+            cutInLayer.style.width = GameApp.StageWidth; cutInLayer.style.height = GameApp.StageHeight;
+            feed.style.left = BoardLeft + 14;
+            timelineFrame.style.width = TimelineWidth;
+        }
+
+        private void OnStageResized()
+        {
+            ApplyStageLayout();
+            SyncAll();
+        }
+
+        public override void OnShown() { GameApp.StageResized -= OnStageResized; GameApp.StageResized += OnStageResized; }
+
         private void BuildTimeline(VisualElement root)
         {
             var frame = Ui.El("", root);
+            timelineFrame = frame;
             frame.style.position = Position.Absolute;
-            frame.style.left = TimelineLeft; frame.style.top = TimelineY - 50; frame.style.width = TimelineWidth; frame.style.height = 100;
+            frame.style.left = TimelineLeft; frame.style.top = TimelineY - 50; frame.style.height = 100;
             timelineBar = Ui.El("", frame);
             timelineBar.name = "timeline-track";
             timelineBar.style.position = Position.Absolute;

@@ -161,7 +161,7 @@ A single 12-orb `ManaBank` for the whole party — no per-hero MP. Over-minting 
 Land a feature end-to-end and verify it before committing — no mid-phase commits. If code and bible disagree, reconcile in writing. **Amended 2026-10-09:** the old "every system ships a `DebugManager.Demo_*` button" rule is replaced by harness evidence ([GG-LAW-12](#GG-LAW-12)) — a scripted automation step or a test is the demo.
 
 ### {#GG-LAW-8} Portrait-mobile is locked; never stretch
-The UI is a fixed 1170×2532 design stage. **Amended 2026-10-09:** `GameApp.FitStage` (not the old `AspectGuard`) scales the stage to the limiting axis and centers it; the rest of the screen is black bars. The game never stretches or squashes. *(Source: `App/Boot/GameApp.cs`.)*
+The UI is a fixed 1170×2532 design stage. **Amended 2026-10-09:** `GameApp.FitStage` (not the old `AspectGuard`) scales the stage to the limiting axis and centers it; the rest of the screen is black bars. The game never stretches or squashes. **Amended 2026-10-21 (GG-T169, owner: "on-device experience is king"):** 1170×2532 is now the *minimum* stage, not a fixed one — phones from 9:21 to 9:16 fill the whole screen (the stage grows taller or wider to match), and only shapes outside that range (tablets, ultra-tall) get bars, with an outline frame around the stage ([§26.3](#263-adaptive-stage-gg-t169)). Still never stretched or squashed. *(Source: `App/Boot/GameApp.cs`.)*
 
 ### {#GG-LAW-9} Core has no UnityEngine
 `Gaiden.Core` and `Gaiden.Meta` are `noEngineReferences: true` and must compile and run under plain `dotnet test`. All randomness goes through the seeded `Core/Util/Rng` (xoshiro128\*\*); no `System.Random`, no time reads, no static mutable battle state. The presentation never decides a rule; it sends commands and plays back events. *(Source: asmdefs; test `Battles_replay_identically_from_seed`.)*
@@ -2167,15 +2167,19 @@ The starting trio is a full triangle: Paladin (Tank), Barbarian (Striker), Cleri
 
 ### 26.1 Reference resolution
 
-**1170 × 2532** portrait (`GameApp.DesignWidth/Height`). Every screen lays out in these design pixels.
+**1170 × 2532** portrait (`GameApp.DesignWidth/Height`) is the **minimum** stage: every screen must fit in it. The live size is `GameApp.StageWidth/StageHeight` (design pixels), between 1170×2532 and 1424 wide (`MaxStageWidth`, 9:16) or 2730 tall (`MaxStageHeight`, 9:21). Screens lay out vertically from the top in fixed design pixels and horizontally against the live width (left/right insets, or centred on `StageWidth`), so extra width or height is absorbed, never cropped.
 
 ### 26.2 Panel scaling
 
-`PanelSettings`: ScaleWithScreenSize, reference 1170×2532, MatchWidthOrHeight; `GameApp.FitStage` sets `match` to the limiting axis each frame the screen size changes.
+`PanelSettings`: ScaleWithScreenSize, MatchWidthOrHeight; `GameApp.FitStage` sets the reference resolution to the live stage size and `match` to the limiting axis whenever the screen size changes, then raises `GameApp.StageResized`.
 
-### 26.3 Letterbox ("lock to profile")
+### 26.3 Adaptive stage (GG-T169)
 
-**Amended 2026-10-09:** `FitStage` centers the fixed 1170×2532 stage element inside the panel: on a wider screen it matches height (pillarbox), on a taller one width (letterbox); bars are the black `letterbox` element. The old `AspectGuard` snap list (9:21 … 3:4) and its tests are retired — any aspect fits, never cropped, never stretched. The harness `resize` endpoint can drive aspect checks. 🟡 No multi-aspect harness assertion yet.
+**Amended 2026-10-21 (owner: "on-device experience is king — fill every phone, frame tablets, never warp"):** `GameApp.StageSizeFor(aspect)` picks the stage: on a screen wider than 19.5:9 the height stays 2532 and the width grows to match, up to 1424 (9:16); on a taller one the width stays 1170 and the height grows, up to 2730 (9:21). Inside 9:21…9:16 — every mainstream phone — the stage fills the screen edge to edge with no bars. Outside it (tablets 3:4/2:3/10:16, ultra-tall shapes) the stage clamps to the nearest supported shape, is centred, and a `stage-frame` outline (the same white rounded frame every window uses) sits 10 px outside it over a near-black bezel, so the bars read as deliberate. Scaling is always uniform.
+
+- **Battle:** the board is centred on the stage width (`BoardLeft = (StageWidth − 1080)/2`, 45 at the minimum), the timeline stretches (`StageWidth − 230`), cut-in anchors mirror against `StageWidth`; the bottom info panel is pinned top and bottom, so it absorbs extra height. `BattleScreen.ApplyStageLayout` re-applies these on `StageResized`.
+- **Automation:** design-pixel taps map through the live stage width; `stagebounds` reports `design` (live stage size) and `framed`.
+- **Verification:** `python tools/harness.py aspects` launches at 9:23, 9:21, 9:20, 9:19.5, 9:18, 9:16, 2:3 and 3:4, shoots title/hub/battle, runs the layout audit, and fails if the stage drops below the minimum or the frame state doesn't match the rule.
 
 ### 26.4 Camera
 
@@ -2183,7 +2187,7 @@ One UI-only camera (`cullingMask = 0`, black clear); the board is UI Toolkit, so
 
 ### 26.5 Safe area
 
-⬜ Not yet built: inset HUD content to `Screen.safeArea` (notches, rounded corners).
+`GameApp.ApplySafeArea` insets the `screens` container where `Screen.safeArea` (notch, home bar) overlaps the stage — which on a phone that fills the screen is every time. `-safeArea <topPx>,<bottomPx>` simulates one on desktop.
 
 ---
 

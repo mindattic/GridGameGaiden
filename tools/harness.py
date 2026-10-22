@@ -3,6 +3,7 @@ Self-play harness: launches the development player with the automation endpoint 
 
     python tools/harness.py smoke            # title → new game → hub → battle (autoplay) → results
     python tools/harness.py sweep            # screenshot + layout-audit every menu screen
+    python tools/harness.py aspects          # GG-T169: title/hub/battle at 9:23..3:4; phones fill, tablets framed
     python tools/harness.py clips N          # generate N random-stage/random-wave battle clips
     python tools/harness.py boardaudit N     # GG-T97/T129: N autoplayed battles; fail if two tokens (or two items) are ever drawn on one tile
     python tools/harness.py pause            # GG-T126: pause mid-chain freezes playback (two identical frames), resume finishes it
@@ -213,6 +214,55 @@ def sweep(run="sweep"):
     print(json.dumps(report, indent=1))
     logs = call("logs")
     print("errors:", [l for l in logs if l.startswith(("Error", "Exception"))])
+
+
+# GG-T169 device fit: (label, aspect w/h). Phones 9:21..9:16 must fill the window; tablets and ultra-tall are framed.
+ASPECTS = [("9x23-ultratall", 9 / 23), ("9x21", 9 / 21), ("9x20", 9 / 20), ("9x19.5", 9 / 19.5), ("9x18", 9 / 18),
+           ("9x16", 9 / 16), ("2x3-tablet", 2 / 3), ("3x4-tablet", 3 / 4)]
+
+
+def aspects(run="aspects", height=1200):
+    """GG-T169: launches the player at every supported phone ratio plus tablet/ultra-tall shapes; shoots the
+    title, hub and a live battle; checks the stage size never drops below 1170x2532, fills the window on phones
+    (no frame) and is framed outside 9:21..9:16; runs the layout audit on each screen. Exit 1 on any failure."""
+    failures, report = [], {}
+    for label, a in ASPECTS:
+        w = int(round(height * a))
+        launch(f"{run}/{label}", width=w, height=height, fresh=True)
+        _wait_screen("title"); time.sleep(0.8)
+        sb = call("stagebounds")
+        dw, dh = sb["design"]
+        expect_framed = not (9 / 21 - 0.002 <= w / height <= 9 / 16 + 0.002)
+        entry = {"window": [w, height], "stage": [dw, dh], "framed": sb["framed"], "screens": {}}
+        if dw < 1170 or dh < 2532:
+            failures.append(f"{label}: stage {dw}x{dh} below the 1170x2532 minimum")
+        if sb["framed"] != expect_framed:
+            failures.append(f"{label}: framed={sb['framed']}, expected {expect_framed}")
+        shot(f"{label}-1-title"); entry["screens"]["title"] = call("layout").get("problems")
+        call("newgame", slot=0); time.sleep(1.2)
+        shot(f"{label}-2-hub"); entry["screens"]["hub"] = call("layout").get("problems")
+        call("clicktext", text="Adventure"); time.sleep(0.8)
+        call("clicktext", text="Green Valley I"); time.sleep(1.5)
+        through_story(wait=1.2)
+        if _wait_screen("battle", 8):
+            time.sleep(2.0)
+            shot(f"{label}-3-battle"); entry["screens"]["battle"] = call("layout").get("problems")
+        else:
+            failures.append(f"{label}: never reached the battle screen")
+        for scr, probs in entry["screens"].items():
+            if probs:
+                failures.append(f"{label}/{scr}: {probs}")
+        errs = [l for l in call("logs") if l.startswith(("Error", "Exception"))]
+        if errs:
+            failures.append(f"{label}: log errors {errs[:3]}")
+        report[label] = entry
+    try:
+        call("quit", timeout=3)
+    except Exception:
+        pass
+    print(json.dumps(report, indent=1))
+    print("FAILURES:" if failures else "ALL ASPECTS OK", *failures, sep="\n  ")
+    return not failures
 
 
 def _play_battle(tag, timeout=480):
@@ -1024,6 +1074,8 @@ if __name__ == "__main__":
         campaign(stages=int(sys.argv[2]) if len(sys.argv) > 2 else 6)
     elif cmd == "sweep":
         sweep(sys.argv[2] if len(sys.argv) > 2 else "sweep")
+    elif cmd == "aspects":
+        sys.exit(0 if aspects() else 1)
     elif cmd == "clips":
         battle_clips(count=int(sys.argv[2]) if len(sys.argv) > 2 else 10)
     elif cmd == "boardaudit":

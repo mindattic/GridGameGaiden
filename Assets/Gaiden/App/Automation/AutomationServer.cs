@@ -21,7 +21,7 @@ namespace GridGame.App.Automation
     /// <summary>
     /// Development-build-only remote control so the game can be played and inspected by a script:
     /// a localhost HTTP endpoint (start the player with <c>-automation 7777</c>). Coordinates are
-    /// design pixels (1170×2532, origin top-left).
+    /// design pixels (the live stage: 1170×2532 up to 1424 wide or 2730 tall, origin top-left).
     /// <para>
     /// Input (GG-T121): taps, drags and presses are dispatched straight into the UI Toolkit panel as
     /// pointer events — the same PointerDown/Move/Up (and the ClickEvent the panel synthesizes from them)
@@ -489,7 +489,7 @@ namespace GridGame.App.Automation
                     var sb = app.Stage.worldBound;
                     var root = app.Document.rootVisualElement.worldBound;
                     float k = Screen.width / Mathf.Max(1f, root.width);
-                    return new { x = sb.x * k, y = sb.y * k, w = sb.width * k, h = sb.height * k, screen = new[] { Screen.width, Screen.height } };
+                    return new { x = sb.x * k, y = sb.y * k, w = sb.width * k, h = sb.height * k, screen = new[] { Screen.width, Screen.height }, design = new[] { GameApp.StageWidth, GameApp.StageHeight }, framed = app.Document.rootVisualElement.Q("stage-frame")?.ClassListContains("hidden") == false };
                 }
                 case "resize":
                     Screen.SetResolution((int)F(q["w"], 585), (int)F(q["h"], 1266), FullScreenMode.Windowed);
@@ -518,13 +518,13 @@ namespace GridGame.App.Automation
         private Vector2 ToPanel(float dx, float dy)
         {
             var stage = GameApp.I.Stage;
-            return stage.worldBound.position + new Vector2(dx, dy) * (stage.worldBound.width / GameApp.DesignWidth);
+            return stage.worldBound.position + new Vector2(dx, dy) * (stage.worldBound.width / GameApp.StageWidth);
         }
 
         private Vector2 DesignPoint(Vector2 panelPoint)
         {
             var stage = GameApp.I.Stage;
-            float k = GameApp.DesignWidth / stage.worldBound.width;
+            float k = GameApp.StageWidth / stage.worldBound.width;
             return (panelPoint - stage.worldBound.position) * k;
         }
 
@@ -776,7 +776,7 @@ namespace GridGame.App.Automation
                 if (wb.width < 1 || wb.height < 1) { problems.Add($"zero-size label '{Trim(l.text)}'"); continue; }
                 if (wb.xMin < sb.xMin - 2 || wb.xMax > sb.xMax + 2) problems.Add($"label off-stage horizontally '{Trim(l.text)}' x={DesignPoint(wb.position).x:0}..{DesignPoint(wb.max).x:0}");
                 var size = l.MeasureTextSize(l.text, 0, VisualElement.MeasureMode.Undefined, 0, VisualElement.MeasureMode.Undefined);
-                float k = GameApp.DesignWidth / sb.width;
+                float k = GameApp.StageWidth / sb.width;
                 if (l.resolvedStyle.whiteSpace == WhiteSpace.NoWrap && size.x > l.contentRect.width + 4 && l.contentRect.width > 0)
                     problems.Add($"text overflows ({size.x:0}>{l.contentRect.width:0}) '{Trim(l.text)}'");
             }

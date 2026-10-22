@@ -212,7 +212,7 @@ namespace GridGame.App
             CutInsShown++;
             bool fromLeft = caster.IsHero;
             var card = ActionCard(caster, 560f, caster.Team, spellName, new Color(1f, 0.92f, 0.55f), out var portrait);
-            var at = new Vector2(fromLeft ? 300f : 1170f - 300f, BoardTop + 520f);
+            var at = new Vector2(fromLeft ? 300f : GameApp.StageWidth - 300f, BoardTop + 520f);
             var focus = new Vector2(BoardLeft, BoardTop) + ViewCenter(caster);
             App.Audio.Sfx("dash", 0.8f, 0.85f);
             var veil = CutInVeil(0.38f);
@@ -250,7 +250,7 @@ namespace GridGame.App
                 var u = attackers[i];
                 var c = ViewCenter(u) + new Vector2(BoardLeft, BoardTop);
                 var card = ActionCard(u, 400f, team, chainCount > 1 ? $"CHAIN ×{chainCount}" : null, new Color(1f, 0.85f, 0.35f), out var portrait);
-                var at = new Vector2(Mathf.Clamp(c.x, 150f, 1170f - 150f), Mathf.Max(BoardTop + 230f, c.y - 260f));
+                var at = new Vector2(Mathf.Clamp(c.x, 150f, GameApp.StageWidth - 150f), Mathf.Max(BoardTop + 230f, c.y - 260f));
                 float spin = (i == 0 ? -1f : 1f) * 20f;
                 runs.Add(TwistCard(card, portrait, at, 0.2f, spin, new Vector2(i == 0 ? -1f : 1f, 0.3f)));
             }
@@ -266,7 +266,7 @@ namespace GridGame.App
             int index = supportersShown.Count - 1;
             var card = ActionCard(sup, 300f, team, "SUPPORT", new Color(0.6f, 0.92f, 1f), out var portrait);
             bool left = index % 2 == 0;
-            var at = new Vector2(left ? 170f : 1170f - 170f, BoardTop + 330f + 300f * (index / 2));
+            var at = new Vector2(left ? 170f : GameApp.StageWidth - 170f, BoardTop + 330f + 300f * (index / 2));
             App.Audio.Sfx("pickup", 0.6f, 1.3f + 0.1f * index);
             App.StartCoroutine(TwistCard(card, portrait, at, 0.3f, left ? -18f : 18f, new Vector2(0f, 1f)));
         }

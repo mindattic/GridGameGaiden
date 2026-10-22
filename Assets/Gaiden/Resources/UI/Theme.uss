@@ -11,7 +11,16 @@
     font-size: 40px;
 }
 
-.letterbox { background-color: rgb(0, 0, 0); }
+.letterbox { background-color: rgb(4, 5, 12); }
+/* Outline around the stage when the device is wider/taller than any supported phone (tablets): the bars read
+   as a deliberate bezel around one big game window, in the same white rounded frame every window uses. */
+.stage-frame {
+    position: absolute;
+    border-width: 5px;
+    border-color: rgb(236, 238, 255);
+    border-radius: 22px;
+    background-color: rgb(0, 0, 0);
+}
 
 .fill { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
 .row { flex-direction: row; align-items: center; }

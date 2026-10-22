@@ -12,13 +12,25 @@ namespace GridGame.App
 {
     /// <summary>
     /// The whole app is constructed here, in code, at startup — the scene file is an empty shell.
-    /// Owns the services (content, saves, audio), the UI Toolkit panel, the letterboxed 1170×2532
-    /// stage (GG-LAW-8) and the screen router.
+    /// Owns the services (content, saves, audio), the UI Toolkit panel, the adaptive stage
+    /// (GG-LAW-8, bible §26) and the screen router.
     /// </summary>
     public sealed class GameApp : MonoBehaviour
     {
+        /// <summary>The minimum stage: every screen is laid out to fit at least this (19.5:9 portrait).</summary>
         public const int DesignWidth = 1170;
         public const int DesignHeight = 2532;
+        /// <summary>The widest (9:16) and tallest (9:21) phone the stage grows to fill; beyond them it is framed.</summary>
+        public const int MaxStageWidth = 1424;
+        public const int MaxStageHeight = 2730;
+        /// <summary>Design-pixel margin around a framed stage, so its outline is fully on screen.</summary>
+        private const float FramePad = 36f;
+
+        /// <summary>The live stage size in design pixels; never below DesignWidth×DesignHeight.</summary>
+        public static float StageWidth { get; private set; } = DesignWidth;
+        public static float StageHeight { get; private set; } = DesignHeight;
+        /// <summary>Raised after the stage changes size (window resize, harness resize).</summary>
+        public static event Action StageResized;
 
         public static GameApp I { get; private set; }
 
@@ -38,6 +50,7 @@ namespace GridGame.App
         public event Action<float> Ticked;
 
         private VisualElement letterbox;
+        private VisualElement stageFrame;
         private Vector2 lastScreen;
         private float playClock;
 
@@ -123,6 +136,10 @@ namespace GridGame.App
             letterbox.AddToClassList("letterbox");
             root.Add(letterbox);
 
+            stageFrame = new VisualElement { name = "stage-frame", pickingMode = PickingMode.Ignore };
+            stageFrame.AddToClassList("stage-frame");
+            letterbox.Add(stageFrame);
+
             Stage = new VisualElement { name = "stage" };
             Stage.AddToClassList("stage");
             letterbox.Add(Stage);
@@ -157,21 +174,54 @@ namespace GridGame.App
 #endif
         }
 
-        /// <summary>Fit the fixed design canvas inside the screen: scale to the limiting axis, center, bars elsewhere — never stretch.</summary>
+        /// <summary>Size of the stage for a screen aspect (width/height): never below the design size, grows the
+        /// spare axis up to the widest/tallest supported phone, never scales non-uniformly (bible §26.3).</summary>
+        public static Vector2 StageSizeFor(float screenAspect)
+        {
+            const float designAspect = DesignWidth / (float)DesignHeight;
+            if (screenAspect >= designAspect)
+                return new Vector2(Mathf.Clamp(Mathf.Round(DesignHeight * screenAspect), DesignWidth, MaxStageWidth), DesignHeight);
+            return new Vector2(DesignWidth, Mathf.Clamp(Mathf.Round(DesignWidth / screenAspect), DesignHeight, MaxStageHeight));
+        }
+
+        /// <summary>Fit the stage inside the screen: phones fill it edge to edge; tablets and other out-of-range
+        /// shapes get the nearest supported stage, centered and framed. Never stretched.</summary>
         private void FitStage()
         {
             var screen = new Vector2(Screen.width, Screen.height);
             if (screen == lastScreen && Stage.Q("screens") != null) return;
             lastScreen = screen;
-            float designAspect = DesignWidth / (float)DesignHeight;
             float screenAspect = screen.x / Mathf.Max(1f, screen.y);
-            // Match the axis that limits the fit so the whole 1170×2532 stage is visible.
-            Document.panelSettings.match = screenAspect > designAspect ? 1f : 0f;
-            float logicalW = screenAspect > designAspect ? DesignHeight * screenAspect : DesignWidth;
-            float logicalH = screenAspect > designAspect ? DesignHeight : DesignWidth / screenAspect;
-            Stage.style.left = (logicalW - DesignWidth) / 2f;
-            Stage.style.top = (logicalH - DesignHeight) / 2f;
+            var size = StageSizeFor(screenAspect);
+            bool resized = size.x != StageWidth || size.y != StageHeight;
+            StageWidth = size.x; StageHeight = size.y;
+
+            // Out of the phone range the stage is framed; leave room so the whole outline is visible on every side.
+            float exactW = DesignHeight * screenAspect, exactH = DesignWidth / screenAspect;
+            bool framed = exactW > MaxStageWidth + 2f || exactH > MaxStageHeight + 2f;
+            float pad = framed ? FramePad : 0f;
+            var fit = new Vector2(size.x + pad * 2f, size.y + pad * 2f);
+
+            // Scale by the limiting axis so the whole stage (and frame) is visible.
+            bool widthLimits = screen.x / fit.x <= screen.y / fit.y;
+            Document.panelSettings.referenceResolution = new Vector2Int((int)fit.x, (int)fit.y);
+            Document.panelSettings.match = widthLimits ? 0f : 1f;
+            float logicalW = widthLimits ? fit.x : fit.y * screenAspect;
+            float logicalH = widthLimits ? fit.x / screenAspect : fit.y;
+
+            Stage.style.width = size.x; Stage.style.height = size.y;
+            Stage.style.left = (logicalW - size.x) / 2f;
+            Stage.style.top = (logicalH - size.y) / 2f;
+
+            stageFrame.EnableInClassList("hidden", !framed);
+            const float gap = 10f;
+            stageFrame.style.left = (logicalW - size.x) / 2f - gap;
+            stageFrame.style.top = (logicalH - size.y) / 2f - gap;
+            stageFrame.style.width = size.x + gap * 2f;
+            stageFrame.style.height = size.y + gap * 2f;
+
             ApplySafeArea(logicalW, logicalH);
+            if (resized) StageResized?.Invoke();
         }
 
         /// <summary>Insets the screens where the device's safe area (notch / home bar) overlaps the stage (bible §26.5).</summary>
@@ -188,7 +238,7 @@ namespace GridGame.App
                     safe = new Rect(0, bottom, Screen.width, Screen.height - top - bottom);
             }
             float k = logicalH / Screen.height;
-            float stageTop = (logicalH - DesignHeight) / 2f, stageBottom = stageTop + DesignHeight;
+            float stageTop = (logicalH - StageHeight) / 2f, stageBottom = stageTop + StageHeight;
             float safeTop = (Screen.height - safe.yMax) * k, safeBottom = logicalH - safe.yMin * k;
             var screens = Stage.Q("screens");
             screens.style.top = Mathf.Max(0f, safeTop - stageTop);

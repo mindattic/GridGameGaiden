@@ -708,7 +708,7 @@ namespace GridGame.App
             var body = Ui.Text(theme.Crawl, "h2 shadow", text);
             body.style.whiteSpace = WhiteSpace.Normal;
             body.style.unityTextAlign = TextAnchor.UpperCenter;
-            y = GameApp.DesignHeight;
+            y = GameApp.StageHeight;
             text.style.top = y;
             var skip = Ui.Button("Skip ›", Finish, "btn--small", root);
             skip.style.position = Position.Absolute; skip.style.right = 30; skip.style.bottom = 40;

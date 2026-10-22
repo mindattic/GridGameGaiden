@@ -405,7 +405,7 @@ namespace GridGame.App
             var origin = new Vector2(BoardLeft, BoardTop);
             var mid = origin + (BoardView.CenterOf(aAt, a.W, a.H) + BoardView.CenterOf(bAt, b.W, b.H)) / 2f;
             bool rowLine = aAt.Y == bAt.Y;
-            const float StageW = 1170f, StageH = 2532f;
+            float StageW = GameApp.StageWidth, StageH = GameApp.StageHeight;
 
             // Entry pattern (old US-145): counter sweep, mirrored, same-side chase, staggered one-two.
             float d1 = Random.value < 0.5f ? 1f : -1f, d2 = -d1, delay2 = 0f;
@@ -1163,10 +1163,10 @@ namespace GridGame.App
             orb.style.unityBackgroundImageTintColor = Art.Mana;
             App.Overlay.Add(orb);
             Vector2 from = src != null && board.Units.TryGetValue(src.Id, out var v)
-                ? new Vector2(BoardLeft, BoardTop) + BoardView.CenterOf(v.Tile) : new Vector2(585, 1200);
+                ? new Vector2(BoardLeft, BoardTop) + BoardView.CenterOf(v.Tile) : new Vector2(GameApp.StageWidth / 2f, 1200);
             var slot = orbViews[Mathf.Clamp(index, 0, orbViews.Count - 1)];
             Vector2 to = slot.worldBound.center - App.Stage.worldBound.position;
-            if (float.IsNaN(to.x)) to = new Vector2(585, 2210);
+            if (float.IsNaN(to.x)) to = new Vector2(GameApp.StageWidth / 2f, 2210);
             yield return Tween.Run(0.22f, k =>
             {
                 var p = Vector2.Lerp(from, to, Tween.EaseInOut(k)) + Vector2.up * (-140f * Mathf.Sin(k * Mathf.PI));
